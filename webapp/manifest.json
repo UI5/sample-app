@@ -41,10 +41,7 @@
 				"uri": "model/todoitems.json"
 			},
 			"businessData": {
-				"dataSource": "businessData",
-				"settings": {
-					"synchronizationMode": "None"
-				}
+				"dataSource": "businessData"
 			}
 		},
 		"resources": {
@@ -52,8 +49,7 @@
 				{
 					"uri": "css/styles.css"
 				}
-			],
-			"js": []
+			]
 		}
 	}
 }

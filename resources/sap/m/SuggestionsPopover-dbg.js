@@ -52,7 +52,7 @@ sap.ui.define([
 	 * @alias sap.m.SuggestionsPopover
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 */
 	var SuggestionsPopover = EventProvider.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
 
@@ -175,7 +175,6 @@ sap.ui.define([
 
 		if (!oList) {
 			oList = new List(sParentId + "-popup-list", {
-				showNoData : false,
 				mode : ListMode.SingleSelectMaster,
 				rememberSelections : false,
 				width: "100%",

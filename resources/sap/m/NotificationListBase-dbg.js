@@ -91,7 +91,7 @@ sap.ui.define([
 		 * @extends sap.m.ListItemBase
 		 *
 		 * @author SAP SE
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 *
 		 * @constructor
 		 * @public
@@ -750,23 +750,31 @@ sap.ui.define([
 		 * @public
 		 */
 		NotificationListBase.prototype.close = function () {
-			var parent = this.getParent();
 			this.fireClose();
-			var sItemId = this.getId();
 
+			const oParent = this.getParent();
+			const that = this;
 
-			if (parent && parent instanceof Element) {
-				var delegate = {
+			if (oParent?.isA?.("sap.ui.core.Element")) {
+				var oDelegate = {
 					onAfterRendering: function () {
-						// SNOW - CS20250009263199
-						// item is deleted after close/rendering  means the notification item is removed or destroyed - in such case move the focus
-						if (document.getElementById(sItemId) === null) {
-							parent.focus();
+						if (oParent.isDestroyed()) {
+							return;
 						}
-						parent.removeEventDelegate(delegate);
+
+						if (document.activeElement === document.body) {
+							// SNOW - CS20250009263199
+							// item is deleted after close
+							// keep the focus inside the parent list
+							// to prevent popover close
+							oParent.removeEventDelegate(oDelegate);
+							oParent.focus();
+						} else if (!that.getDomRef()) {
+							oParent.removeEventDelegate(oDelegate);
+						}
 					}
 				};
-				parent.addEventDelegate(delegate);
+				oParent.addEventDelegate(oDelegate);
 			}
 		};
 

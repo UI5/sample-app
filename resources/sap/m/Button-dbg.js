@@ -101,7 +101,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @constructor
 	 * @public
@@ -616,7 +616,7 @@ sap.ui.define([
 		// fire tap event
 		if (this.getEnabled() && this.getVisible()) {
 			// note: on mobile, the press event should be fired after the focus is on the button
-			if (Device.system.desktop && (oEvent.originalEvent && oEvent.originalEvent.type === "touchend")) {
+			if ((oEvent.originalEvent && oEvent.originalEvent.type === "touchend")) {
 					this.focus();
 			}
 
@@ -968,7 +968,8 @@ sap.ui.define([
 	 */
 	Button.prototype.getAccessibilityInfo = function() {
 		var sDesc = this._getText() || this.getTooltip_AsString(),
-			sAccessibleRole = this.getAccessibleRole();
+			sAccessibleRole = this.getAccessibleRole(),
+			sKeyShortcutsText = this.getDomRef()?.getAttribute("aria-keyshortcuts");
 
 		if (!sDesc && this._getAppliedIcon()) {
 			var oIconInfo = IconPool.getIconInfo(this._getAppliedIcon());
@@ -980,7 +981,7 @@ sap.ui.define([
 		return {
 			role: sAccessibleRole === ButtonAccessibleRole.Default ? "button" : sAccessibleRole.toLowerCase(),
 			type: Library.getResourceBundleFor("sap.m").getText("ACC_CTR_TYPE_BUTTON"),
-			description: sDesc,
+			description: `${sDesc} ${sKeyShortcutsText ? sKeyShortcutsText : ""}`.trim(),
 			focusable: this.getEnabled(),
 			enabled: this.getEnabled()
 		};

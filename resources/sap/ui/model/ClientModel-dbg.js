@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @param {string} [oData] URL where to load the data from
 	 * @public
@@ -42,7 +42,7 @@ sap.ui.define([
 
 			this.bCache = true;
 			this.aPendingRequestHandles = [];
-			this.mUnsupportedFilterOperators = {"Any": true, "All": true};
+			this.mUnsupportedFilterOperators = {All: true, Any: true, NotAll: true, NotAny: true};
 
 			if (typeof oData == "string") {
 				this.loadData(oData);

@@ -199,7 +199,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -598,8 +598,8 @@ sap.ui.define([
 		this.mSupportedBindingModes = {OneTime : true, OneWay : true};
 		this.bSupportReferences = bSupportReferences !== false; // default is true
 		// ClientListBinding#filter calls checkFilter on the model; ClientModel does
-		// not support "All" and "Any" filters
-		this.mUnsupportedFilterOperators = {All : true, Any : true};
+		// not support "All", "Any", "NotAll", and "NotAny" filters
+		this.mUnsupportedFilterOperators = {All : true, Any : true, NotAll : true, NotAny : true};
 		this.sUrl = sUrl;
 	}
 
@@ -3155,7 +3155,7 @@ sap.ui.define([
 	 * "&lt;7.2.1 Attribute Property>@...", "$OnDelete@...", "&lt;10.2.1 Attribute Name>@..." and
 	 * "&lt;14.5.14.2.1 Attribute Property>@..." (where angle brackets denote a variable part and
 	 * sections refer to specification <a href=
-	 * "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part3-csdl.htm"
+	 * "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part3-csdl.html"
 	 * >"OData Version 4.0 Part 3: Common Schema Definition Language"</a>).
 	 *
 	 * Annotations starting with "@@", for example

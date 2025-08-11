@@ -219,7 +219,7 @@ sap.ui.define([
 	 * This model is not prepared to be inherited from.
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataModel
@@ -325,7 +325,7 @@ sap.ui.define([
 			this.sWarmupUrl = sWarmupUrl;
 			this.bWarmup = !!sWarmupUrl;
 			this.mSupportedBindingModes = {"OneWay": true, "OneTime": true, "TwoWay":true};
-			this.mUnsupportedFilterOperators = {"Any": true, "All": true};
+			this.mUnsupportedFilterOperators = {All: true, Any: true, NotAll: true, NotAny: true};
 			this.sDefaultBindingMode = sDefaultBindingMode || BindingMode.OneWay;
 			this.bIsMessageScopeSupported = false;
 			this.iPendingDeferredRequests = 0;
@@ -467,7 +467,8 @@ sap.ui.define([
 				headers: this.mCustomHeaders,
 				combineEvents: true,
 				cacheKey: this._getAnnotationCacheKey(this.sMetadataUrl),
-				useCache: this.bUseCache
+				useCache: this.bUseCache,
+				withCredentials: this.bWithCredentials
 			});
 			if (!this.bDisableSoftStateHeader) {
 				delete this.mCustomHeaders["sap-contextid-accept"];

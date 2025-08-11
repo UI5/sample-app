@@ -34,7 +34,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @constructor
 	 * @public
@@ -183,6 +183,27 @@ function(
 			default:
 				return this._oDialog.getContent()[1];
 		}
+	};
+
+	/**
+	 * @override
+	 */
+	SelectDialogBase.prototype.addCustomData = function (aCustomData) {
+		Control.prototype.addCustomData.apply(this, arguments);
+
+		const mSettings = this.data("sap-ui-custom-settings");
+		const oDt = mSettings && mSettings["sap.ui.dt"];
+		const sDesigntime = oDt && oDt.designtime;
+
+		if (sDesigntime && this._oDialog) {
+			this._oDialog.data("sap-ui-custom-settings", {
+				"sap.ui.dt": {
+					designtime: sDesigntime
+				}
+			});
+		}
+
+		return this;
 	};
 
 	return SelectDialogBase;

@@ -6,12 +6,12 @@
 
 // Provides the base class for all objects with managed properties and aggregations.
 sap.ui.define([
-	"./_runWithOwner",
+	"./BindingInfo",
 	"./DataType",
 	"./EventProvider",
 	"./ManagedObjectMetadata",
 	"./Object",
-	"./BindingInfo",
+	"./OwnStatics",
 	"sap/ui/util/ActivityDetection",
 	"sap/ui/util/_enforceNoReturnValue",
 	"sap/base/future",
@@ -24,12 +24,12 @@ sap.ui.define([
 	"sap/base/util/extend",
 	"sap/base/util/isEmptyObject"
 ], function(
-	_runWithOwner,
+	BindingInfo,
 	DataType,
 	EventProvider,
 	ManagedObjectMetadata,
 	BaseObject,
-	BindingInfo,
+	OwnStatics,
 	ActivityDetection,
 	_enforceNoReturnValue,
 	future,
@@ -266,7 +266,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @public
 	 * @alias sap.ui.base.ManagedObject
 	 */
@@ -508,7 +508,7 @@ sap.ui.define([
 			this._oContextualSettings = defaultContextualSettings;
 
 			// apply the owner id if defined
-			this._sOwnerId = _runWithOwner.getCurrentOwnerId();
+			this._sOwnerId = sOwnerId;
 
 			// make sure that the object is registered before initializing
 			// and to deregister the object in case of errors
@@ -1163,7 +1163,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.base,sap.ui.core
 	 */
-	ManagedObject.runWithPreprocessors = function(fn, oPreprocessors, oThisArg) {
+	 function runWithPreprocessors(fn, oPreprocessors, oThisArg) {
 		assert(typeof fn === "function", "fn must be a function");
 		assert(!oPreprocessors || typeof oPreprocessors === "object", "oPreprocessors must be an object");
 
@@ -1179,7 +1179,34 @@ sap.ui.define([
 			[fnCurrentIdPreprocessor, fnCurrentSettingsPreprocessor] = aOldPreprocessors;
 		}
 
-	};
+	}
+
+	let sOwnerId;
+
+	/**
+	 * Calls the function <code>fn</code> once and marks all ManagedObjects
+	 * created during that call as "owned" by the given ID.
+	 *
+	 * @param {function} fn Function to execute
+	 * @param {string} sOwnerId Id of the owner
+	 * @param {Object} [oThisArg=undefined] Value to use as <code>this</code> when executing <code>fn</code>
+	 * @return {any} result of function <code>fn</code>
+	 * @private
+	 * @ui5-restricted sap.ui.core
+	 */
+	function runWithOwner(fn, sNewOwnerId, oThisArg) {
+
+		assert(typeof fn === "function", "fn must be a function");
+
+		var oldOwnerId = sOwnerId;
+		try {
+			sOwnerId = sNewOwnerId;
+			return fn.call(oThisArg);
+		} finally {
+			sOwnerId = oldOwnerId;
+		}
+
+	}
 
 	/**
 	 * Sets all the properties, aggregations, associations and event handlers as given in
@@ -1517,7 +1544,7 @@ sap.ui.define([
 			throw new Error("Property \"" + sPropertyName + "\" does not exist in " + this);
 		}
 
-		oType = DataType.getType(oProperty.type);
+		oType = DataType.getType(oProperty.type, oProperty);
 
 		// If property has an array type, clone the array to avoid modification of original data
 		if (oType instanceof DataType && oType.isArrayType() && Array.isArray(oValue)) {
@@ -1566,7 +1593,7 @@ sap.ui.define([
 			throw new Error("Property \"" + sPropertyName + "\" does not exist in " + this);
 		}
 
-		oType = DataType.getType(oProperty.type);
+		oType = DataType.getType(oProperty.type, oProperty);
 
 		// If property has an array type, clone the array to avoid modification of original data
 		if (oType instanceof DataType && oType.isArrayType() && Array.isArray(oValue)) {
@@ -3788,7 +3815,7 @@ sap.ui.define([
 			var sOwnerId = this._sOwnerId;
 			vBindingInfo.factory = function(sId, oContext) {
 				// bind original factory with the two arguments: id and bindingContext
-				return _runWithOwner(fnOriginalFactory.bind(null, sId, oContext), sOwnerId);
+				return runWithOwner(fnOriginalFactory.bind(null, sId, oContext), sOwnerId);
 			};
 			vBindingInfo.factory[BINDING_INFO_FACTORY_SYMBOL] = fnOriginalFactory;
 		}
@@ -4334,7 +4361,9 @@ sap.ui.define([
 			if (bUpdateListener || bUpdateAll) {
 				oObject._callPropagationListener();
 			}
-			oObject.fireModelContextChange();
+			if (bUpdateListener !== true) {
+				oObject.fireModelContextChange();
+			}
 		}
 	};
 
@@ -4828,6 +4857,14 @@ sap.ui.define([
 	ManagedObject.prototype.updateFieldHelp = undefined;
 
 	const defaultContextualSettings = {};
+
+	OwnStatics.set(ManagedObject, {
+		runWithOwner,
+		runWithPreprocessors,
+		getCurrentOwnerId() {
+			return sOwnerId;
+		}
+	});
 
 	return ManagedObject;
 

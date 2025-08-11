@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.138.0"
+      "version": "1.139.0"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -227,6 +227,11 @@
         "name": "node-lru-cache",
         "packagedWithMySelf": true,
         "version": "2.7.3"
+      },
+      {
+        "name": "ui5-webcomponents",
+        "packagedWithMySelf": true,
+        "version": "2.11.0"
       }
     ]
   },
@@ -239,7 +244,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.138",
+      "minUI5Version": "1.139",
       "libs": {}
     },
     "library": {

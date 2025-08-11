@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -1266,7 +1266,7 @@ sap.ui.define([
 	 * and missing headers remain unchanged. The following headers must not be used:
 	 * <ul>
 	 *   <li> OData V4 requests headers as specified in <a href=
-	 *     "https://docs.oasis-open.org/odata/odata/v4.0/os/part1-protocol/odata-v4.0-os-part1-protocol.html#_Common_Headers"
+	 *     "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Common_Headers"
 	 *     >"8.1 Common Headers"</a> and "8.2 Request Headers" of the specification "OData Version
 	 *     4.0 Part 1: Protocol"
 	 *   <li> OData V2 request headers as specified in "2.2.5 HTTP Header Fields" of the

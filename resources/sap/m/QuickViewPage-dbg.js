@@ -103,7 +103,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @constructor
 	 * @public
@@ -209,16 +209,9 @@ sap.ui.define([
 	 * @name sap.m.QuickViewPage#getCrossAppNavCallback
 	 */
 
-	QuickViewPage.prototype.init =  function() {
-		/**
-	 	 * @deprecated As of version 1.111.
-		 */
-		this._initCrossAppNavigationService();
-	};
-
 	/**
-	* @deprecated As of version 1.111.
-	*/
+	 * @deprecated As of version 1.111.
+	 */
 	QuickViewPage.prototype._initCrossAppNavigationService =  function() {
 		//see API docu for sap.ushell.services.CrossApplicationNavigation
 		var fGetService =  sap.ushell && sap.ushell.Container && sap.ushell.Container.getService;
@@ -605,24 +598,28 @@ sap.ui.define([
 		/**
 		 * @deprecated As of version 1.111.
 		 */
-		if (this.getCrossAppNavCallback() && this.oCrossAppNavigator) {
-			var targetConfigCallback = this.getCrossAppNavCallback();
-			if (typeof targetConfigCallback == "function") {
-				var targetConfig = targetConfigCallback();
-				var href = this.oCrossAppNavigator.hrefForExternal(
-					{
-						target : {
-							semanticObject : targetConfig.target.semanticObject,
-							action : targetConfig.target.action
-						},
-						params : targetConfig.params
-					}
-				);
+		if (this.getCrossAppNavCallback()) {
+			this._initCrossAppNavigationService();
 
-				URLHelper.redirect(href);
+			if (this.oCrossAppNavigator) {
+				var targetConfigCallback = this.getCrossAppNavCallback();
+				if (typeof targetConfigCallback == "function") {
+					var targetConfig = targetConfigCallback();
+					var href = this.oCrossAppNavigator.hrefForExternal(
+						{
+							target : {
+								semanticObject : targetConfig.target.semanticObject,
+								action : targetConfig.target.action
+							},
+							params : targetConfig.params
+						}
+					);
+
+					URLHelper.redirect(href);
+				}
+
+				return;
 			}
-
-			return;
 		}
 
 		if (this.getTitleUrl()) {

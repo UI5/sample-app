@@ -104,7 +104,7 @@ sap.ui.define([
 		 *
 		 * @extends sap.ui.core.Control
 		 * @author SAP SE
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 *
 		 * @constructor
 		 * @public
@@ -468,6 +468,7 @@ sap.ui.define([
 				oProgressNavigator && oProgressNavigator._updateCurrentStep(this._aStepPath.indexOf(oStep) + 1);
 			};
 
+			oStep._setNumberInvisibleText(this._aStepPath.indexOf(oStep) + 1);
 			if (!this.getVisible() || this._aStepPath.indexOf(oStep) < 0) {
 				return this;
 			} else if (this.getRenderMode() === WizardRenderMode.Page) {
@@ -477,7 +478,6 @@ sap.ui.define([
 				return this;
 			}
 
-			oStep._setNumberInvisibleText(this.getProgress());
 			var that = this,
 				mScrollProps = {
 					scrollTop: this._getStepScrollOffset(oStep)

@@ -12,10 +12,13 @@ sap.ui.define([
 	'sap/base/util/extend',
 	'sap/base/util/merge',
 	'sap/ui/base/ManagedObject',
+	'sap/ui/base/OwnStatics',
 	'sap/base/Log'
 ],
-	function(View, JSViewRenderer, ViewType, merge, extend, ManagedObject, Log) {
+	function(View, JSViewRenderer, ViewType, merge, extend, ManagedObject, OwnStatics, Log) {
 	"use strict";
+
+	const { runWithPreprocessors } = OwnStatics.get(ManagedObject);
 
 
 	/**
@@ -27,7 +30,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @deprecated Since 1.90. Instead use {@link topic:e6bb33d076dc4f23be50c082c271b9f0 Typed Views}
 	 * by defining the view class with {@link sap.ui.core.mvc.View.extend View.extend} and
 	 * creating the view instances with {@link sap.ui.core.mvc.View.create View.create}.
@@ -243,7 +246,7 @@ sap.ui.define([
 
 	JSView.prototype.onControllerConnected = function(oController) {
 		// temporarily replace any preprocessors, e.g. from an enclosing JSON view
-		ManagedObject.runWithPreprocessors(function() {
+		runWithPreprocessors(function() {
 			this.applySettings({
 				content : this.createContent(oController)
 			});

@@ -60,7 +60,7 @@ sap.ui.define([
 	 * See also {@link module:sap/ui/core/ComponentSupport}.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.ComponentContainer
@@ -526,8 +526,18 @@ sap.ui.define([
 	 */
 	ComponentContainer.prototype.propagateProperties = function (vName) {
 		var oComponent = this.getComponentInstance();
-		if (oComponent && this.getPropagateModel()) {
-			this._propagateProperties(vName, oComponent);
+		if (oComponent) {
+			if (this.getPropagateModel()) {
+				this._propagateProperties(vName, oComponent);
+			} else if (oComponent.getParent() == null) {
+				const { aPropagationListeners } = this._getPropertiesToPropagate();
+				const oProperties = {
+					oModels: {},
+					oBindingContexts: {},
+					aPropagationListeners
+				};
+				this._propagateProperties(false, oComponent, oProperties, false, vName, true);
+			}
 		}
 		Control.prototype.propagateProperties.apply(this, arguments);
 	};

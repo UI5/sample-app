@@ -78,7 +78,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @deprecated As of version 1.48, please use {@link sap.ui.model.odata.v2.ODataModel} instead.
@@ -129,8 +129,8 @@ sap.ui.define([
 
 			this.oServiceData = {};
 			this.sDefaultBindingMode = BindingMode.OneWay;
-			this.mSupportedBindingModes = {"OneWay": true, "OneTime": true, "TwoWay":true};
-			this.mUnsupportedFilterOperators = {"Any": true, "All": true};
+			this.mSupportedBindingModes = {"OneWay": true, "OneTime": true, "TwoWay": true};
+			this.mUnsupportedFilterOperators = {All: true, Any: true, NotAll: true, NotAny: true};
 			this.bCountSupported = true;
 			this.bJSON = bJSON;
 			this.bCache = true;

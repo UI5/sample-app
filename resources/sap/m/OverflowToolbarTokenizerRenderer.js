@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/Renderer","sap/m/TokenizerRenderer"],function(e,n){"use strict";const t=e.extend(n);t.apiVersion=2;t.render=function(e,n){e.openStart("div",n);if(n.getRenderMode()==="Overflow"){e.class("sapMOverflowToolbarTokenizerButton");e.attr("tabindex","0")}if(n.getRenderMode()!=="Overflow"){e.style("width",n.getWidth())}e.class("sapMOverflowToolbarTokenizer");e.openEnd();this.prependContent(e,n);this.renderOpenTag(e,n);this.renderInnerContent(e,n);e.close("div")};t.renderOpenTag=function(e,n){e.openStart("div",n.getId()+"-inner")};t.addWidthStyles=function(e,n){if(n.getRenderMode()!=="Overflow"){e.style("width",`calc( 100% - ${n._getLabelWidth()}px)`);return}e.style("width","100%")};t.prependContent=function(e,n){if(n.getRenderMode()!=="Overflow"){e.renderControl(n.getAggregation("label"))}};t._renderIndicator=function(e,t){if(t.getRenderMode()==="Overflow"){e.renderControl(t.getAggregation("moreItemsButton"));return}n._renderIndicator.call(this,e,t)};return t},true);
+//# sourceMappingURL=OverflowToolbarTokenizerRenderer.js.map

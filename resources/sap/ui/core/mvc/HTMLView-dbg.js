@@ -11,6 +11,7 @@ sap.ui.define([
 	'./ViewType',
 	'sap/base/util/merge',
 	'sap/ui/base/ManagedObject',
+	'sap/ui/base/OwnStatics',
 	'sap/ui/core/DeclarativeSupport',
 	'sap/ui/model/resource/ResourceModel',
 	'sap/base/util/LoaderExtensions'
@@ -21,11 +22,14 @@ sap.ui.define([
 		ViewType,
 		merge,
 		ManagedObject,
+		OwnStatics,
 		DeclarativeSupport,
 		ResourceModel,
 		LoaderExtensions
 	) {
 	"use strict";
+
+	const { runWithPreprocessors } = OwnStatics.get(ManagedObject);
 
 	/**
 	 * Constructor for a new <code>HTMLView</code>.
@@ -43,7 +47,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.mvc.View
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @since 1.9.2
@@ -339,7 +343,7 @@ sap.ui.define([
 	HTMLView.prototype.onControllerConnected = function(oController) {
 		// unset any preprocessors (e.g. from an enclosing HTML view)
 		var that = this;
-		ManagedObject.runWithPreprocessors(function() {
+		runWithPreprocessors(function() {
 			DeclarativeSupport.compile(that._oTemplate, that);
 		}, {
 			settings: this._fnSettingsPreprocessor

@@ -104,6 +104,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText", "sap/ui/core/Shortc
 
 			this.writeAriaRole(oButton, mAccProps);
 			this.writeAriaLabelledBy(oButton, mAccProps);
+			this.writeAriaDescribedBy(oButton, mAccProps);
 
 			oRm.accessibilityState(oButton, mAccProps);
 		};
@@ -114,17 +115,11 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText", "sap/ui/core/Shortc
 
 		SplitButtonRenderer.writeAriaLabelledBy = function(oButton, mAccProperties) {
 			var sAriaLabelledByValue = "",
-				oButtonTypeAriaLabelId = oButton.getButtonTypeAriaLabelId(),
 				sTitleAttribute = oButton.getTitleAttributeValue(),
 				sTooltipId;
 
 			if (oButton.getText()) {
 				sAriaLabelledByValue += oButton._getTextButton().getId() + "-content";
-				sAriaLabelledByValue += " ";
-			}
-
-			if (oButtonTypeAriaLabelId) {
-				sAriaLabelledByValue += oButtonTypeAriaLabelId;
 				sAriaLabelledByValue += " ";
 			}
 
@@ -138,6 +133,13 @@ sap.ui.define(["sap/m/library", "sap/ui/core/InvisibleText", "sap/ui/core/Shortc
 			sAriaLabelledByValue += InvisibleText.getStaticId("sap.m", "SPLIT_BUTTON_KEYBOARD_HINT");
 
 			mAccProperties["labelledby"] = {value: sAriaLabelledByValue, append: true };
+		};
+
+		SplitButtonRenderer.writeAriaDescribedBy = function(oButton, mAccProperties) {
+			mAccProperties["describedby"] = {
+				value: oButton.getButtonTypeAriaLabelId(),
+				append: true
+			};
 		};
 
 		return SplitButtonRenderer;

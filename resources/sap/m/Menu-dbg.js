@@ -61,7 +61,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 *
 		 * @constructor
 		 * @public
@@ -157,7 +157,7 @@ sap.ui.define([
 			this._openDuration = Device.system.phone ? null : 0;
 		};
 
-        /**
+		/**
 		 * Called from parent if the control is destroyed.
 		 */
 		Menu.prototype.exit = function() {
@@ -206,12 +206,23 @@ sap.ui.define([
 		 * @public
 		 */
 		Menu.prototype.openBy = function(oControl) {
-			const oPopover = this._getPopover();
+			const oPopover = this._getPopover(),
+				oBinding = this.getBinding("items");
+
 			if (!oControl) {
 				oControl = document.body;
 			}
-			oPopover._getPopup().setDurations(this._openDuration, 0);
-			oPopover.openBy(oControl);
+
+			if (oBinding && oBinding.isA("sap.ui.model.odata.v4.ODataListBinding")) {
+				// Wait for the binding data to be received, then open
+				oBinding.attachEventOnce("dataReceived", function() {
+					this._openPopoverBy(oPopover, oControl);
+				}, this);
+			} else {
+				this._openPopoverBy(oPopover, oControl);
+			}
+
+			this.bIgnoreOpenerFocus = true; // reset the flag to allow the opener to be focused after the menu is closed
 
 			return this;
 		};
@@ -242,6 +253,18 @@ sap.ui.define([
 		};
 
 		/**
+		 * Opens the given popover next to the specified control, using the configured open duration.
+		 *
+		 * @param {sap.m.ResponsivePopover} oPopover The popover instance to open.
+		 * @param {sap.ui.core.Control|HTMLElement} oControl The control or DOM element that defines the position for the popover.
+		 * @private
+		 */
+		Menu.prototype._openPopoverBy = function(oPopover, oControl) {
+			oPopover._getPopup().setDurations(this._openDuration, 0);
+			oPopover.openBy(oControl);
+		};
+
+		/**
 		 * Captures the itemSelected event fired by the menu wrapper and fires the itemSelected event of the menu.
 		 *
 		 * @param {sap.ui.base.Event} oEvent itemSelected event fired by the menu wrapper
@@ -250,6 +273,7 @@ sap.ui.define([
 		Menu.prototype._handleItemSelected = function(oEvent) {
 			oEvent.cancelBubble();
 			this.fireItemSelected({item: oEvent.getParameter("item")});
+			this.bIgnoreOpenerFocus = false; // allow the opener to be focused after the menu is closed
 		};
 
 		/**
@@ -301,9 +325,13 @@ sap.ui.define([
 		 */
 		Menu.prototype.openAsContextMenu = function(oEvent, oOpenerRef) {
 			const oPopover = this._getPopover(),
-				bPageCoordinates = oEvent && oEvent.pageX !== undefined && oEvent.pageY !== undefined,
-				bOffsetCoordinates = !bPageCoordinates && !oOpenerRef && oEvent.offsetX !== undefined && oEvent.offsetY !== undefined,
-				oOriginalEvent = oEvent && oEvent.originalEvent;
+				oOriginalEvent = oEvent ? oEvent.originalEvent || oEvent : null,
+				bPageCoordinates = oOriginalEvent && oOriginalEvent.button !== undefined && !!oOriginalEvent.type,
+				bOffsetCoordinates = oOriginalEvent && !bPageCoordinates && oOriginalEvent.type === undefined &&
+					(oOriginalEvent.offsetX !== undefined && oOriginalEvent.offsetY !== undefined),
+				bOpenerCoordinates = oOriginalEvent.type?.substr(0, 3) === "key"  || (bPageCoordinates && oOpenerRef && (
+					(oOriginalEvent.pageX === undefined && oOriginalEvent.clientX === undefined) ||
+					(oOriginalEvent.pageY === undefined && oOriginalEvent.clientY === undefined)));
 			let oOpenerDomRef = oOpenerRef && oOpenerRef.getDomRef ? oOpenerRef.getDomRef() : oOpenerRef,
 				oPointerElement = document.getElementById("sapMMenuContextMenuPointer"),
 				oPointerParent = document.body,
@@ -330,7 +358,13 @@ sap.ui.define([
 				oOpenerDomRef = oEvent.srcControl ? oEvent.srcControl.getDomRef() : null;
 
 				if (!oOpenerDomRef) {
-					oOpenerDomRef = oOriginalEvent && oOriginalEvent.currentTarget ? oOriginalEvent.currentTarget : null;
+					if (oOriginalEvent?.currentTarget) {
+						oOpenerDomRef = oOriginalEvent.currentTarget;
+					} else if (oOriginalEvent?.target) {
+						oOpenerDomRef = oOriginalEvent.target;
+					} else {
+						oOpenerDomRef = document.body;
+					}
 				}
 			}
 
@@ -344,13 +378,21 @@ sap.ui.define([
 			oPointerElement.id = "sapMMenuContextMenuPointer";
 			oPointerElement.className = "sapMMenuContextMenuPointer";
 
+			// if the opener DOM ref is provided, we should get its position data
 			const oOpenerData = oOpenerDomRef ? oOpenerDomRef.getBoundingClientRect() : null;
 
-			if (oOriginalEvent && bPageCoordinates) {
-				const iPageX = oOriginalEvent.pageX || oOriginalEvent.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft);
-				const iPageY = oOriginalEvent.pageY || oOriginalEvent.clientY + (document.documentElement.scrollTop || document.body.scrollTop);
+			// calculate the position of the pointer element
+			if ((!oOriginalEvent || bOpenerCoordinates) && oOpenerData) {
+				// opener is provided, no event is provided, or there are missing important coordinates in the event,
+				// we should use the opener's position data
+				iX = oOpenerData.left + (oOpenerData.width / 2) + (document.documentElement.scrollLeft || document.body.scrollLeft);
+				iY = oOpenerData.top + (oOpenerData.height / 2) + (document.documentElement.scrollTop || document.body.scrollTop);
+			} else if (oOriginalEvent && bPageCoordinates) {
+				// the event with coordinates is provided, we should use them
+				const iPageX = (oOriginalEvent.pageX || oOriginalEvent.clientX) + (document.documentElement.scrollLeft || document.body.scrollLeft);
+				const iPageY = (oOriginalEvent.pageY || oOriginalEvent.clientY) + (document.documentElement.scrollTop || document.body.scrollTop);
 
-				if (oOpenerDomRef.tagName.toLowerCase() === "tr") {
+				if (oOpenerDomRef.tagName && oOpenerDomRef.tagName.toLowerCase() === "tr") {
 					oPointerParent = oOpenerDomRef.firstChild ? oOpenerDomRef.firstChild : oOpenerDomRef;
 					oPointerSibling = oPointerParent.firstChild ? oPointerParent.firstChild : null;
 				} else {
@@ -364,17 +406,17 @@ sap.ui.define([
 				if (Localization.getRTL()) {
 					iX = document.body.clientWidth - iX;
 				}
-
 			} else if (bOffsetCoordinates) {
-				// if the coordinates are provided, we create a pointer element at the specified position
-				iX = oEvent.offsetX;
-				iY = oEvent.offsetY;
+				// offsetX/offsetY coordinates are provided, we should use specified position
+				iX = oEvent.offsetX || 0;
+				iY = oEvent.offsetY || 0;
 			}
 
+			// insert the pointer element into the DOM and set its position
 			oPointerParent.insertBefore(oPointerElement, oPointerSibling);
 			oPointerElement.style.insetInlineStart = `${iX}px`;
 			oPointerElement.style.insetBlockStart = `${iY}px`;
-		    oPointerElement.setAttribute("aria-hidden", "true");
+			oPointerElement.setAttribute("aria-hidden", "true");
 
 			oPopover.openBy(oPointerElement);
 			oPopover.attachAfterClose(this._onContextMenuClose, this);
@@ -458,12 +500,12 @@ sap.ui.define([
 			this._fnEnhanceUnifiedMenuAccState = fn;
 		};
 
-        Menu.prototype._menuClosed = function(oEvent) {
+		Menu.prototype._menuClosed = function(oEvent) {
 			const oOpener = oEvent && oEvent.getParameter("openBy");
 
 			this.fireClosed();
 
-			if (oOpener) {
+			if (oOpener && !this.bIgnoreOpenerFocus) {
 				try {
 					oOpener.focus();
 				} catch (e) {

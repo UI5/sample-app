@@ -63,7 +63,7 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @author SAP SE
 	 *
 	 * @public
@@ -249,14 +249,14 @@ sap.ui.define([
 				return;
 			}
 
-			var oSelectableCell = this._getSelectableCell(oEvent.target);
-
+			const oSelectableCell = this._getSelectableCell(oEvent.target);
 			if (!oSelectableCell) {
 				return;
 			}
 
 			const oInfo = this.getConfig("getCellInfo", this.getControl(), oSelectableCell, this._oPreviousCell);
 			this._bMouseDown = true;
+			this._oMouseSource = Element.closestTo(oEvent.target);
 
 			if (oEvent.shiftKey) {
 				if (this._oPreviousCell?.rowIndex !== oInfo.rowIndex || this._oPreviousCell?.colIndex !== oInfo.colIndex) {
@@ -282,6 +282,7 @@ sap.ui.define([
 			clearTimeout(this._iTimer);
 			this._bMouseDown = false;
 			this._bBorderDown = false;
+			this._oMouseSource = null;
 			this._mClickedCell = undefined;
 			this._bScrolling = false;
 			this._mTempCell = undefined;
@@ -646,7 +647,7 @@ sap.ui.define([
 		}
 
 		var oSelectableCell = this._getSelectableCell(oEvent.target);
-		if (!oSelectableCell || !this._bMouseDown) {
+		if (!oSelectableCell || !this._bMouseDown || this._oMouseSource?.isA("sap.m.InputBase")) {
 			// Selection logic should not execute if mouse is not down or target is not a cell
 			return;
 		}
@@ -1437,7 +1438,7 @@ sap.ui.define([
 			}
 		},
 		"sap.m.Table": {
-			selectableCells: ".sapMLIBFocusable, .sapMListTblCell, .sapMListTblSubRowCell, .sapMListTblSubCnt",
+			selectableCells: ".sapMLIBFocusable > :not(.sapMListTblHeaderCell), .sapMListTblCell:not(.sapMListTblHeaderCell), .sapMListTblSubRowCell, .sapMListTblSubCnt",
 			scrollArea: "listUl",
 			eventClearedAll: "sapMTableClearAll",
 			onActivate: function(oTable, oPlugin) {

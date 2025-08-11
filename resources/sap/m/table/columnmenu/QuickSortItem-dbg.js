@@ -11,7 +11,8 @@ sap.ui.define([
 	"sap/m/SegmentedButtonItem",
 	"sap/m/library",
 	"sap/ui/core/Lib",
-	"sap/ui/core/library"
+	"sap/ui/core/library",
+	"sap/ui/performance/trace/FESRHelper"
 ], function(
 	QuickActionItem,
 	QuickAction,
@@ -19,7 +20,8 @@ sap.ui.define([
 	SegmentedButtonItem,
 	library,
 	Library,
-	CoreLibrary
+	CoreLibrary,
+	FESRHelper
 ) {
 	"use strict";
 
@@ -36,7 +38,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.QuickActionItem
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -82,25 +84,33 @@ sap.ui.define([
 	};
 
 	QuickSortItem.prototype._createContent = function() {
-		var oBundle = Library.getResourceBundleFor("sap.m");
+		const oBundle = Library.getResourceBundleFor("sap.m");
+		const oSortNoneButton = new SegmentedButtonItem({
+			icon: "sap-icon://menu2",
+			key: "None",
+			tooltip: oBundle.getText("table.COLUMNMENU_SORT_NONE")
+		});
+		const oSortAscendingButton = new SegmentedButtonItem({
+			icon: "sap-icon://sort-ascending",
+			key: "Ascending",
+			tooltip: oBundle.getText("table.COLUMNMENU_SORT_ASCENDING")
+		});
+		const oSortDescendingButton = new SegmentedButtonItem({
+			icon: "sap-icon://sort-descending",
+			key: "Descending",
+			tooltip: oBundle.getText("table.COLUMNMENU_SORT_DESCENDING")
+		});
+
+		FESRHelper.setSemanticStepname(oSortNoneButton, "press", "tbl:p13n:sort:none");
+		FESRHelper.setSemanticStepname(oSortAscendingButton, "press", "tbl:p13n:sort:asc");
+		FESRHelper.setSemanticStepname(oSortDescendingButton, "press", "tbl:p13n:sort:desc");
+
 		return new SegmentedButton({
 			selectedKey: this.getSortOrder(),
 			items: [
-				new SegmentedButtonItem({
-					icon: "sap-icon://menu2",
-					key: "None",
-					tooltip: oBundle.getText("table.COLUMNMENU_SORT_NONE")
-				}),
-				new SegmentedButtonItem({
-					icon: "sap-icon://sort-ascending",
-					key: "Ascending",
-					tooltip: oBundle.getText("table.COLUMNMENU_SORT_ASCENDING")
-				}),
-				new SegmentedButtonItem({
-					icon: "sap-icon://sort-descending",
-					key: "Descending",
-					tooltip: oBundle.getText("table.COLUMNMENU_SORT_DESCENDING")
-				})
+				oSortNoneButton,
+				oSortAscendingButton,
+				oSortDescendingButton
 			],
 			selectionChange: [{item: this}, this._onSortChange, this]
 		});

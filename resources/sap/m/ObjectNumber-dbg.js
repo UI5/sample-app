@@ -52,7 +52,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @constructor
 	 * @public
@@ -313,6 +313,18 @@ sap.ui.define([
 	 */
 	ObjectNumber.prototype._hasExternalLabelling = function() {
 		return this.getAriaLabelledBy().length > 0 || LabelEnablement.getReferencingLabels(this).length > 0;
+	};
+
+	/**
+	 * Generates a string containing all IDs of the labels associated with the control.
+	 * @returns {string} The IDs of the labels or an empty string if there are no labels.
+	 * @private
+	 */
+	ObjectNumber.prototype._getAriaLabelledBy = function() {
+		var aAriaLabelledBy = this.getAriaLabelledBy(),
+			aLabels = LabelEnablement.getReferencingLabels(this);
+
+		return aAriaLabelledBy.concat(aLabels).join(" ");
 	};
 
 	/**

@@ -1097,7 +1097,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataParentBinding.prototype.getGeneration = function () {
-		return this.bRelative && this.oContext.getGeneration && this.oContext.getGeneration() || 0;
+		return this.bRelative && this.oContext?.getGeneration?.() || 0;
 	};
 
 	/**
@@ -1263,7 +1263,7 @@ sap.ui.define([
 	 * "unchanged" when compared to the given other value.
 	 *
 	 * @param {string} sName - The parameter's name
-	 * @param {any} vOtherValue - The parameter's other value
+	 * @param {any} [vOtherValue] - The parameter's other value
 	 * @returns {boolean} Whether the parameter is "unchanged"
 	 *
 	 * @private

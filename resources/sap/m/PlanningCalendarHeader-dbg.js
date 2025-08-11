@@ -64,6 +64,10 @@ function(
 	// shortcut for sap.m.ToolbarDesign
 	var ToolbarDesign = library.ToolbarDesign;
 
+	// shortcut for sap.ui.core.TitleLevel
+	var TitleLevel = coreLibrary.TitleLevel;
+
+
 	/**
 	 * Constructor for a new <code>PlanningCalendarHeader</code>.
 	 *
@@ -102,7 +106,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @constructor
 	 * @private
@@ -145,6 +149,24 @@ function(
 				 * @since 1.110.0
 				 */
 				calendarWeekNumbering : { type : "sap.base.i18n.date.CalendarWeekNumbering", group : "Appearance", defaultValue: null},
+
+				/**
+				 * Defines the semantic level of the title.
+				 * This information is e.g. used by assistive technologies like screenreaders to create a hierarchical site map for faster navigation.
+				 * Depending on this setting either an HTML h1-h6 element is used or when using level <code>Auto</code> no explicit level information is written (HTML5 header element).
+				 * This property does not influence the style of the control. Use the property <code>titleStyle</code> for this purpose instead.
+				 *
+				 * <b>Note:</b> this property will be overridden if there is title element associated and it has <code>level</code> property set.
+				 */
+				level : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : TitleLevel.Auto},
+
+				/**
+				 * Defines the style of the title.
+				 * When using the <code>Auto</code> styling, the appearance of the title depends on the current position of the title (e.g. inside a <code>Toolbar</code>).
+				 * This default behavior can be overridden by setting a different style explicitly.
+				 * The actual appearance of the title and the different styles always depends on the theme being used.
+				 */
+				titleStyle : {type : "sap.ui.core.TitleLevel", group : "Appearance", defaultValue : TitleLevel.Auto},
 
 				/**
 				 * If set, the calendar type is used for display.
@@ -405,9 +427,6 @@ function(
 	PlanningCalendarHeader.prototype.exit = function () {
 		this._getActionsToolbar().removeAllContent();
 		if (this._oTitle) {
-			if (this._oToolbarAfterRenderingDelegate) {
-				this._oTitle.removeDelegate(this._oToolbarAfterRenderingDelegate);
-			}
 			this._oTitle.destroy();
 			this._oTitle = null;
 		}
@@ -450,21 +469,22 @@ function(
 	PlanningCalendarHeader.prototype.setTitle = function (sTitle) {
 		const oInnerTitle = this._getOrCreateTitleControl();
 		oInnerTitle.setText(sTitle).setVisible(!!sTitle);
-		if (this._oToolbarAfterRenderingDelegate) {
-			oInnerTitle.removeDelegate(this._oToolbarAfterRenderingDelegate);
-		}
-		this._oToolbarAfterRenderingDelegate = {
-			onAfterRendering: function () {
-				const oTitle = this.getActions().find((oAction) => oAction.isA("sap.m.Title"));
-				const oTitleDomRef = this.getDomRef().querySelector(`[data-sap-ui='${oInnerTitle.getId()}']`);
-				if (oTitle && oTitleDomRef) {
-					oTitleDomRef.setAttribute("id", oTitle.getId());
-				}
-			}
-		};
 
-		oInnerTitle.addDelegate(this._oToolbarAfterRenderingDelegate, this);
 		return this.setProperty("title", sTitle);
+	};
+
+	PlanningCalendarHeader.prototype.setLevel = function (eLevel) {
+		const oInnerTitle = this._getOrCreateTitleControl();
+		oInnerTitle.setLevel(eLevel);
+
+		return this.setProperty("level", eLevel);
+	};
+
+	PlanningCalendarHeader.prototype.setTitleStyle = function (eTitleStyle) {
+		const oInnerTitle = this._getOrCreateTitleControl();
+		oInnerTitle.setTitleStyle(eTitleStyle);
+
+		return this.setProperty("titleStyle", eTitleStyle);
 	};
 
 	PlanningCalendarHeader.prototype.addAction = function (oAction) {

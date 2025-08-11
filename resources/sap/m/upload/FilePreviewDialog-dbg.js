@@ -71,7 +71,7 @@ sap.ui.define([
 	 * @constructor
 	 * @public
 	 * @since 1.120
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @extends sap.ui.core.Element
 	 * @name sap.m.upload.FilePreviewDialog
 	 */
@@ -502,7 +502,7 @@ sap.ui.define([
 				content: this._oCarousel,
 				horizontalScrolling: false,
 				verticalScrolling: false,
-				contentWidth: "auto",
+				contentWidth: "100%",
 				contentHeight: "80vh",
 				buttons: [
 					this.getAdditionalFooterButtons(),

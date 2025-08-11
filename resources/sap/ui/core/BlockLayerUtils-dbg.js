@@ -151,7 +151,7 @@ sap.ui.define([
 	function fnAddHTML (oBlockSection, sBlockedLayerId) {
 		var oContainer = document.createElement("div");
 		oContainer.id = sBlockedLayerId;
-		oContainer.className = "sapUiBlockLayer ";
+		oContainer.classList.add("sapUiBlockLayer", "sapUiSkipFocusFail");
 
 		// Make the blockLayer tabbable
 		oContainer.setAttribute("tabindex", "0");
@@ -270,7 +270,7 @@ sap.ui.define([
 			var oBlockSpan = document.createElement("span");
 
 			oBlockSpan.setAttribute("tabindex", 0);
-			oBlockSpan.classList.add("sapUiBlockLayerTabbable");
+			oBlockSpan.classList.add("sapUiBlockLayerTabbable", "sapUiSkipFocusFail");
 			oBlockSpan.addEventListener('focusin', fnRedirectFocus);
 
 			return oBlockSpan;

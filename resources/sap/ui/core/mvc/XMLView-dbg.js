@@ -17,6 +17,7 @@ sap.ui.define([
 	"sap/base/util/LoaderExtensions",
 	"sap/base/util/merge",
 	"sap/ui/base/ManagedObject",
+	"sap/ui/base/OwnStatics",
 	"sap/ui/core/Core",
 	"sap/ui/core/Control",
 	"sap/ui/core/RenderManager",
@@ -40,6 +41,7 @@ sap.ui.define([
 		LoaderExtensions,
 		merge,
 		ManagedObject,
+		OwnStatics,
 		Core,
 		Control,
 		RenderManager,
@@ -52,6 +54,8 @@ sap.ui.define([
 		jQuery
 	) {
 	"use strict";
+
+	const { runWithPreprocessors } = OwnStatics.get(ManagedObject);
 
 	// actual constants
 	var RenderPrefixes = RenderManager.RenderPrefixes,
@@ -113,7 +117,7 @@ sap.ui.define([
 	 * bound content aggregation. An error will be thrown when the above combination is detected.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -737,7 +741,7 @@ sap.ui.define([
 		// XMLView special logic for asynchronous template parsing, when component loading is async but
 		// instance creation is sync.
 		function fnRunWithPreprocessor(fn) {
-			return ManagedObject.runWithPreprocessors(fn, {
+			return runWithPreprocessors(fn, {
 				settings: that._fnSettingsPreprocessor
 			});
 		}

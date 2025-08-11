@@ -5,8 +5,8 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/library"
-], function (flLibrary) {
+	"sap/ui/fl/changeHandler/condenser/Classification"
+], function (Classification) {
 	"use strict";
 
 	/**
@@ -14,7 +14,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.m.changeHandler.SelectIconTabBarFilter
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @since 1.96
 	 * @private
 	 */
@@ -90,8 +90,8 @@ sap.ui.define([
 	SelectIconTabBarFilter.getCondenserInfo = function (oChange) {
 		return {
 			affectedControl: oChange.getSelector(),
-			classification: flLibrary.condenser.Classification.LastOneWins,
-			uniqueKey: oChange.getContent().selectedKey
+			classification: Classification.LastOneWins,
+			uniqueKey: "selectIconTabBarFilter"
 		};
 	};
 

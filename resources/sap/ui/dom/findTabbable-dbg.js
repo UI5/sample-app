@@ -234,7 +234,7 @@ sap.ui.define([
 				};
 			}
 
-			if (jQuery.expr.pseudos.sapTabbable(oNextElement)) {
+			if (jQuery.expr.pseudos.sapTabbable(oNextElement) && !oNextElement.closest(".sapUiSkipFocusFail")) {
 				return {
 					element: oNextElement,
 					startOver: bStartOver

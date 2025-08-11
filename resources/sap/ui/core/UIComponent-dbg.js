@@ -7,6 +7,7 @@
 // Provides base class sap.ui.core.Component for all components
 sap.ui.define([
 	'../base/ManagedObject',
+	'../base/OwnStatics',
 	'./Component',
 	'./ComponentHooks',
 	'./Element',
@@ -22,6 +23,7 @@ sap.ui.define([
 ],
 	function(
 		ManagedObject,
+		OwnStatics,
 		Component,
 		ComponentHooks,
 		Element,
@@ -36,6 +38,8 @@ sap.ui.define([
 		Log
 	) {
 	"use strict";
+
+	const { runWithPreprocessors } = OwnStatics.get(ManagedObject);
 
 	/**
 	 * As <code>UIComponent</code> is an abstract base class for UI components, applications should not call the constructor.
@@ -63,7 +67,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.138.0
+	 * @version 1.139.0
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 */
@@ -352,7 +356,7 @@ sap.ui.define([
 
 		// create the content
 		this.runAsOwner(function() {
-			ManagedObject.runWithPreprocessors(function() {
+			runWithPreprocessors(function() {
 				vRootControl = that.createContent();
 			}, oPreprocessors);
 		});

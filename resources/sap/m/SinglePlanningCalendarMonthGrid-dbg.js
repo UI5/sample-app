@@ -99,7 +99,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.138.0
+		 * @version 1.139.0
 		 *
 		 * @constructor
 		 * @private
@@ -1617,7 +1617,16 @@ sap.ui.define([
 
 		SinglePlanningCalendarMonthGrid.prototype._isNonWorkingDay = function(oCalendarDate) {
 			const aSpecialDates = this._getSpecialDates().filter((oDateRange) => {
-				return oDateRange.getStartDate() && CalendarDate.fromLocalJSDate(oDateRange.getStartDate()).isSame(oCalendarDate);
+				const oRangeStartDate = oDateRange.getStartDate(),
+					oRangeEndDate = oDateRange.getEndDate();
+
+				if (oRangeStartDate && oRangeEndDate) {
+					return CalendarUtils._isBetween(oCalendarDate, CalendarDate.fromLocalJSDate(oRangeStartDate), CalendarDate.fromLocalJSDate(oRangeEndDate), true);
+				} else if (oRangeStartDate) {
+					return CalendarDate.fromLocalJSDate(oRangeStartDate).isSame(oCalendarDate);
+				}
+
+				return false;
 			});
 			const sType = aSpecialDates.length > 0 && aSpecialDates[0].getType();
 			const sSecondaryType =  aSpecialDates.length > 0 && aSpecialDates[0].getSecondaryType();

@@ -83,7 +83,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @constructor
 	 * @public
@@ -703,7 +703,7 @@ sap.ui.define([
 	Tokenizer.prototype._getPixelWidth = function ()  {
 		var sMaxWidth = this.getMaxWidth(),
 			iTokenizerWidth,
-			oDomRef = this.getFocusDomRef(),
+			oDomRef = this.getDomRef("inner") || this.getDomRef(),
 			iPaddingLeft;
 
 		if (!oDomRef) {

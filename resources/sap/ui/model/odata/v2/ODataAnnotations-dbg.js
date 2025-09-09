@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Annotation loader for OData V2 services
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @public
 	 * @since 1.37.0

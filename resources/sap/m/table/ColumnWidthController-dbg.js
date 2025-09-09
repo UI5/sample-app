@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.SelectionController
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @public
 	 * @alias sap.m.table.ColumnWidthController

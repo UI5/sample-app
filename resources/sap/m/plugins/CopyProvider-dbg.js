@@ -37,7 +37,7 @@ sap.ui.define(["./PluginBase", "sap/base/Log", "sap/base/strings/formatMessage",
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -98,6 +98,9 @@ sap.ui.define(["./PluginBase", "sap/base/Log", "sap/base/strings/formatMessage",
 			 * Determines whether unselected rows that are located between the selected rows are copied to the clipboard as an empty row.
 			 *
 			 * This can be useful for maintaining the original structure of the data when it is pasted into a new location (e.g. spreadsheets).
+			 *
+			 * <b>Note:</b> Sparse copying must not be enabled in combination with <code>sap.ui.table.plugins.ODataV4MultiSelection</code> or the
+			 * <code>sap.ui.mdc.Table</code> with the <code>sap.ui.mdc.odata.v4.TableDelegate</code>.
 			 */
 			copySparse: { type: "boolean", defaultValue: false, invalidate: false },
 

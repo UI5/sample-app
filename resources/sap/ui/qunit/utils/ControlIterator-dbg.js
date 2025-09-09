@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -63,7 +63,6 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 
 	var aControlsThatCannotBeRenderedGenerically = [
 		"sap.chart.Chart",
-		"sap.m.ColumnHeaderPopover",
 		"sap.m.FacetFilterItem",
 		"sap.m.internal.NumericInput",
 		"sap.m.IconTabBarSelectList",

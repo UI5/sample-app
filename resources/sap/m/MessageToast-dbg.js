@@ -76,7 +76,7 @@ sap.ui.define([
 		 * Note that the width can be customized up to a maximum of 15rem.
 		 *
 		 * @author SAP SE
-		 * @version 1.139.0
+		 * @version 1.140.0
 		 *
 		 * @namespace
 		 * @public

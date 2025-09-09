@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -758,6 +758,11 @@ sap.ui.define([
 		this.getModel(this.LOCALIZATION_MODEL).setProperty("/showSelectedText", this._getResourceText("p13n.SHOW_SELECTED"));
 		this.getModel(this.LOCALIZATION_MODEL).setProperty("/hideDescriptionsText", this._getResourceText("p13n.HIDE_DESCRIPTIONS"));
 		this.getModel(this.LOCALIZATION_MODEL).setProperty("/fieldColumn", this._getResourceText("p13n.DEFAULT_DESCRIPTION"));
+	};
+
+	SelectionPanel.prototype._onSelectionChange = function(oEvent) {
+		BasePanel.prototype._onSelectionChange.apply(this, arguments);
+		this._updateCount();
 	};
 
 	SelectionPanel.prototype.exit = function() {

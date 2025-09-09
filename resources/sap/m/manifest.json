@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.139.0"
+      "version": "1.140.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -34,17 +34,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.139",
+      "minUI5Version": "1.140",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.139.0"
+          "minVersion": "1.140.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.139.0",
+          "minVersion": "1.140.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.139.0",
+          "minVersion": "1.140.0",
           "lazy": true
         }
       }
@@ -123,7 +123,6 @@
           "sap.m.Breadcrumbs",
           "sap.m.Carousel",
           "sap.m.CheckBox",
-          "sap.m.ColumnHeaderPopover",
           "sap.m.ColumnListItem",
           "sap.m.ColorPalette",
           "sap.m.ColorPalettePopover",
@@ -312,10 +311,6 @@
           "sap.m.BadgeCustomData",
           "sap.m.CarouselLayout",
           "sap.m.Column",
-          "sap.m.ColumnPopoverActionItem",
-          "sap.m.ColumnPopoverCustomItem",
-          "sap.m.ColumnPopoverItem",
-          "sap.m.ColumnPopoverSortItem",
           "sap.m.ContentConfig",
           "sap.m.DynamicDateOption",
           "sap.m.DynamicDateValueHelpUIType",
@@ -506,6 +501,7 @@
           "sap.m.SelectListKeyboardNavigationMode",
           "sap.m.SelectDialogInitialFocus",
           "sap.m.SelectType",
+          "sap.m.SelectTwoColumnSeparator",
           "sap.m.Size",
           "sap.m.SplitAppMode",
           "sap.m.StandardDynamicDateRangeKeys",

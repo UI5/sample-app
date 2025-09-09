@@ -14,7 +14,9 @@ sap.ui.define([], function () {
 
 	BaseHeaderRenderer.render = function (oRm, oHeader) {
 		const oToolbar = oHeader.getToolbar();
-		const oError = oHeader.getAggregation("_error");
+		const oBindingInfos = oHeader.mBindingInfos;
+		const bHasStatus = oHeader.getStatusVisible();
+		const bHasDataTimestamp = oHeader.getDataTimestamp() || oBindingInfos.dataTimestamp;
 		const bHasNumericPart = this.hasNumericPart(oHeader);
 
 		oRm.openStart("div", oHeader)
@@ -34,13 +36,47 @@ sap.ui.define([], function () {
 			oRm.class("sapFCardHeaderHasToolbar");
 		}
 
+		if (bHasStatus || bHasDataTimestamp) {
+			oRm.class("sapFCardHeaderHasStatusTimeStamp");
+		}
+
 		if (!bHasNumericPart && !oHeader.getInfoSection().length) {
 			oRm.class("sapFCardHeaderMainPartOnly");
 		}
 
 		oRm.openEnd();
 
+		oRm.openStart("div", oHeader.getId() + "-mainWrapper")
+			.class("sapFCardHeaderMainWrapper")
+			.class("sapFCardHeaderFocusable")
+			.openEnd();
+
+			this.renderMainWrapperContent(oRm, oHeader);
+
+			oRm.close("div");
+
+		oRm.close("div");
+	};
+
+	BaseHeaderRenderer.renderHeaderAttributes = function (oRm, oHeader) { };
+
+	BaseHeaderRenderer.renderMainWrapperContent = function (oRm, oHeader) {
+		const oError = oHeader.getAggregation("_error");
+		const oToolbar = oHeader.getToolbar();
+		const bHasNumericPart = this.hasNumericPart(oHeader);
+		const oBindingInfos = oHeader.mBindingInfos;
+		const bHasToolbar = oToolbar && oToolbar.getVisible();
+		const bHasStatus = oHeader.getStatusVisible() && oHeader.getStatusText();
+		const bHasDataTimestamp = oHeader.getDataTimestamp() || oBindingInfos.dataTimestamp;
+
+		oRm.openStart("div").class("sapFCardHeaderTopRow").openEnd();
 		this.renderMainPart(oRm, oHeader);
+
+		if (!oError && (bHasToolbar || bHasStatus || bHasDataTimestamp)) {
+			this._renderToolbar(oRm, oToolbar, oHeader);
+		}
+
+		oRm.close("div"); // .sapFCardHeaderTopRow
 
 		if (!oError) {
 			this._renderInfoSections(oRm, oHeader);
@@ -49,15 +85,7 @@ sap.ui.define([], function () {
 		if (bHasNumericPart && !oError) {
 			this.renderNumericPart(oRm, oHeader);
 		}
-
-		if (oToolbar && !oError) {
-			this._renderToolbar(oRm, oToolbar);
-		}
-
-		oRm.close("div");
 	};
-
-	BaseHeaderRenderer.renderHeaderAttributes = function (oRm, oHeader) { };
 
 	BaseHeaderRenderer.renderMainPart = function (oRm, oHeader) {
 		const bUseTileLayout = oHeader.getProperty("useTileLayout");
@@ -71,8 +99,7 @@ sap.ui.define([], function () {
 			oRm.openStart("div", oHeader.getId() + "-focusable");
 		}
 
-		oRm.class("sapFCardHeaderMainPart")
-			.class("sapFCardHeaderFocusable");
+		oRm.class("sapFCardHeaderMainPart");
 
 		if (oHeader.isFocusable()) {
 			oRm.attr("tabindex", "0");
@@ -143,15 +170,13 @@ sap.ui.define([], function () {
 		this.renderMainPartSecondLine(oRm, oHeader);
 
 		oRm.close("div");
-
+		this._renderStatusWrapper(oRm, oHeader);
 		this.renderAvatar(oRm, oHeader);
 	};
 
 	BaseHeaderRenderer.renderMainPartFirstLine = function (oRm, oHeader) {
 		const oTitle = oHeader.getAggregation("_title");
 		const oBindingInfos = oHeader.mBindingInfos;
-		const sStatus = oHeader.getStatusText();
-		const sId = oHeader.getId();
 
 		if (oTitle || oBindingInfos.title) {
 			oRm.openStart("div")
@@ -164,19 +189,6 @@ sap.ui.define([], function () {
 
 			oRm.renderControl(oTitle);
 
-			if (sStatus && oHeader.getStatusVisible()) {
-				oRm.openStart("span", sId + "-status")
-					.class("sapFCardStatus");
-
-				if (oBindingInfos.statusText) {
-					oRm.class("sapFCardHeaderItemBinded");
-				}
-
-				oRm.openEnd()
-					.text(sStatus)
-					.close("span");
-			}
-
 			oRm.close("div"); // sapFCardHeaderTextFirstLine
 		}
 	};
@@ -184,17 +196,11 @@ sap.ui.define([], function () {
 	BaseHeaderRenderer.renderMainPartSecondLine = function (oRm, oHeader) {
 		const oBindingInfos = oHeader.mBindingInfos;
 		const bHasSubtitle = oHeader.getSubtitle() || oBindingInfos.subtitle;
-		const oDataTimestamp = oHeader.getAggregation("_dataTimestamp");
-		const bHasDataTimestamp = oHeader.getDataTimestamp() || oBindingInfos.dataTimestamp;
 		const oSubtitle = oHeader.getAggregation("_subtitle");
 
-		if (bHasSubtitle || bHasDataTimestamp) {
+		if (bHasSubtitle ) {
 			oRm.openStart("div")
 				.class("sapFCardHeaderTextSecondLine");
-
-			if (bHasDataTimestamp) {
-				oRm.class("sapFCardHeaderLineIncludesDataTimestamp");
-			}
 
 			oRm.openEnd();
 
@@ -205,10 +211,6 @@ sap.ui.define([], function () {
 				}
 
 				oRm.renderControl(oSubtitle);
-			}
-
-			if (bHasDataTimestamp) {
-				oRm.renderControl(oDataTimestamp);
 			}
 
 			oRm.close("div"); //closes sapFCardHeaderTextSecondLine
@@ -285,14 +287,60 @@ sap.ui.define([], function () {
 		oRm.attr("draggable", "false");
 	};
 
-	BaseHeaderRenderer._renderToolbar = function (oRm, oToolbar) {
-		oRm.openStart("div")
-			.class("sapFCardHeaderToolbarCont")
-			.openEnd();
+	BaseHeaderRenderer._renderToolbar = function (oRm, oToolbar, oHeader) {
+		oRm.openStart("div");
+		oRm.class("sapFCardHeaderToolbarCont");
+
+		if (oHeader.isInteractive()) {
+			oRm.class("sapFCardSectionClickable");
+		}
+
+		oRm.openEnd();
 
 		oRm.renderControl(oToolbar);
+		this._renderStatusWrapper(oRm, oHeader);
 
 		oRm.close("div");
+	};
+
+	BaseHeaderRenderer._renderStatusWrapper = function (oRm, oHeader) {
+		const oBindingInfos = oHeader.mBindingInfos;
+		const sStatus = oHeader.getStatusText();
+		const sId = oHeader.getId();
+		const oDataTimestamp = oHeader.getAggregation("_dataTimestamp");
+		const bHasDataTimestamp = oHeader.getDataTimestamp() || oBindingInfos.dataTimestamp;
+
+		if (!bHasDataTimestamp && !sStatus) {
+			return;
+		}
+
+		oRm.openStart("div", sId + "-wrapper-status")
+			.class("sapFCardStatusWrapper");
+
+		if (bHasDataTimestamp) {
+			oRm.class("sapFCardHeaderLineIncludesDataTimestamp");
+		}
+
+		oRm.openEnd();
+
+		if (sStatus && oHeader.getStatusVisible()) {
+			oRm.openStart("span", sId + "-status")
+				.class("sapFCardStatus");
+
+			if (oBindingInfos.statusText) {
+				oRm.class("sapFCardHeaderItemBinded");
+			}
+
+			oRm.openEnd()
+				.text(sStatus)
+				.close("span");
+		}
+
+		if (bHasDataTimestamp) {
+			oRm.renderControl(oDataTimestamp);
+		}
+
+		oRm.close("div"); //sapFCardStatusWrapper
 	};
 
 	BaseHeaderRenderer._renderInfoSections = function (oRm, oHeader) {

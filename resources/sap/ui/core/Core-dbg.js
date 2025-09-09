@@ -118,7 +118,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.139.0";
+	const sVersion = "1.140.0";
 
 	/**
 	 * The buildinfo.
@@ -443,7 +443,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -681,15 +681,6 @@ sap.ui.define([
 					this.aLibs.splice(i,1);
 				}
 				this.aLibs.unshift("sap.ui.core");
-			}
-
-			/**
-			 * enable LessSupport if specified in configuration
-			 * @deprecated As of Version 1.120
-			 */
-			if (BaseConfig.get({name: "sapUiXxLesssupport", type: BaseConfig.Type.Boolean}) && !this.aModules.includes("sap.ui.core.plugin.LessSupport")) {
-				Log.info("Including LessSupport into declared modules");
-				this.aModules.push("sap.ui.core.plugin.LessSupport");
 			}
 
 			var sPreloadMode = Library.getPreloadMode();

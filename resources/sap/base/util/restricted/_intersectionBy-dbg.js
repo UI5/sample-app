@@ -10,7 +10,7 @@
  * @alias module:sap/base/util/restricted/_intersectionBy
  * @author SAP SE
  * @since 1.71
- * @version 1.139.0
+ * @version 1.140.0
  * @private
  * @ui5-restricted
 */

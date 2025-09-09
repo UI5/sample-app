@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/base/Object'],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @public
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 */
 	var Type = BaseObject.extend("sap.ui.model.Type", /** @lends sap.ui.model.Type.prototype */ {
 

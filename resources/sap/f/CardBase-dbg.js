@@ -41,7 +41,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @constructor
 	 * @public
@@ -310,11 +310,23 @@ sap.ui.define([
 		return this._ariaText.getId();
 	};
 
+	/**
+	 * @private
+	 * @ui5-restricted sap.f
+	 * @returns {boolean} hook to determine if the card is a tile variant
+	 */
+	CardBase.prototype.isTileDisplayVariant = function () {
+		return false;
+	};
+
 	CardBase.prototype._getAriaDescribedByIds = function () {
 		const bHasCardBadgeCustomData = this._getCardBadgeCustomData().length > 0;
 		const aIds = [];
 
-		aIds.push(this._describedByCardTypeText.getId());
+
+		if (!this.isTileDisplayVariant()) {
+			aIds.push(this._describedByCardTypeText.getId());
+		}
 
 		if (this.isInteractive() && this.isRoleListItem()) {
 			aIds.push(this._describedByInteractiveText.getId());

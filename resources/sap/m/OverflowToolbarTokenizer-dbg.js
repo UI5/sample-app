@@ -51,7 +51,7 @@ sap.ui.define([
 	 * @implements sap.m.IOverflowToolbarFlexibleContent
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @constructor
 	 * @public
@@ -242,10 +242,6 @@ sap.ui.define([
 
 	OverflowToolbarTokenizer.prototype._getLabelWidth = function() {
 		return this.getAggregation("label")?.getDomRef()?.offsetWidth || 0;
-	};
-
-	OverflowToolbarTokenizer.prototype.getFocusDomRef = function ()  {
-		return this.getDomRef("inner");
 	};
 
 	OverflowToolbarTokenizer.prototype.onfocusin = function (oEvent) {

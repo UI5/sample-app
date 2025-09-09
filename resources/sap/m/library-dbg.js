@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.139.0",
+		version: "1.140.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -181,6 +181,7 @@ sap.ui.define([
 			"sap.m.SelectListKeyboardNavigationMode",
 			"sap.m.SelectDialogInitialFocus",
 			"sap.m.SelectType",
+			"sap.m.SelectTwoColumnSeparator",
 			"sap.m.Size",
 			"sap.m.SplitAppMode",
 			"sap.m.StandardDynamicDateRangeKeys",
@@ -253,7 +254,6 @@ sap.ui.define([
 			"sap.m.Breadcrumbs",
 			"sap.m.Carousel",
 			"sap.m.CheckBox",
-			"sap.m.ColumnHeaderPopover",
 			"sap.m.ColumnListItem",
 			"sap.m.ColorPalette",
 			"sap.m.ColorPalettePopover",
@@ -443,10 +443,6 @@ sap.ui.define([
 			"sap.m.BadgeCustomData",
 			"sap.m.CarouselLayout",
 			"sap.m.Column",
-			"sap.m.ColumnPopoverActionItem",
-			"sap.m.ColumnPopoverCustomItem",
-			"sap.m.ColumnPopoverItem",
-			"sap.m.ColumnPopoverSortItem",
 			"sap.m.ContentConfig",
 			"sap.m.DynamicDateOption",
 			"sap.m.DynamicDateValueHelpUIType",
@@ -4814,6 +4810,32 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * Enumeration for different separators for two columns layout when Select is in read-only mode.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.140
+	 */
+	thisLib.SelectTwoColumnSeparator = {
+		/**
+		 * Will show N-dash(–) as separator on two columns layout when Select is in read-only mode.
+		 * @public
+		 */
+		Dash : "Dash",
+
+		/**
+		 * Will show bullet(·) as separator on two columns layout when Select is in read-only mode.
+		 * @public
+		 */
+		Bullet : "Bullet",
+
+		/**
+		 * Will show vertical line(|) as separator on two columns layout when Select is in read-only mode.
+		 * @public
+		 */
+		VerticalLine : "VerticalLine"
+	};
 
 	/**
 	 * The mode of SplitContainer or SplitApp control to show/hide the master area.
@@ -6798,6 +6820,7 @@ sap.ui.define([
 	DataType.registerEnum("sap.m.SelectionDetailsActionLevel", thisLib.SelectionDetailsActionLevel);
 	DataType.registerEnum("sap.m.SelectListKeyboardNavigationMode", thisLib.SelectListKeyboardNavigationMode);
 	DataType.registerEnum("sap.m.SelectType", thisLib.SelectType);
+	DataType.registerEnum("sap.m.SelectTwoColumnSeparator", thisLib.SelectTwoColumnSeparator);
 	DataType.registerEnum("sap.m.Size", thisLib.Size);
 	DataType.registerEnum("sap.m.SplitAppMode", thisLib.SplitAppMode);
 	DataType.registerEnum("sap.m.StandardDynamicDateRangeKeys", thisLib.StandardDynamicDateRangeKeys);

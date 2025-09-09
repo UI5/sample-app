@@ -288,7 +288,7 @@ sap.ui.define([
 		 * is opened. The dialog is closed via a date time period value selection or by pressing the "Cancel" button.
 		 *
 		 * @author SAP SE
-		 * @version 1.139.0
+		 * @version 1.140.0
 		 *
 		 * @constructor
 		 * @public
@@ -1145,7 +1145,9 @@ sap.ui.define([
 			this._oInput.addSuggestionItem(oItem);
 
 			// Called after addSuggestionItem because the suggested items are needed in _getDatesLabelFormatter.
-			oItem.setAdditionalText(this._getDatesLabelFormatter().format(aResultingDates));
+			if (aResultingDates.length > 0) {
+				oItem.setAdditionalText(this._getDatesLabelFormatter().format(aResultingDates));
+			}
 		};
 
 		/**
@@ -1616,6 +1618,8 @@ sap.ui.define([
 					showSeparators: ListSeparators.None,
 					mode: ListMode.SingleSelectMaster
 				});
+
+				this._oOptionsList.applyAriaRole("listbox");
 			}
 
 			if (!this._oNavContainer) {

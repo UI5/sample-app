@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 * @since 1.34
 	 *
 	 * @public
@@ -274,6 +274,9 @@ sap.ui.define([
 		this.toggleStyleClass("sapMSTPhone",Device.system.phone);
 		if (bIsScreenLarge) {
 			this.getTiles().forEach((oTile) => oTile._setHeaderContentBackgroundImage());
+		}
+		if (this.getDomRef()?.offsetHeight < 180) {
+			this.addStyleClass("sapMSTSmallScreen");
 		}
 	};
 

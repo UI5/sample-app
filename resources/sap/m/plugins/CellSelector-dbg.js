@@ -10,8 +10,9 @@ sap.ui.define([
 	"sap/ui/events/KeyCodes",
 	"sap/ui/core/Element",
 	"sap/m/library",
+	"sap/ui/core/Lib",
 	"sap/ui/core/InvisibleRenderer"
-], function (PluginBase, Localization, deepEqual, KeyCodes, Element, library, InvisibleRenderer) {
+], function (PluginBase, Localization, deepEqual, KeyCodes, Element, library, Lib, InvisibleRenderer) {
 	"use strict";
 
 	const ListMode = library.ListMode;
@@ -63,7 +64,7 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 * @author SAP SE
 	 *
 	 * @public
@@ -1183,10 +1184,20 @@ sap.ui.define([
 			onActivate: function(oTable, oPlugin) {
 				oTable.attachEvent("_change", oPlugin, this._onPropertyChange);
 				oTable.attachEvent("EventHandlerChange", oPlugin, this._onEventHandlerChange);
+
+				this._getSelectionTexts = oTable._getAccExtension().getSelectionTexts;
+				oTable._getAccExtension().getSelectionTexts = function() {
+					return {
+						rowSelect: Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_SELECT_KEY_ALTERNATIVE"),
+						rowDeselect: Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_DESELECT_KEY_ALTERNATIVE")
+					};
+				};
 			},
 			onDeactivate: function(oTable, oPlugin) {
 				oTable.detachEvent("_change", this._onPropertyChange);
 				oTable.detachEvent("EventHandlerChange", this._onEventHandlerChange);
+
+				oTable._getAccExtension().getSelectionTexts = this._getSelectionTexts;
 			},
 			_onPropertyChange: function(oEvent, oPlugin) {
 				oEvent.getParameter("name") == "selectionBehavior" && oPlugin._onSelectableChange();

@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.m.NavContainer
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @constructor
 	 * @public
@@ -171,9 +171,7 @@ sap.ui.define([
 		Mobile.init({
 			viewport: !this._debugZoomAndScroll,
 			statusBar: "default",
-			hideBrowser: true,
-			preventScroll: !this._debugZoomAndScroll,
-			rootId: this.getId()
+			preventScroll: !this._debugZoomAndScroll
 		});
 		/**
 		 * @deprecated As of version 1.20.0, <code>orientationChange</code> event is deprecated

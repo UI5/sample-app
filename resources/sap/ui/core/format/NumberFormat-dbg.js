@@ -1253,7 +1253,7 @@ sap.ui.define([
 	 * @ui5-restricted sap.ui.model.odata.type
 	 */
 	NumberFormat.getDefaultUnitPattern = function(sShortName) {
-		return "{0} " + sShortName;
+		return "{0}\u00a0" + sShortName;
 	};
 
 	/**

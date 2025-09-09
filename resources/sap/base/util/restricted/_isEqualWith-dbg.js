@@ -10,7 +10,7 @@
  * @alias module:sap/base/util/restricted/_isEqualWith
  * @author SAP SE
  * @since 1.80
- * @version 1.139.0
+ * @version 1.140.0
  * @private
  * @ui5-restricted
 */

@@ -77,7 +77,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 *
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 */
 	var AddSimpleFormField = BaseAddViaDelegate.createAddViaDelegateChangeHandler({
 		addProperty: function(mPropertyBag) {

@@ -69,7 +69,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/assert", "sap/base/Log"],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 * @alias sap.ui.core.service.Service
 	 * @abstract
 	 * @private

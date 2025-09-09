@@ -118,7 +118,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.139.0
+		 * @version 1.140.0
 		 *
 		 * @constructor
 		 * @private
@@ -971,7 +971,7 @@ sap.ui.define([
 			if (this._oAppointmentsToRender[sDate]) {
 				this._oAppointmentsToRender[sDate].oAppointmentsList.getIterator().forEach(function(oAppNode) {
 					oAppointment = oAppNode.getData();
-					oAppDomRef = this.getDomRef().querySelector("#" + oAppointment.getId() + "-" + iColumn + "_" + iRow);
+					oAppDomRef = document.getElementById(oAppointment.getId() + "-" + iColumn + "_" + iRow);
 					oAppStartDate = oAppointment.getStartDate();
 					oAppEndDate = oAppointment.getEndDate();
 					bAppStartIsOutsideVisibleStartHour = oColumnStartDateAndHour.getTime() > oAppStartDate.getTime();

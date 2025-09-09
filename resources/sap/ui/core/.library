@@ -6,7 +6,7 @@
   <copyright>OpenUI5
  * (c) Copyright 2025 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</copyright>
-  <version>1.139.0</version>
+  <version>1.140.0</version>
 
   <documentation>The SAPUI5 Core Runtime.
 
@@ -179,7 +179,7 @@
             <pattern>sap/ui/thirdparty/qunit.css</pattern>
             <pattern>sap/ui/thirdparty/qunit.js</pattern>
         </lib>
-        <lib name="qunit-2" displayName="QUnit 2" npmName="n/a" version="2.3.2" hash="9353c076aec5cfaa6d39c867cdeef863" homepage="https://qunitjs.com" id="73555000106100006951">
+        <lib name="qunit-2" displayName="QUnit 2" npmName="n/a" version="2.3.2" hash="312d26d171ddb8528ca708212b3b9140" homepage="https://qunitjs.com" id="73555000106100006951">
             <license url="http://jQuery.org/license" type="MIT" />
             <copyright>jQuery Foundation and other contributors</copyright>
             <pattern>sap/ui/thirdparty/qunit-2.css</pattern>

@@ -133,7 +133,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @constructor
 	 * @public
@@ -1705,7 +1705,11 @@ sap.ui.define([
 	 * @private
 	 */
 	OverflowToolbar._getControlMargins = function (oControl) {
-		return oControl.$().outerWidth(true) - oControl.$().outerWidth();
+		if (oControl.$().length) {
+			return oControl.$().outerWidth(true) - oControl.$().outerWidth();
+		}
+
+		return 0;
 	};
 
 	/**

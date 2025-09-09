@@ -20,7 +20,7 @@ sap.ui.define([
 	 * Holds layout data for an item inside a responsive column layout.
 	 *
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.139.0
+	 * @version 1.140.0
 	 *
 	 * @since 1.72
 	 * @constructor

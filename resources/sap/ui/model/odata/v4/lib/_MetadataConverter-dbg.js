@@ -168,11 +168,13 @@ sap.ui.define([
 
 		switch (sType) {
 			case "AnnotationPath":
+			case "AnyPropertyPath":
+			case "ModelElementPath":
 			case "NavigationPropertyPath":
 			case "Path":
 			case "PropertyPath":
 				sValue = this.resolveAliasInPath(sValue);
-			// falls through
+			// fall through
 			case "Binary":
 			case "Date":
 			case "DateTimeOffset":
@@ -358,6 +360,20 @@ sap.ui.define([
 	 */
 	_MetadataConverter.prototype.postProcessLeaf = function (oElement, _aResult) {
 		return this.getAnnotationValue(oElement.localName, oElement.textContent);
+	};
+
+	/**
+	 * Post-processing of a Neg element within an Annotation element.
+	 *
+	 * @param {Element} _oElement The element
+	 * @param {any[]} aResult The results from child elements
+	 * @returns {object} The value for the JSON
+	 */
+	_MetadataConverter.prototype.postProcessNeg = function (_oElement, aResult) {
+		var oResult = this.oAnnotatable.target;
+
+		oResult.$Neg = aResult[0];
+		return oResult;
 	};
 
 	/**
@@ -816,6 +832,7 @@ sap.ui.define([
 		// All Annotations elements that don't have expressions as child (leaf, non-recursive)
 		oAnnotationLeafConfig = {
 			AnnotationPath : {__postProcessor : $$.postProcessLeaf},
+			AnyPropertyPath : {__postProcessor : $$.postProcessLeaf},
 			Binary : {__postProcessor : $$.postProcessLeaf},
 			Bool : {__postProcessor : $$.postProcessLeaf},
 			Date : {__postProcessor : $$.postProcessLeaf},
@@ -827,6 +844,7 @@ sap.ui.define([
 			Guid : {__postProcessor : $$.postProcessLeaf},
 			Int : {__postProcessor : $$.postProcessLeaf},
 			LabeledElementReference : {__postProcessor : $$.postProcessLabeledElementReference},
+			ModelElementPath : {__postProcessor : $$.postProcessLeaf},
 			NavigationPropertyPath : {__postProcessor : $$.postProcessLeaf},
 			Path : {__postProcessor : $$.postProcessLeaf},
 			PropertyPath : {__postProcessor : $$.postProcessLeaf},
@@ -854,6 +872,7 @@ sap.ui.define([
 			__include : aAnnotatableExpressionInclude
 		};
 		oAnnotationExpressionConfig = {
+			Add : oOperatorConfig,
 			And : oOperatorConfig,
 			Apply : {
 				__processor : $$.processAnnotatableExpression,
@@ -869,10 +888,14 @@ sap.ui.define([
 				__postProcessor : $$.postProcessCollection,
 				__include : aExpressionInclude
 			},
+			Div : oOperatorConfig,
+			DivBy : oOperatorConfig,
 			Eq : oOperatorConfig,
 			Ge : oOperatorConfig,
 			Gt : oOperatorConfig,
+			Has : oOperatorConfig,
 			If : oOperatorConfig,
+			In : oOperatorConfig,
 			IsOf : {
 				__processor : $$.processAnnotatableExpression,
 				__postProcessor : $$.postProcessCastOrIsOf,
@@ -885,16 +908,23 @@ sap.ui.define([
 			},
 			Le : oOperatorConfig,
 			Lt : oOperatorConfig,
+			Mod : oOperatorConfig,
+			Mul : oOperatorConfig,
 			Ne : oOperatorConfig,
-			Null : {
+			Neg : {
 				__processor : $$.processAnnotatableExpression,
-				__postProcessor : $$.postProcessNull,
-				__include : [$$.oAnnotationConfig]
+				__postProcessor : $$.postProcessNeg,
+				__include : aAnnotatableExpressionInclude
 			},
 			Not : {
 				__processor : $$.processAnnotatableExpression,
 				__postProcessor : $$.postProcessNot,
 				__include : aAnnotatableExpressionInclude
+			},
+			Null : {
+				__processor : $$.processAnnotatableExpression,
+				__postProcessor : $$.postProcessNull,
+				__include : [$$.oAnnotationConfig]
 			},
 			Or : oOperatorConfig,
 			Record : {
@@ -907,6 +937,7 @@ sap.ui.define([
 					__include : aAnnotatableExpressionInclude
 				}
 			},
+			Sub : oOperatorConfig,
 			UrlRef : {
 				__postProcessor : $$.postProcessUrlRef,
 				__include : aExpressionInclude

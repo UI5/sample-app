@@ -105,7 +105,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.TreeBinding
 	 * @hideconstructor
 	 * @public
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 */
 	var ODataTreeBinding = TreeBinding.extend("sap.ui.model.odata.v2.ODataTreeBinding", /** @lends sap.ui.model.odata.v2.ODataTreeBinding.prototype */ {
 
@@ -2289,7 +2289,6 @@ sap.ui.define([
 			sAdapterModuleName = "sap/ui/model/odata/ODataTreeBindingAdapter",
 			sMagnitudeAnnotation = "hierarchy-node-descendant-count-for",
 			sPreorderRankAnnotation = "hierarchy-preorder-rank-for",
-			sSiblingRankAnnotation = "hierarchy-sibling-rank-for",
 			that = this;
 
 		if (!this.bHasTreeAnnotations && !this.oNavigationPaths) {
@@ -2313,8 +2312,7 @@ sap.ui.define([
 				each(oProperty.extensions, function(iIndex, oExtension) {
 					sName = oExtension.name;
 					if (oExtension.namespace === that.oModel.oMetadata.mNamespaces["sap"] &&
-							(sName == sMagnitudeAnnotation || sName == sSiblingRankAnnotation
-								|| sName == sPreorderRankAnnotation)) {
+							(sName == sMagnitudeAnnotation || sName == sPreorderRankAnnotation)) {
 						that.oTreeProperties[sName] = oProperty.name;
 					}
 				});
@@ -2331,17 +2329,12 @@ sap.ui.define([
 			if (this.oTreeProperties[sMagnitudeAnnotation]
 					&& this.sOperationMode == OperationMode.Server) {
 				// Add Flat-specific tree properties
-				this.oTreeProperties[sSiblingRankAnnotation] =
-					this.oTreeProperties[sSiblingRankAnnotation]
-					|| (this.mParameters.treeAnnotationProperties
-						&& this.mParameters.treeAnnotationProperties.hierarchySiblingRankFor);
 				this.oTreeProperties[sPreorderRankAnnotation] =
 					this.oTreeProperties[sPreorderRankAnnotation]
 					|| (this.mParameters.treeAnnotationProperties
 						&& this.mParameters.treeAnnotationProperties.hierarchyPreorderRankFor);
 				if (this.mParameters.restoreTreeStateAfterChange) {
-					if (this.oTreeProperties[sSiblingRankAnnotation]
-							&& this.oTreeProperties[sPreorderRankAnnotation]) {
+					if (this.oTreeProperties[sPreorderRankAnnotation]) {
 						this._bRestoreTreeStateAfterChange = true;
 						// Collect entity type key properties
 						this._aTreeKeyProperties = [];
@@ -2350,7 +2343,6 @@ sap.ui.define([
 						}
 					} else {
 						Log.warning("Tree state restoration not possible: Missing annotation "
-							+ "\"hierarchy-sibling-rank-for\" and/or "
 							+ "\"hierarchy-preorder-rank-for\"");
 						this._bRestoreTreeStateAfterChange = false;
 					}

@@ -64,7 +64,7 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @author SAP SE
 	 *
 	 * @public
@@ -180,6 +180,11 @@ sap.ui.define([
 		onsapspace: function(oEvent) {
 			if (isSelectableCell(oEvent.target, this.getConfig("selectableCells"))) {
 				oEvent.preventDefault(); // Prevent default, otherwise m.Table will scroll
+			}
+		},
+		onsapspacemodifiers: function(oEvent) {
+			if (this.getConfig("preventScrollOnShiftSpace", this.getControl())) {
+				oEvent.preventDefault();
 			}
 		},
 		onsapleftmodifiers: function(oEvent) {
@@ -1446,6 +1451,9 @@ sap.ui.define([
 					return;
 				}
 				oBinding.getContexts(Math.max(0, iStartIndex), Math.max(1, iLength), 0, true);
+			},
+			preventScrollOnShiftSpace: function(oTable) {
+				return false;
 			}
 		},
 		"sap.m.Table": {
@@ -1713,6 +1721,9 @@ sap.ui.define([
 						}
 					});
 				}
+			},
+			preventScrollOnShiftSpace: function(oTable) {
+				return oTable.getMode() != "None";
 			}
 		}
 	}, CellSelector);

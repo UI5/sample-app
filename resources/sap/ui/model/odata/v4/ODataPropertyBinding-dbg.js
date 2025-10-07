@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -245,7 +245,7 @@ sap.ui.define([
 	 *   bubbled up to the model
 	 * @param {any} [vValue]
 	 *   The new value obtained from the cache, see {@link #onChange}
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the check is finished, or
 	 *   rejected in case of an error. If the cache is no longer the active cache when the response
 	 *   arrives, that response is ignored almost silently (that is, with a canceled error) and the
@@ -745,7 +745,7 @@ sap.ui.define([
 	 * be updated on the server, an error is logged to the console and added to the message manager
 	 * as a technical message. Unless preconditions fail synchronously, a
 	 * {@link sap.ui.model.odata.v4.ODataModel#event:propertyChange 'propertyChange'} event is
-	 * fired and provides a promise on the outcome of the asynchronous operation. Since 1.122.0
+	 * fired and provides a promise on the outcome of the asynchronous operation. Since 1.122.0,
 	 * this method allows updates to the client-side annotation "@$ui5.context.isSelected". Note:
 	 * Changing the value of a client-side annotation never initiates a PATCH request, no matter
 	 * which <code>sGroupId</code> is given. Thus, it cannot be reverted via {@link #resetChanges}.

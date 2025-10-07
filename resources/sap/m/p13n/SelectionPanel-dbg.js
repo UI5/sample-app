@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -366,7 +366,8 @@ sap.ui.define([
 			items: [
 				oShowSelectedText,
 				oShowSelectedButton
-			]
+			],
+			columnGap: "0.5rem"
 		});
 		oShowSelectedContainer.addStyleClass("sapMSelectionPanelFiltersContainer");
 
@@ -398,7 +399,8 @@ sap.ui.define([
 			items: [
 				oHideDescriptionsText,
 				oHideDescriptionsButton
-			]
+			],
+			columnGap: "0.5rem"
 		});
 		oHideDescriptionsContainer.addStyleClass("sapMSelectionPanelFiltersContainer");
 
@@ -715,7 +717,7 @@ sap.ui.define([
 				this._removeFactoryControl();
 			},
 			updateFinished: () => {
-				if (this._getShowFactory()) {
+				if (this._getShowFactory() && !this._bInactive) {
 					this._addFactoryControl();
 				}
 			}

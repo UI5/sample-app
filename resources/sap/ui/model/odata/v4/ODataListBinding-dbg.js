@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -448,7 +448,7 @@ sap.ui.define([
 	 * If a back-end request fails, the 'dataReceived' event provides an <code>Error</code> in the
 	 * 'error' event parameter.
 	 *
-	 * Since 1.106 this event is bubbled up to the model, unless a listener calls
+	 * Since 1.106, this event is bubbled up to the model, unless a listener calls
 	 * {@link sap.ui.base.Event#cancelBubble oEvent.cancelBubble()}.
 	 *
 	 * @param {sap.ui.base.Event} oEvent
@@ -474,7 +474,7 @@ sap.ui.define([
 	 * for example to switch on a busy indicator. Registered event handlers are called without
 	 * parameters.
 	 *
-	 * Since 1.106 this event is bubbled up to the model, unless a listener calls
+	 * Since 1.106, this event is bubbled up to the model, unless a listener calls
 	 * {@link sap.ui.base.Event#cancelBubble oEvent.cancelBubble()}.
 	 *
 	 * @param {sap.ui.base.Event} oEvent
@@ -839,11 +839,15 @@ sap.ui.define([
 	 * {@link sap.ui.model.odata.v4.Context#requestSideEffects} in the same $batch to refresh the
 	 * complete collection containing the newly created entity.
 	 *
-	 * Since 1.115.0 it is possible to create nested entities in a collection-valued navigation
+	 * Since 1.115.0, it is possible to create nested entities in a collection-valued navigation
 	 * property together with the entity (so-called "deep create"), for example a list of items for
 	 * an order. For this purpose, bind the list relative to a transient context. Calling this
 	 * method then adds a transient entity to the parent's navigation property, which is sent with
 	 * the payload of the parent entity. Such a nested context cannot be inactive.
+	 *
+	 * <b>Caution:</b> Only a single list must be bound to the same collection-valued navigation
+	 * property relative to a transient context. Created data cannot be shared between list
+	 * bindings.
 	 *
 	 * <b>Note:</b> After a successful creation of the main entity the context returned for a
 	 * nested entity is no longer valid. Do not use the
@@ -854,7 +858,7 @@ sap.ui.define([
 	 * of <code>Error</code>, even if the deep create succeeds. This error always has the property
 	 * <code>canceled</code> with the value <code>true</code>.
 	 *
-	 * Since 1.118.0 deep create also supports single-valued navigation properties; no API call is
+	 * Since 1.118.0, deep create also supports single-valued navigation properties; no API call is
 	 * required in this case. Simply bind properties of the related entity relative to a transient
 	 * context. An update to the property adds it to the POST request of the parent entity, and by
 	 * this the create becomes deep.
@@ -908,7 +912,7 @@ sap.ui.define([
 	 *   on the client and requests only data that is missing.
 	 * @param {boolean} [bAtEnd]
 	 *   Whether the entity is inserted at the end of the list. Supported since 1.66.0.
-	 *   Since 1.99.0 the first insertion determines the overall position of created contexts
+	 *   Since 1.99.0, the first insertion determines the overall position of created contexts
 	 *   within the binding's context list. Every succeeding insertion is relative to the created
 	 *   contexts within this list.
 	 * @param {boolean} [bInactive]
@@ -1102,7 +1106,8 @@ sap.ui.define([
 		if (bRefresh) {
 			oCreatePromise = SyncPromise.all([
 				oCreatePromise,
-				this.requestSideEffects(sGroupId, [""])
+				// sGroupId is set -> side-effects refresh
+				this.refreshInternal("", sGroupId, false, true, true)
 			]);
 		}
 
@@ -1144,6 +1149,8 @@ sap.ui.define([
 	 * @returns {boolean}
 	 *   <code>true</code>, if contexts have been created or dropped or <code>isLengthFinal</code>
 	 *   has changed
+	 * @throws {Error}
+	 *   If a created context from a foreign binding is about to be reused
 	 *
 	 * @private
 	 */
@@ -1200,6 +1207,9 @@ sap.ui.define([
 					// created persisted contexts can be restored from their data, for example in
 					// case of Recursive Hierarchy maintenance
 					oContext = _Helper.getPrivateAnnotation(aResults[i], "context");
+					if (oContext.getBinding() !== this) {
+						throw new Error("Cannot share created data between list bindings");
+					}
 					oContext.iIndex = i$skipIndex;
 					// oContext.checkUpdate(); // Note: no changes expected here
 					sContextPath = oContext.getPath();
@@ -1728,7 +1738,7 @@ sap.ui.define([
 	 *   used to expand all levels
 	 * @param {boolean} [bSilent]
 	 *   Whether no ("change") events should be fired
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise that is resolved when the expand is successful and rejected when it fails
 	 * @throws {Error}
 	 *   If the binding's root binding is suspended, if the given context is not part of a
@@ -1794,7 +1804,7 @@ sap.ui.define([
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before a back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
-	 * @returns {sap.ui.base.SyncPromise|Promise}
+	 * @returns {sap.ui.base.SyncPromise<boolean>|Promise<boolean>}
 	 *   A promise that resolves with a boolean indicating whether the binding's contexts have been
 	 *   modified; it rejects when iStart or iLength are negative, or when the request fails, or
 	 *   if this binding is already destroyed when the response arrives
@@ -1858,7 +1868,7 @@ sap.ui.define([
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before a back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise to be resolved with the requested range as described in _Cache#read or with
 	 *   <code>undefined</code> if the context changed before reading; it is rejected to discard a
 	 *   response because the cache is no longer active, in this case the error has the property
@@ -1891,7 +1901,8 @@ sap.ui.define([
 				return oCache.read(iIndex, iLength, iMaximumPrefetchSize, oGroupLock,
 					fnDataRequested, undefined, that.fireSeparateReceived.bind(that)
 				).then(function (oResult) {
-					oResult.$checkStillValid = that.checkSameCache.bind(that, oCache);
+					oResult.$checkStillValid
+						= that.checkSameCache.bind(that, oCache, oResult["@$ui5.resetCount"]);
 
 					return oResult;
 				});
@@ -1967,7 +1978,7 @@ sap.ui.define([
 	 *   that the cache promise is already created when the events are fired.
 	 * @param {string} sStaticFilter
 	 *   The static filter value
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<Array<string|undefined>>}
 	 *   A promise which resolves with an array that consists of three filters where each can be
 	 *   <code>undefined</code>. The first one has to be applied after data aggregation. The second
 	 *   one can simply be applied before data aggregation (which improves performance) because it
@@ -2046,8 +2057,8 @@ sap.ui.define([
 		 * @param {object} mLambdaVariableToPath The map from lambda variable to full path
 		 * @param {boolean} [bWithinAnd] Whether the embedding filter is an 'and'
 		 * @param {boolean} bThese - Whether the special syntax "$these/aggregate(...)" is needed
-		 * @returns {sap.ui.base.SyncPromise} A promise which resolves with the $filter value or
-		 *   rejects with an error if the filter value uses an unknown operator
+		 * @returns {sap.ui.base.SyncPromise<string>} A promise which resolves with the $filter
+		 *   value or rejects with an error if the filter value uses an unknown operator
 		 */
 		function fetchFilter(oFilter, mLambdaVariableToPath, bWithinAnd, bThese) {
 			var sResolvedPath;
@@ -2175,7 +2186,8 @@ sap.ui.define([
 	 * @param {boolean} [bAllowRequest]
 	 *   Whether it is allowed to send a GET request to fetch the parent node's data
 	 * @returns {sap.ui.model.odata.v4.Context|null|undefined|
-	 *     Promise<sap.ui.model.odata.v4.Context>|sap.ui.base.SyncPromise}
+	 *     Promise<sap.ui.model.odata.v4.Context>|
+	 *     sap.ui.base.SyncPromise<sap.ui.model.odata.v4.Context>}
 	 *   <ul>
 	 *     <li> The parent node if already known,
 	 *     <li> <code>null</code> if the given node is a root node and thus has no parent,
@@ -2309,7 +2321,7 @@ sap.ui.define([
 	 *   A property binding which registers itself as listener at the cache
 	 * @param {boolean} [bCached]
 	 *   Whether to return cached values only and not initiate a request
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<any>}
 	 *   A promise on the outcome of the cache's <code>fetchValue</code> call; it is rejected in
 	 *   case cached values are asked for, but not found
 	 *
@@ -3160,8 +3172,8 @@ sap.ui.define([
 
 	/**
 	 * Calls {@link sap.ui.model.odata.v4.Context#setKeepAlive} at the context for the given path
-	 * and returns it. Since 1.100.0 the function always returns such a context. If none exists yet,
-	 * it is created without data and a request for its entity is sent.
+	 * and returns it. Since 1.100.0, the function always returns such a context. If none exists
+	 * yet, it is created without data and a request for its entity is sent.
 	 *
 	 * @param {string} sPath
 	 *   The path of the context to be kept alive
@@ -3938,7 +3950,7 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.v4.ODataBinding#refreshInternal
 	 */
 	ODataListBinding.prototype.refreshInternal = function (sResourcePathPrefix, sGroupId,
-			_bCheckUpdate, bKeepCacheOnError) {
+			_bCheckUpdate, bKeepCacheOnError, bSync) {
 		var that = this;
 
 		// calls refreshInternal on all given bindings and returns an array of promises
@@ -3955,7 +3967,7 @@ sap.ui.define([
 				// another update request in createContexts, when the context for the row is
 				// reused.
 				return oBinding.refreshInternal(sResourcePathPrefix, sGroupId, false,
-					bKeepCacheOnError);
+					bKeepCacheOnError, bSync);
 			});
 		}
 
@@ -3986,7 +3998,7 @@ sap.ui.define([
 					oCache.reset([]);
 				} else {
 					that.fetchCache(that.oContext, false, /*bKeepQueryOptions*/true,
-						sGroupId, bKeepCacheOnError);
+						sGroupId, bKeepCacheOnError, bSync);
 					oKeptElementsPromise = that.refreshKeptElements(sGroupId,
 						/*bIgnorePendingChanges*/ bKeepCacheOnError);
 					if (that.iCurrentEnd > 0) {
@@ -4050,7 +4062,7 @@ sap.ui.define([
 	 *   The effective group ID
 	 * @param {boolean} bIgnorePendingChanges
 	 *   Whether kept elements are refreshed although there are pending changes.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result, or rejected with an error if the
 	 *   refresh fails.
 	 *
@@ -4098,7 +4110,7 @@ sap.ui.define([
 	 *   (since 1.129.0) no dataRequested/dataReceived events are fired in the first place
 	 * @param {boolean} [bWithMessages]
 	 *   Whether the "@com.sap.vocabularies.Common.v1.Messages" path is treated specially
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which resolves without a defined value when the entity is updated in the cache,
 	 *   or rejects if the refresh failed.
 	 * @throws {Error}

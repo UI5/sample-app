@@ -56,7 +56,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @public
@@ -773,15 +773,15 @@ sap.ui.define([
 		if (this.getEnabled()) {
 			var fValue = this._calculateSelectedValue(oEvent);
 
-			// When the value is 1 and the first star is pressed we should toggle to 0
-			if (this.getValue() === 1 && fValue === 1) {
+			// When same rating is chosen, set the rating to 0
+			if (this.getValue() === fValue) {
 				fValue = 0;
 			}
 
-			this.setProperty("value", fValue, true);
 			this._updateUI(fValue, false);
 
-			if (this._fStartValue !== fValue) {	// if the value if not the same
+			 if (this.getValue() !== fValue) {	// if the value if not the same
+				this.setProperty("value", fValue, true);
 				this.fireLiveChange({value: fValue});
 				this.fireChange({value: fValue});
 			}

@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @param {number} [iIndex]
 	 *   Index of item (within the collection addressed by <code>sPath</code>) represented
 	 *   by this context; used by list bindings, not context bindings
-	 * @param {sap.ui.base.SyncPromise} [oCreatePromise]
+	 * @param {sap.ui.base.SyncPromise<object>} [oCreatePromise]
 	 *   A promise which is resolved with the created entity when the POST request has been
 	 *   successfully sent and the entity has been marked as non-transient; used as base for
 	 *   {@link #created}
@@ -144,7 +144,7 @@ sap.ui.define([
 	/**
 	 * Updates all dependent bindings of this context.
 	 *
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the update is finished
 	 * @private
 	 */
@@ -233,7 +233,7 @@ sap.ui.define([
 	 * status APIs like {@link #isDeleted}, {@link #isKeepAlive}, {@link #hasPendingChanges},
 	 * {@link #resetChanges}, or {@link #isSelected} (returns <code>false</code> since 1.114.0).
 	 *
-	 * Since 1.105 such a pending deletion is a pending change. It causes
+	 * Since 1.105, such a pending deletion is a pending change. It causes
 	 * <code>hasPendingChanges</code> to return <code>true</code> for the context, the binding
 	 * containing it, and the model. The <code>resetChanges</code> method called on the context, the
 	 * binding, or the model cancels the deletion and restores the context.
@@ -261,10 +261,10 @@ sap.ui.define([
 	 *   is transient (see {@link #isTransient}), no group ID needs to be specified. Since 1.98.0,
 	 *   you can use <code>null</code> to prevent the DELETE request in case of a kept-alive context
 	 *   that is not in the collection and of which you know that it does not exist on the server
-	 *   anymore (for example, a draft after activation). Since 1.108.0 the usage of a group ID with
-	 *   {@link sap.ui.model.odata.v4.SubmitMode.API} is possible. Since 1.121.0, you can use the
-	 *   '$single' group ID to send a DELETE request as fast as possible; it will be wrapped in a
-	 *   batch request as for a '$auto' group.
+	 *   anymore (for example, a draft after activation). Since 1.108.0, the usage of a group ID
+	 *   with {@link sap.ui.model.odata.v4.SubmitMode.API} is possible. Since 1.121.0, you can use
+	 *   the '$single' group ID to send a DELETE request as fast as possible; it will be wrapped in
+	 *   a batch request as for a '$auto' group.
 	 * @param {boolean} [bDoNotRequestCount]
 	 *   Whether not to request the new count from the server; useful in case of
 	 *   {@link #replaceWith} where it is known that the count remains unchanged (since 1.97.0).
@@ -440,7 +440,7 @@ sap.ui.define([
 	 *  A function which is called immediately when an entity has been deleted from the cache, or
 	 *   when it was re-inserted; the index of the entity and an offset (-1 for deletion, 1 for
 	 *   re-insertion) are passed as parameter
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure
 	 *
@@ -494,7 +494,7 @@ sap.ui.define([
 	 *   fire "patchSent" and "patchCompleted" events
 	 * @param {boolean} [bUpdating]
 	 *   Whether the given property will not be overwritten by a creation POST(+GET) response
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure, for example if the annotation belongs to
 	 *   the read-only namespace "@$ui5.*"
@@ -708,7 +708,7 @@ sap.ui.define([
 					throw new Error("Already expanded: " + this);
 				}
 				this.oBinding.collapse(this, /*bAll*/false, /*bSilent*/true);
-				// falls through
+				// fall through
 			case false: {
 				const iLevels = bAll ? Number.MAX_SAFE_INTEGER : 1;
 				return Promise.resolve(this.oBinding.expand(this, iLevels)).then(() => {});
@@ -721,7 +721,7 @@ sap.ui.define([
 	/**
 	 * Returns a promise for the "canonical path" of the entity for this context.
 	 *
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<string>}
 	 *   A promise which is resolved with the canonical path (e.g. "/SalesOrderList('0500000000')")
 	 *   in case of success, or rejected with an instance of <code>Error</code> in case of failure,
 	 *   e.g. if the given context does not point to an entity
@@ -741,7 +741,7 @@ sap.ui.define([
 	 *   given property path that formats corresponding to the property's EDM type and constraints.
 	 * @param {boolean} [bCached]
 	 *   Whether to return cached values only and not initiate a request
-	 * @returns {sap.ui.base.SyncPromise} a promise on the formatted value
+	 * @returns {sap.ui.base.SyncPromise<any>} a promise on the formatted value
 	 *
 	 * @private
 	 */
@@ -778,7 +778,7 @@ sap.ui.define([
 	 *   A property binding which registers itself as listener at the cache
 	 * @param {boolean} [bCached]
 	 *   Whether to return cached values only and not initiate a request
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<any>}
 	 *   A promise on the outcome of the binding's <code>fetchValue</code> call; it is rejected
 	 *   in case cached values are asked for, but not found
 	 * @throws {Error} If this context is a header context and no or empty path is given and
@@ -1491,8 +1491,8 @@ sap.ui.define([
 	 *
 	 * @param {object} oParameters - A parameter object
 	 * @param {boolean} [oParameters.copy]
-	 *   Whether the node should be copied instead of moved (@experimental as of version 1.135.0).
-	 *   The returned promise resolves with the index for the copied node.
+	 *   Whether the node should be copied instead of moved. The returned promise resolves with the
+	 *   index for the copied node. Supported since 1.141.0.
 	 * @param {sap.ui.model.odata.v4.Context|null} [oParameters.nextSibling]
 	 *   The next sibling's context, or <code>null</code> to turn this node into the last sibling.
 	 *   Omitting the sibling moves this node to a position determined by the server.
@@ -1560,7 +1560,7 @@ sap.ui.define([
 	 *
 	 * @param {object} oData
 	 *   The data to patch with
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise that is resolved without a result when the patch is done.
 	 *
 	 * @private
@@ -1617,7 +1617,7 @@ sap.ui.define([
 	 *   If <code>true</code>, a property binding is expected to check for updates
 	 * @param {boolean} [bKeepCacheOnError]
 	 *   If <code>true</code>, the binding data remains unchanged if the refresh fails
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise resolving when all dependent bindings are refreshed; it is rejected
 	 *   when the refresh fails; the promise is resolved immediately on a suspended binding
 	 * @throws {Error}
@@ -1770,7 +1770,7 @@ sap.ui.define([
 	/**
 	 * Returns a promise on the property value for the given path relative to this context. The path
 	 * is expected to point to a structural property with primitive type.
-	 * Since 1.81.1 it is possible to request more than one property. Property values that are not
+	 * Since 1.81.1, it is possible to request more than one property. Property values that are not
 	 * cached yet are requested from the back end.
 	 *
 	 * @param {string|string[]} [vPath]
@@ -1939,7 +1939,7 @@ sap.ui.define([
 	 *   <code>[{$PropertyPath : "*"}, {$NavigationPropertyPath : "EMPLOYEE_2_MANAGER"}]</code> or
 	 *   <code>[{$PropertyPath : "EMPLOYEE_2_MANAGER/*"}]</code>.
 	 *
-	 *   Since 1.82.0 absolute paths are supported. Absolute paths must start with the entity
+	 *   Since 1.82.0, absolute paths are supported. Absolute paths must start with the entity
 	 *   container (example "/com.sap.gateway.default.iwbep.tea_busi.v0001.Container/TEAMS") of the
 	 *   service. All (navigation) properties in the complete model matching such an absolute path
 	 *   are updated. Since 1.85.0, "14.4.11 Expression edm:String" is accepted as well.
@@ -2107,7 +2107,7 @@ sap.ui.define([
 	 *   The absolute paths to request side effects for
 	 * @param {string} sGroupId
 	 *   The effective group ID
-	 * @returns {sap.ui.base.SyncPromise|undefined}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   A promise which is resolved without a defined result, or rejected with an error if loading
 	 *   of side effects fails, or <code>undefined</code> if there is nothing to do
 	 *
@@ -2249,7 +2249,7 @@ sap.ui.define([
 	 *
 	 * Note: this is a private and internal API. Do not call this!
 	 *
-	 * @param {sap.ui.base.SyncPromise} [oSyncCreatePromise]
+	 * @param {sap.ui.base.SyncPromise<object>} [oSyncCreatePromise]
 	 *   A promise which is resolved with the created entity when the PATCH or POST request has been
 	 *   successfully sent and the entity has been marked as non-transient; used as base for
 	 *   {@link #created}. If missing, this context's {@link #created created} promise is removed
@@ -2425,7 +2425,7 @@ sap.ui.define([
 	/**
 	 * Sets a new value for the property identified by the given path. The path is relative to this
 	 * context and is expected to point to a structural property with primitive type or, since
-	 * 1.85.0, to an instance annotation. Since 1.122.0 the client-side annotation
+	 * 1.85.0, to an instance annotation. Since 1.122.0, the client-side annotation
 	 * "@$ui5.context.isSelected" can be given as a path. Note: Writing to a client-side
 	 * annotation never initiates a PATCH request, even if <code>sGroupId</code> is given.
 	 * Thus, reverting the value of this annotation cannot be done via {@link #resetChanges}.
@@ -2649,9 +2649,9 @@ sap.ui.define([
 	 * @param {boolean} [bSync] Whether to use the synchronously available cache
 	 * @param {boolean} [bWithOrWithoutCache] Whether to call the processor even without a cache
 	 *   (currently implemented for operation bindings only)
-	 * @returns {sap.ui.base.SyncPromise} A sync promise that is resolved with either the result of
-	 *   the processor or <code>undefined</code> if there is no cache for this binding, or if the
-	 *   cache determination is not yet completed
+	 * @returns {sap.ui.base.SyncPromise<any>} A sync promise that is resolved with either the
+	 *   result of the processor or <code>undefined</code> if there is no cache for this binding, or
+	 *   if the cache determination is not yet completed
 	 *
 	 * @private
 	 */
@@ -2676,7 +2676,7 @@ sap.ui.define([
 		 *   An absolute path without trailing slash
 		 * @param {number} [iIndex]
 		 *   Index of item represented by this context, used by list bindings, not context bindings
-		 * @param {sap.ui.base.SyncPromise} [oCreatePromise]
+		 * @param {sap.ui.base.SyncPromise<object>} [oCreatePromise]
 		 *   A promise which is resolved with the created entity when the POST request has been
 		 *   successfully sent and the entity has been marked as non-transient; used as base for
 		 *   {@link #created}

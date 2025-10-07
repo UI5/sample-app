@@ -63,9 +63,10 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 		// Root's ARIA
 		oRM.accessibilityState(oControl, {
 			role : "listbox",
-			multiselectable: true,	// Still, only one item at a time can be selected. Set to 'true', as JAWS won't announce selection and root's descriptions otherwise.
+			multiselectable: false,
 			roledescription: oResourceBundle.getText("SEGMENTEDBUTTON_NAME"),
-			describedby: { value: InvisibleText.getStaticId("sap.m", "SEGMENTEDBUTTON_SELECTION"), append: true }
+			describedby: { value: InvisibleText.getStaticId("sap.m", "SEGMENTEDBUTTON_SELECTION"), append: true },
+			orientation: "horizontal"
 		});
 
 		oRM.openEnd();

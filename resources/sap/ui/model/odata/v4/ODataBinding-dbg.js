@@ -215,7 +215,7 @@ sap.ui.define([
 									+ sForbidden);
 							}
 						});
-					// falls through
+					// fall through
 				case "$$canonicalPath":
 				case "$$clearSelectionOnFilter":
 				case "$$noPatch":
@@ -242,14 +242,16 @@ sap.ui.define([
 	 * one. The error has the property <code>canceled : true</code>
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._Cache} oExpectedCache - The expected cache
+	 * @param {number} [iResetCount] - The cache's expected reset count
 	 * @throws {Error} If the current cache is not the expected one
 	 *
 	 * @private
 	 */
-	ODataBinding.prototype.checkSameCache = function (oExpectedCache) {
+	ODataBinding.prototype.checkSameCache = function (oExpectedCache, iResetCount) {
 		var oError;
 
-		if (this.oCache !== oExpectedCache) {
+		if (this.oCache !== oExpectedCache
+				|| iResetCount !== undefined && this.oCache.iResetCount !== iResetCount) {
 			oError = new Error(this + " is ignoring response from inactive cache: "
 				+ oExpectedCache);
 			oError.canceled = true;
@@ -318,7 +320,7 @@ sap.ui.define([
 	 *
 	 * @param {boolean} [bForceUpdate]
 	 *   Whether the change event is fired in any case (only allowed for property bindings)
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the check is finished, or
 	 *   rejected in case of an error
 	 * @throws {Error} If called with illegal parameters
@@ -456,7 +458,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.Context} [oContext]
 	 *   The context instance to be used for a relative binding
-	 * @returns {object|undefined|sap.ui.base.SyncPromise}
+	 * @returns {object|undefined|sap.ui.base.SyncPromise<object|undefined>}
 	 *   The binding's query options (if any) or a promise resolving with them
 	 *
 	 * @abstract
@@ -490,14 +492,20 @@ sap.ui.define([
 	 *   The group ID; mandatory if <code>bSideEffectsRefresh</code> is set
 	 * @param {boolean} [bSideEffectsRefresh]
 	 *   Whether to perform a side-effects refresh
-	 * @throws {Error}
-	 *   If auto-$expand/$select is still running and query options shall be kept (this case is just
-	 *   not yet implemented and should not be needed)
+	 * @param {boolean} [bSync]
+	 *   Whether to create and set the cache synchronously; <code>bKeepQueryOptions</code> must be
+	 *   <code>true</code>
+	 * @throws {Error} If
+	 *   <ul>
+	 *     <li> auto-$expand/$select is still running and query options shall be kept (this case is
+	 *       just not yet implemented and should not be needed),
+	 *     <li> bSync is set but bKeepQueryOptions is not.
+	 *   </ul>
 	 *
 	 * @private
 	 */
 	ODataBinding.prototype.fetchCache = function (oContext, bIgnoreParentCache, bKeepQueryOptions,
-			sGroupId, bSideEffectsRefresh) {
+			sGroupId, bSideEffectsRefresh, bSync) {
 		var oCache = this.oCache,
 			oCallToken = {
 				// propagate old cache from first call of fetchCache to the latest call
@@ -517,11 +525,15 @@ sap.ui.define([
 			return;
 		}
 
+		if (bSync && !bKeepQueryOptions) {
+			throw new Error("Unsupported bSync w/o bKeepQueryOptions");
+		}
+
 		this.oCache = undefined;
 		this.oFetchCacheCallToken = oCallToken;
 		if (bKeepQueryOptions) {
-			// asynchronously re-create an equivalent cache, but skip auto-$expand/$select
-			this.oCachePromise = SyncPromise.resolve(Promise.resolve()).then(function () {
+			// re-create an equivalent cache, but skip auto-$expand/$select
+			this.oCachePromise = SyncPromise.resolve(bSync || Promise.resolve()).then(function () {
 				return that.createAndSetCache(that.mCacheQueryOptions, oCache.getResourcePath(),
 					oContext, sGroupId, bSideEffectsRefresh, oCache);
 			});
@@ -588,7 +600,7 @@ sap.ui.define([
 	 * @param {boolean} [bIgnoreParentCache]
 	 *   Whether the query options of the parent cache shall be ignored and own query options are
 	 *   determined (see {@link #fetchCache})
-	 * @returns {object|sap.ui.base.SyncPromise}
+	 * @returns {object|sap.ui.base.SyncPromise<object>}
 	 *   An object having two properties (or a promise resolving with it):
 	 *   {object} mQueryOptions - The query options to create the cache for this binding or
 	 *     <code>undefined</code> if no cache is to be created
@@ -599,7 +611,7 @@ sap.ui.define([
 	ODataBinding.prototype.fetchOrGetQueryOptionsForOwnCache = function (oContext,
 			bIgnoreParentCache) {
 		var bHasNonSystemQueryOptions,
-			vQueryOptions, // {object|undefined|sap.ui.base.SyncPromise}
+			vQueryOptions, // {object|undefined|sap.ui.base.SyncPromise<object|undefined>}
 			sResolvedPath = this.oModel.resolve(this.sPath, oContext),
 			that = this;
 
@@ -634,7 +646,7 @@ sap.ui.define([
 		 *   Whether an empty query options object should be replaced by <code>undefined</code>
 		 * @param {string} [sReducedPath=sResolvedPath]
 		 *   The reduced path
-		 * @returns {object|sap.ui.base.SyncPromise}
+		 * @returns {object|sap.ui.base.SyncPromise<object>}
 		 *   A result for #fetchOrGetQueryOptionsForOwnCache
 		 */
 		function wrapQueryOptions(bDropEmptyObject, sReducedPath) {
@@ -725,9 +737,9 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.Context|sap.ui.model.odata.v4.Context} [oContext=this.oContext]
 	 *   A context; if omitted, the binding's context is used
-	 * @returns {sap.ui.base.SyncPromise} A promise resolving with the resource path or
-	 *   <code>undefined</code> for an unresolved binding. If computation of the canonical path
-	 *   fails, the promise is rejected.
+	 * @returns {sap.ui.base.SyncPromise<string|undefined>}
+	 *   A promise resolving with the resource path or <code>undefined</code> for an unresolved
+	 *   binding. If computation of the canonical path fails, the promise is rejected.
 	 *
 	 * @private
 	 */
@@ -893,7 +905,7 @@ sap.ui.define([
 	/**
 	 * Returns a promise which resolves as soon as this binding is resumed.
 	 *
-	 * @returns {sap.ui.base.SyncPromise|undefined}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   This binding's current promise for {@link sap.ui.model.odata.v4.ODataParentBinding#resume},
 	 *   or <code>undefined</code> in case it is not currently suspended.
 	 *
@@ -931,7 +943,7 @@ sap.ui.define([
 	/**
 	 * Returns a promise which resolves as soon as this binding's root binding is resumed.
 	 *
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   The root binding's current promise for {@link #resume}, or
 	 *   <code>SyncPromise.resolve()</code> in case we have no root binding or it is not currently
 	 *   suspended.
@@ -1203,7 +1215,7 @@ sap.ui.define([
 	 * Returns a sync promise that is resolved when this binding is ready to be used (that is, when
 	 * its cache has been determined).
 	 *
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A sync promise that is resolved without a defined result when this binding is ready
 	 *
 	 * @private
@@ -1287,7 +1299,11 @@ sap.ui.define([
 	 *   If <code>true</code>, a property binding is expected to check for updates
 	 * @param {boolean} [bKeepCacheOnError]
 	 *   If <code>true</code>, the binding data remains unchanged if the refresh fails
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @param {boolean} [bSync]
+	 *   If <code>true</code>, the cache is created synchronously; cannot be combined with the
+	 *   ODataModel's <code>sharedRequests</code> constructor parameter or with the
+	 *   ODataListBinding's <code>$$sharedRequest</code> binding parameter
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the refresh is finished, or
 	 *   rejected when the refresh fails; the promise is resolved immediately on a suspended binding
 	 * @throws {Error}
@@ -1358,7 +1374,7 @@ sap.ui.define([
 	 *   The effective group ID
 	 * @param {string[]} aAbsolutePaths
 	 *   The absolute paths to request side effects for
-	 * @returns {sap.ui.base.SyncPromise|undefined}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   A promise which is resolved without a defined result, or rejected with an error if loading
 	 *   of side effects fails, or <code>undefined</code> if there is nothing to do
 	 *
@@ -1453,7 +1469,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sPath
 	 *   The path (absolute or relative to this binding)
-	 * @param {sap.ui.base.SyncPromise[]} aPromises
+	 * @param {Array<sap.ui.base.SyncPromise<void>>} aPromises
 	 *   List of promises which is extended for each call to {@link #resetChangesForPath}
 	 * @throws {Error}
 	 *   If there is a change of this binding which has been sent to the server and for which there
@@ -1470,7 +1486,7 @@ sap.ui.define([
 	/**
 	 * Resets pending changes in all dependent bindings.
 	 *
-	 * @param {sap.ui.base.SyncPromise[]} aPromises
+	 * @param {Array<sap.ui.base.SyncPromise<void>>} aPromises
 	 *   List of promises which is extended for each call to {@link #resetChangesInDependents}.
 	 * @param {boolean} [sPathPrefix]
 	 *   If supplied, only caches having a resource path starting with <code>sPathPrefix</code> are
@@ -1541,7 +1557,7 @@ sap.ui.define([
 	 *   Whether the application wants to skip the automatic refresh
 	 * @param {string} sGroupId
 	 *   The group ID for missing properties requests
-	 * @returns {sap.ui.base.SyncPromise|undefined}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   A promise which is resolved without a defined result when the update is finished, or
 	 *   rejected with an error if something went wrong; or <code>undefined</code> if there is no
 	 *   need to wait
@@ -1592,9 +1608,9 @@ sap.ui.define([
 	 * @param {boolean} [bSync] Whether to use the synchronously available cache
 	 * @param {boolean} [bWithOrWithoutCache] Whether to call the processor even without a cache
 	 *   (currently implemented for operation bindings only)
-	 * @returns {sap.ui.base.SyncPromise} A sync promise that is resolved with either the result of
-	 *   the processor or <code>undefined</code> if there is no cache for this binding, or if the
-	 *   cache determination is not yet completed
+	 * @returns {sap.ui.base.SyncPromise<any>} A sync promise that is resolved with either the
+	 *   result of the processor or <code>undefined</code> if there is no cache for this binding, or
+	 *   if the cache determination is not yet completed
 	 *
 	 * @private
 	 */

@@ -27,7 +27,6 @@ sap.ui.define([
 	'sap/ui/dom/containsOrEquals',
 	'sap/ui/events/KeyCodes',
 	'sap/ui/thirdparty/jquery',
-	'sap/ui/core/InvisibleMessage',
 	'sap/ui/core/date/CalendarUtils',
 	'sap/ui/core/date/UI5Date',
 	'sap/base/Log'
@@ -53,14 +52,11 @@ sap.ui.define([
 	containsOrEquals,
 	KeyCodes,
 	jQuery,
-	InvisibleMessage,
 	CalendarDateUtils,
 	UI5Date,
 	Log
 ) {
 	"use strict";
-
-	var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
 	// shortcut for sap.ui.unified.CalendarDayType
 	var CalendarDayType = library.CalendarDayType;
@@ -82,7 +78,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @public
@@ -368,8 +364,6 @@ sap.ui.define([
 
 		// check if day names are too big -> use smaller ones
 		_checkNamesLength.call(this);
-
-		this._oInvisibleMessage = InvisibleMessage.getInstance();
 	};
 
 	Month.prototype.onmouseover = function(oEvent) {
@@ -1984,8 +1978,7 @@ sap.ui.define([
 				oDateRange.setProperty("startDate", oDate.toLocalJSDate()); // no-rerendering
 				oDateRange.setProperty("endDate", undefined); // no-rerendering
 			}
-			this._oInvisibleMessage.announce(this._oUnifiedRB.getText("APPOINTMENT_SELECTED"), InvisibleMessageMode.Assertive);
-		} else {
+	} else {
 			// multiple selection
 			if (this.getIntervalSelection()) {
 				throw new Error("Calender don't support multiple interval selection");
@@ -2003,7 +1996,6 @@ sap.ui.define([
 					}
 				} else {
 					// not selected -> select
-					this._oInvisibleMessage.announce(this._oUnifiedRB.getText("APPOINTMENT_SELECTED"), InvisibleMessageMode.Assertive);
 					oDateRange = new DateRange({startDate: oDate.toLocalJSDate()});
 					oAggOwner.addAggregation("selectedDates", oDateRange);
 				}

@@ -9,7 +9,6 @@
  * Code other than the UI5 core library must not introduce dependencies to this module.
  */
 sap.ui.define([
-	"sap/ui/thirdparty/URI",
 	"sap/base/i18n/ResourceBundle",
 	"sap/base/Log",
 	"sap/base/util/fetch",
@@ -19,7 +18,7 @@ sap.ui.define([
 	"sap/ui/core/Theming",
 	"sap/ui/core/theming/ThemeHelper"
 ],
-	function(URI, ResourceBundle, Log, fetch, syncFetch, isPlainObject, Library, Theming, ThemeHelper) {
+	function(ResourceBundle, Log, fetch, syncFetch, isPlainObject, Library, Theming, ThemeHelper) {
 		"use strict";
 
 		/**
@@ -31,6 +30,8 @@ sap.ui.define([
 		 * Protocol that is used to identify icon URIs.
 		 */
 		var ICON_PROTOCOL = 'sap-icon';
+
+		const ICON_URI_REGEX = new RegExp(`^${ICON_PROTOCOL}:\/\/(?:([^\/]+)\/)?([^\/]+)$`);
 
 		var mFontRegistry = {
 			undefined: {
@@ -483,8 +484,8 @@ sap.ui.define([
 				'add-activity-2': 0x1e1a8,
 				'activity-items': 0xe1a9,
 				'activity-assigned-to-goal': 0xe1aa,
-				'status-completed': 0xe1ab,
-				'status-positive': 0xe1ab,
+				'status-completed': 0x1e1ab,
+				'status-positive': 0x1e1ab,
 				'status-error': 0xe1ac,
 				'status-negative': 0xe1ac,
 				'status-inactive': 0xe1ad,
@@ -819,7 +820,7 @@ sap.ui.define([
 
 			var collection = mRegistry[collectionName],
 				icon = collection[iconName],
-				parts, sContent, sText, sKey;
+				sContent, sText, sKey;
 
 			if (icon) {
 				if (collectionName === undefined) {
@@ -830,12 +831,6 @@ sap.ui.define([
 					return;
 				}
 			}
-
-			parts = {
-				protocol: ICON_PROTOCOL,
-				hostname: collectionName || iconName,
-				path: collectionName ? iconName : undefined
-			};
 
 			if (Array.isArray(iconInfo.content)) {
 				sContent = iconInfo.content.map(makeChar).join('');
@@ -853,7 +848,7 @@ sap.ui.define([
 			icon = collection[iconName] = {
 				name: iconName,
 				collection: collectionName,
-				uri: URI.build(parts),
+				uri: `${ICON_PROTOCOL}://${collectionName ? `${collectionName}/` : ""}${iconName}`,
 				fontFamily: iconInfo.fontFamily,
 				content: sContent,
 				text: sText || '',
@@ -877,22 +872,13 @@ sap.ui.define([
 		 * See IconPool.getIconInfo
 		 */
 		_IconRegistry.getIconInfo = function (iconName, collectionName, loadingMode) {
-			var parts,
-				info,
-				async,
-				oLoaded,
-				nameIsURI = _IconRegistry.isIconURI(iconName);
-
 			if (!iconName) {
 				return;
 			}
 
-			// handle optional parameters
-			if (!loadingMode && nameIsURI) {
-				loadingMode = collectionName;
-			}
-			loadingMode = loadingMode || "sync";
-			async = (loadingMode === "async" || loadingMode === "mixed");
+			var info,
+				async,
+				oLoaded;
 
 			// retrieves the icon info from the internal registry
 			function getInfo() {
@@ -913,22 +899,21 @@ sap.ui.define([
 				return info;
 			}
 
-			// parse icon URI
-			if (nameIsURI) {
-				parts = URI.parse(iconName);
+			const aIconUriParts = iconName?.match(ICON_URI_REGEX);
 
-				if (parts.path.length === 1) {
-					collectionName = undefined;
-					iconName = parts.hostname;
-				} else {
-					collectionName = parts.hostname;
-					iconName = parts.path.slice(1);
-				}
+			// parse icon URI
+			if (aIconUriParts) {
+				loadingMode ??= collectionName;
+
+				[, collectionName, iconName] = aIconUriParts;
 
 				if (!iconName) {
 					return;
 				}
 			}
+
+			loadingMode = loadingMode || "sync";
+			async = (loadingMode === "async" || loadingMode === "mixed");
 
 			// if collectionName isn't a string, convert it to string
 			if (typeof collectionName !== "string") {
@@ -981,12 +966,7 @@ sap.ui.define([
 		 * See IconPool.isIconURI
 		 */
 		_IconRegistry.isIconURI = function (uri) {
-			if (!uri) {
-				return false;
-			}
-			var parts = URI.parse(uri);
-
-			return parts.protocol === ICON_PROTOCOL && !!parts.hostname;
+			return ICON_URI_REGEX.test(uri);
 		};
 
 		/*

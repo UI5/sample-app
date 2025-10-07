@@ -156,7 +156,7 @@ sap.ui.define([
 				oRm.renderControl(oSubtitle);
 			}
 
-			if (oUnitOfMeasurement) {
+			if (bHasUnitOfMeasurement) {
 				oRm.renderControl(oUnitOfMeasurement);
 			}
 

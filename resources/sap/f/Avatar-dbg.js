@@ -41,7 +41,7 @@ sap.ui.define([
 	 * @extends sap.m.Avatar
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @public

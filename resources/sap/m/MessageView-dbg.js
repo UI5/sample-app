@@ -123,7 +123,7 @@ sap.ui.define([
 	 * The responsiveness of the <code>MessageView</code> is determined by the container in which it is embedded. For that reason the control could not be visualized if the
 	 * container’s sizes are not defined.
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -452,9 +452,15 @@ sap.ui.define([
 	};
 
 	MessageView.prototype._updateDescription = function (oItem) {
-		if (!this._isListPage() && oItem._oListItem) {
-			this._updateDescriptionPage(oItem, oItem._oListItem);
+		if (this._isListPage()) {
+			return;
 		}
+
+		if (!oItem._oListItem) {
+			this._mapItemToListItem(oItem);
+		}
+
+		this._updateDescriptionPage(oItem, oItem._oListItem);
 	};
 
 	/**

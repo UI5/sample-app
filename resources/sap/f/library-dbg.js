@@ -39,14 +39,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @since 1.44
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.f",
-		version: "1.140.0",
+		version: "1.141.0",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
 		...{
@@ -214,7 +214,7 @@ sap.ui.define([
 	 * Layouts, representing the number of columns to be displayed and their relative widths for a {@link sap.f.FlexibleColumnLayout} control.
 	 *
 	 * Each layout has a default predefined ratio for the three columns, depending on device size. Based on the device and layout, some columns are hidden.
-	 * For more information, refer to the ratios (in %) for each value, listed below: (dash "-" means non-accessible columns).
+	 * For more information, refer to the ratios (in %) for each value, listed below: (hyphen "-" means non-accessible columns).
 	 *
 	 * <b>Notes:</b>
 	 * <ul>

@@ -108,7 +108,7 @@ sap.ui.define([
 		 * To prevent this, apps using the <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library in advance.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 *
 		 * @constructor
 		 * @public
@@ -148,7 +148,15 @@ sap.ui.define([
 					 * @since 1.122
 					 * @experimental Since 1.122, this property is in a beta state.
 					 */
-					selectedColor: { type: "sap.ui.core.CSSColor", defaultValue: null }
+					selectedColor: { type: "sap.ui.core.CSSColor", defaultValue: null },
+
+					/**
+					 * Indicates whether the ColorPalette is used within a popover context.
+					 * When true, Home and End key navigation is enabled for better accessibility.
+					 * For private use only.
+					 * @private
+					 */
+					_isInPopover: { type: "boolean", defaultValue: false, visibility: "hidden" }
 				},
 
 				aggregations: {
@@ -846,7 +854,7 @@ sap.ui.define([
 
 			if (oFocusInfo.bIsMoreColorsButton || (!oFocusInfo.bIsMoreColorsButton && this.bIsRecentColorSwatch)) {
 				vNextElement = oEvent.keyCode === KeyCodes.ARROW_UP ?
-					aAllSwatches[this._oPaletteColorItemNavigation._getIndexOfTheFirstItemInLastRow()] : aAllSwatches[aAllSwatches.length - 1];
+					aAllSwatches[aAllSwatches.length - 1] : aAllSwatches[this._oPaletteColorItemNavigation._getIndexOfTheFirstItemInLastRow()];
 			} else if (oFocusInfo.bIsRecentColorSwatch && !this._bShowMoreColorsButton && !this._bShowDefaultColorButton) {
 				aAllSwatches = this._getAllPaletteColorSwatches();
 				vNextElement = aAllSwatches[this._oPaletteColorItemNavigation._getIndexOfTheFirstItemInLastRow()];
@@ -871,6 +879,11 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent the keyboard event
 		 */
 		ColorPalette.prototype.onsaphome = function(oEvent) {
+			// If ColorPalette is NOT used in a popover, disable Home key functionality
+			if (!this.getProperty("_isInPopover")) {
+				return;
+			}
+
 			// Home and End keys on ColorPalette buttons should do nothing. If event occurs on the swatch, see ItemNavigationHomeEnd).
 			var oElementInfo = this._getElementInfo(oEvent.target);
 
@@ -896,6 +909,11 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent the keyboard event
 		 */
 		ColorPalette.prototype.onsapend = function(oEvent) {
+			// If ColorPalette is NOT used in a popover, disable End key functionality
+			if (!this.getProperty("_isInPopover")) {
+				return;
+			}
+
 			var oElementInfo = this._getElementInfo(oEvent.target);
 
 			if (!oElementInfo.bIsDefaultColorButton) {
@@ -1094,9 +1112,10 @@ sap.ui.define([
 
 		ItemNavigationHomeEnd.prototype.onsaphome = function(oEvent) {
 			var bIsOnItem = containsOrEquals(this.getRootDomRef(), oEvent.target),
+				bInlineUsage = !this._isColorPaletteInPopover(),
 				oItemInfo;
 
-			if (!bIsOnItem) {
+			if (!bIsOnItem || bInlineUsage) {
 				return;
 			}
 
@@ -1122,9 +1141,10 @@ sap.ui.define([
 
 		ItemNavigationHomeEnd.prototype.onsapend = function(oEvent) {
 			var bIsOnItem = containsOrEquals(this.getRootDomRef(), oEvent.target),
+				bInlineUsage = !this._isColorPaletteInPopover(),
 				oItemInfo;
 
-			if (!bIsOnItem) {
+			if (!bIsOnItem || bInlineUsage) {
 				return;
 			}
 
@@ -1186,6 +1206,17 @@ sap.ui.define([
 			return Math.floor((this.getItemDomRefs().length - 1) / this.getColumns()) * this.getColumns();
 		};
 
+		/**
+		 * Checks if the ColorPalette control is currently displayed in a popover.
+		 * @returns {boolean}
+		 */
+		ItemNavigationHomeEnd.prototype._isColorPaletteInPopover = function () {
+			const oColorPalette = jQuery(this.getRootDomRef()).control(0);
+			return oColorPalette
+				&& oColorPalette.isA
+				&& oColorPalette.isA("sap.m.ColorPalette")
+				&& oColorPalette.getProperty("_isInPopover");
+		};
 
 		/**
 		 * @private

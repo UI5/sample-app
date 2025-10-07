@@ -53,7 +53,6 @@ sap.ui.define(['sap/ui/core/Lib', 'sap/ui/core/Renderer', 'sap/ui/core/AccessKey
 
 		// styles
 		rm.class("sapMLabel");
-		rm.class("sapUiSelectable");
 
 		// label wrapping
 		if (oLabel.isWrapping()) {
@@ -142,6 +141,7 @@ sap.ui.define(['sap/ui/core/Lib', 'sap/ui/core/Renderer', 'sap/ui/core/AccessKey
 
 		// write the label text
 		rm.openStart("bdi", oLabel.getId() + "-bdi");
+		rm.class("sapUiSelectable");
 
 		// text direction
 		if (sTextDir !== TextDirection.Inherit){

@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @class Provides configuration options and an extended behavior for the context menu that is applied to the related control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @public
 	 * @since 1.121
 	 * @alias sap.m.plugins.ContextMenuSetting
@@ -80,8 +80,10 @@ sap.ui.define([
 		this._original_openAsContextMenu = oMenu.openAsContextMenu;
 
 		oMenu.openAsContextMenu = function(oEvent, vActiveItem) {
+			const oRetVal = that._original_openAsContextMenu.apply(this, arguments);
+
 			if (that.getScope() !== ContextMenuScope.Selection) {
-				return that._original_openAsContextMenu.apply(this, arguments);
+				return oRetVal;
 			}
 
 			const oControl = that.getControl();
@@ -104,7 +106,8 @@ sap.ui.define([
 					oItem.removeStyleClass("sapMContextMenuSettingContentOpacity");
 				});
 			});
-			return that._original_openAsContextMenu.apply(this, arguments);
+
+			return oRetVal;
 		};
 	};
 

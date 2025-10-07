@@ -168,8 +168,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.140.0
-	 * @version 1.140.0
+	 * @version 1.141.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @public
@@ -319,7 +319,7 @@ sap.ui.define([
 	 * @private
 	 * @returns {string} The message bundle key
 	 */
-	DateRangeSelection.prototype._getAccessibleNameLabel = function() {
+	DateRangeSelection.prototype._getAccessibleNameBundleKey = function() {
 		var sConstructorName = this._getCalendarConstructor().getMetadata().getName();
 
 		switch (sConstructorName) {

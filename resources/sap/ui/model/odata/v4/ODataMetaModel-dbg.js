@@ -204,7 +204,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -373,7 +373,8 @@ sap.ui.define([
 
 		/**
 		 * Returns the contexts that result from iterating over the binding's path/context.
-		 * @returns {sap.ui.base.SyncPromise} A promise that is resolved with an array of contexts
+		 * @returns {sap.ui.base.SyncPromise<sap.ui.model.odata.v4.Context[]>}
+		 *   A promise that is resolved with an array of contexts
 		 *
 		 * @private
 		 */
@@ -786,7 +787,7 @@ sap.ui.define([
 	 *   A namespace, for example "foo.bar.", of a schema
 	 * @param {function} fnLog
 	 *   The log function
-	 * @returns {object|sap.ui.base.SyncPromise|undefined}
+	 * @returns {object|sap.ui.base.SyncPromise<void>|undefined}
 	 *   The schema, or a promise which is resolved without details or rejected with an error, or
 	 *   <code>undefined</code>.
 	 * @throws {Error}
@@ -1085,7 +1086,7 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   OData V4 context object for which the canonical path is requested; it must point to an
 	 *   entity
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<string>}
 	 *   A promise which is resolved with the canonical path (for example "/EMPLOYEES('1')") in
 	 *   case of success; it is rejected if the requested metadata cannot be loaded, if the context
 	 *   path does not point to an entity, if the entity is transient, or if required key properties
@@ -1109,7 +1110,7 @@ sap.ui.define([
 	/**
 	 * Requests the metadata.
 	 *
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise which is resolved with the requested metadata as soon as it is available
 	 *
 	 * @private
@@ -1130,7 +1131,7 @@ sap.ui.define([
 	 *   Whether to just read the $metadata document and annotations, but not yet convert them from
 	 *   XML to JSON; this is useful at most once in an early call that precedes all other normal
 	 *   calls and ignored after the first call without this.
-	 * @returns {sap.ui.base.SyncPromise|null}
+	 * @returns {sap.ui.base.SyncPromise<object>|null}
 	 *   A promise which is resolved with the $metadata "JSON" object as soon as the entity
 	 *   container is fully available, or rejected with an error. In case of
 	 *   <code>bPrefetch</code> in an early call, <code>null</code> is returned.
@@ -1183,7 +1184,7 @@ sap.ui.define([
 	 *   (since 1.57.0)
 	 * @param {object} [mParameters.scope]
 	 *   Optional scope for lookup of aliases for computed annotations (since 1.43.0)
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise which is resolved with the requested metadata object as soon as it is available;
 	 *   it is rejected if the requested metadata cannot be loaded
 	 *
@@ -1750,16 +1751,15 @@ sap.ui.define([
 			 * scope (unless inside "annotations [...] targeting an entity set or a singleton") and
 			 * changing <code>vResult</code>.
 			 *
-			 * @param {string} sRelativePath
-			 *   Some relative path (semantically, it is absolute as we start at the global scope,
-			 *   but it does not begin with a slash!)
+			 * @param {string} sSomePath
+			 *   Some absolute or relative path
 			 * @param {string[]} [vNewLocation]
 			 *   List of segments up to the point where the relative path has been found (in case
 			 *   of indirection)
 			 * @returns {boolean}
 			 *   Whether to continue after all steps
 			 */
-			function steps(sRelativePath, vNewLocation) {
+			function steps(sSomePath, vNewLocation) {
 				var bContinue;
 
 				if (vLocation) {
@@ -1770,10 +1770,13 @@ sap.ui.define([
 				bInsideAnnotation = false;
 				bODataMode = true;
 				vResult = mScope;
-				if (oEntitySetOrSingleton) {
+				if (sSomePath[0] === "/") {
+					oEntitySetOrSingleton = undefined;
+					sSomePath = sSomePath.slice(1);
+				} else if (oEntitySetOrSingleton) {
 					// "14.5.12 Expression edm:Path" within an annotation targeting an entity set or
 					// a singleton
-					if (!sRelativePath) { // "an empty path resolves to the entity set or singleton"
+					if (!sSomePath) { // "an empty path resolves to the entity set or singleton"
 						vResult = oEntitySetOrSingleton;
 						oEntitySetOrSingleton = vLocation = undefined;
 						return true;
@@ -1782,13 +1785,13 @@ sap.ui.define([
 					sSchemaChildName = oEntitySetOrSingleton.$Type;
 					oEntitySetOrSingleton = oSchemaChild = undefined;
 				}
-				bContinue = sRelativePath.split("/").every(step);
+				bContinue = sSomePath.split("/").every(step);
 
 				vLocation = undefined;
 				return bContinue;
 			}
 
-			if (!steps(sResolvedPath.slice(1)) && SyncPromise.isThenable(vResult)) {
+			if (!steps(sResolvedPath) && SyncPromise.isThenable(vResult)) {
 				// try again after #_getOrFetchSchema's promise has resolved,
 				// but avoid endless loop for computed annotations returning a promise!
 				vResult = vResult.then(function () {
@@ -1810,7 +1813,7 @@ sap.ui.define([
 	 *   Type-specific format options, since 1.81.0. The boolean format option
 	 *   "parseKeepsEmptyString" applies to {@link sap.ui.model.odata.type.String} only and is
 	 *   ignored for all other types. All other format options are passed "as is".
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<sap.ui.model.odata.type.ODataType>}
 	 *   A promise that gets resolved with the corresponding UI5 type from
 	 *   {@link sap.ui.model.odata.type}; if no specific type can be determined, a warning is logged
 	 *   and {@link sap.ui.model.odata.type.Raw} is used
@@ -1900,7 +1903,7 @@ sap.ui.define([
 	 *   Whether no edit URL is required; must be <code>undefined</code> from APIs for canonical
 	 *   paths (based on {@link #fetchCanonicalPath}). Since 1.133.0, when a boolean value is given,
 	 *   the edit URL is allowed to be adjusted for upsert use cases.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise that gets resolved with an object having the following properties:
 	 *   <ul>
 	 *     <li> <code>editUrl</code>: The edit URL or undefined if the entity is transient
@@ -2099,7 +2102,7 @@ sap.ui.define([
 	 * @param {object[]} [aOverloads]
 	 *   The list of operation overloads in case of an operation parameter, must contain exactly one
 	 *   entry (which means that the parameter's binding path exactly matches one overload)
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise that gets resolved with a map containing all "ValueListMapping" annotations in
 	 *   the metadata of the given model by qualifier.
 	 *
@@ -2219,7 +2222,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sPropertyPath
 	 *   An absolute path to an OData property within the OData data model
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<sap.ui.model.odata.v4.ValueListType>}
 	 *   A promise that is resolved with the type of the value list. It is rejected if the property
 	 *   cannot be found in the metadata.
 	 *
@@ -3125,10 +3128,10 @@ sap.ui.define([
 	 * </ul>
 	 * The path must not continue after "@sapui.name".
 	 *
-	 * If the current object is a string value, that string value is treated as a relative path and
-	 * followed step-by-step before the next segment is processed. Except for this, a path must
-	 * not continue if it comes across a non-object value. Such a string value can be a qualified
-	 * name (example path "/$EntityContainer/..."), a simple identifier (example path
+	 * If the current object is a string value, that string value is treated as an absolute or
+	 * relative path and followed step-by-step before the next segment is processed. Except for
+	 * this, a path must not continue if it comes across a non-object value. Such a string value can
+	 * be a qualified name (example path "/$EntityContainer/..."), a simple identifier (example path
 	 * "/TEAMS/$NavigationPropertyBinding/TEAM_2_EMPLOYEES/...") including the special name
 	 * "$ReturnType" (since 1.71.0), or even a path according to "14.5.12 Expression edm:Path" etc.
 	 * (example path "/TEAMS/@com.sap.vocabularies.UI.v1.LineItem/0/Value/$Path/...".
@@ -3306,7 +3309,7 @@ sap.ui.define([
 	 *   Scope for lookup of aliases for computed annotations (since 1.43.0) as a map from alias to
 	 *   a module (like <code>{AH : AnnotationHelper}</code>) or function (like
 	 *   <code>{format : AnnotationHelper.format}</code>); the alias must not contain a dot.
-	 *   Since 1.120.3 looking up a computed annotation via its global name is <b>deprecated</b>;
+	 *   Since 1.120.3, looking up a computed annotation via its global name is <b>deprecated</b>;
 	 *   always use this scope instead.
 	 * @returns {Promise<any>}
 	 *   A promise which is resolved with the requested metadata value as soon as it is available;
@@ -3387,12 +3390,17 @@ sap.ui.define([
 	/**
 	 * Requests the resulting value of the given annotation that contains dynamic expressions. If
 	 * <code>sMetaPath</code> contains one navigation property more than
-	 * <code>oContext.getPath()</code>, then that navigation property's "Partner" (if any) is used
-	 * as a prefix to be ignored in a path expression. This is useful in case of multi input where
-	 * <code>oContext</code> refers to an entity with a collection-valued navigation property
-	 * (being edited) and the annotation (ValueListRelevantQualifiers) refers to a structural
-	 * property of the target type and thus needs to refer <b>back</b> in order to evaluate the
-	 * entity's current state.
+	 * <code>oContext.getPath()</code>, then two cases are handled specially:
+	 * <ul>
+	 *   <li> If that navigation property is single-valued, then it is assumed to be part of the
+	 *     property binding and is thus *added* as a prefix for path expressions;
+	 *   <li> otherwise that navigation property's "Partner" (if any) is used as a prefix to be
+	 *     *ignored* in a path expression. This is useful in case of multi input where
+	 *     <code>oContext</code> refers to an entity with a collection-valued navigation property
+	 *     (being edited) and the annotation (ValueListRelevantQualifiers) refers to a structural
+	 *     property of the target type and thus needs to refer <b>back</b> in order to evaluate the
+	 *     entity's current state.
+	 * </ul>
 	 *
 	 * @param {object} vRawValue
 	 *   The raw value of an annotation
@@ -3407,14 +3415,18 @@ sap.ui.define([
 	 */
 	ODataMetaModel.prototype.requestValue4Annotation = function (vRawValue, sMetaPath, oContext) {
 		let oOverload;
+		let sPrefix;
 		const sContextMetaPath = _Helper.getMetaPath(oContext.getPath());
 		const iIndexOfNextSlash = sMetaPath.indexOf("/", sContextMetaPath.length + 1);
 		if (iIndexOfNextSlash > 0) { // there's at least one segment more
-			const sPartner = this.getObject(sMetaPath.slice(0, iIndexOfNextSlash) + "/$Partner");
-			if (sPartner) { // looks like a NavigationProperty with a "Partner"
+			const oNavigationProperty = this.getObject(sMetaPath.slice(0, iIndexOfNextSlash));
+			if (!oNavigationProperty.$isCollection) {
+				// Note: include trailing, but not leading slash
+				sPrefix = sMetaPath.slice(sContextMetaPath.length + 1, iIndexOfNextSlash + 1);
+			} else if (oNavigationProperty.$Partner) {
 				oOverload = { // fake overload to determine ignoreAsPrefix
 					$IsBound : true,
-					$Parameter : [{$Name : sPartner}]
+					$Parameter : [{$Name : oNavigationProperty.$Partner}]
 				};
 			}
 		}
@@ -3422,7 +3434,8 @@ sap.ui.define([
 		const oAny = new Any({
 			any : AnnotationHelper.value(vRawValue, {
 				context : this.createBindingContext(sMetaPath),
-				overload : oOverload
+				overload : oOverload,
+				prefix : sPrefix
 			}),
 			bindingContexts : oContext,
 			models : oContext.getModel()

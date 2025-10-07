@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @public
 	 * @since 1.48.0

@@ -49,10 +49,11 @@ sap.ui.define([
 		 *
 		 * @class
 		 * A picker clocks container control used inside the {@link sap.m.TimePicker}.
+		 * If you use the control standalone, please call the {@link #prepareForOpen} method before opening or displaying it.
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 *
 		 * @constructor
 		 * @public
@@ -261,8 +262,9 @@ sap.ui.define([
 		 *
 		 * @public
 		 */
-		 TimePickerClocks.prototype.init = function() {
+		TimePickerClocks.prototype.init = function() {
 			TimePickerInternals.prototype.init.apply(this, arguments);
+			this._performInitialFocus = false;
 		};
 
 		/**
@@ -270,11 +272,14 @@ sap.ui.define([
 		 *
 		 * @private
 		 */
-		 TimePickerClocks.prototype.onAfterRendering = function() {
+		TimePickerClocks.prototype.onAfterRendering = function() {
 			if (!this._clickAttached) {
 				this._attachClickEvent();
 			}
 			this._clockConstraints = this._getClocksConstraints();
+			if (this._performInitialFocus) {
+				this._focusActiveButton();
+			}
 		};
 
 		/**
@@ -544,6 +549,7 @@ sap.ui.define([
 					aButtons[iIndex].setPressed(iIndex === 0);
 				});
 			}
+			this._performInitialFocus = true;
 
 			return this;
 		};
@@ -574,6 +580,7 @@ sap.ui.define([
 				iActiveClock = this._getActiveClockIndex();
 
 			aButtons && aButtons[iActiveClock] && aButtons[iActiveClock].focus();
+			this._performInitialFocus = false;
 		};
 
 		/**

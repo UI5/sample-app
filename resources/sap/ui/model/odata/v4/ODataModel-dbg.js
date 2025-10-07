@@ -59,7 +59,9 @@ sap.ui.define([
 	 */
 	const bFinal = false;
 
-	var sClassName = "sap.ui.model.odata.v4.ODataModel",
+	var a401DenyList = ["apply", "compute", "count", "expand", "filter", "format", "id", "index",
+			"levels", "orderby", "schemaversion", "search", "select", "skip", "top"],
+		sClassName = "sap.ui.model.odata.v4.ODataModel",
 		// system query options allowed within a $expand query option
 		aExpandQueryOptions = ["$count", "$expand", "$filter", "$levels", "$orderby", "$search",
 			"$select"],
@@ -240,7 +242,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -455,7 +457,7 @@ sap.ui.define([
 	 *   The group ID
 	 * @param {boolean} [bCatch]
 	 *   Whether the returned promise always resolves and never rejects
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise on the outcome of the HTTP request resolving with <code>undefined</code>; it is
 	 *   rejected with an error if the batch request itself fails. Use <code>bCatch</code> to catch
 	 *   that error and make the promise resolve with <code>undefined</code> instead.
@@ -1240,6 +1242,12 @@ sap.ui.define([
 
 		if (mParameters) {
 			for (sParameterName in mParameters) {
+				if (a401DenyList.includes(sParameterName.toLowerCase())) {
+					Log.warning("[FUTURE FATAL] Custom query option " + sParameterName
+						+ " will not be supported with OData 4.01, see"
+						+ " https://sdk.openui5.org/topic/cda632b01c1e4a988ccecab759d19380",
+						undefined, sClassName);
+				}
 				if (sParameterName.startsWith("$$")) { // binding-specific parameter
 					delete mTransformedOptions[sParameterName];
 				} else if (sParameterName[0] === "@") { // OData parameter alias
@@ -1921,7 +1929,7 @@ sap.ui.define([
 	 * Returns a context with the given path belonging to a matching list binding that has been
 	 * marked with <code>$$getKeepAliveContext</code> (see {@link #bindList}). If such a matching
 	 * binding can be found, a context is returned and kept alive (see
-	 * {@link sap.ui.model.odata.v4.ODataListBinding#getKeepAliveContext}). Since 1.100.0 a
+	 * {@link sap.ui.model.odata.v4.ODataListBinding#getKeepAliveContext}). Since 1.100.0, a
 	 * temporary binding is used if no such binding could be found. If such a binding is created or
 	 * resolved later, the context and its data are transferred to it, and the temporary binding is
 	 * destroyed again.
@@ -2248,8 +2256,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype.initializeSecurityToken = function () {
-		// a failure is not logged, only the failed request for the service document appears
-		this.oRequestor.refreshSecurityToken().catch(function () {});
+		this.oRequestor.refreshSecurityToken(); // never rejects
 	};
 
 	/**
@@ -2740,7 +2747,7 @@ sap.ui.define([
 	 * @param {string[]} aAbsolutePaths
 	 *   The absolute paths to request side effects for; each path must not start with the fully
 	 *   qualified container name.
-	 * @returns {sap.ui.base.SyncPromise|undefined}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   A promise which is resolved without a defined result, or rejected with an error if loading
 	 *   of side effects fails, or <code>undefined</code> if there is nothing to do
 	 *
@@ -2867,25 +2874,34 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sets the "odata.continue-on-error" preference once for the <b>current</b> batch request
-	 * associated with the given group ID. This method can be called early on, when that batch queue
-	 * is still empty, or even synchronously after {@link #submitBatch} - just as long as the $batch
-	 * request is not already being sent to the server. It needs to be called again for future
-	 * batch requests with the same group ID.
+	 * Sets the "odata.continue-on-error" preference for the <b>current</b> batch request associated
+	 * with the given group ID. This method can be called early on, when the batch queue is still
+	 * empty, or even synchronously after {@link #submitBatch} - just as long as the $batch request
+	 * is not already being sent to the server. It needs to be called again for future batch
+	 * requests with the same group ID. It is safe to call it multiple times for the same batch
+	 * request.
+	 *
+	 * <b>Caution:</b> Make sure that no user input is lost due to a side-effects GET being applied
+	 * even after a failed PATCH. It's safe to use this method if, for example, only actions are
+	 * invoked or when {@link sap.ui.model.odata.v4.Context#setProperty} is used without
+	 * <code>bRetry</code> for mass updates.
 	 *
 	 * @param {string} sGroupId
-	 *   A valid group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}. Note that
-	 *   '$auto' should be avoided to control exactly which requests are affected by this
-	 *   preference. Using a {@link module:sap/base/util/uid UID} may be one way to achieve this,
-	 *   but take care to replace dashes with underscores.
-	 * @throws {Error}
-	 *   If the given group ID is not a valid group ID or has
-	 *   {@link sap.ui.model.odata.v4.SubmitMode.Direct} or if multiple requests that apply the
-	 *   preference "handling=strict" already exist in the same change set of the batch request
+	 *   A valid group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}. Avoid '$auto' to
+	 *   control which requests are affected by this preference. Using a
+	 *   {@link module:sap/base/util/uid UID} may be one way to achieve this, but take care to
+	 *   replace hyphens with underscores:
+	 *   <code>"$auto." + uid().replaceAll("-", "_")</code>
+	 * @throws {Error} If
+	 *   <ul>
+	 *     <li> the given group ID is not a valid group ID,
+	 *     <li> the given group ID has {@link sap.ui.model.odata.v4.SubmitMode.Direct},
+	 *     <li> multiple requests that apply the preference "handling=strict" already exist in the
+	 *       same change set of the batch request.
+	 *   </ul>
 	 *
-	 * @private
-	 * @since 1.134.0
-	 * @ui5-restricted sap.fe
+	 * @public
+	 * @since 1.141.0
 	 */
 	ODataModel.prototype.setContinueOnError = function (sGroupId) {
 		this.checkBatchGroupId(sGroupId);
@@ -3079,7 +3095,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.ODataBinding} oBinding
 	 *   The binding that possibly needs the cache of a temporary keep-alive binding
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when that cache is available
 	 *
 	 * @private

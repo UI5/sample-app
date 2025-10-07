@@ -79,7 +79,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -972,7 +972,7 @@ function(
 	 * @param {string} sName name of the property to add
 	 * @param {sap.ui.base.ManagedObject.MetadataOptions.Property} oInfo metadata for the property
 	 * @private
-	 * @restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 * @see sap.ui.core.EnabledPropagator
 	 */
 	ManagedObjectMetadata.prototype.addProperty = function(sName, oInfo) {
@@ -1634,7 +1634,7 @@ function(
 	 * @param {string} sName name of the setting
 	 * @param {object} oInfo metadata for the setting
 	 * @private
-	 * @restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 */
 	ManagedObjectMetadata.prototype.addSpecialSetting = function (sName, oInfo) {
 		var oSS = new SpecialSetting(this, sName, oInfo);

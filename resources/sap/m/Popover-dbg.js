@@ -121,7 +121,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.140.0
+		* @version 1.141.0
 		*
 		* @public
 		* @alias sap.m.Popover
@@ -266,6 +266,7 @@ sap.ui.define([
 
 					/**
 					 * Any control that needed to be displayed in the header area. When this is set, the showHeader property is ignored, and only this customHeader is shown on the top of popover.
+					* <br/><b>Note:</b> To improve accessibility, titles with heading level <code>H1</code> should be used inside the custom header.
 					 */
 					customHeader: {type: "sap.ui.core.Control", multiple: false},
 
@@ -2695,6 +2696,12 @@ sap.ui.define([
 			}
 		};
 
+		Popover.prototype._getTitles = function (oContainer) {
+			return oContainer.findAggregatedObjects(true, function(oObject) {
+				return oObject.isA("sap.m.Title");
+			});
+		};
+
 		/**
 		 * Provides the accessibility options of the control.
 		 *
@@ -2713,10 +2720,23 @@ sap.ui.define([
 				return mAccOptions;
 			}
 
-			var oHeaderId = oCustomHeader ? oCustomHeader.getId() : this.getHeaderTitle().getId();
+			if (oCustomHeader) {
+				// if there are titles in the header, add all of them to labels, else use the full header
+				var aTitles = this._getTitles(oHeader);
+
+				if (aTitles.length) {
+					aAriaLabels = aTitles.map(function (oTitle) {
+						return oTitle.getId();
+					});
+				} else {
+					aAriaLabels = oHeader.getId();
+				}
+			} else {
+				aAriaLabels = this.getHeaderTitle().getId();
+			}
 
 			// If we have a header/title, we add a reference to it in the beginning of the aria-labelledby attribute
-			aAriaLabels = Array.prototype.concat(oHeaderId, this.getAssociation("ariaLabelledBy", []));
+			aAriaLabels = Array.prototype.concat(aAriaLabels, this.getAssociation("ariaLabelledBy", []));
 			mAccOptions.labelledby = aAriaLabels.join(' ');
 
 			return mAccOptions;

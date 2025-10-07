@@ -67,7 +67,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 */
@@ -250,12 +250,21 @@ sap.ui.define([
 	/**
 	 * Initializes the component instance after creation.
 	 *
-	 * Applications must not call this hook method directly, it is called by the
-	 * framework while the constructor of a Component is executed.
+	 * The primary responsibility of this method is to create the root control of the component and
+	 * manage its aggregation in the "rootControl" aggregation. This is performed internally by invoking
+	 * the {@link sap.ui.core.UIComponent#createContent} method.
 	 *
-	 * Subclasses of <code>UIComponent</code> should override this hook to implement any necessary
-	 * initialization. <b>When overriding this function make sure to invoke the
-	 * <code>init</code> function of the <code>UIComponent</code> as well!</b>
+	 * Depending on the class metadata (e.g., if the "sap.ui.core.IAsyncContentCreation" interface is implemented),
+	 * the root control may be created synchronously or asynchronously.
+	 *
+	 * Additionally, this method is responsible for creating the router and targets instances.
+	 *
+	 * <b>Note:</b> Applications must not call this hook method directly; it is invoked by the framework
+	 * during the execution of the Component constructor.
+	 *
+	 * Subclasses of <code>UIComponent</code> should override this hook to implement any required
+	 * initialization logic. <b>When overriding this method, ensure that you always invoke the
+	 * <code>init</code> method of the <code>UIComponent</code> base class.</b>
 	 *
 	 * @protected
 	 */
@@ -601,7 +610,7 @@ sap.ui.define([
 	 */
 	UIComponent.prototype.createId = function(sId) {
 		if (!this.isPrefixedId(sId)) {
-			// components have 3 dashes as separator, views 2 and controls/elements 1
+			// components have 3 hyphens as separator, views 2 and controls/elements 1
 			sId = this.getId() + "---" + sId;
 		}
 		return sId;

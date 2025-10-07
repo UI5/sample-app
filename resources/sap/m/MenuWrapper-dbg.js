@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @private
@@ -151,6 +151,12 @@ sap.ui.define([
 				oGroup._ensureSingleSelection();
 			}
 		});
+	};
+
+	MenuWrapper.prototype.onAfterRendering = function() {
+		if (document.body.classList.contains("sapUiSizeCompact") || this.hasStyleClass("sapUiSizeCompact") || this.getDomRef()?.closest(".sapUiSizeCompact")) {
+			this.addStyleClass("sapUiSizeCompact");
+		}
 	};
 
 	MenuWrapper.prototype.onmouseover = function(oEvent) {

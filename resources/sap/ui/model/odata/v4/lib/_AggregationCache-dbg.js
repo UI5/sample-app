@@ -58,6 +58,7 @@ sap.ui.define([
 		this.aElements.$byPredicate = {};
 		this.aElements.$count = undefined;
 		this.aElements.$created = 0; // required for _Cache#drillDown (see _Cache.from$skip)
+		this.iResetCount = 0;
 		// Whether this cache is a unified cache, using oFirstLevel with ExpandLevels instead of
 		// separate group level caches
 		this.bUnifiedCache = oAggregation.expandTo >= Number.MAX_SAFE_INTEGER
@@ -461,7 +462,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   A lock for the group ID
-	 * @param {sap.ui.base.SyncPromise} oPostPathPromise
+	 * @param {sap.ui.base.SyncPromise<string>} oPostPathPromise
 	 *   A SyncPromise resolving with the resource path for the POST request
 	 * @param {string} sPath
 	 *   The collection's path within the cache (as used by change listeners)
@@ -479,7 +480,7 @@ sap.ui.define([
 	 *   fails
 	 * @param {function} fnSubmitCallback
 	 *   A function which is called just before a POST request for the create is sent
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise which is resolved with the created entity when the POST request has been
 	 *   successfully sent and the entity has been marked as non-transient
 	 * @throws {Error}
@@ -517,9 +518,22 @@ sap.ui.define([
 
 		_Helper.addByPath(this.mPostRequests, sTransientPredicate, oEntityData);
 		const iIndex = aElements.indexOf(oParentNode) + 1; // 0 w/o oParentNode :-)
+		if (this.oCountPromise) {
+			const fnOldSubmitCallback = fnSubmitCallback;
+			// create a new count promise early, that a synchronous call to
+			// oHeaderContext.requestProperty("$count") waits until the creation was successful or
+			// has been cancelled; cancellation of the creation will restore the old count promise
+			this.createCountPromise(true);
+			fnSubmitCallback = () => {
+				this.readCount(oGroupLock)?.catch(
+					this.oRequestor.getModelInterface().getReporter());
+				fnOldSubmitCallback();
+			};
+		}
 		const oPromise = oCache.create(oGroupLock, oPostPathPromise, sPath, sTransientPredicate,
 			oEntityData, bAtEndOfCreated, fnErrorCallback, fnSubmitCallback, /*onCancel*/() => {
 				_Helper.removeByPath(this.mPostRequests, sTransientPredicate, oEntityData);
+				this.oCountPromise?.$restore();
 				if (this.oAggregation.createInPlace) {
 					return;
 				}
@@ -618,22 +632,30 @@ sap.ui.define([
 	 * to be resolved by a following {@link #readCount} call. If the old count promise is still
 	 * pending, no new promise is created in order to avoid duplicate $count requests.
 	 *
+	 * @param {boolean} [bRetryIfFailed]
+	 *   Whether a count request which fails due to a previous request will be retried
+	 *
 	 * @private
 	 */
-	_AggregationCache.prototype.createCountPromise = function () {
+	_AggregationCache.prototype.createCountPromise = function (bRetryIfFailed) {
 		const oOldCountPromise = this.oCountPromise;
 		if (oOldCountPromise?.isPending()) {
 			return;
 		}
 
 		let fnResolve;
-		this.oCountPromise = new SyncPromise(function (resolve) {
-			fnResolve = resolve;
+		this.oCountPromise = new SyncPromise((resolve) => {
+			fnResolve = (iCount) => {
+				delete this.oCountPromise?.$old; // count promise might already be deleted
+				resolve(iCount);
+			};
 		});
 		this.oCountPromise.$resolve = fnResolve;
 		this.oCountPromise.$restore = () => {
 			fnResolve(oOldCountPromise);
 		};
+		this.oCountPromise.$old = oOldCountPromise;
+		this.oCountPromise.$retryIfFailed = bRetryIfFailed;
 	};
 
 	/**
@@ -938,7 +960,7 @@ sap.ui.define([
 	 *   The index of the child node
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   An unlocked lock for the group to associate the requests with
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<number>}
 	 *   A promise to be resolved with the requested index of the parent.
 	 *
 	 * @public
@@ -1027,7 +1049,7 @@ sap.ui.define([
 	 *   An optional change listener that is added for the given path. Its method
 	 *   <code>onChange</code> is called with the new value if the property at that path is modified
 	 *   via {@link #update} later.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<any>}
 	 *   A promise to be resolved with the requested data. The promise is rejected if the cache is
 	 *   inactive (see {@link #setActive}) when the response arrives. Fails to drill-down into
 	 *   "$count" in cases where it does not reflect the leaf count.
@@ -1047,6 +1069,12 @@ sap.ui.define([
 					// the root nodes. This count must not be propagated to the listeners. So use a
 					// name similar to "$count" which never conflicts with any other valid path.
 					this.registerChangeListener("./$count", oListener);
+				}
+				if (oGroupLock === _GroupLock.$cached && this.oCountPromise.$old) {
+					// return the old count promise if the $count is now being requested
+					// synchronously and a new count has already been requested (e.g. when creating
+					// a new entity) but is not yet available
+					return this.oCountPromise.$old;
 				}
 				return this.oCountPromise;
 			}
@@ -1315,7 +1343,7 @@ sap.ui.define([
 			throw new Error("Unsupported path: " + sPath);
 		}
 
-		const mQueryOptions = _Helper.clone(this.mLateQueryOptions ?? this.mQueryOptions);
+		const mQueryOptions = _Helper.clone({...this.mQueryOptions, ...this.mLateExpandSelect});
 		const iIndex = mQueryOptions.$select.indexOf(this.oAggregation.$NodeProperty);
 		if (iIndex >= 0) {
 			mQueryOptions.$select.splice(iIndex, 1);
@@ -1620,8 +1648,6 @@ sap.ui.define([
 		const invokeNextSibling = () => {
 			if (sSiblingPath !== undefined) {
 				bRefreshNeeded = true;
-				const sActionPath = sNonCanonicalChildPath + "/"
-					+ this.oAggregation.$Actions.ChangeNextSiblingAction;
 				const sSiblingPredicate = sSiblingPath?.slice(sSiblingPath.indexOf("("));
 				oSiblingNode = this.aElements.$byPredicate[sSiblingPredicate];
 				let oNextSibling = null;
@@ -1629,7 +1655,8 @@ sap.ui.define([
 					// remove OOP for all descendants (incl. itself) of a next sibling
 					this.oTreeState.deleteOutOfPlace(sSiblingPredicate);
 					const oNextSiblingType = this.oAggregation.$fetchMetadata(
-						_Helper.getMetaPath("/" + sActionPath + "/NextSibling/")
+						_Helper.getMetaPath("/" + sNonCanonicalChildPath + "/"
+						+ this.oAggregation.$Actions.ChangeNextSiblingAction + "/NextSibling/")
 					).getResult();
 					const aKeys = Object.keys(oNextSiblingType).filter((sKey) => sKey[0] !== "$");
 					oNextSibling = aKeys.reduce((oKeys, sKey) => {
@@ -1637,6 +1664,8 @@ sap.ui.define([
 						return oKeys;
 					}, {});
 				}
+				const sActionPath = (bCopy ? "$-2" : sNonCanonicalChildPath) + "/"
+					+ this.oAggregation.$Actions.ChangeNextSiblingAction;
 
 				return this.oRequestor.request("POST", sActionPath, oGroupLock.getUnlockedCopy(), {
 						"If-Match" : oChildNode,
@@ -1782,9 +1811,9 @@ sap.ui.define([
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before a back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise to be resolved with the requested range given as an OData response object (with
-	 *   "@odata.context" and the rows as an array in the property <code>value</code>, enhanced
+	 *   "@$ui5.resetCount" and the rows as an array in the property <code>value</code>, enhanced
 	 *   with a number property <code>$count</code> representing the element count on server-side;
 	 *   <code>$count</code> may be <code>undefined</code>, but not <code>Infinity</code>). If an
 	 *   HTTP request fails, the error from the _Requestor is returned.
@@ -1903,7 +1932,10 @@ sap.ui.define([
 
 			aElements.$count = that.aElements.$count;
 
-			return {value : aElements};
+			return {
+				"@$ui5.resetCount" : that.iResetCount,
+				value : aElements
+			};
 		});
 	};
 
@@ -1952,7 +1984,11 @@ sap.ui.define([
 					_Helper.fireChange(this.mChangeListeners, "./$count", iCount);
 				})
 				.catch((oError) => {
-					this.oCountPromise.$restore();
+					if (oError.cause && this.oCountPromise.$retryIfFailed) {
+						this.oCountPromise.$resolve = fnResolve; // allow another readCount call
+					} else {
+						this.oCountPromise.$restore();
+					}
 					throw oError;
 				});
 		}
@@ -1973,7 +2009,7 @@ sap.ui.define([
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before a back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the read is finished, or
 	 *   rejected in case of an error
 	 * @throws {Error} If given index or length is less than 0
@@ -1999,6 +2035,7 @@ sap.ui.define([
 			iStart = 0;
 		}
 
+		const iResetCount = this.iResetCount;
 		// Note: this.oFirstLevel.read changes this value
 		const bSentRequest = this.oFirstLevel.bSentRequest;
 		if (bSentRequest && iOutOfPlaceCount) { // cannot handle result below, avoid new request
@@ -2010,6 +2047,9 @@ sap.ui.define([
 				// request out-of-place nodes only once
 				...(bSentRequest ? [] : this.requestOutOfPlaceNodes(oGroupLock))
 			]).then(function ([oResult, ...aOutOfPlaceResults]) {
+				if (iResetCount !== that.iResetCount) {
+					return; // ignore result, a refresh happened in the meantime
+				}
 				if (bSentRequest && iOutOfPlaceCount) {
 					return; // not idempotent due to previous #handleOutOfPlaceNodes
 				}
@@ -2076,7 +2116,7 @@ sap.ui.define([
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before a back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
-	 * @returns {sap.ui.base.SyncPromise}
+	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result when the read is finished, or
 	 *   rejected in case of an error
 	 * @throws {Error} If index of placeholder at start of gap is less than 0, if end of gap is

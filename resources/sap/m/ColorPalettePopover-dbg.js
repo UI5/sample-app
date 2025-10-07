@@ -39,7 +39,7 @@ sap.ui.define([
 		 * A thin wrapper over {@link sap.m.ColorPalette} allowing the latter to be used in a popover.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 *
 		 * @public
 		 * @since 1.54
@@ -377,6 +377,10 @@ sap.ui.define([
 			oColorPalette._setShowDefaultColorButton(this.getShowDefaultColorButton());
 			oColorPalette._setShowMoreColorsButton(this.getShowMoreColorsButton());
 			oColorPalette._setShowRecentColorsSection(this.getShowRecentColorsSection());
+
+			// Set the private property to indicate this ColorPalette is used in a popover
+			// This enables Home/End key navigation for better accessibility
+			oColorPalette.setProperty("_isInPopover", true);
 
 			return oColorPalette;
 		};

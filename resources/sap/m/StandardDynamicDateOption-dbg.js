@@ -54,7 +54,7 @@ sap.ui.define([
 		 * @extends sap.m.DynamicDateOption
 		 *
 		 * @author SAP SE
-		 * @version 1.140.0
+		 * @version 1.141.0
 		 *
 		 * @private
 		 * @alias sap.m.StandardDynamicDateOption
@@ -550,7 +550,15 @@ sap.ui.define([
 				}
 
 				aControls.push(oInputControl);
-				oCurrentLabel && oCurrentLabel.setLabelFor(oInputControl);
+
+				if (aParams[iIndex].getType() === "included" && oCurrentLabel) {
+					const excludedButton = oInputControl.getItems()[0];
+					const includedButton = oInputControl.getItems()[2];
+					excludedButton.addAriaLabelledBy(oCurrentLabel);
+					includedButton.addAriaLabelledBy(oCurrentLabel);
+				} else if (oCurrentLabel) {
+					oCurrentLabel.setLabelFor(oInputControl);
+				}
 
 				if (aParams[iIndex].getAdditionalText()) {
 					aControls.push(

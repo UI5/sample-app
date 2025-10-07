@@ -20,7 +20,7 @@ sap.ui.define(['./ListItemBase', './library', './FacetFilterItemRenderer'],
 	 * @class
 	 * Represents a value for the {@link sap.m.FacetFilterList} control.
 	 * @extends sap.m.ListItemBase
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 *
 	 * @constructor
 	 * @public

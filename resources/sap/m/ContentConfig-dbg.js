@@ -23,7 +23,7 @@ sap.ui.define([
 	 * @class This element is used within the TileAttribute control that generates either a link or text
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @constructor
 	 * @public
 	 * @experimental since 1.122

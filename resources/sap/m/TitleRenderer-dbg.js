@@ -43,7 +43,6 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/library", "sap/m/Hyphenation
 		oRm.class("sapMTitle");
 		oRm.class("sapMTitleStyle" + oTitle.getTitleStyle());
 		oRm.class(oTitle.getWrapping() ? "sapMTitleWrap" : "sapMTitleNoWrap");
-		oRm.class("sapUiSelectable");
 
 		var sWidth = oTitle.getWidth();
 		if (!sWidth) {
@@ -73,6 +72,7 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/library", "sap/m/Hyphenation
 		oRm.openEnd();
 
 		oRm.openStart("span", oTitle.getId() + "-inner");
+		oRm.class("sapUiSelectable");
 		oRm.attr("dir", sTextDir !== TextDirection.Inherit ? sTextDir.toLowerCase() : "auto");
 		oRm.openEnd();
 		if (oTitleContent) { // render a control added in the titleControl aggregation ...

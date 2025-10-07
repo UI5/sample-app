@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.140.0
+	 * @version 1.141.0
 	 * @since 1.34
 	 *
 	 * @public
@@ -164,7 +164,7 @@ sap.ui.define([
 			type: ButtonType.Transparent,
 			ariaDescribedBy: this._oInvisibleText,
 			press: () => {
-				this._scrollToNextTile(true,true,null,true);
+				this._scrollToNextTileManually(true,true,null,true);
 				this._setInvisibleText(this._getPrefixText());
 			},
 			tooltip: this._oRb.getText("SLIDETILE_PREVIOUS")
@@ -174,7 +174,7 @@ sap.ui.define([
 			type: ButtonType.Transparent,
 			ariaDescribedBy: this._oInvisibleText,
 			press: () => {
-				this._scrollToNextTile(true,false,null,true);
+				this._scrollToNextTileManually(true,false,null,true);
 				this._setInvisibleText(this._getPrefixText());
 			},
 			tooltip: this._oRb.getText("SLIDETILE_NEXT")
@@ -192,6 +192,7 @@ sap.ui.define([
 	SlideTile.prototype.onBeforeRendering = function () {
 		// initialize SlideTile scope with SlideTile CSS class name
 		GenericTile.prototype._initScopeContent.call(this, "sapMST");
+		this._iCurrentTile = 0;
 		var bActionsView = this.getScope() === GenericTileScope.Actions;
 		// According to the scope of SlideTile, displays corresponding view of GenericTiles
 		for (var i = 0; i < this.getTiles().length; i++) {
@@ -254,7 +255,7 @@ sap.ui.define([
 						bIsbackward = this._iCurrentTile > iCurrentIndex;
 
 					if (this._iCurrentTile !== iCurrentIndex) {
-						this._scrollToNextTile(this._bAnimationPause, bIsbackward, iCurrentIndex);
+						this._scrollToNextTileManually(this._bAnimationPause, bIsbackward, iCurrentIndex);
 					}
 				}.bind(this));
 			}
@@ -696,7 +697,7 @@ sap.ui.define([
 	 */
 	SlideTile.prototype._scrollToNextTile = function (pause, backward, iNextTile,bAvoidAriaUpdate) {
 		var iTransitionTime = this._iCurrAnimationTime - this.getDisplayTime(),
-			bFirstAnimation, iNxtTile, oWrapperFrom, oWrapperTo, sWidthFrom, fWidthTo, fWidthFrom, bChangeSizeBefore, sDir, oDir;
+			bFirstAnimation, iNxtTile;
 
 		iTransitionTime = this.getTransitionTime() - (iTransitionTime > 0 ? iTransitionTime : 0);
 		bFirstAnimation = iTransitionTime === this.getTransitionTime();
@@ -710,6 +711,47 @@ sap.ui.define([
 			this._iPreviousTile = this._iCurrentTile;
 			this._iCurrentTile = iNxtTile;
 		}
+			this._performScroll(iTransitionTime, backward, iNextTile, pause, bAvoidAriaUpdate, bFirstAnimation);
+	};
+
+	/**
+	 * Scrolls to the next tile, forward or backward when the user manually clicks on the button
+	 *
+	 * @private
+	 * @param {boolean} pause Triggers if the animation gets paused or not
+	 * @param {boolean} backward Sets the direction backward or forward
+	 * @param {int} iNextTile Scrolls to custom tile
+	 * @param {boolean} bAvoidAriaUpdate decides whether the aria text should be updated
+	 */
+	SlideTile.prototype._scrollToNextTileManually = function (pause, backward, iNextTile,bAvoidAriaUpdate) {
+		var iTransitionTime = this._iCurrAnimationTime - this.getDisplayTime(), iNxtTile;
+                if (this._iCurrAnimationTime > 5000){
+			this._iCurrAnimationTime = 0;
+		}
+		iTransitionTime = this.getTransitionTime() - (iTransitionTime > 0 ? iTransitionTime : 0);
+		if (backward) {
+			iNxtTile = this._getPreviousTileIndex(this._iCurrentTile);
+		} else {
+			iNxtTile = this._getNextTileIndex(this._iCurrentTile);
+		}
+		this._iPreviousTile = this._iCurrentTile;
+		this._iCurrentTile = iNxtTile;
+		this._performScroll(iTransitionTime, backward, iNextTile, pause, bAvoidAriaUpdate);
+	};
+
+	/**
+	 * Perform the scroll functionality of the tile
+	 *
+	 * @private
+	 * @param {int} iTransitionTime Transition Time needed for switching tiles
+	 * @param {boolean} backward Sets the direction backward or forward
+	 * @param {int} iNxtTile The next tile where the scroll needs to happen
+	 * @param {int} iNextTile Scrolls to custom tile
+         * @param {boolean} pause Triggers if the animation gets paused or not
+	 * @param {boolean} bAvoidAriaUpdate decides whether the aria text should be updated
+	 */
+	SlideTile.prototype._performScroll = function(iTransitionTime, backward, iNextTile, pause, bAvoidAriaUpdate, bFirstAnimation) {
+		var oWrapperFrom, oWrapperTo, sWidthFrom, fWidthTo, fWidthFrom, bChangeSizeBefore, sDir, oDir;
 
 		if (iNextTile && iNextTile >= 0) {
 			this._iCurrentTile = iNextTile;
@@ -740,8 +782,8 @@ sap.ui.define([
 			}
 
 			if (bFirstAnimation) {
-				oWrapperTo.css(sDir, sWidthFrom);
-			}
+                          oWrapperTo.css(sDir, sWidthFrom);
+                        }
 
 			oDir = {};
 			if (backward) {

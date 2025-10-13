@@ -24,7 +24,7 @@ sap.ui.define([
 	 *
 	 * Applications can inherit from this element to add own fields.
 	 * @extends sap.ui.unified.NonWorkingPeriod
-	 * @version 1.141.0
+	 * @version 1.141.1
 	 *
 	 * @constructor
 	 * @public

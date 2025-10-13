@@ -56,7 +56,7 @@ sap.ui.define([
 	 * @extends sap.m.IllustratedMessage
 	 *
 	 * @author SAP SE
-	 * @version 1.141.0
+	 * @version 1.141.1
 	 *
 	 * @constructor
 	 * @public

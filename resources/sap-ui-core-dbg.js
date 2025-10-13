@@ -2698,7 +2698,7 @@
 	/**
 	 * Root namespace for JavaScript functionality provided by SAP SE.
 	 *
-	 * @version 1.141.0
+	 * @version 1.141.1
 	 * @namespace
 	 * @public
 	 * @name sap

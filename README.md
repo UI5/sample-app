@@ -1,7 +1,7 @@
 ![OpenUI5 logo](http://openui5.org/images/OpenUI5_new_big_side.png)
 
 # sample-app
-> [OpenUI5](https://github.com/UI5/openui5) sample app using the [UI5 Tooling](https://github.com/SAP/ui5-tooling).
+> [OpenUI5](https://github.com/UI5/openui5) sample app using the [UI5 CLI](https://github.com/UI5/cli).
 
 [![REUSE status](https://api.reuse.software/badge/github.com/UI5/sample-app)](https://api.reuse.software/info/github.com/UI5/sample-app)
 
@@ -9,8 +9,8 @@
 A deployed version of the [sample-app](http://ui5.github.io/sample-app/index.html) is hosted on GitHub Pages.
 
 ## Prerequisites
-- The **UI5 CLI** of the [UI5 Tooling](https://github.com/SAP/ui5-tooling#installing-the-ui5-cli).
-    - For installation instructions please see: [Installing the UI5 CLI](https://github.com/SAP/ui5-tooling#installing-the-ui5-cli).
+- The [UI5 CLI](https://github.com/UI5/cli#installing-the-ui5-cli).
+    - For installation instructions please see: [Installing the UI5 CLI](https://github.com/UI5/cli#installing-the-ui5-cli).
 
 ## Getting started
 1. Clone this repository and navigate into it
@@ -74,7 +74,7 @@ A deployed version of the [sample-app](http://ui5.github.io/sample-app/index.htm
 
 ## Working with local dependencies
 
-For local development of your applications' dependencies (like OpenUI5 libraries) you can use [UI5 Workspaces](https://sap.github.io/ui5-tooling/stable/pages/Workspace/). This will allow you to make changes to those dependencies locally and see the impact in your application immediately.
+For local development of your applications' dependencies (like OpenUI5 libraries) you can use [UI5 Workspaces](https://ui5.github.io/cli/stable/pages/Workspace/). This will allow you to make changes to those dependencies locally and see the impact in your application immediately.
 
 ### Preparation
 The following needs to be done just once per setup.
@@ -112,7 +112,7 @@ Would you like to work on the application project and one or more of its UI5 fra
 
 You can now make changes in your local OpenUI5 repository and see the impact directly when serving or building your application.
 
-If a dependency that is listed in `ui5.yaml` is omitted in the `resolutions` section of `ui5-workspace.yaml`, the library is resolved in the usual way by downloading it from the registry. For more information about dependency resolutions, check [here](https://sap.github.io/ui5-tooling/v3/pages/Workspace/#dependency-management).
+If a dependency that is listed in `ui5.yaml` is omitted in the `resolutions` section of `ui5-workspace.yaml`, the library is resolved in the usual way by downloading it from the registry. For more information about dependency resolutions, check [here](https://ui5.github.io/cli/stable/pages/Workspace/#dependency-management).
 
 #### Non-default workspace
 

@@ -3,9 +3,13 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/base/strings/formatMessage",
-	"sap/ui/core/BarColor",
+	"sap/ui/core/library",
 	"sap/ui/demo/todo/util/Helper",
-], (Controller, Filter, FilterOperator, formatMessage, BarColor, Helper) => {
+	"sap/ui/core/Element",
+	"sap/ui/Device",
+	"sap/ui/model/json/JSONModel",
+	"sap/m/Button"
+], (Controller, Filter, FilterOperator, formatMessage, coreLibrary, Helper, Element, Device, JSONModel, Button) => {
 	"use strict";
 
 	return Controller.extend("sap.ui.demo.todo.controller.App", {
@@ -13,29 +17,33 @@ sap.ui.define([
 		onInit() {
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
+			// Use library reference instead of pseudo module
+			const { BarColor } = coreLibrary;
 			this.BarColor = BarColor;
 
-			this.getView().setModel(new sap.ui.model.json.JSONModel({
-				isMobile: sap.ui.Device.browser.mobile
+			this.getView().setModel(new JSONModel({
+				isMobile: Device.browser.mobile
 			}), "view");
 		},
 
 		onAfterRendering() {
-			const avatarDOM = jQuery("#container-todo---app--avatar-profile");
-			const avatarCtr = avatarDOM.control(0);
-			avatarCtr.setSrc(Helper.resolvePath('./img/logo_ui5.png'));
+			// Use modern Element.closestTo instead of deprecated jQuery control() method
+			const avatarDOM = document.getElementById("container-todo---app--avatar-profile");
+			const avatarCtr = Element.closestTo(avatarDOM);
+			if (avatarCtr) {
+				avatarCtr.setSrc(Helper.resolvePath('./img/logo_ui5.png'));
+			}
 
-			sap.ui.require(["sap/m/Button"], (Button) => {
-				const clearBtn = new Button({
-					id: "clearCompleted",
-					enabled: "{/itemsRemovable}",
-					icon: "sap-icon://delete",
-					text: "{i18n>CLEAR_COMPLETED}",
-					tap: this.onClearCompleted.bind(this),
-				});
-
-				this.byId("toolbar").addContent(clearBtn);
+			// Button is now imported as dependency, no need for dynamic require
+			const clearBtn = new Button({
+				id: this.createId("clearCompleted"),
+				enabled: "{/itemsRemovable}",
+				icon: "sap-icon://delete",
+				text: "{i18n>CLEAR_COMPLETED}",
+				press: this.onClearCompleted.bind(this),
 			});
+
+			this.byId("toolbar").addContent(clearBtn);
 		},
 
 		/**
@@ -151,8 +159,8 @@ sap.ui.define([
 		},
 
 		_applyListFilters() {
-			const oList = sap.ui.getCore().byId("container-todo---app--todoList");
-			// const oList = this.byId("todoList");
+			// Use this.byId() instead of Element.getElementById for better practice
+			const oList = this.byId("todoList");
 			const oBinding = oList.getBinding("items");
 
 			oBinding.filter(this.aSearchFilters.concat(this.aTabFilters), "todos");

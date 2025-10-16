@@ -1,5 +1,5 @@
 {
-	"_version": "1.76.0",
+	"_version": "2.0.0",
 	"sap.app": {
 		"id": "sap.ui.demo.todo",
 		"type": "application",
@@ -19,8 +19,7 @@
 			"libs": {
 				"sap.ui.core": {},
 				"sap.m": {},
-				"sap.f": {},
-				"sap.ui.commons": {}
+				"sap.f": {}
 			}
 		},
 		"rootView": {
@@ -41,10 +40,7 @@
 				"uri": "model/todoitems.json"
 			},
 			"businessData": {
-				"dataSource": "businessData",
-				"settings": {
-					"synchronizationMode": "None"
-				}
+				"dataSource": "businessData"
 			}
 		},
 		"resources": {
@@ -52,8 +48,7 @@
 				{
 					"uri": "css/styles.css"
 				}
-			],
-			"js": []
+			]
 		}
 	}
 }

@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.141.1
+	 * @version 1.141.2
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */

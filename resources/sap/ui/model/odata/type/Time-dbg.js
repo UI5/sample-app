@@ -138,7 +138,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.141.1
+	 * @version 1.141.2
 	 *
 	 * @alias sap.ui.model.odata.type.Time
 	 * @param {object} [oFormatOptions]

@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @extends sap.m.MessageStrip
 	 *
 	 * @author SAP SE
-	 * @version 1.141.1
+	 * @version 1.141.2
 	 *
 	 * @private
          * @ui5-restricted sap.m.p13n, sap.ui.mdc

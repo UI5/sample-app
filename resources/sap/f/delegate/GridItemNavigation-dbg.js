@@ -34,7 +34,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.141.1
+	 * @version 1.141.2
 	 *
 	 * @extends sap.ui.core.delegate.ItemNavigation
 	 *

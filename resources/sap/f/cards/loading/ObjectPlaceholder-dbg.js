@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.f.cards.loading.PlaceholderBase
 	 *
 	 * @author SAP SE
-	 * @version 1.141.1
+	 * @version 1.141.2
 	 *
 	 * @constructor
 	 * @private

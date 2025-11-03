@@ -20,7 +20,7 @@
 		"@eslint/js": "^9.38.0",
 		"@ui5/cli": "^4.0.33",
 		"@ui5/linter": "^1.20.2",
-		"@ui5/middleware-code-coverage": "^2.0.1",
+		"@ui5/middleware-code-coverage": "^2.0.2",
 		"eslint": "^9.38.0",
 		"globals": "^16.4.0",
 		"local-web-server": "^5.4.0",

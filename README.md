@@ -9,8 +9,8 @@
 A deployed version of the [sample-app](http://ui5.github.io/sample-app/index.html) is hosted on GitHub Pages.
 
 ## Prerequisites
-- The [UI5 CLI](https://github.com/UI5/cli#installing-the-ui5-cli).
-    - For installation instructions please see: [Installing the UI5 CLI](https://github.com/UI5/cli#installing-the-ui5-cli).
+- The [UI5 CLI](https://github.com/UI5/cli).
+    - For installation instructions please see: [Installation](https://ui5.github.io/cli/stable/pages/CLI/#installation).
 
 ## Getting started
 1. Clone this repository and navigate into it

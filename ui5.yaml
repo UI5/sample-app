@@ -1,7 +1,7 @@
-specVersion: '4.0'
+specVersion: '5.0'
 metadata:
   name: "@ui5/sample-app"
-type: application
+type: component
 framework:
   name: OpenUI5
   version: "1.142.0"
@@ -17,4 +17,5 @@ server:
       configuration:
         excludePatterns:
           - "resources/"
-          - "test/"
+          - "!resources/sap/ui/demo/todo/"
+          - "test-resources/"

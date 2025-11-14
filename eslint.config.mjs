@@ -1,7 +1,10 @@
 import globals from "globals";
 import js from "@eslint/js";
 
-export default [
+export default [{
+        ignores: [
+        ]
+    },
     js.configs.recommended,
     {
         languageOptions: {
@@ -52,6 +55,11 @@ export default [
             "no-var": 2,
             "no-const-assign": 2,
             "prefer-const": 2
+        }
+    }, {
+        files: ["eslint.config.mjs"],
+        languageOptions: {
+            sourceType: "module"
         }
     }
 ]

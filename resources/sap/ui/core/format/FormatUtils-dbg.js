@@ -11,7 +11,7 @@ sap.ui.define([], function() {
 	 * Formatter related utility functions
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @namespace
 	 * @private
 	 */

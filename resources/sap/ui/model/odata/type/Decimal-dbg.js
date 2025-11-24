@@ -18,6 +18,7 @@ sap.ui.define([
 
 	var rDecimal = /^[-+]?(\d+)(?:\.(\d+))?$/,
 		rTrailingZeroes = /(?:(\.[0-9]*[1-9]+)0+|\.0*)$/;
+	const rInsignificantZeros = /^0+|0+$/g;
 
 	/**
 	 * Returns the type's scale constraint.
@@ -133,7 +134,8 @@ sap.ui.define([
 			vPrecision = oConstraints.precision;
 			vScale = oConstraints.scale;
 
-			iScale = vScale === "variable" ? Infinity : validateInt(vScale, 0, 0, "scale");
+			iScale = vScale === "variable" || vScale === "floating" ? Infinity : validateInt(vScale, 0, 0, "scale");
+			oType.bIsFloating = vScale === "floating";
 			iPrecision = validateInt(vPrecision, Infinity, 1, "precision");
 			if (iScale !== Infinity && iPrecision < iScale) {
 				Log.warning("Illegal scale: must be less than or equal to precision (precision="
@@ -166,20 +168,20 @@ sap.ui.define([
 	 * <code>Edm.Decimal</code></a>.
 	 *
 	 * In both {@link sap.ui.model.odata.v2.ODataModel} and {@link sap.ui.model.odata.v4.ODataModel}
-	 * this type is represented as a <code>string</code>. It never uses exponential format ("1e-5").
+	 * this type is represented as a <code>string</code>.
 	 *
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @alias sap.ui.model.odata.type.Decimal
 	 * @param {object} [oFormatOptions]
 	 *   Format options as defined in {@link sap.ui.core.format.NumberFormat.getFloatInstance}.
 	 *   In contrast to NumberFormat <code>groupingEnabled</code> defaults to <code>true</code>.
 	 *   Note that <code>maxFractionDigits</code> and <code>minFractionDigits</code> are set to
-	 *   the value of the constraint <code>scale</code> unless it is "variable". They can however
-	 *   be overwritten.
+	 *   the value of the constraint <code>scale</code> unless it is "variable" or "floating".
+	 *   They can however be overwritten.
 	 * @param {boolean} [oFormatOptions.parseEmptyValueToZero=false]
 	 *   Whether the empty string and <code>null</code> are parsed to <code>"0"</code> if the <code>nullable</code>
 	 *   constraint is set to <code>false</code>; see {@link #parseValue parseValue}; since 1.115.0
@@ -202,17 +204,38 @@ sap.ui.define([
 	 * @param {int|string} [oConstraints.precision=Infinity]
 	 *   the maximum number of digits allowed
 	 * @param {int|string} [oConstraints.scale=0]
-	 *   the maximum number of digits allowed to the right of the decimal point; the number must be
-	 *   less than or equal to <code>precision</code> (if given). As a special case, "variable" is
-	 *   supported.
+	 *   The maximum number of digits allowed to the right of the decimal point; the number must be
+	 *   less than or equal to <code>precision</code> (if given). The <code>Decimal</code> is then always displayed
+	 *   with exactly that number of digits to the right of the decimal point.
+	 *   If <code>scale</code> is equal to <code>precision</code>, a single zero has to precede the decimal point.
 	 *
-	 *   The number of digits to the right of the decimal point may vary from zero to
-	 *   <code>scale</code>, and the number of digits to the left of the decimal point may vary
-	 *   from one to <code>precision</code> minus <code>scale</code>. If <code>scale</code> is equal
-	 *   to <code>precision</code>, a single zero has to precede the decimal point.
+	 *   In addition, the <code>scale</code> values "variable" and (as of UI5 version 1.142.0) "floating" are supported.
+	 *   <ul>
+	 *     <li>
+	 *         For <code>scale="variable"</code>, the number of digits to the right of the decimal point
+	 *         can vary from zero to <code>precision</code> minus the number of digits to the left of the decimal point.
 	 *
-	 *   The number is always displayed with exactly <code>scale</code> digits to the right of the
-	 *   decimal point (unless <code>scale</code> is "variable").
+	 *         <b>Examples for <code>Decimal</code>s with precision=3 and scale="variable":</b>
+	 *         <ul>
+	 *           <li>Valid values: 123, 1.23, 12.3, 0.12</li>
+	 *           <li>Invalid values: 1230, 1.234, 12.34, 0.123</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li>
+	 *         For <code>scale="floating"</code>, the number of significant digits, i.e. the number of digits excluding
+	 *         leading or trailing zeros, must be less than or equal to <code>precision</code>.
+	 *         For more information on <code>scale="floating"</code>, see <a
+	 *           href="https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/odata-csdl-xml-v4.01.html#sec_Scale">
+	 *           OData Version 4.01 Common Schema Definition Language (CSDL) XML Representation - Scale
+	 *         </a>.
+	 *
+	 *         <b>Examples for <code>Decimal</code>s with precision=3 and scale="floating":</b>
+	 *         <ul>
+	 *           <li>Valid values: 1230, 1.23, 12.3, 0.123</li>
+	 *           <li>Invalid values: 1234, 1.234, 12.34, 0.001234</li>
+	 *         </ul>
+	 *     </li>
+	 *   </ul>
 	 * @throws {Error} If the <code>oFormatOptions.decimalPadding</code> is set but is not allowed
 	 * @public
 	 * @since 1.27.0
@@ -397,7 +420,12 @@ sap.ui.define([
 			throw new ValidateException(getText("EnterNumberFraction", [iScale]));
 		}
 		if (iScale === Infinity) {
-			if (iIntegerDigits + iFractionDigits > iPrecision) {
+			if (this.bIsFloating) {
+				const sSignificantDigits = (aMatches[1] + (aMatches[2] ?? "")).replace(rInsignificantZeros, "");
+				if (sSignificantDigits.length > iPrecision) {
+					throw new ValidateException(getText("EnterNumberSignificantDigits", [iPrecision]));
+				}
+			} else if (iIntegerDigits + iFractionDigits > iPrecision) {
 				throw new ValidateException(getText("EnterNumberPrecision", [iPrecision]));
 			}
 		} else if (iIntegerDigits > iPrecision - iScale) {

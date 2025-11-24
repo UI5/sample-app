@@ -133,6 +133,7 @@
 	&::before {
 		content: attr(data-popin-colon);
 		vertical-align: top;
+		white-space: pre;
 	}
 }
 
@@ -171,8 +172,11 @@
 	border-top-width: 2px;
 }
 
-.sapMTableRowCustomFocus {
+.sapMListTblSubCnt.sapMTblCellFocusable:focus:active {
+	outline: none;
+}
 
+.sapMTableRowCustomFocus {
 	.sapMLIBIconDet,
 	.sapMLIBIconDel {
 		margin-left: 0;

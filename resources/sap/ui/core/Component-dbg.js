@@ -20,9 +20,9 @@ sap.ui.define([
 	'sap/ui/base/OwnStatics',
 	'sap/ui/core/Lib',
 	'sap/ui/core/ResizeHandler',
-	'sap/ui/thirdparty/URI',
 	'sap/ui/performance/trace/Interaction',
 	'sap/ui/util/_enforceNoReturnValue',
+	'sap/ui/util/_URL',
 	'sap/base/assert',
 	'sap/base/Log',
 	'sap/base/util/Deferred',
@@ -32,7 +32,6 @@ sap.ui.define([
 	'sap/base/strings/camelize',
 	'sap/ui/core/_UrlResolver',
 	'sap/ui/VersionInfo',
-	'sap/ui/core/mvc/ViewType',
 	'sap/ui/core/ComponentRegistry',
 	'sap/ui/core/util/_LocalizationHelper'
 ], function(
@@ -50,9 +49,9 @@ sap.ui.define([
 	OwnStatics,
 	Library,
 	ResizeHandler,
-	URI,
 	Interaction,
 	_enforceNoReturnValue,
+	_URL,
 	assert,
 	Log,
 	Deferred,
@@ -62,13 +61,10 @@ sap.ui.define([
 	camelize,
 	_UrlResolver,
 	VersionInfo,
-	ViewType,
 	ComponentRegistry,
 	_LocalizationHelper
 ) {
 	"use strict";
-
-	/* global Promise */
 
 	const { runWithOwner, getCurrentOwnerId } = OwnStatics.get(ManagedObject);
 
@@ -82,17 +78,17 @@ sap.ui.define([
 		return {name: sName, type: BaseConfig.Type.String, external: true};
 	}
 	/**
-	 * Utility function which adds SAP-specific parameters to a URI instance
+	 * Utility function which adds SAP-specific parameters to a URL instance
 	 *
-	 * @param {URI} oUri URI.js instance
+	 * @param {URL} oUri Native URL instance
 	 * @private
 	 */
 	function addSapParams(oUri) {
 		['sap-client', 'sap-server'].forEach(function(sName) {
-			if (!oUri.hasSearch(sName)) {
+			if (!oUri.searchParams.has(sName)) {
 				var sValue = BaseConfig.get(getConfigParam(camelize(sName)));
 				if (sValue) {
-					oUri.addSearch(sName, sValue);
+					oUri.searchParams.set(sName, sValue);
 				}
 			}
 		});
@@ -292,7 +288,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -1598,15 +1594,21 @@ sap.ui.define([
 	 */
 	//onConfigChange : null, // function(sConfigKey)
 
+	/**
+	 * @param {module:sap/ui/util/_URL} oUri URL to apply the token to
+	 * @param {object} oLogInfo Additional data used to create meaningful log entries
+	 * @param {Object<string,string>} mMetadataUrlParams
+	 * @private
+	 */
 	function _applyCacheToken(oUri, oLogInfo, mMetadataUrlParams) {
 		var sSource = mMetadataUrlParams ? "Model" : "DataSource";
 		var sManifestPath = mMetadataUrlParams ? "[\"sap.ui5\"][\"models\"]" : "[\"sap.app\"][\"dataSources\"]";
-		var sLanguage = mMetadataUrlParams && mMetadataUrlParams["sap-language"] || oUri.search(true)["sap-language"];
-		var sClient = mMetadataUrlParams && mMetadataUrlParams["sap-client"] || oUri.search(true)["sap-client"];
+		var sLanguage = mMetadataUrlParams && mMetadataUrlParams["sap-language"] || oUri.searchParams.get("sap-language");
+		var sClient = mMetadataUrlParams && mMetadataUrlParams["sap-client"] || oUri.searchParams.get("sap-client");
 
 		// 1. "sap-language" must be part of the annotation URI
 		if (!sLanguage) {
-			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.toString() + "). " +
+			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.sourceUrl + "). " +
 				"Missing \"sap-language\" URI parameter",
 				sManifestPath + "[\"" + oLogInfo.dataSource + "\"]", oLogInfo.componentName);
 			return;
@@ -1614,7 +1616,7 @@ sap.ui.define([
 
 		// 2. "sap-client" must be set as URI param
 		if (!sClient) {
-			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.toString() + "). " +
+			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.sourceUrl + "). " +
 				"Missing \"sap-client\" URI parameter",
 				sManifestPath + "[\"" + oLogInfo.dataSource + "\"]", oLogInfo.componentName);
 			return;
@@ -1623,29 +1625,29 @@ sap.ui.define([
 		// 3. "sap-client" must equal to the value of Configuration "sap-client"
 		var sClientFromConfig = BaseConfig.get(getConfigParam("sapClient"));
 		if (sClient !== sClientFromConfig) {
-			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.toString() + "). " +
+			Log.warning("Component Manifest: Ignoring provided \"sap-context-token=" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.sourceUrl + "). " +
 				"URI parameter \"sap-client=" + sClient + "\" must be identical with configuration \"sap-client=" + sClientFromConfig + "\"",
 				sManifestPath + "[\"" + oLogInfo.dataSource + "\"]", oLogInfo.componentName);
 			return;
 		}
 
 		// 4. uri has cache-token that does not match the given one - override it
-		if (oUri.hasQuery("sap-context-token") && !oUri.hasQuery("sap-context-token", oLogInfo.cacheToken) ||
+		if (oUri.searchParams.has("sap-context-token") && oUri.searchParams.get("sap-context-token") !== oLogInfo.cacheToken ||
 			mMetadataUrlParams && mMetadataUrlParams["sap-context-token"] && mMetadataUrlParams["sap-context-token"] !== oLogInfo.cacheToken) {
-			Log.warning("Component Manifest: Overriding existing \"sap-context-token=" + (oUri.query(true)["sap-context-token"] || mMetadataUrlParams["sap-context-token"]) + "\" with provided value \"" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.toString() + ").",
+			Log.warning("Component Manifest: Overriding existing \"sap-context-token=" + (oUri.searchParams.get("sap-context-token") || mMetadataUrlParams["sap-context-token"]) + "\" with provided value \"" + oLogInfo.cacheToken + "\" for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.sourceUrl + ").",
 			sManifestPath + "[\"" + oLogInfo.dataSource + "\"]", oLogInfo.componentName);
 		}
 
 		if (mMetadataUrlParams) {
 			//if serviceUrl contains a valid cache token move it to metadataURLParams so it will be only added for the metadata request
-			if (oUri.hasQuery("sap-context-token")) {
-				Log.warning("Component Manifest: Move existing \"sap-context-token=" + oUri.query(true)["sap-context-token"] + "\" to metadataUrlParams for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.toString() + ").",
+			if (oUri.searchParams.has("sap-context-token")) {
+				Log.warning("Component Manifest: Move existing \"sap-context-token=" + oUri.searchParams.get("sap-context-token") + "\" to metadataUrlParams for " + sSource + " \"" + oLogInfo.dataSource + "\" (" + oUri.sourceUrl + ").",
 				sManifestPath + "[\"" + oLogInfo.dataSource + "\"]", oLogInfo.componentName);
 			}
-			oUri.removeQuery("sap-context-token");
+			oUri.searchParams.delete("sap-context-token");
 			mMetadataUrlParams["sap-context-token"] = oLogInfo.cacheToken;
 		} else {
-			oUri.setQuery("sap-context-token", oLogInfo.cacheToken);
+			oUri.searchParams.set("sap-context-token", oLogInfo.cacheToken);
 		}
 
 	}
@@ -1707,11 +1709,11 @@ sap.ui.define([
 						switch (oDataSource.type) {
 							case 'OData':
 								sODataVersion = oDataSource.settings && oDataSource.settings.odataVersion;
-								if (sODataVersion === "4.0") {
-									oModelConfig.type = 'sap.ui.model.odata.v4.ODataModel';
-								} else if (!sODataVersion || sODataVersion === "2.0") {
+								if (!sODataVersion || sODataVersion === "2.0") {
 									// 2.0 is the default in case no version is provided
 									oModelConfig.type = 'sap.ui.model.odata.v2.ODataModel';
+								} else if (sODataVersion.startsWith("4.")) {
+									oModelConfig.type = 'sap.ui.model.odata.v4.ODataModel';
 								} else {
 									future.errorThrows(`${sLogComponentName}: Component Manifest: Provided OData version "${sODataVersion}" in dataSource "${oModelConfig.dataSource}" for model "${sModelName}" is unknown. ["sap.app"]["dataSources"]["${oModelConfig.dataSource}"].`,
 										{ suffix: 'Falling back to default model type "sap.ui.model.odata.v2.ODataModel".' });
@@ -1901,16 +1903,16 @@ sap.ui.define([
 									continue;
 								}
 
-								var oAnnotationUri = new URI(oAnnotation.uri);
+								var oAnnotationUri = new _URL(oAnnotation.uri);
 
 								if (bIsV2Model || bIsV4Model) {
 									var sValueFromConfig = Localization.getSAPLogonLanguage();
-									if (!oAnnotationUri.hasQuery("sap-language") && sValueFromConfig) {
-										oAnnotationUri.setQuery("sap-language", sValueFromConfig);
+									if (!oAnnotationUri.searchParams.has("sap-language") && sValueFromConfig) {
+										oAnnotationUri.searchParams.set("sap-language", sValueFromConfig);
 									}
 									sValueFromConfig = BaseConfig.get(getConfigParam("sapClient"));
-									if (!oAnnotationUri.hasQuery("sap-client") && sValueFromConfig) {
-										oAnnotationUri.setQuery("sap-client", sValueFromConfig);
+									if (!oAnnotationUri.searchParams.has("sap-client") && sValueFromConfig) {
+										oAnnotationUri.searchParams.set("sap-client", sValueFromConfig);
 									}
 
 									var sCacheTokenForAnnotation = mCacheTokens.dataSources && mCacheTokens.dataSources[oAnnotation.uri];
@@ -1925,7 +1927,7 @@ sap.ui.define([
 
 								// resolve relative to component, ui5:// URLs are already resolved upfront
 								var oAnnotationSourceManifest = mConfig.origin.dataSources[aAnnotations[i]] || oManifest;
-								var sAnnotationUri = oAnnotationSourceManifest.resolveUri(oAnnotationUri.toString());
+								var sAnnotationUri = oAnnotationSourceManifest.resolveUri(oAnnotationUri.sourceUrl);
 
 								// add uri to annotationURI array in settings (this parameter applies for ODataModel v1 & v2)
 								oModelConfig.settings.annotationURI = oModelConfig.settings.annotationURI || [];
@@ -1968,11 +1970,11 @@ sap.ui.define([
 			if (oModelConfig.uri) {
 
 				// parse model URI to be able to modify it
-				var oUri = new URI(oModelConfig.uri);
+				var oUri = new _URL(oModelConfig.uri);
 
 				// resolve URI relative to component which defined it
 				var oUriSourceManifest = (bIsDataSourceUri ? mConfig.origin.dataSources[oModelConfig.dataSource] : mConfig.origin.models[sModelName]) || oManifest;
-				oUri = new URI(oUriSourceManifest.resolveUri(oModelConfig.uri));
+				oUri = new _URL(oUriSourceManifest.resolveUri(oModelConfig.uri));
 
 				// inherit sap-specific parameters from document (only if "sap.app/dataSources" reference is defined)
 				if (oModelConfig.dataSource) {
@@ -1986,7 +1988,7 @@ sap.ui.define([
 						// Do not add it if it is already set in the "metadataUrlParams" or is part of the model URI
 						mMetadataUrlParams = oModelConfig.settings && oModelConfig.settings.metadataUrlParams;
 						var bNeedsLanguage = (!mMetadataUrlParams || typeof mMetadataUrlParams['sap-language'] === 'undefined')
-							&& !oUri.hasQuery('sap-language')
+							&& !oUri.searchParams.has('sap-language')
 							&& Localization.getSAPLogonLanguage();
 
 						if (bNeedsLanguage || sCacheToken) {
@@ -2011,7 +2013,7 @@ sap.ui.define([
 					}
 				}
 
-				oModelConfig.uri = oUri.toString();
+				oModelConfig.uri = oUri.sourceUrl;
 			}
 
 			// set model specific "uri" property names which should be used to map "uri" to model specific constructor

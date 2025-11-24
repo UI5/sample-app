@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/webc/WebComponent","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/UserMenuAccount"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.UserMenuAccount",{metadata:{tag:"ui5-user-menu-account-87689b96",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/UserMenuAccount.designtime",interfaces:[],defaultAggregation:"",properties:{avatarSrc:{type:"string",mapping:"property",defaultValue:""},avatarInitials:{type:"string",mapping:"property"},titleText:{type:"string",mapping:"property",defaultValue:""},subtitleText:{type:"string",mapping:"property",defaultValue:""},description:{type:"string",mapping:"property",defaultValue:""},selected:{type:"boolean",mapping:"property",defaultValue:false},loading:{type:"boolean",mapping:"property",defaultValue:false},text:{type:"string",mapping:"textContent"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{},associations:{},events:{},getters:[],methods:[]}});return t});
+//# sourceMappingURL=UserMenuAccount.js.map

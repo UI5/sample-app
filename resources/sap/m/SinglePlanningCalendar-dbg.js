@@ -111,7 +111,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -160,13 +160,6 @@ function(
 				/**
 				 * Determines which part of the control will remain fixed at the top of the page during vertical scrolling
 				 * as long as the control is in the viewport.
-				 *
-				 * <b>Note:</b> Limited browser support. Browsers which do not support this feature:
-				 * <ul>
-				 * 	<li>Microsoft Internet Explorer</li>
-				 * 	<li>Microsoft Edge lower than version 41 (EdgeHTML 16)</li>
-				 * 	<li>Mozilla Firefox lower than version 59</li>
-				 * </ul>
 				 *
 				 * @since 1.62
 				 */

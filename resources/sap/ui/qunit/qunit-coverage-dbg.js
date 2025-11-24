@@ -8,7 +8,7 @@
 /**
  * @fileoverview
  * @deprecated As of version 1.120, support for blanket-based instrumentation has been deprecated. As an alternative,
- *    you might use the {@link https://github.com/SAP/ui5-tooling-extensions/tree/main/packages/middleware-code-coverage
+ *    you might use the {@link https://github.com/UI5/cli-extensions/tree/main/packages/middleware-code-coverage
  *    @ui5/middleware-code-coverage}.
  */
 (function() {

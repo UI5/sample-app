@@ -4,14 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleRenderer", "sap/ui/core/InvisibleText"],
-	function(coreLibrary, Library, InvisibleRenderer, InvisibleText) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleRenderer", "sap/ui/core/InvisibleText", "sap/m/library"],
+	function(coreLibrary, Library, InvisibleRenderer, InvisibleText, library) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
 
 	var oResourceBundle = Library.getResourceBundleFor("sap.m");
+
+	var SegmentedButtonContentMode = library.SegmentedButtonContentMode;
 
 	/**
 	 * Segmented renderer.
@@ -28,12 +30,14 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 	 * @param {sap.m.SegmentedButton} oControl an object representation of the control that should be rendered
 	 */
 	SegmentedButtonRenderer.render = function(oRM, oControl){
-		var aButtons = oControl.getButtons(),
+		const aButtons = oControl.getButtons(),
 			aVisibleButtons = aButtons.filter(function(oButton) { return oButton.getVisible(); }),
-			iVisibleButtonPos = 0,
 			sSelectedButton = oControl.getSelectedButton(),
+			sContentMode = oControl.getContentMode(),
+			sTooltip = oControl.getTooltip_AsString();
+
+		let iVisibleButtonPos = 0,
 			oButton,
-			sTooltip,
 			sButtonWidth,
 			sButtonTextDirection;
 
@@ -52,10 +56,13 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 		if (SegmentedButtonRenderer._addAllIconsClass(aButtons)) {
 			oRM.class("sapMSegBIcons");
 		}
-		oRM.class("sapMSegB");
-		oRM.style('width', oControl.getWidth());
 
-		sTooltip = oControl.getTooltip_AsString();
+		oRM.class("sapMSegB");
+
+		if (sContentMode === SegmentedButtonContentMode.EqualSized) {
+			oRM.style('width', oControl.getWidth());
+		}
+
 		if (sTooltip) {
 			oRM.attr("title", sTooltip);
 		}
@@ -68,6 +75,8 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 			describedby: { value: InvisibleText.getStaticId("sap.m", "SEGMENTEDBUTTON_SELECTION"), append: true },
 			orientation: "horizontal"
 		});
+
+		oRM.class(`sapMSegB${sContentMode}`);
 
 		oRM.openEnd();
 
@@ -114,8 +123,11 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 				if (oButtonIcon && sButtonText !== '') {
 					oRM.class("sapMSegBBtnMixed");
 				}
-				sButtonWidth = oButton.getWidth();
-				oRM.style('width', sButtonWidth);
+
+				if (sContentMode === SegmentedButtonContentMode.EqualSized) {
+					sButtonWidth = oButton.getWidth();
+					oRM.style('width', sButtonWidth);
+				}
 
 				oRM.attr("tabindex", oButton.getEnabled() ? "0" : "-1");
 
@@ -125,6 +137,7 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 				}
 
 				if (oImage && !sButtonText) {
+					oRM.class("sapMSegBBtnIcon");
 					sIconAriaLabel = oControl._getIconAriaLabel(oImage);
 					sButtonTooltip = sButtonTooltip || sIconAriaLabel; // Prefer user-provided tooltips, as they bring better semantics
 				}

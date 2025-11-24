@@ -171,7 +171,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.141.2
+		* @version 1.142.0
 		*
 		* @constructor
 		* @public
@@ -397,7 +397,10 @@ function(
 					rightButton: {type: "sap.m.Button", multiple: false, deprecated: true},
 
 					/**
-					 * In the Dialog focus is set first on the <code>beginButton</code> and then on <code>endButton</code>, when available. If another control needs to get the focus, set the <code>initialFocus</code> with the control which should be focused on. Setting <code>initialFocus</code> to input controls doesn't open the On-Screen keyboard on mobile device as, due to browser restriction, the On-Screen keyboard can't be opened with JavaScript code. The opening of On-Screen keyboard must be triggered by real user action.
+					 * In the Dialog, focus is initially set on the first focusable element, or on the dialog itself if no such element is available.
+					 * If another control needs to receive focus, set the <code>initialFocus</code> to the control that should be focused.
+					 * Setting <code>initialFocus</code> on input controls does not open the on-screen keyboard on mobile devices.
+					 * Due to browser restrictions, the on-screen keyboard can't be opened with JavaScript code; it must be triggered explicitly by the user.
 					 * @since 1.15.0
 					 */
 					initialFocus: {type: "sap.ui.core.Control", multiple: false},
@@ -661,7 +664,6 @@ function(
 			this._$dialog = this.$();
 
 			if (this.isOpen()) {
-				//restore the focus after rendering when dialog is already open
 				this._setInitialFocus();
 			}
 		};
@@ -952,7 +954,7 @@ function(
 				oPromiseArgument = {},
 				that = this;
 
-			if (this._isSpaceOrEnterPressed) {
+			if (this._isSpacePressed) {
 				return;
 			}
 
@@ -990,27 +992,27 @@ function(
 
 		/**
 		 * Event handler for the onkeyup event.
-		 * Register if SPACE or ENTER is released.
+		 * Register if SPACE is released.
 		 *
 		 * @param {jQuery.Event} oEvent The event object
 		 * @private
 		 */
 		Dialog.prototype.onkeyup = function (oEvent) {
-			if (this._isSpaceOrEnter(oEvent)) {
-				this._isSpaceOrEnterPressed = false;
+			if (this._isSpace(oEvent)) {
+				this._isSpacePressed = false;
 			}
 		};
 
 		/**
 		 * Event handler for the onkeydown event.
-		 * Register if SPACE or ENTER is pressed.
+		 * Register if SPACE is pressed.
 		 *
 		 * @param {jQuery.Event} oEvent The event object
 		 * @private
 		 */
 		Dialog.prototype.onkeydown = function (oEvent) {
-			if (this._isSpaceOrEnter(oEvent)) {
-				this._isSpaceOrEnterPressed = true;
+			if (this._isSpace(oEvent)) {
+				this._isSpacePressed = true;
 			}
 
 			var iKeyCode = oEvent.which || oEvent.keyCode;
@@ -1152,16 +1154,16 @@ function(
 		};
 
 		/**
-		 * Determines if the key from oEvent is SPACE or ENTER.
+		 * Determines if the key from oEvent is SPACE.
 		 *
 		 * @param {jQuery.Event} oEvent The event object
 		 * @private
-		 * @return {boolean} True if the key from the event is space or enter
+		 * @return {boolean} True if the key from the event is space
 		 */
-		Dialog.prototype._isSpaceOrEnter = function (oEvent) {
-			var iKeyCode = oEvent.which || oEvent.keyCode;
+		Dialog.prototype._isSpace = function (oEvent) {
+			var iKeyCode = oEvent.which || oEvent.key;
 
-			return iKeyCode == KeyCodes.SPACE || iKeyCode == KeyCodes.ENTER;
+			return iKeyCode == KeyCodes.SPACE;
 		};
 
 		/* =========================================================== */
@@ -1508,13 +1510,32 @@ function(
 			return false;
 		};
 
+		Dialog.prototype.getFocusInfo = function () {
+			return {
+				id: this.getId(),
+				dialogActiveElement: this.getDomRef()?.contains(document.activeElement) ? document.activeElement : null
+			};
+		};
+
+		Dialog.prototype.applyFocusInfo = function (oFocusInfo) {
+			const oDialogActiveElement = oFocusInfo?.dialogActiveElement;
+
+			if (oDialogActiveElement && this.getDomRef()?.contains(oDialogActiveElement)) {
+				oDialogActiveElement.focus();
+
+				return this;
+			}
+
+			return Control.prototype.applyFocusInfo.apply(this, arguments);
+		};
+
 		/**
 		 *
 		 * @private
 		 */
 		Dialog.prototype._getFocusDomRef = function () {
-			// Left or Right button can be visible false and therefore not rendered.
-			// In such a case, focus should be set somewhere else.
+			// Either the left or right button might not be visible and hence not rendered.
+			// In such cases, the focus should be set elsewhere.
 			var sInitialFocusId = this.getInitialFocus();
 
 			if (sInitialFocusId) {
@@ -1591,13 +1612,8 @@ function(
 			return $dialogContent.firstFocusableDomRef();
 		};
 
-		// The control that needs to be focused after the Dialog is open is calculated in the following sequence:
-		// initialFocus, first focusable element in content area, beginButton, endButton
-		// the Dialog is always modal so the focus doesn't need to be on the Dialog when there's
-		// no initialFocus, beginButton and endButton available, but to keep the consistency,
-		// the focus will in the end fall back on the Dialog itself.
 		/**
-		 *
+		 * Applies focus and sets initial focus association
 		 * @private
 		 */
 		Dialog.prototype._setInitialFocus = function () {
@@ -1609,7 +1625,7 @@ function(
 			}
 
 			if (oControl) {
-				//if someone tries to focus on an existing but not visible control, focus the Dialog itself.
+				// If attempting to focus on an existing but invisible control, focus the dialog itself.
 				if (oControl.getVisible && !oControl.getVisible()) {
 					this.focus();
 					return;
@@ -1618,10 +1634,9 @@ function(
 				oFocusDomRef = oControl.getFocusDomRef();
 			}
 
-			// if focus dom ref is not found
 			if (!oFocusDomRef) {
 				this.setInitialFocus(""); // clear the saved initial focus
-				oFocusDomRef = this._getFocusDomRef(); // recalculate the element on focus
+				oFocusDomRef = this._getFocusDomRef(); // Recalculate the element to focus on.
 			}
 
 			//if there is no set initial focus, set the default one to the initialFocus association
@@ -1637,7 +1652,7 @@ function(
 					oFocusDomRef.focus();
 				}
 			} else {
-				// Set the focus on the popup itself in order to keep the tab chain
+				// Set the focus on the dialog itself in order to keep the tab chain intact.
 				this.focus();
 			}
 		};

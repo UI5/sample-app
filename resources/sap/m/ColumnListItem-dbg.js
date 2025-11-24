@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @implements sap.m.ITableItem
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -84,13 +84,18 @@ sap.ui.define([
 	 */
 	var TablePopin = Element.extend("sap.m.TablePopin", {
 		ontap: function(oEvent) {
-			// prevent the tap event if selection is done within the popin control and mark the event
+			// prevent the tap event if selection is done within the popin control
 			if (oEvent.isMarked() || ListItemBase.detectTextSelection(this.getDomRef())) {
 				return oEvent.stopImmediatePropagation(true);
 			}
-			if (oEvent.srcControl === this || !jQuery(oEvent.target).is(":sapFocusable")) {
+		},
+		ontouchend: function() {
+			if (document.activeElement === this.getFocusDomRef()) {
 				this.getParent().focus({ preventScroll: true });
 			}
+		},
+		getFocusDomRef: function() {
+			return this.getParent().getDomRef("subcont");
 		}
 	});
 
@@ -323,12 +328,13 @@ sap.ui.define([
 
 		if (oTarget.classList.contains("sapMListTblCell")) {
 			const oColumn = Element.getElementById(oTarget.getAttribute("data-sap-ui-column"));
-
 			sInvisibleText = this.getContentAnnouncementOfCell(oColumn);
 		} else if (oTarget.classList.contains("sapMListTblSubCnt")) {
 			sInvisibleText = this.getContentAnnouncementOfPopin();
 		} else if (oTarget.classList.contains("sapMListTblNavCol")) {
 			sInvisibleText = this.getContentAnnouncementOfRowAction();
+		} else if (oTarget.classList.contains("sapMListTblActionsCol")) {
+			sInvisibleText = this._getCustomActionsAnnouncement(true);
 		}
 
 		if (sInvisibleText) {

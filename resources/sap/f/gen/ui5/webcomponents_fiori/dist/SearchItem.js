@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/f/gen/ui5/webcomponents/dist/ListItemBase","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/SearchItem"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.SearchItem",{metadata:{tag:"ui5-search-item-87689b96",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/SearchItem.designtime",interfaces:[],defaultAggregation:"",properties:{text:{type:"string",mapping:"property"},description:{type:"string",mapping:"property"},icon:{type:"string",mapping:"property"},selected:{type:"boolean",mapping:"property",defaultValue:false},deletable:{type:"boolean",mapping:"property",defaultValue:false},scopeName:{type:"string",mapping:"property"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{image:{type:"sap.ui.core.Control",multiple:true,slot:"image"}},associations:{},events:{delete:{parameters:{}}},getters:[],methods:[]}});return t});
+//# sourceMappingURL=SearchItem.js.map

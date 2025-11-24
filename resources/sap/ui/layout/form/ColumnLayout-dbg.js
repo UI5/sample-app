@@ -38,7 +38,7 @@ sap.ui.define([
 	 * one column. So the last row of the {@link sap.ui.layout.form.Form Form} control will not be fully used.
 	 *
 	 * The default size of the {@link sap.ui.layout.form.FormContainer FormContainer} element can be overwritten by using {@link sap.ui.layout.form.ColumnContainerData ColumnContainerData}
-	 * as <code>LayoutData</code>. If one {@link sap.ui.layout.form.FormContainer FormContainer} element has {@link sap.ui.layout.form.ColumnContainerData ColumnContainerData} set,
+	 * as {@link sap.ui.core.Element#setLayoutData LayoutData}. If one {@link sap.ui.layout.form.FormContainer FormContainer} element has {@link sap.ui.layout.form.ColumnContainerData ColumnContainerData} set,
 	 * the size calculation of the other {@link sap.ui.layout.form.FormContainer FormContainer} elements might not lead to the expected result.
 	 * In this case, use {@link sap.ui.layout.form.ColumnContainerData ColumnContainerData} also for the other {@link sap.ui.layout.form.FormContainer FormContainer} elements.
 	 *
@@ -60,7 +60,7 @@ sap.ui.define([
 	 * This control cannot be used stand-alone, it just renders a {@link sap.ui.layout.form.Form Form} control,
 	 * so it must be assigned to a {@link sap.ui.layout.form.Form Form} control using the <code>layout</code> aggregation.
 	 * @extends sap.ui.layout.form.FormLayout
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public

@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.141.2
+		 * @version 1.142.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -970,6 +970,7 @@ sap.ui.define([
 			oEntityData,
 			sGroupId = this.getUpdateGroupId(),
 			oGroupLock,
+			bRefresh,
 			sResolvedPath = this.getResolvedPath(),
 			sTransientPredicate = "($uid=" + _Helper.uid() + ")",
 			sTransientPath = sResolvedPath + sTransientPredicate,
@@ -1013,7 +1014,6 @@ sap.ui.define([
 		// clone data to avoid modifications outside the cache
 		// remove any property starting with "@$ui5."
 		oEntityData = _Helper.publicClone(oInitialData, true) || {};
-		let bRefresh;
 		if (oAggregation) {
 			if (!bSkipRefresh) {
 				throw new Error("Missing bSkipRefresh");
@@ -1098,7 +1098,7 @@ sap.ui.define([
 			// currently the optimized update w/o bSkipRefresh is restricted to deep create
 			return bSkipRefresh || bDeepCreate
 				? oContext.updateAfterCreate(bSkipRefresh, sGroupId0)
-				: that.refreshSingle(oContext, that.lockGroup(sGroupId0));
+				: that.refreshSingle(oContext, sGroupId0);
 		}, function (oError) {
 			oGroupLock.unlock(true); // createInCache failed, so the lock might still be blocking
 			throw oError;
@@ -2148,7 +2148,7 @@ sap.ui.define([
 
 		return oPromise.then((oEntityType) => {
 			const oAggregation = this.mParameters.$$aggregation;
-			if (oEntityType) {
+			if (oEntityType && oAggregation) {
 				oAggregation.$leafLevelAggregated = !oEntityType.$Key?.every((sKey) => {
 					// "group" and "additionally" determine groupby()
 					return sKey in oAggregation.group
@@ -2674,7 +2674,7 @@ sap.ui.define([
 			oContext.oBinding = that;
 		});
 		oCache = oBinding.oCache;
-		oCache.setQueryOptions(mQueryOptions);
+		oCache.setQueryOptions(mQueryOptions, /*bForce*/true);
 		// avoid that the cache is set inactive or that contexts are destroyed
 		oBinding.oCache = null;
 		oBinding.oCachePromise = SyncPromise.resolve(null);
@@ -4095,8 +4095,10 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   The context object for the entity to be refreshed
-	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the group ID to be used for refresh
+	 * @param {string} [sGroupId]
+	 *   The group ID to be used
+	 * @param {boolean} [bLocked]
+	 *   Whether the group lock created from the given group ID is locked
 	 * @param {boolean} [bAllowRemoval]
 	 *   Allows the list binding to remove the given context from its collection because the
 	 *   entity does not match the binding's filter anymore, see {@link #filter}; a removed context
@@ -4115,11 +4117,12 @@ sap.ui.define([
 	 *   or rejects if the refresh failed.
 	 * @throws {Error}
 	 *   If the given context does not represent a single entity (see {@link #getHeaderContext}), or
-	 *   if <code>bAllowRemoval && bWithMessages</code> are combined
+	 *   if <code>bAllowRemoval</code> is combined with <code>bWithMessages</code> or with a
+	 *   recursive hierarchy
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.refreshSingle = function (oContext, oGroupLock, bAllowRemoval,
+	ODataListBinding.prototype.refreshSingle = function (oContext, sGroupId, bLocked, bAllowRemoval,
 			bKeepCacheOnError, bWithMessages) {
 		var sContextPath = oContext.getPath(),
 			sResourcePathPrefix = sContextPath.slice(1),
@@ -4127,6 +4130,15 @@ sap.ui.define([
 
 		if (oContext === this.oHeaderContext) {
 			throw new Error("Unsupported header context: " + oContext);
+		}
+		if (this.mParameters.$$aggregation?.hierarchyQualifier) {
+			if (!oContext.isEffectivelyKeptAlive()
+					&& this.aContexts[oContext.iIndex] !== oContext) {
+				throw new Error("Not currently part of the hierarchy: " + oContext);
+			}
+			if (bAllowRemoval) {
+				throw new Error("Unsupported parameter bAllowRemoval: " + bAllowRemoval);
+			}
 		}
 		if (bAllowRemoval && bWithMessages) {
 			throw new Error("Unsupported: bAllowRemoval && bWithMessages");
@@ -4206,6 +4218,7 @@ sap.ui.define([
 				throw new Error("Cannot refresh. Hint: Side-effects refresh in parallel? "
 					+ oContext);
 			}
+			const oGroupLock = that.lockGroup(sGroupId, bLocked);
 			aPromises.push(
 				(bAllowRemoval
 					? oCache.refreshSingleWithRemove(oGroupLock, sPath, iModelIndex, sPredicate,
@@ -4221,8 +4234,8 @@ sap.ui.define([
 						aUpdatePromises.push(oContext.checkUpdateInternal());
 						if (bAllowRemoval) {
 							aUpdatePromises.push(
-								oContext.refreshDependentBindings(sResourcePathPrefix,
-									oGroupLock.getGroupId(), false, bKeepCacheOnError));
+								oContext.refreshDependentBindings(sResourcePathPrefix, sGroupId,
+									false, bKeepCacheOnError));
 						}
 					}
 
@@ -4243,8 +4256,8 @@ sap.ui.define([
 			if (!bAllowRemoval) {
 				// call refreshInternal on all dependent bindings to ensure that all resulting data
 				// requests are in the same batch request
-				aPromises.push(oContext.refreshDependentBindings(sResourcePathPrefix,
-					oGroupLock.getGroupId(), false, bKeepCacheOnError));
+				aPromises.push(oContext.refreshDependentBindings(sResourcePathPrefix, sGroupId,
+					false, bKeepCacheOnError));
 			}
 
 			return SyncPromise.all(aPromises);
@@ -4593,7 +4606,7 @@ sap.ui.define([
 			oModel.withUnresolvedBindings("removeCachesAndMessages",
 				oContext.getPath().slice(1));
 
-			return this.refreshSingle(oContext, this.lockGroup(sGroupId), /*bAllowRemoval*/false,
+			return this.refreshSingle(oContext, sGroupId, /*bLocked*/false, /*bAllowRemoval*/false,
 				/*bKeepCacheOnError*/true, /*bWithMessages*/true);
 		}
 		if (this.iCurrentEnd === 0) {
@@ -4871,8 +4884,8 @@ sap.ui.define([
 	 *   </ul>
 	 * @param {string} [oAggregation.search]
 	 *   Like the <a href=
-	 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html#_Search_System_Query"
-	 *   >"5.1.7 System Query Option $search"</a>, but applied before data aggregation
+	 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31361044"
+	 *   >"5.1.8 System Query Option $search"</a>, but applied before data aggregation
 	 *   (since 1.93.0). Note that certain content will break the syntax of the system query option
 	 *   <code>$apply</code> and result in an invalid request. If the OData service supports the
 	 *   proposal <a href="https://issues.oasis-open.org/browse/ODATA-1452">ODATA-1452</a>, then
@@ -4935,19 +4948,18 @@ sap.ui.define([
 	 * @ui5-transform-hint replace-param oAggregation."grandTotal like 1.84" false
 	 */
 	ODataListBinding.prototype.setAggregation = function (oAggregation) {
-		var mParameters;
-
 		/*
 		 * Returns the use case of data aggregation (recursive hierarchy, pure data aggregation, or
-		 * none at all) as <code>true</code>, <code>false</code>, or <code>undefined</code>.
+		 * none at all) as <code>false</code>, <code>true</code>, or <code>undefined</code>.
 		 *
 		 * @param {object} [oAggregation]
 		 *   An object holding the information needed for data aggregation
 		 * @returns {boolean|undefined}
 		 *   The use case of data aggregation
+		 * @see _Helper.isDataAggregation
 		 */
 		function useCase(oDataAggregationObject) {
-			return oDataAggregationObject && !!oDataAggregationObject.hierarchyQualifier;
+			return oDataAggregationObject && !oDataAggregationObject.hierarchyQualifier;
 		}
 
 		this.checkTransient();
@@ -4960,18 +4972,29 @@ sap.ui.define([
 		if (this.hasPendingChanges()) {
 			throw new Error("Cannot set $$aggregation due to pending changes");
 		}
-		if (useCase(this.mParameters.$$aggregation) !== useCase(oAggregation)
-				&& this.getKeepAlivePredicates().length) {
+		const bOldUseCase = useCase(this.mParameters.$$aggregation);
+		const bNewUseCase = useCase(oAggregation);
+		if (bOldUseCase !== bNewUseCase && this.getKeepAlivePredicates().length) {
 			throw new Error("Cannot set $$aggregation due to a kept-alive context");
 		}
 
-		mParameters = Object.assign({}, this.mParameters);
+		const mParameters = Object.assign({}, this.mParameters);
 		if (oAggregation === undefined) {
 			delete mParameters.$$aggregation;
 		} else {
 			mParameters.$$aggregation = _Helper.clone(oAggregation);
 		}
 		this.applyParameters(mParameters, "");
+		if (!!bOldUseCase !== !!bNewUseCase) {
+			// if data aggregation is turned on or off, set change reason accordingly
+			if (bNewUseCase) {
+				if (this.sChangeReason === "AddVirtualContext") {
+					this.sChangeReason = undefined;
+				}
+			} else if (this.oModel.bAutoExpandSelect) {
+				this.sChangeReason ??= "AddVirtualContext";
+			}
+		}
 	};
 
 	/**

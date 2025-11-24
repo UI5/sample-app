@@ -21,7 +21,7 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 	 * @class
 	 * Item to be displayed in a CalendarLegend.
 	 * @extends sap.ui.core.Element
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public

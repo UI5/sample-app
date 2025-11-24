@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define([],function(){"use strict";class t extends URL{#t;constructor(t,s=document.baseURI){super(t,s);this.#t=String(t).replace(/[?#].*$/,"")}get plainUrl(){return this.#t}get sourceUrl(){return this.#t+this.search+this.hash}isAbsolute(){if(this.#t.startsWith("//")||/^[a-z][a-z0-9+.-]*:/i.test(this.#t)){return true}return false}relativeTo(t){if(this.username||this.password||t.username||t.password){throw new Error("URL should not contain username or password")}if(t.origin!==this.origin){return this.href}let s=t.pathname;let e=this.pathname;if(!s.endsWith("/")){s=s.substring(0,s.lastIndexOf("/")+1)}const r=e.endsWith("/");s=s.replace(/\/$/,"")||"/";e=e.replace(/\/$/,"")||"/";const i=s.split("/").filter(function(t){return t!==""});const n=e.split("/").filter(function(t){return t!==""});let l=0;while(l<i.length&&l<n.length&&i[l]===n[l]){l++}const h=i.length-l;const a=new Array(h).fill("..");a.push(...n.slice(l));let o=a.join("/")||".";if(r&&o!=="."){o+="/"}if(this.search){o+=this.search}if(this.hash){o+=this.hash}return o}}return t});
+//# sourceMappingURL=_URL.js.map

@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -670,7 +670,7 @@ sap.ui.define([
 	Table.prototype.onmousedown = function(oEvent) {
 		this._bMouseDown = true;
 		var sOldTabIndex;
-		var oFocusableCell = oEvent.target.closest(".sapMTblCellFocusable:not([aria-haspopup])");
+		var oFocusableCell = oEvent.target.closest(".sapMTblCellFocusable:not([aria-haspopup],.sapMListTblSubCnt)");
 		if (oFocusableCell && !document.activeElement.classList.contains("sapMTblCellFocusable")) {
 			sOldTabIndex = oFocusableCell.getAttribute("tabindex");
 			oFocusableCell.removeAttribute("tabindex");

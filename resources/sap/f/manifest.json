@@ -5,13 +5,40 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.141.2"
+      "version": "1.142.0"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
     "ach": "CA-UI5-CTR",
     "resources": "resources.json",
-    "offline": true
+    "offline": true,
+    "openSourceComponents": [
+      {
+        "name": "ui5-web-components",
+        "packagedWithMySelf": true,
+        "version": "2.15.0"
+      },
+      {
+        "name": "ui5-web-components-fiori",
+        "packagedWithMySelf": true,
+        "version": "2.15.0"
+      },
+      {
+        "name": "ui5-web-components-icons",
+        "packagedWithMySelf": true,
+        "version": "2.15.0"
+      },
+      {
+        "name": "ui5-web-components-icons-business-suite",
+        "packagedWithMySelf": true,
+        "version": "2.15.0"
+      },
+      {
+        "name": "ui5-web-components-icons-tnt",
+        "packagedWithMySelf": true,
+        "version": "2.15.0"
+      }
+    ]
   },
   "sap.ui": {
     "technology": "UI5",
@@ -22,16 +49,16 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.141",
+      "minUI5Version": "1.142",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.141.2"
+          "minVersion": "1.142.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.141.2"
+          "minVersion": "1.142.0"
         },
         "sap.m": {
-          "minVersion": "1.141.2"
+          "minVersion": "1.142.0"
         }
       }
     },

@@ -401,7 +401,7 @@ sap.ui.define([
 	 * @see {@link topic:6322164936f047de941ec522b95d7b70 Hyphenation for Text Controls}
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @hideconstructor
 	 * @public
 	 * @since 1.60

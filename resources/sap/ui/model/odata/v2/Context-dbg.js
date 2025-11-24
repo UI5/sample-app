@@ -64,7 +64,7 @@ sap.ui.define([
 	 * @hideconstructor
 	 * @public
 	 * @since 1.93.0
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 */
 	var Context = BaseContext.extend("sap.ui.model.odata.v2.Context", {
 			constructor : function (oModel, sPath, sDeepPath, oCreatePromise, bInactive,

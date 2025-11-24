@@ -78,7 +78,7 @@ function(
 	 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -393,7 +393,7 @@ function(
 	InputBase.prototype.oncompositionend = function (oEvent) {
 		this._bIsComposingCharacter = false;
 
-		// In Firefox and Edge the events are fired correctly
+		// In Firefox the events are fired correctly
 		// http://blog.evanyou.me/2014/01/03/composition-event/
 		if (!Device.browser.firefox) {
 			// dom value updated other than value property

@@ -390,7 +390,7 @@ sap.ui.define([
 	 *      Custom action(s) string or an array can be provided, and then the translation
 	 *      of custom actions needs to be done by the application.
 	 * @param {sap.m.MessageBox.Action|string} [mOptions.emphasizedAction=sap.m.MessageBox.Action.OK] Added since version 1.75.0. Specifies which action of the created dialog will be emphasized. EmphasizedAction will apply only if the property <code>actions</code> is provided.
-	 * @param {function} [mOptions.onClose] Function to be called when the user taps a button or closes the message box.
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Function to be called when the user taps a button or closes the message box.
 	 * @param {string} [mOptions.id] ID to be used for the dialog. Intended for test scenarios, not recommended for productive apps
 	 * @param {string} [mOptions.styleClass] Added since version 1.21.2. CSS style class which is added to the dialog's root DOM node. The compact design can be activated by setting this to "sapUiSizeCompact"
 	 * @param {string|sap.m.MessageBox.Action} [mOptions.initialFocus] Added since version 1.28.0. initialFocus, this option sets the action name, the text of the button or the control that gets the focus as first focusable element after the MessageBox is opened.
@@ -535,12 +535,10 @@ sap.ui.define([
 								oInitialFocusControl = aButtons[i];
 								break;
 							}
-						} else {
-							if (mOptions.initialFocus.toLowerCase() === aButtons[i].getText().toLowerCase()) {
+						} else if (mOptions.initialFocus.toLowerCase() === aButtons[i].getText().toLowerCase()) {
 								oInitialFocusControl = aButtons[i];
 								break;
 							}
-						}
 					}
 				}
 			}
@@ -632,7 +630,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] callback function to be called when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] callback function to be called when the user closes the dialog
 	 * @param {string} [mOptions.title='Alert'] Title to be displayed in the alert dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.
@@ -729,7 +727,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] Callback to be called when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Callback to be called when the user closes the dialog
 	 * @param {string} [mOptions.title='Confirmation'] Title to display in the confirmation dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.
@@ -820,7 +818,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] Callback when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Callback when the user closes the dialog
 	 * @param {string} [mOptions.title='Error'] Title of the error dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.
@@ -896,7 +894,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] Callback when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Callback when the user closes the dialog
 	 * @param {string} [mOptions.title='Information'] Title of the information dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.
@@ -972,7 +970,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] Callback when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Callback when the user closes the dialog
 	 * @param {string} [mOptions.title='Warning'] Title of the warning dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.
@@ -1048,7 +1046,7 @@ sap.ui.define([
 	 *
 	 * @param {string} vMessage Message to be displayed in the alert dialog. The usage of sap.core.Control as vMessage is deprecated since version 1.30.4.
 	 * @param {object} [mOptions] Other options (optional)
-	 * @param {function} [mOptions.onClose] Callback when the user closes the dialog
+	 * @param {function((sap.m.MessageBox.Action | string | null)):void} [mOptions.onClose] Callback when the user closes the dialog
 	 * @param {string} [mOptions.title='Success'] Title of the success dialog
 	 * @param {sap.m.MessageBox.Action|sap.m.MessageBox.Action[]|string|string[]} [mOptions.actions=sap.m.MessageBox.Action.OK] Either a single action, or an array of actions.
 	 *      If no action(s) are given, the single action MessageBox.Action.OK is taken as a default for the parameter.

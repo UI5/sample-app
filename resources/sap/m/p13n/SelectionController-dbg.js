@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @public
 	 * @alias sap.m.p13n.SelectionController
@@ -667,7 +667,8 @@ sap.ui.define([
 			//check if the provided state item holds the value to check for
 			if (oItem.hasOwnProperty(sSetAttribute)) {
 				const oExistingItem = aExistingState.find((oExisting) => {
-					return oExisting.name == oItem.name;
+					const sIdentifier = oExisting.hasOwnProperty("key") ? "key" : "name";
+					return oExisting[sIdentifier] == oItem[sIdentifier];
 				});
 
 				//compare to identify delta (only create a change if really necessary)

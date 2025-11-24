@@ -74,7 +74,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.141.2
+		 * @version 1.142.0
 		 *
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
@@ -1215,7 +1215,7 @@ sap.ui.define([
 	 * 1. Operation is bound.
 	 * 2. Operation has single entity return value. Note: existence of EntitySetPath
 	 *    implies the return value is an entity or a collection thereof;
-	 *    see OData V4 spec part 3, 12.1.3. It thus ensures the "entity" in this condition.
+	 *    see [OData-CSDL-XML-v4.01], 12.6. It thus ensures the "entity" in this condition.
 	 * 3. EntitySetPath of operation is the binding parameter.
 	 * 4. Operation binding has
 	 *    (a) a V4 parent context which
@@ -1454,7 +1454,7 @@ sap.ui.define([
 	 * 1. Operation is bound.
 	 * 2. Operation has single entity return value. Note: existence of EntitySetPath
 	 *    implies the return value is an entity or a collection thereof;
-	 *    see OData V4 spec part 3, 12.1.3. It thus ensures the "entity" in this condition.
+	 *    see [OData-CSDL-XML-v4.01], 12.6. It thus ensures the "entity" in this condition.
 	 * 3. EntitySetPath of operation is the binding parameter.
 	 * 4. Operation binding has
 	 *    (a) a V4 parent context.
@@ -1633,7 +1633,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   The context to refresh
-	 * @param {string} sGroupId
+	 * @param {string} [sGroupId]
 	 *   The group ID for the refresh
 	 * @param {boolean} [bKeepCacheOnError]
 	 *   If <code>true</code>, the binding data remains unchanged if the refresh fails
@@ -1685,8 +1685,8 @@ sap.ui.define([
 	 * Returns a promise on the value for the given path relative to this binding. The function
 	 * allows access to the complete data the binding points to (if <code>sPath</code> is "") or
 	 * any part thereof. The data is a JSON structure as described in
-	 * <a href="https://docs.oasis-open.org/odata/odata-json-format/v4.0/">
-	 * "OData JSON Format Version 4.0"</a>.
+	 * <a href="https://docs.oasis-open.org/odata/odata-json-format/v4.01/">
+	 * "OData JSON Format Version 4.01"</a>.
 	 * Note that the function clones the result. Modify values via
 	 * {@link sap.ui.model.odata.v4.Context#setProperty}.
 	 *

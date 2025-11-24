@@ -155,7 +155,7 @@ sap.ui.define(["sap/base/util/ObjectPath"], function(ObjectPath) {
 			}
 
 			/**
-			 * @deprecated As of version 1.141
+			 * @deprecated
 			 */
 			if (vRef === oNotFound ) {
 				// fallback if no value could be found under the given sPath's first segment

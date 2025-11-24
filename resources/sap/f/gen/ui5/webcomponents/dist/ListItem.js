@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/f/gen/ui5/webcomponents/dist/ListItemBase","sap/f/gen/ui5/webcomponents","sap/f/thirdparty/UserMenuItem"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents.dist.ListItem",{metadata:{tag:"",namespace:"sap.f.gen.ui5.webcomponents",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents/designtime/ListItem.designtime",interfaces:[],defaultAggregation:"",properties:{type:{type:"sap.f.gen.ui5.webcomponents.ListItemType",mapping:"property",defaultValue:"Active"},accessibilityAttributes:{type:"any",mapping:"property",defaultValue:"{}"},navigated:{type:"boolean",mapping:"property",defaultValue:false},highlight:{type:"sap.f.gen.ui5.webcomponents.Highlight",mapping:"property",defaultValue:"None"},selected:{type:"boolean",mapping:"property",defaultValue:false},text:{type:"string",mapping:"textContent"}},aggregations:{deleteButton:{type:"sap.f.gen.ui5.webcomponents.IButton",multiple:true,slot:"deleteButton"}},associations:{},events:{detailClick:{enableEventBubbling:true,parameters:{}}},getters:[],methods:[]}});return t});
+//# sourceMappingURL=ListItem.js.map

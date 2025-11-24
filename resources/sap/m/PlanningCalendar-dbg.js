@@ -208,7 +208,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -376,7 +376,7 @@ sap.ui.define([
 				 * The sticky header behavior is automatically disabled on phones in landscape mode for better visibility of the content.
 				 *
 				 * <b>Note:</b> There is limited browser support, hence the API is in experimental state.
-				 * Browsers that currently support this feature are Chrome (desktop and mobile), Safari (desktop and mobile) and Edge 41.
+				 * Browsers that currently support this feature are Chrome (desktop and mobile), Safari (desktop and mobile) and Edge.
 				 *
 				 * There are also some known issues with respect to the scrolling behavior and focus handling. A few are given below:
 				 *

@@ -77,7 +77,7 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @author SAP SE
 	 * @public
 	 * @since 1.124
@@ -245,6 +245,18 @@ sap.ui.define([
 				 * The event is triggered when the file name is changed.
 				 */
 				itemRenamed: {
+					parameters: {
+						/**
+						 * The renamed UI element is of UploadItem type.
+						 */
+						item: {type: "sap.m.upload.UploadItem"}
+					}
+				},
+				/**
+				 * The event is triggered when the file renaming process is canceled.
+                                 * @since 1.142
+				 */
+				itemRenameCanceled: {
 					parameters: {
 						/**
 						 * The renamed UI element is of UploadItem type.
@@ -922,6 +934,7 @@ sap.ui.define([
 				onClose: (sAction) => {
 					if (sAction !== this._oRb.getText("UPLOADSET_WITH_TABLE_DOCUMENT_RENAME_SAVE_BUTTON_TEXT")) {
 						oDialog.close();
+						this.fireItemRenameCanceled({item: oItem});
 					} else {
 						// fire beginbutton event to save the filename
 						var oBeginButton = oDialog.getBeginButton();
@@ -932,6 +945,7 @@ sap.ui.define([
 			});
 		} else {
 			oDialog.close();
+			this.fireItemRenameCanceled({item: oItem});
 		}
 	};
 
@@ -962,6 +976,7 @@ sap.ui.define([
 			this.fireItemRenamed({item: oItem});
 		} else {
 			oDialog.close();
+			this.fireItemRenameCanceled({item: oItem});
 		}
 	};
 

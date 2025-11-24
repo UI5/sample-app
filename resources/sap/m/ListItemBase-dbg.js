@@ -66,7 +66,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -441,6 +441,11 @@ function(
 		if (this.getContentAnnouncement) {
 			var sContentAnnouncement = (this.getContentAnnouncement(oBundle) || "").trim();
 			sContentAnnouncement && aOutput.push(sContentAnnouncement);
+		}
+
+		const sCustomActionsAnnouncement = this._getCustomActionsAnnouncement();
+		if (sCustomActionsAnnouncement) {
+			aOutput.push(sCustomActionsAnnouncement);
 		}
 
 		if (this.getListProperty("ariaRole") == "list" && !bIsTree && this.isSelectable() && !this.getSelected()) {
@@ -1346,6 +1351,18 @@ function(
 		this._oOverflowButton.useEnabledPropagator(false);
 		this.addDependent(this._oOverflowButton);
 		return this._oOverflowButton;
+	};
+
+	ListItemBase.prototype._getCustomActionsAnnouncement = function(bAnnounceEmpty) {
+		const $CustomActionsContainer = this.$("actions");
+		const iCustomActionsLength = $CustomActionsContainer.length ? $CustomActionsContainer.find(":sapTabbable").length : 0;
+		if (!iCustomActionsLength && !bAnnounceEmpty) {
+			return "";
+		}
+
+		const aBundleKeys = ["CONTROL_EMPTY", "LIST_ITEM_SINGLE_ACTION", "LIST_ITEM_MULTIPLE_ACTIONS"];
+		const sBundleKey = aBundleKeys[Math.min(iCustomActionsLength, 2)];
+		return Library.getResourceBundleFor("sap.m").getText(sBundleKey, [iCustomActionsLength]);
 	};
 
 	return ListItemBase;

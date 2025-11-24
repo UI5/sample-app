@@ -1,0 +1,1 @@
+{"version":3,"file":"information2.js","names":["sap","ui","define","exports","Icons","information$1","error","alert","information"],"sources":["information2-dbg.js"],"mappings":"AAAAA,IAAIC,GAAGC,OAAO,CAAC,UAAW,yBAA0B,gCAAiC,SAAWC,EAASC,EAAOC,GAAiB,aAEhI,IAAIC,EAAQ,QAEZ,IAAIC,EAAQ,QAEZ,IAAIC,EAAc,cAElBL,EAAQI,MAAQA,EAChBJ,EAAQG,MAAQA,EAChBH,EAAQK,YAAcA,CAEtB","ignoreList":[]}

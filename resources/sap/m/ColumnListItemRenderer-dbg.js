@@ -75,7 +75,7 @@ sap.ui.define([
 	ColumnListItemRenderer.renderHighlight = function(rm, oLI) {
 		rm.openStart("td");
 		rm.class("sapMListTblHighlightCell");
-		rm.attr("role", "presentation");
+		rm.attr("role", "none");
 		rm.openEnd();
 
 		// let the list item base render the highlight
@@ -87,7 +87,7 @@ sap.ui.define([
 	ColumnListItemRenderer.renderNavigated = function(rm, oLI) {
 		rm.openStart("td");
 		rm.class("sapMListTblNavigatedCell");
-		rm.attr("role", "presentation");
+		rm.attr("role", "none");
 		rm.openEnd();
 
 		// let the list item base render the navigated state
@@ -251,7 +251,7 @@ sap.ui.define([
 	ColumnListItemRenderer.renderDummyCell = function(rm, oTable) {
 		rm.openStart("td");
 		rm.class("sapMListTblDummyCell");
-		rm.attr("role", "presentation");
+		rm.attr("role", "none");
 		rm.openEnd();
 		rm.close("td");
 	};
@@ -279,7 +279,7 @@ sap.ui.define([
 		// popin row
 		rm.openStart("tr", oLI.getPopin());
 		rm.class("sapMListTblSubRow");
-		rm.attr("tabindex", "-1");
+		rm.attr("role", "none");
 		rm.attr("data-sap-ui-related", oLI.getId());
 		rm.openEnd();
 

@@ -49,13 +49,14 @@ sap.ui.define([
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
 	var JSONModel = ClientModel.extend("sap.ui.model.json.JSONModel", /** @lends sap.ui.model.json.JSONModel.prototype */ {
 
 		constructor : function(oData, bObserve) {
+			// init promise before ClientModel c'tor as it calls #loadData
 			this.pSequentialImportCompleted = Promise.resolve();
 			ClientModel.apply(this, arguments);
 
@@ -359,6 +360,9 @@ sap.ui.define([
 	 * <code>sPath</code> and <code>oContext</code>. Once the new model value has been set, all
 	 * interested parties are informed.
 	 *
+	 * Consecutive calls of this method which update bindings <em>synchronously</em> may cause performance issues; see
+	 * {@link topic:18a76b577b144bc2b9b424e39d379c06 Performance Impact of Model Updates} for details.
+	 *
 	 * @param {string} sPath
 	 *   The path of the property to set
 	 * @param {any} oValue
@@ -366,7 +370,7 @@ sap.ui.define([
 	 * @param {sap.ui.model.Context} [oContext]
 	 *   The context used to set the property
 	 * @param {boolean} [bAsyncUpdate]
-	 *   Whether to update other bindings dependent on this property asynchronously
+	 *   Whether to update bindings dependent on this property asynchronously
 	 * @return {boolean}
 	 *   <code>true</code> if the value was set correctly, and <code>false</code> if errors
 	 *   occurred, for example if the entry was not found.
@@ -395,7 +399,8 @@ sap.ui.define([
 		var oObject = this._getObject(sObjectPath);
 		if (oObject) {
 			oObject[sProperty] = oValue;
-			this.checkUpdate(false, bAsyncUpdate);
+			const iUpdatedBindings = this.checkUpdate(false, bAsyncUpdate);
+			this.checkPerformanceOfUpdate(iUpdatedBindings, bAsyncUpdate);
 			return true;
 		}
 		return false;

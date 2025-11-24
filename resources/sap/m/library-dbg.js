@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.141.2",
+		version: "1.142.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -3149,6 +3149,7 @@ sap.ui.define([
 		/**
 		 * Right-positioned single selection mode (only one list item can be selected).
 		 * @public
+		 * As of version 1.142, replaced by {@link sap.m.ListMode.SingleSelectLeft}.
 		 */
 		SingleSelect : "SingleSelect",
 
@@ -4026,6 +4027,28 @@ sap.ui.define([
 	};
 
 	/**
+ 	 * Different SegmentedButton items sizing modes.
+	 * @public
+	 * @enum {string}
+ 	*/
+	thisLib.SegmentedButtonContentMode = {
+
+		/**
+	 	 * Each item fits its content and extra space is placed after the last item.
+	 	 * @public
+		 * @since 1.42
+	 	*/
+		ContentFit: "ContentFit",
+
+		/**
+	 	 * All items are sized equally to fill the available space.
+	 	 * @public
+		 * @since 1.42
+	 	*/
+		EqualSized: "EqualSized"
+	};
+
+	/**
 	 * The option keys of all the standard options of a DynamicDateRange control.
 	 *
 	 * @public
@@ -4568,7 +4591,6 @@ sap.ui.define([
 		 * The grid width for each table popin is small, hence this allows more content to be rendered in a single popin row.
 		 * This value defines small grid width for the table popins.
 		 *
-		 * <b>Note:</b> This feature is currently not supported with Internet Explorer and Edge (version lower than 16) browsers.
 		 * @public
 		 * @since 1.52
 		 */
@@ -4578,7 +4600,6 @@ sap.ui.define([
 		 * Sets grid layout for rendering the table popins.
 		 * The grid width for each table popin is comparatively larger than <code>GridSmall</code>, hence this allows less content to be rendered in a single popin row.
 		 *
-		 * <b>Note:</b> This feature is currently not supported with Internet Explorer and Edge (version lower than 16) browsers.
 		 * @public
 		 * @since 1.52
 		 */
@@ -6814,6 +6835,7 @@ sap.ui.define([
 	DataType.registerEnum("sap.m.QuickViewGroupElementType", thisLib.QuickViewGroupElementType);
 	DataType.registerEnum("sap.m.RatingIndicatorVisualMode", thisLib.RatingIndicatorVisualMode);
 	DataType.registerEnum("sap.m.ReactiveAreaMode", thisLib.ReactiveAreaMode);
+	DataType.registerEnum("sap.m.SegmentedButtonContentMode", thisLib.SegmentedButtonContentMode);
 	DataType.registerEnum("sap.m.ScreenSize", thisLib.ScreenSize);
 	DataType.registerEnum("sap.m.CarouselScrollMode", thisLib.CarouselScrollMode);
 	DataType.registerEnum("sap.m.SelectColumnRatio", thisLib.SelectColumnRatio);

@@ -1,0 +1,2 @@
+sap.ui.define(["exports","sap/f/thirdparty/Icons","sap/f/thirdparty/information"],function(r,a,t){"use strict";var i="error";var o="alert";var n="information";r.alert=o;r.error=i;r.information=n});
+//# sourceMappingURL=information2.js.map

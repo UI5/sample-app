@@ -39,7 +39,7 @@ sap.ui.define(['./SimpleType'],
 	 *   <code>true</code>.
 	 * @extends sap.ui.model.SimpleType
 	 * @public
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 */
 	var CompositeType = SimpleType.extend("sap.ui.model.CompositeType", /** @lends sap.ui.model.CompositeType.prototype */ {
 

@@ -58,7 +58,7 @@ sap.ui.define(['sap/ui/base/Object'], function(BaseObject) {
 	 * </code>
 	 *
 	 * @author Malte Wedel, Daniel Brinkmann
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @param {sap.ui.base.Object} oObject
 	 *   Object for which a facade should be created
 	 * @param {string[]} aMethods

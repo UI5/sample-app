@@ -74,7 +74,7 @@ sap.ui.define([
 	 * @implements sap.m.IBreadcrumbs, sap.m.IOverflowToolbarContent, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -346,7 +346,6 @@ sap.ui.define([
 
 		oCurrentLocation.$().attr("aria-current", "page");
 		oCurrentLocation.$().attr("tabindex", 0);
-		oCurrentLocation.$().attr("role", "link");
 		oCurrentLocation.$().attr("aria-label", this.getCurrentLocation().getText() + " " + positionText);
 	};
 

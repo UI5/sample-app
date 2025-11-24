@@ -12,6 +12,7 @@ sap.ui.define([
 	'sap/m/List',
 	'sap/m/StandardListItem',
 	'sap/m/ResponsivePopover',
+	"sap/ui/core/Core",
 	"sap/ui/core/ControlBehavior",
 	'sap/ui/core/Control',
 	'sap/ui/core/Element',
@@ -37,6 +38,7 @@ sap.ui.define([
 		List,
 		StandardListItem,
 		ResponsivePopover,
+		Core,
 		ControlBehavior,
 		Control,
 		Element,
@@ -82,8 +84,14 @@ sap.ui.define([
 	 * Still the Token itself can determine if it is <code>editable</code>. This allows you to have non-editable Tokens in an editable Tokenizer.
 	 *
 	 * @extends sap.ui.core.Control
+	 * @implements sap.ui.core.ISemanticFormContent
+	 *
+	 * @borrows sap.ui.core.ISemanticFormContent.getFormFormattedValue as #getFormFormattedValue
+	 * @borrows sap.ui.core.ISemanticFormContent.getFormValueProperty as #getFormValueProperty
+	 * @borrows sap.ui.core.ISemanticFormContent.getFormObservingProperties as #getFormObservingProperties
+	 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -93,6 +101,10 @@ sap.ui.define([
 	 */
 	var Tokenizer = Control.extend("sap.m.Tokenizer", /** @lends sap.m.Tokenizer.prototype */ {
 		metadata : {
+			interfaces : [
+				"sap.ui.core.IFormContent",
+				"sap.ui.core.ISemanticFormContent"
+			],
 			library : "sap.m",
 			properties : {
 
@@ -136,7 +148,42 @@ sap.ui.define([
 				/**
 				 * The ID of the opener of the tokens popup.
 				 */
-				opener: { type: "string", multiple: false, visibility: "hidden" }
+				opener: { type: "string", multiple: false, visibility: "hidden" },
+
+				/**
+				 * The name property to be used in the HTML code for the tokenizer (e.g. for HTML forms that send data to the server via submit).
+				 * @since 1.142.0
+				 */
+				name: { type: "string", group: "Misc", defaultValue: "" },
+
+				/**
+				 * Determines whether the <code>Tokenizer</code> is in display only state.
+				 *
+				 * When set to <code>true</code>, the <code>Tokenizer</code> is not editable.
+				 * This setting is used for forms in review mode.
+				 *
+				 * @since 1.142.0
+				 */
+				displayOnly : {type : "boolean", group : "Behavior", defaultValue : false},
+
+				/**
+				 * Changed when tokens are changed. The value for sap.ui.core.ISemanticFormContent interface.
+				 * Contains a comma-separated list of all token texts for form processing.
+				 * @private
+				 */
+				_semanticFormValue: {type: "string", group: "Behavior", defaultValue: "", visibility: "hidden"},
+
+				/**
+				 * Defines whether tokens are displayed on multiple lines.
+				 * @experimental since 1.142
+				 */
+				multiLine: {type: "boolean", group: "Misc", defaultValue: false},
+
+				/**
+				 * Defines whether "Clear All" button is present. Ensure `multiLine` is enabled, otherwise `showClearAll` will have no effect.
+				 * @experimental since 1.142
+				 */
+				showClearAll: {type: "boolean", group: "Misc", defaultValue: false}
 
 			},
 			defaultAggregation : "tokens",
@@ -285,6 +332,7 @@ sap.ui.define([
 		this.allowTextSelection(false);
 		this._oTokensWidthMap = {};
 		this._oIndicator = null;
+		this._bInForm = false;
 		this._bShouldRenderTabIndex = null;
 		this._oScroller = new ScrollEnablement(this, this.getId() + "-scrollContainer", {
 			horizontal : true,
@@ -388,6 +436,46 @@ sap.ui.define([
 		}
 
 		return this._oTokensList;
+	};
+
+	Tokenizer.prototype.getFormFormattedValue = function () {
+		this._bInForm = true;
+		const sTokens = this.getTokens()
+			.map(function (oToken) { return oToken.getText(); })
+			.join(", ");
+
+		// show en-dash in form display mode when empty
+		if (!sTokens) {
+			return "\u2013";
+		}
+		return sTokens;
+	};
+
+	Tokenizer.prototype.getFormValueProperty = function () {
+		return "_semanticFormValue";
+	};
+
+	Tokenizer.prototype.getFormObservingProperties = function() {
+		return ["_semanticFormValue"];
+	};
+
+	Tokenizer.prototype.getFormRenderAsControl = function () {
+		// if there are no tokens, we render the tokenizer as en-dash and not as a control
+		if (this.getDisplayOnly() && !this.getTokens().length) {
+			return false;
+		} else {
+			return this.getDisplayOnly();
+		}
+	};
+
+	/**
+	 * ISemanticFormContent interface works only with properties. The state of Tokenizer is kept as Tokens.
+	 * Update _semanticFormValue property so it'd match Tokenizer's state, but as a string which could be reused.
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype.updateFormValueProperty = function () {
+		this.setProperty("_semanticFormValue", this.getFormFormattedValue(), true);
 	};
 
 	/**
@@ -741,10 +829,20 @@ sap.ui.define([
 			iLabelWidth, iFreeSpace,
 			iCounter, iFirstTokenToHide = -1;
 
+		if (this.getMultiLine()) {
+			aTokens.forEach(function (oToken) {
+				const iTokenWidth = iTokenizerWidth - this._oTokensWidthMap[oToken.getId()];
+				if (iTokenWidth <= 0) {
+					oToken.setTruncated(true);
+				}
+			}, this);
+			return;
+		}
+
 		// find the index of the first overflowing token
 		aTokens.some(function (oToken, iIndex) {
 			iTokenizerWidth = iTokenizerWidth - this._oTokensWidthMap[oToken.getId()];
-			if ((iTokenizerWidth <= 1 && iTokensCount === 1) || iTokenizerWidth < 0) {
+			if (iTokenizerWidth < 0) {
 				iFirstTokenToHide = iIndex;
 				return true;
 			} else {
@@ -974,7 +1072,7 @@ sap.ui.define([
 	Tokenizer.prototype.onBeforeRendering = function() {
 		var aTokens = this.getTokens();
 
-		if (aTokens.length !== 1) {
+		if (aTokens.length !== 1 && !this.getMultiLine()) {
 			this.setFirstTokenTruncated(false);
 		}
 
@@ -1240,6 +1338,9 @@ sap.ui.define([
 				default:
 					break;
 			}
+
+			this.updateFormValueProperty();
+			this.invalidate();
 		}.bind(this));
 
 		oTokensObserver.observe(this, {
@@ -1483,7 +1584,7 @@ sap.ui.define([
 			this._oSelectionOrigin = oFocusedToken;
 		}
 
-		if (oTargetToken && this.hasOneTruncatedToken()) {
+		if (oTargetToken && this.hasOneTruncatedToken() && !this.getMultiLine()) {
 			this._handleNMoreIndicatorPress();
 			return;
 		}
@@ -1808,6 +1909,18 @@ sap.ui.define([
 		if (this._nMoreIndicatorPressed) {
 			this._handleNMoreIndicatorPress();
 		}
+
+		const _bClearAllPressed = oEvent.target.classList.contains("sapMTokenizerClearAll");
+
+		if (_bClearAllPressed) {
+			this._handleClearAll();
+		}
+
+		const bMultiLineTruncatedTokenPressed = (oEvent.target.classList.contains("sapMTokenTruncated") && !this.hasStyleClass("sapMTokenizerIndicatorDisabled")) && this.getMultiLine();
+
+		if (bMultiLineTruncatedTokenPressed) {
+			this._togglePopup(this.getTokensPopup());
+		}
 	};
 
 	/**
@@ -1854,6 +1967,7 @@ sap.ui.define([
 		this._oIndicator = null;
 		this._aTokenValidators = null;
 		this._bShouldRenderTabIndex = null;
+		this._bInForm = false;
 		this._bThemeApplied = false;
 
 	};
@@ -2002,6 +2116,41 @@ sap.ui.define([
 		}
 
 		return this._handleDelete(iIndex, fnFallback);
+	};
+
+	/**
+	 * Handler for clear all button click.
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._handleClearAll = function() {
+		this.fireTokenDelete({
+			tokens: this.getTokens()
+		});
+	};
+
+	/**
+	 * Determines if the clear all button should be displayed.
+	 *
+	 * @private
+	 * @returns {boolean} True if clear all button should be displayed
+	 */
+	Tokenizer.prototype.showEffectiveClearAll = function() {
+		return this.getShowClearAll() &&
+			this.getMultiLine() &&
+			this.getTokens().length > 0 &&
+			this.getEditable() &&
+			this.getEnabled();
+	};
+
+	/**
+	 * Returns text for the clear all button.
+	 *
+	 * @private
+	 * @returns {string} Text for the clear all button
+	 */
+	Tokenizer.prototype._getClearAllText = function() {
+		return Core.getLibraryResourceBundle("sap.m").getText("TOKENIZER_CLEAR_ALL");
 	};
 
 	Tokenizer.TokenChangeType = {

@@ -76,6 +76,8 @@ sap.ui.define([
 	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF token
 	 * @param {object} oModelInterface
 	 *   An interface allowing to call back to the owning model (see {@link .create})
+	 * @param {string} sODataVersion
+	 *   The version of the OData service. Supported values are "2.0", "4.0", and "4.01".
 	 * @param {boolean} [bWithCredentials]
 	 *   Whether the XHR should be called with <code>withCredentials</code>
 	 *
@@ -83,12 +85,14 @@ sap.ui.define([
 	 * @constructor
 	 * @private
 	 */
-	function _Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface, bWithCredentials) {
+	function _Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface, sODataVersion,
+			bWithCredentials) {
 		this.mBatchQueue = {};
 		this.bBatchSent = false;
 		this.mHeaders = mHeaders || {};
 		this.aLockedGroupLocks = [];
 		this.oModelInterface = oModelInterface;
+		this.sODataVersion = sODataVersion;
 		this.oOptimisticBatch = null; // optimistic batch processing off
 		this.sQueryParams = _Helper.buildQuery(mQueryParams); // Used for $batch and CSRF token only
 		this.mRunningChangeRequests = {}; // map from group ID to a SyncPromise[]
@@ -98,36 +102,52 @@ sap.ui.define([
 		this.vStatistics = mQueryParams && mQueryParams["sap-statistics"];
 		this.bWithCredentials = bWithCredentials;
 		this.processSecurityTokenHandlers(); // sets this.oSecurityTokenPromise
+
+		if (sODataVersion === "4.01") {
+			this.mPredefinedRequestHeaders = Object.freeze({
+				...this.mPredefinedRequestHeaders,
+				"OData-MaxVersion" : "4.01",
+				"OData-Version" : "4.01"
+			});
+		}
 	}
 
 	/**
 	 * Final (cannot be overridden) request headers for OData V4.
+	 *
+	 * @private
 	 */
-	_Requestor.prototype.mFinalHeaders = {
+	_Requestor.prototype.mFinalHeaders = Object.freeze({
 		"Content-Type" : "application/json;charset=UTF-8;IEEE754Compatible=true"
-	};
+	});
 
 	/**
 	 * Predefined request headers in $batch parts for OData V4.
+	 *
+	 * @private
 	 */
-	_Requestor.prototype.mPredefinedPartHeaders = {
+	_Requestor.prototype.mPredefinedPartHeaders = Object.freeze({
 		Accept : "application/json;odata.metadata=minimal;IEEE754Compatible=true"
-	};
+	});
 
 	/**
 	 * Predefined request headers for all requests for OData V4.
+	 *
+	 * @private
 	 */
-	_Requestor.prototype.mPredefinedRequestHeaders = {
+	_Requestor.prototype.mPredefinedRequestHeaders = Object.freeze({
 		Accept : "application/json;odata.metadata=minimal;IEEE754Compatible=true",
-		"OData-MaxVersion" : "4.0",
-		"OData-Version" : "4.0",
+		"OData-MaxVersion" : "4.0", // Note: may be "overridden" in c'tor
+		"OData-Version" : "4.0", // dito
 		"X-CSRF-Token" : "Fetch"
-	};
+	});
 
 	/**
 	 * OData V4 request headers reserved for internal use.
+	 *
+	 * @private
 	 */
-	_Requestor.prototype.mReservedHeaders = {
+	_Requestor.prototype.mReservedHeaders = Object.freeze({
 		accept : true,
 		"accept-charset" : true,
 		"content-encoding" : true,
@@ -144,7 +164,7 @@ sap.ui.define([
 		"odata-version" : true,
 		prefer : true,
 		"sap-contextid" : true
-	};
+	});
 
 	/**
 	 * Adds a change set to the batch queue for the given group. All modifying requests created
@@ -757,7 +777,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Checks whether the "OData-Version" header is set to "4.0" otherwise an error is thrown.
+	 * Checks whether the "OData-Version" header is as expected, otherwise an error is thrown.
 	 *
 	 * @param {function} fnGetHeader
 	 *   A callback function to get a header attribute for a given header name with case-insensitive
@@ -767,7 +787,8 @@ sap.ui.define([
 	 * @param {boolean} [bVersionOptional]
 	 *   Indicates whether the OData service version is optional, which is the case for responses
 	 *   contained in a response for a $batch request
-	 * @throws {Error} If the "OData-Version" header is not "4.0"
+	 * @returns {string} The response's "OData-Version" header value
+	 * @throws {Error} If the "OData-Version" header is not as expected
 	 *
 	 * @private
 	 */
@@ -781,8 +802,9 @@ sap.ui.define([
 				+ " 'DataServiceVersion' header with value '" + vDataServiceVersion
 				+ "' in response for " + this.sServiceUrl + sResourcePath);
 		}
-		if (sODataVersion === "4.0" || !sODataVersion && bVersionOptional) {
-			return;
+		if (!sODataVersion && bVersionOptional || sODataVersion === this.sODataVersion
+				|| sODataVersion === "4.0") {
+			return sODataVersion;
 		}
 		throw new Error("Expected 'OData-Version' header with value '4.0' but received value '"
 			+ sODataVersion + "' in response for " + this.sServiceUrl + sResourcePath);
@@ -932,12 +954,12 @@ sap.ui.define([
 	 * Formats a given internal value into a literal suitable for usage in URLs.
 	 *
 	 * @param {any} vValue
-	 *   The value according to "OData JSON Format Version 4.0" section "7.1 Primitive Value"
+	 *   The value according to "OData JSON Format Version 4.01" section "7.1 Primitive Value"
 	 * @param {object} oProperty
 	 *   The OData property
 	 * @returns {string}
-	 *   The literal according to "OData Version 4.0 Part 2: URL Conventions" section
-	 *   "5.1.1.6.1 Primitive Literals"
+	 *   The literal according to "OData Version 4.01 Part 2: URL Conventions" section
+	 *   "5.1.1.14.1 Primitive Literals"
 	 * @throws {Error}
 	 *   If the value is undefined or the type is not supported
 	 *
@@ -1413,9 +1435,13 @@ sap.ui.define([
 					that.oModelInterface.onHttpResponse(vResponse.headers);
 					if (vResponse.responseText) {
 						try {
-							that.doCheckVersionHeader(getResponseHeader.bind(vResponse),
-								vRequest.url, true);
-							oResponse = that.doConvertResponse(JSON.parse(vResponse.responseText),
+							const sODataVersion = that.doCheckVersionHeader(
+								getResponseHeader.bind(vResponse), vRequest.url, true);
+							const fnReviver = sODataVersion === "4.01"
+								? _Requestor.reviver
+								: undefined;
+							oResponse = that.doConvertResponse(
+								JSON.parse(vResponse.responseText, fnReviver),
 								vRequest.$metaPath);
 						} catch (oErr) {
 							vRequest.$reject(oErr);
@@ -1823,8 +1849,8 @@ sap.ui.define([
 	 *   other group ID values, the request is added to the given group and you can use
 	 *   {@link #submitBatch} to send all requests in that group. This group lock will be unlocked
 	 *   immediately, even if the request itself is queued. The request is rejected if the lock is
-	 *   already canceled. For a group lock w/o a serial number, a non-GET is put into a change set
-	 *   of its own (unless <code>bAtFront</code> is used).
+	 *   already canceled. For a group lock with a negative serial number, a non-GET is put into a
+	 *   change set of its own (unless <code>bAtFront</code> is used).
 	 * @param {object} [mHeaders]
 	 *   Map of request-specific headers, overriding both the mandatory OData V4 headers and the
 	 *   default headers given to the factory. This map of headers must not contain
@@ -1881,6 +1907,7 @@ sap.ui.define([
 	 *     <li>the {@link #checkConflictingStrictRequest rules for strict handling} w.r.t. change
 	 *       sets are violated
 	 *   </ul>
+	 *
 	 * @public
 	 */
 	_Requestor.prototype.request = function (sMethod, sResourcePath, oGroupLock, mHeaders, oPayload,
@@ -1946,18 +1973,19 @@ sap.ui.define([
 				} else if (bAtFront) { // add at front of first change set
 					aRequests[0].unshift(oRequest);
 				} else { // push into change set which was current when the request was initiated
-					if (!iRequestSerialNumber && aRequests[aRequests.iChangeSet].length) {
-						that.addChangeSet(sGroupId);
-					}
 					iChangeSetNo = aRequests.iChangeSet;
-					while (aRequests[iChangeSetNo].iSerialNumber > iRequestSerialNumber) {
+					while (aRequests[iChangeSetNo].iSerialNumber > Math.abs(iRequestSerialNumber)) {
 						iChangeSetNo -= 1;
+					}
+					if (iRequestSerialNumber < 0) {
+						iChangeSetNo += 1; // insert own change set *afterwards*
+						const aChangeSet = [];
+						aChangeSet.iSerialNumber = -iRequestSerialNumber;
+						aRequests.iChangeSet += 1;
+						aRequests.splice(iChangeSetNo, 0, aChangeSet);
 					}
 					that.checkConflictingStrictRequest(oRequest, aRequests, iChangeSetNo);
 					aRequests[iChangeSetNo].push(oRequest);
-					if (!iRequestSerialNumber) {
-						that.addChangeSet(sGroupId);
-					}
 				}
 				if (sGroupId === "$single") {
 					that.submitBatch("$single").catch(that.oModelInterface.getReporter());
@@ -2012,7 +2040,7 @@ sap.ui.define([
 				this.oModelInterface.isIgnoreETag()
 			);
 
-		return this.processOptimisticBatch(aRequests, sGroupId)
+		return !bHasChanges && this.processOptimisticBatch(aRequests, sGroupId)
 			|| this.sendRequest("POST", "$batch" + this.sQueryParams,
 				Object.assign(oBatchRequest.headers, mBatchHeaders,
 					bHasChanges ? undefined : {"sap-cancel-on-close" : "true"},
@@ -2354,6 +2382,8 @@ sap.ui.define([
 	 * @param {string} sOptimisticGroupId The group ID of the optimistic batch
 	 * @returns {boolean}
 	 *   Whether the actual batch requests and group ID matches the optimistic one
+	 *
+	 * @private
 	 */
 	_Requestor.matchesOptimisticBatch = function (aActualRequests, sActualGroupId,
 		aOptimisticRequests, sOptimisticGroupId) {
@@ -2441,23 +2471,49 @@ sap.ui.define([
 	 *   A map of query parameters as described in
 	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF
 	 *   token
-	 * @param {string} [sODataVersion="4.0"]
-	 *   The version of the OData service. Supported values are "2.0" and "4.0".
+	 * @param {string} sODataVersion
+	 *   The version of the OData service. Supported values are "2.0", "4.0", and "4.01".
 	 * @param {boolean} [bWithCredentials]
 	 *   Whether the XHR should be called with <code>withCredentials</code>
 	 * @returns {object}
 	 *   A new <code>_Requestor</code> instance
+	 *
+	 * @public
 	 */
 	_Requestor.create = function (sServiceUrl, oModelInterface, mHeaders, mQueryParams,
 			sODataVersion, bWithCredentials) {
 		var oRequestor = new _Requestor(sServiceUrl, mHeaders, mQueryParams, oModelInterface,
-			bWithCredentials);
+			sODataVersion, bWithCredentials);
 
 		if (sODataVersion === "2.0") {
 			asV2Requestor(oRequestor);
 		}
 
 		return oRequestor;
+	};
+
+	/**
+	 * A "reviver" function to be used by JSON.parse in order to transform 4.01 control information
+	 * back to 4.0 format by adding missing "odata." infixes and missing hashes for "@odata.type".
+	 *
+	 * @param {string} sProperty - The current property's name
+	 * @param {any} vPropertyValue - The current property's value
+	 * @returns {any|undefined}
+	 *   The current property's value or <code>undefined</code> in order to ignore delete it
+	 *
+	 * @private
+	 */
+	_Requestor.reviver = function (sProperty, vPropertyValue) {
+		if (sProperty.includes("@") && !sProperty.includes(".")) {
+			// control information w/o "odata."
+			if (sProperty.endsWith("@type") && !vPropertyValue.includes("#")) {
+				// "built-in primitive type value"
+				vPropertyValue = "#" + vPropertyValue;
+			}
+			this[sProperty.replace("@", "@odata.")] = vPropertyValue;
+			return undefined; // "delete this[sProperty]"
+		}
+		return vPropertyValue;
 	};
 
 	return _Requestor;

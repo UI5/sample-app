@@ -20,7 +20,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
 			 * @extends sap.ui.core.Item
 			 *
 			 * @author SAP SE
-			 * @version 1.141.2
+			 * @version 1.142.0
 			 *
 			 * @constructor
 			 * @public

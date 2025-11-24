@@ -17,7 +17,7 @@ sap.ui.define(["sap/ui/base/ManagedObject", "./library"], function (ManagedObjec
 	 * Applies a <code>sap.m.CarouselLayout</code> to a provided DOM element or Control.
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 *

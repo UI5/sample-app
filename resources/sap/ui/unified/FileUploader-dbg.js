@@ -73,7 +73,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent, sap.ui.unified.IProcessableBlobs
 	 *
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 *
 	 * @constructor
 	 * @public
@@ -143,7 +143,6 @@ sap.ui.define([
 			 * The chosen files will be checked against an array of file types.
 			 *
 			 * If at least one file does not fit the file type restriction, the upload is prevented.
-			 * <b>Note:</b> This property is not supported by Microsoft Edge.
 			 *
 			 * Example: <code>["jpg", "png", "bmp"]</code>.
 			 */
@@ -151,8 +150,6 @@ sap.ui.define([
 
 			/**
 			 * Allows multiple files to be chosen and uploaded from the same folder.
-			 *
-			 * This property is not supported by Internet Explorer 9.
 			 *
 			 * <b>Note:</b> Keep in mind that the various operating systems for mobile devices
 			 * can react differently to the property so that fewer upload functions may be
@@ -162,8 +159,6 @@ sap.ui.define([
 
 			/**
 			 * A file size limit in megabytes which prevents the upload if at least one file exceeds it.
-			 *
-			 * This property is not supported by Internet Explorer 9.
 			 */
 			maximumFileSize : {type : "float", group : "Data", defaultValue : null},
 
@@ -172,11 +167,11 @@ sap.ui.define([
 			 *
 			 * If at least one file does not fit the MIME type restriction, the upload is prevented.
 			 *
-			 * <b>Note:</b> This property is not supported by Internet Explorer.
-			 * It is only reliable for common file types like images, audio, video, plain text and HTML documents.
-			 * File types that are not recognized by the browser result in <code>file.type</code> to be returned
-			 * as an empty string. In this case the verification could not be performed.
-			 * The file upload is not prevented and the validation based on file type is left to the receiving backend side.
+			 * <b>Note:</b> This property is only reliable for common file types like images, audio, video,
+			 * plain text and HTML documents. File types that are not recognized by the browser result
+			 * in <code>file.type</code> to be returned as an empty string. In this case the verification
+			 * could not be performed. The file upload is not prevented and the validation based on file type
+			 * is left to the receiving backend side.
 			 *
 			 *
 			 * Example: <code>["image/png", "image/jpeg"]</code>.
@@ -185,8 +180,6 @@ sap.ui.define([
 
 			/**
 			 * If set to "true", the request will be sent as XHR request instead of a form submit.
-			 *
-			 * This property is not supported by Internet Explorer 9.
 			 */
 			sendXHR : {type : "boolean", group : "Behavior", defaultValue : false},
 
@@ -302,7 +295,6 @@ sap.ui.define([
 
 			/**
 			 * The header parameters for the <code>FileUploader</code> which are only submitted with XHR requests.
-			 * Header parameters are not supported by Internet Explorer 9.
 			 */
 			headerParameters : {type : "sap.ui.unified.FileUploaderParameter", multiple : true, singularName : "headerParameter"},
 
@@ -378,7 +370,7 @@ sap.ui.define([
 					 * ReadyState of the XHR request.
 					 *
 					 * Required for receiving a <code>readyStateXHR</code> is to set the property <code>sendXHR</code>
-					 * to true. This property is not supported by Internet Explorer 9.
+					 * to true.
 					 */
 					readyStateXHR : {type : "string"},
 
@@ -386,7 +378,6 @@ sap.ui.define([
 					 * Status of the XHR request.
 					 *
 					 * Required for receiving a <code>status</code> is to set the property <code>sendXHR</code> to true.
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					status : {type : "int"},
 
@@ -394,8 +385,6 @@ sap.ui.define([
 					 * Http-Response which comes from the server.
 					 *
 					 * Required for receiving <code>responseRaw</code> is to set the property <code>sendXHR</code> to true.
-					 *
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					responseRaw : {type : "string"},
 
@@ -406,7 +395,6 @@ sap.ui.define([
 					 * object, with the property value reflecting the header-field's content.
 					 *
 					 * Required for receiving <code>headers</code> is to set the property <code>sendXHR</code> to true.
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					headers : {type : "object"},
 
@@ -414,7 +402,6 @@ sap.ui.define([
 					 * Http-Request-Headers.
 					 *
 					 * Required for receiving <code>requestHeaders</code> is to set the property <code>sendXHR</code> to true.
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					requestHeaders : {type : "object[]"}
 				}
@@ -445,8 +432,6 @@ sap.ui.define([
 
 			/**
 			 * Event is fired when the size of a file is above the <code>maximumFileSize</code> property.
-			 * This event is not supported by Internet Explorer 9 (same restriction as for the property
-			 * <code>maximumFileSize</code>).
 			 */
 			fileSizeExceed : {
 				parameters : {
@@ -487,8 +472,7 @@ sap.ui.define([
 			 * It contains progress information related to the running upload. Depending on file size, band width
 			 * and used browser the event is fired once or multiple times.
 			 *
-			 * This event is only supported with property <code>sendXHR</code> set to true, i.e. the event is not
-			 * supported in Internet Explorer 9.
+			 * This event is only supported with property <code>sendXHR</code> set to true.
 			 *
 			 * @since 1.24.0
 			 */
@@ -519,7 +503,6 @@ sap.ui.define([
 					 * Http-Request-Headers.
 					 *
 					 * Required for receiving <code>requestHeaders</code> is to set the property <code>sendXHR</code> to true.
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					requestHeaders : {type : "object[]"}
 				}
@@ -528,8 +511,7 @@ sap.ui.define([
 			/**
 			 * Event is fired after the current upload has been aborted.
 			 *
-			 * This event is only supported with property <code>sendXHR</code> set to true, i.e. the event is not supported
-			 * in Internet Explorer 9.
+			 * This event is only supported with property <code>sendXHR</code> set to true.
 			 * @since 1.24.0
 			 */
 			uploadAborted : {
@@ -544,7 +526,6 @@ sap.ui.define([
 					 * Http-Request-Headers.
 					 *
 					 * Required for receiving <code>requestHeader</code> is to set the property <code>sendXHR</code> to true.
-					 * This property is not supported by Internet Explorer 9.
 					 */
 					requestHeaders : {type : "object[]"}
 				}
@@ -581,7 +562,7 @@ sap.ui.define([
 					 * Http-Request-Headers.
 					 *
 					 * Required for receiving <code>requestHeaders</code> is to set the property <code>sendXHR</code>
-					 * to true. This property is not supported by Internet Explorer 9.
+					 * to true.
 					 */
 					requestHeaders : {type : "object[]"}
 				}
@@ -997,8 +978,7 @@ sap.ui.define([
 
 	FileUploader.prototype._recalculateWidth = function() {
 		// calculation of the width of the overlay for the original file upload
-		// !Device.browser.msie check: only for non IE browsers since there we need
-		// the button in front of the fileuploader
+		// we need the button in front of the fileuploader
 		if (this.getWidth()) {
 			if (this.getButtonOnly() && this.oBrowse.getDomRef()) {
 				this.oBrowse.getDomRef().style.width = this.getWidth();

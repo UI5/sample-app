@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/webc/WebComponent","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/ShellBarBranding"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.ShellBarBranding",{metadata:{tag:"ui5-shellbar-branding-87689b96",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/ShellBarBranding.designtime",interfaces:["sap.m.IBar","sap.tnt.IToolHeader"],defaultAggregation:"content",properties:{href:{type:"string",mapping:"property"},target:{type:"string",mapping:"property"},accessibleName:{type:"string",mapping:"property"},text:{type:"string",mapping:"textContent"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{content:{type:"sap.ui.core.Control",multiple:true},logo:{type:"sap.ui.core.Control",multiple:true,slot:"logo"}},associations:{},events:{click:{enableEventBubbling:true,parameters:{}}},getters:[],methods:[]}});return t});
+//# sourceMappingURL=ShellBarBranding.js.map

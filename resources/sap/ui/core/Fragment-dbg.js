@@ -103,7 +103,7 @@ function(
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.141.2
+	 * @version 1.142.0
 	 * @public
 	 * @alias sap.ui.core.Fragment
 	 */

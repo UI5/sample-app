@@ -155,7 +155,7 @@ sap.ui.define([
 		 *   "sap-context-token" applies only to the service's root $metadata, but not to
 		 *   "cross-service references". Supported since 1.81.0
 		 * @param {string} [mParameters.odataVersion="4.0"]
-		 *   The version of the OData service. Supported values are "2.0" and "4.0".
+		 *   The version of the OData service. Supported values are "2.0", "4.0", and "4.01".
 		 * @param {sap.ui.model.odata.OperationMode} [mParameters.operationMode]
 		 *   The operation mode for filtering and sorting. Since 1.39.0, the operation mode
 		 *   {@link sap.ui.model.odata.OperationMode.Server} is supported. All other operation modes
@@ -167,8 +167,8 @@ sap.ui.define([
 		 *   forward slash according to OData V4 specification ABNF, rule "serviceRoot". You may
 		 *   append OData custom query options to the service root URL separated with a "?", for
 		 *   example "/MyService/?custom=foo". See specification <a href=
-		 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html#_Custom_Query_Options"
-		 *   >"OData Version 4.0 Part 2: URL Conventions", "5.2 Custom Query Options"</a>. OData
+		 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31361050"
+		 *   >"OData Version 4.01. Part 2: URL Conventions", "5.2 Custom Query Options"</a>. OData
 		 *   system query options and OData parameter aliases lead to an error.
 		 * @param {boolean} [mParameters.sharedRequests]
 		 *   Whether all list bindings for the same resource path share their data, so that it is
@@ -209,9 +209,9 @@ sap.ui.define([
 		 *
 		 *   Every resource path (relative to the service root URL, no query options) according to
 		 *   <a href=
-		 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html#resource-pathurl4"
-		 *   >"4 Resource Path"</a> in specification "OData Version 4.0 Part 2: URL Conventions" is
-		 *   a valid data binding path within this model if a leading slash is added; for example
+		 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31360928"
+		 *   >"4 Resource Path"</a> in specification "OData Version 4.01. Part 2: URL Conventions"
+		 *   is a valid data binding path within this model if a leading slash is added; for example
 		 *   "/" + "SalesOrderList('A%2FB%26C')" to access an entity instance with key "A/B&C". Note
 		 *   that appropriate URI encoding is necessary, see the example of
 		 *   {@link sap.ui.model.odata.v4.ODataUtils.formatLiteral}. "4.5.1 Addressing Actions"
@@ -242,7 +242,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.141.2
+		 * @version 1.142.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -286,7 +286,7 @@ sap.ui.define([
 		}
 		sODataVersion = mParameters.odataVersion || "4.0";
 		this.sODataVersion = sODataVersion;
-		if (sODataVersion !== "4.0" && sODataVersion !== "2.0") {
+		if (sODataVersion !== "4.01" && sODataVersion !== "4.0" && sODataVersion !== "2.0") {
 			throw new Error("Unsupported value for parameter odataVersion: " + sODataVersion);
 		}
 		for (sParameter in mParameters) {
@@ -748,8 +748,8 @@ sap.ui.define([
 	 *   The context which is required as base for a relative path
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters which can be OData query options as specified in <a href=
-	 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html"
-	 *   >"OData Version 4.0 Part 2: URL Conventions"</a> or the binding-specific parameters as
+	 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html"
+	 *   >"OData Version 4.01. Part 2: URL Conventions"</a> or the binding-specific parameters as
 	 *   specified below.
 	 *   Note: The binding creates its own data service request if it is absolute or if it has any
 	 *   parameters or if it is relative and has a context created via
@@ -766,7 +766,7 @@ sap.ui.define([
 	 *   All other query options lead to an error.
 	 *   Query options specified for the binding overwrite model query options.
 	 * @param {string|object} [mParameters.$expand]
-	 *   The value for the "5.1.2 System Query Option $expand" or an object which determines that
+	 *   The value for the "5.1.3 System Query Option $expand" or an object which determines that
 	 *   value. The object is a map from expand path to expand options, where the options are again
 	 *   maps of system query options, typically with string values. $count can also be given as a
 	 *   <code>boolean</code> value, $expand can recursively be given as a map, $levels can also be
@@ -775,9 +775,9 @@ sap.ui.define([
 	 *   <code>true</code>. See also {@link topic:1ab4f62de6ab467096a2a98b363a1373 Parameters}.
 	 * @param {string|string[]} [mParameters.$select]
 	 *   A comma separated list or an array of items which determine the value for the
-	 *   "5.1.3 System Query Option $select". Since 1.75.0, when using the "autoExpandSelect" model
+	 *   "5.1.4 System Query Option $select". Since 1.75.0, when using the "autoExpandSelect" model
 	 *   parameter (see {@link #constructor}), paths with navigation properties can be included and
-	 *   will contribute to the "5.1.2 System Query Option $expand".
+	 *   will contribute to the "5.1.3 System Query Option $expand".
 	 * @param {boolean} [mParameters.$$canonicalPath]
 	 *   Whether a binding relative to an {@link sap.ui.model.odata.v4.Context} uses the canonical
 	 *   path computed from its context's path for data service requests; only the value
@@ -874,8 +874,8 @@ sap.ui.define([
 	 *   Supported since 1.39.0.
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters which can be OData query options as specified in <a href=
-	 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html"
-	 *   >"OData Version 4.0 Part 2: URL Conventions"</a> or binding-specific parameters as
+	 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html"
+	 *   >"OData Version 4.01. Part 2: URL Conventions"</a> or binding-specific parameters as
 	 *   specified below.
 	 *   Note: The binding creates its own data service request if it is absolute or if it has any
 	 *   parameters or if it is relative and has a context created via {@link #createBindingContext}
@@ -895,10 +895,10 @@ sap.ui.define([
 	 *   Extension for Data Aggregation Version 4.0</a>) as an alternative to
 	 *   <code>$$aggregation</code>
 	 * @param {string|boolean} [mParameters.$count]
-	 *   The value for the "5.1.6 System Query Option $count", useful for creation at the end and
+	 *   The value for the "5.1.7 System Query Option $count", useful for creation at the end and
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#getCount}
 	 * @param {string|object} [mParameters.$expand]
-	 *   The value for the "5.1.2 System Query Option $expand" or an object which determines that
+	 *   The value for the "5.1.3 System Query Option $expand" or an object which determines that
 	 *   value. The object is a map from expand path to expand options, where the options are again
 	 *   maps of system query options, typically with string values. $count can also be given as a
 	 *   <code>boolean</code> value, $expand can recursively be given as a map, $levels can also be
@@ -906,20 +906,20 @@ sap.ui.define([
 	 *   without navigation paths). An empty map can also be given as <code>null</code> or
 	 *   <code>true</code>. See also {@link topic:1ab4f62de6ab467096a2a98b363a1373 Parameters}.
 	 * @param {string} [mParameters.$filter]
-	 *   The value for the "5.1.1 System Query Option $filter" used in addition to
+	 *   The value for the "5.1.2 System Query Option $filter" used in addition to
 	 *   <code>vFilters</code>
 	 * @param {string|number} [mParameters.$orderby]
-	 *   The value for the "5.1.4 System Query Option $orderby" used in addition to
+	 *   The value for the "5.1.5 System Query Option $orderby" used in addition to
 	 *   <code>vSorters</code>
 	 * @param {string} [mParameters.$search]
-	 *   The value for the "5.1.7 System Query Option $search"; see also
+	 *   The value for the "5.1.8 System Query Option $search"; see also
 	 *   <code>oAggregation.search</code> at
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation} and the note there!
 	 * @param {string|string[]} [mParameters.$select]
 	 *   A comma separated list or an array of items which determine the value for the
-	 *   "5.1.3 System Query Option $select". Since 1.75.0, when using the "autoExpandSelect" model
+	 *   "5.1.4 System Query Option $select". Since 1.75.0, when using the "autoExpandSelect" model
 	 *   parameter (see {@link #constructor}), paths with navigation properties can be included and
-	 *   will contribute to the "5.1.2 System Query Option $expand".
+	 *   will contribute to the "5.1.3 System Query Option $expand".
 	 * @param {object} [mParameters.$$aggregation]
 	 *   An object holding the information needed for data aggregation, see
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation} for details.
@@ -1065,8 +1065,8 @@ sap.ui.define([
 	 *   The context which is required as base for a relative path
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters which can be OData query options as specified in <a href=
-	 *   "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html"
-	 *   >"OData Version 4.0 Part 2: URL Conventions"</a> or the binding-specific parameters as
+	 *   "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html"
+	 *   >"OData Version 4.01. Part 2: URL Conventions"</a> or the binding-specific parameters as
 	 *   specified below. The following OData query options are allowed:
 	 *   <ul>
 	 *     <li> All "5.2 Custom Query Options" except for those with a name starting with "sap-"
@@ -1085,10 +1085,10 @@ sap.ui.define([
 	 *   <a href="https://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/">OData
 	 *   Extension for Data Aggregation Version 4.0</a>), if the path ends with a "$count" segment
 	 * @param {string} [mParameters.$filter]
-	 *   The value for the "5.1.1 System Query Option $filter", if the path ends with a "$count"
+	 *   The value for the "5.1.2 System Query Option $filter", if the path ends with a "$count"
 	 *   segment
 	 * @param {string} [mParameters.$search]
-	 *   The value for the "5.1.7 System Query Option $search", if the path ends with a "$count"
+	 *   The value for the "5.1.8 System Query Option $search", if the path ends with a "$count"
 	 *   segment
 	 * @param {string} [mParameters.$$groupId]
 	 *   The group ID to be used for <b>read</b> requests initiated by this binding; if not
@@ -1243,10 +1243,13 @@ sap.ui.define([
 		if (mParameters) {
 			for (sParameterName in mParameters) {
 				if (a401DenyList.includes(sParameterName.toLowerCase())) {
-					Log.warning("[FUTURE FATAL] Custom query option " + sParameterName
-						+ " will not be supported with OData 4.01, see"
-						+ " https://sdk.openui5.org/topic/cda632b01c1e4a988ccecab759d19380",
-						undefined, sClassName);
+					const sMessage = "Custom query option " + sParameterName
+						+ " not supported with OData 4.01, see"
+						+ " https://sdk.openui5.org/topic/cda632b01c1e4a988ccecab759d19380";
+					if (this.sODataVersion === "4.01") {
+						throw new Error(sMessage);
+					}
+					Log.warning("[FUTURE FATAL] " + sMessage, undefined, sClassName);
 				}
 				if (sParameterName.startsWith("$$")) { // binding-specific parameter
 					delete mTransformedOptions[sParameterName];
@@ -1274,9 +1277,9 @@ sap.ui.define([
 	 * and missing headers remain unchanged. The following headers must not be used:
 	 * <ul>
 	 *   <li> OData V4 requests headers as specified in <a href=
-	 *     "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html#_Common_Headers"
-	 *     >"8.1 Common Headers"</a> and "8.2 Request Headers" of the specification "OData Version
-	 *     4.0 Part 1: Protocol"
+	 *     "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#_Toc31358857"
+	 *     >"8.1 Common Headers"</a> and "8.2 Request Headers" of the specification
+	 *     "OData Version 4.01. Part 1: Protocol"
 	 *   <li> OData V2 request headers as specified in "2.2.5 HTTP Header Fields" of the
 	 *     specification "OData Version 2 v10.1"
 	 *   <li> The headers "Content-Id" and "Content-Transfer-Encoding"
@@ -2695,11 +2698,12 @@ sap.ui.define([
 	/**
 	 * Returns a promise for the "canonical path" of the entity for the given context.
 	 * According to <a href=
-	 * "https://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html#canonical-urlurl4.1.1"
-	 * >"4.3.1 Canonical URL"</a> of the specification "OData Version 4.0 Part 2: URL Conventions",
-	 * this is the "name of the entity set associated with the entity followed by the key predicate
-	 * identifying the entity within the collection". Use the canonical path in
-	 * {@link sap.ui.core.Element#bindElement} to create an element binding.
+	 * "https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#_Toc31360932"
+	 * >"4.3.1 Canonical URL"</a> of the specification
+	 * "OData Version 4.01. Part 2: URL Conventions", this is the "name of the entity set associated
+	 * with the entity followed by the key predicate identifying the entity within the collection".
+	 * Use the canonical path in {@link sap.ui.core.Element#bindElement} to create an element
+	 * binding.
 	 *
 	 * @param {sap.ui.model.odata.v4.Context} oEntityContext
 	 *   A context in this model which must point to a non-contained OData entity

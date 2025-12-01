@@ -38,7 +38,7 @@ function(
 	 * @extends sap.m.Input
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @constructor
 	 * @private

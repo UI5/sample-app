@@ -17,7 +17,7 @@ sap.ui.define(["sap/ui/base/Object", "sap/base/Log"],
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @public
 	 * @abstract
 	 * @alias sap.ui.core.message.MessageParser

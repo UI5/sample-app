@@ -42,6 +42,11 @@ function(
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
+	 *
+	 * <b>Note:</b> <code>sap.f.ShellBar</code> is not UXC-compliant and will no longer be aligned with future UXC design updates. For UXC-compliant applications,
+	 * use the ui5-shellbar web component instead. It can be integrated seamlessly using ui5-tooling-modules. See {@link topic:1c80793df5bb424091954697fc0b2828 Using Web Components}.
+	 * <br/><br/>
+	 *
 	 * A horizontal bar control holding multiple child controls used as application shell header.
 	 *
 	 * <h3>Overview</h3>
@@ -58,7 +63,7 @@ function(
 	 * @implements sap.f.IShellBar, sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @constructor
 	 * @public

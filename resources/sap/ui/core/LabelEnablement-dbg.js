@@ -62,9 +62,11 @@ sap.ui.define(['../base/ManagedObject', "sap/base/assert"],
 					oControl.addEventDelegate(oDelegate);
 				} else {
 					const oControlForLabel = Element.closestTo(oDomForLabel);
-					const sInnerControlId = oControlForLabel.getId();
-					if (sInnerControlId !== sId) {
-						oRes.innerControlId = sInnerControlId;
+					if (oControlForLabel) {
+						const sInnerControlId = oControlForLabel.getId();
+						if (sInnerControlId !== sId) {
+							oRes.innerControlId = sInnerControlId;
+						}
 					}
 				}
 			}
@@ -192,7 +194,7 @@ sap.ui.define(['../base/ManagedObject', "sap/base/assert"],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace

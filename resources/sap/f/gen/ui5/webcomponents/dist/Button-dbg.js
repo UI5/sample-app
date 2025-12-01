@@ -36,7 +36,7 @@ sap.ui.define(
      *
      * ### ES6 Module Import
      *
-     * `import "sap/f/gen/ui5/webcomponents/dist/Button.js";`
+     * `import "@ui5/webcomponents/dist/Button.js";`
      *
      * @implements module:sap/f/gen/ui5/webcomponents.IButton
      * @extends sap.ui.core.webc.WebComponent
@@ -49,7 +49,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents.dist.Button",
       {
         metadata: {
-          tag: "ui5-button-87689b96",
+          tag: "ui5-button-cc48984a",
 
           namespace: "sap.f.gen.ui5.webcomponents",
 

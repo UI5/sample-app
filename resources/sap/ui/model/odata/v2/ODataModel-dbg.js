@@ -53,13 +53,12 @@ sap.ui.define([
 	"sap/ui/model/odata/OperationMode",
 	"sap/ui/model/odata/UpdateMethod",
 	"sap/ui/thirdparty/datajs",
-	"sap/ui/thirdparty/URI",
 	"sap/ui/util/isCrossOriginURL"
 ], function(_CreatedContextsCache, Context, ODataAnnotations, ODataContextBinding, ODataListBinding, ODataTreeBinding,
 		assert, Log, Localization, encodeURL, deepEqual, deepExtend, each, extend, isEmptyObject, isPlainObject, merge,
 		uid, SyncPromise, Messaging, Message, MessageParser, MessageType, Supportability, _Helper, BindingMode,
 		BaseContext, FilterProcessor, Model, CountMode, MessageScope, ODataMetadata, ODataMetaModel, ODataMessageParser,
-		ODataPropertyBinding, ODataUtils, OperationMode, UpdateMethod, OData, URI, isCrossOriginURL
+		ODataPropertyBinding, ODataUtils, OperationMode, UpdateMethod, OData, isCrossOriginURL
 ) {
 
 	"use strict";
@@ -219,7 +218,7 @@ sap.ui.define([
 	 * This model is not prepared to be inherited from.
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataModel
@@ -1407,15 +1406,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Extracts the server base URL from the service URL
+	 * Computes and returns the server base URL from the service URL.
+	 *
 	 * @returns {string} The server base URL
 	 * @private
 	 */
-	ODataModel.prototype._getServerUrl = function() {
-		var oServiceURI, sURI;
-		oServiceURI = new URI(this.sServiceUrl).absoluteTo(document.baseURI);
-		sURI = new URI("/").absoluteTo(oServiceURI).toString();
-		return sURI;
+	ODataModel.prototype._getServerUrl = function () {
+		return new URL("/", new URL(this.sServiceUrl, document.baseURI)).href;
 	};
 
 	/**
@@ -2236,8 +2233,6 @@ sap.ui.define([
 	 *   {@link sap.ui.model.odata.OperationMode.Server OperationMode.Server} or
 	 *   {@link sap.ui.model.odata.OperationMode.Auto OperationMode.Auto} is used.
 	 * @param {boolean} [mParameters.restoreTreeStateAfterChange]
-	 *   This parameter is experimental as of version 1.141.0.
-	 *
 	 *   Whether the tree state is restored on hierarchy maintenance, such as adding, removing, or deleting a node.
 	 *   This is only supported if the following conditions are met: <ul>
 	 *   <li>The binding has to use {@link sap.ui.model.odata.OperationMode.Server OperationMode.Server}</li>

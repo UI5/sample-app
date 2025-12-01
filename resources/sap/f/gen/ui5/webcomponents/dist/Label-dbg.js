@@ -28,7 +28,7 @@ sap.ui.define(
      *
      * ### ES6 Module Import
      *
-     * `import "sap/f/gen/ui5/webcomponents/dist/Label";`
+     * `import "@ui5/webcomponents/dist/Label";`
      *
      * @extends sap.ui.core.webc.WebComponent
      * @constructor
@@ -40,7 +40,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents.dist.Label",
       {
         metadata: {
-          tag: "ui5-label-87689b96",
+          tag: "ui5-label-cc48984a",
 
           namespace: "sap.f.gen.ui5.webcomponents",
 

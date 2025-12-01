@@ -40,13 +40,12 @@ sap.ui.define([
 	"sap/ui/model/odata/type/Single",
 	"sap/ui/model/odata/type/Stream",
 	"sap/ui/model/odata/type/String",
-	"sap/ui/model/odata/type/TimeOfDay",
-	"sap/ui/thirdparty/URI"
+	"sap/ui/model/odata/type/TimeOfDay"
 ], function (AnnotationHelper, ValueListType, _Helper, assert, Log, JSTokenizer, ObjectPath,
 		ManagedObject, SyncPromise, BindingMode, ChangeReason, ClientListBinding, BaseContext,
 		ContextBinding, MetaModel, PropertyBinding, OperationMode, Boolean, Byte, EdmDate,
 		DateTimeOffset, Decimal, Double, Guid, Int16, Int32, Int64, Raw, SByte, Single, Stream,
-		String, TimeOfDay, URI) {
+		String, TimeOfDay) {
 	"use strict";
 	/*eslint max-nested-callbacks: 0 */
 
@@ -204,7 +203,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -2295,27 +2294,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the absolute service URL corresponding to the given relative $metadata URL.
-	 *
-	 * @param {string} sUrl
-	 *   A $metadata URL, for example "../ValueListService/$metadata?sap-client=123", interpreted
-	 *   relative to this meta model's URL
-	 * @returns {string}
-	 *   The corresponding absolute service URL
-	 *
-	 * @private
-	 */
-	ODataMetaModel.prototype.getAbsoluteServiceUrl = function (sUrl) {
-		// Note: make our $metadata URL absolute because URI#absoluteTo requires an absolute base
-		// URL (and it fails if the base URL starts with "..")
-		var sAbsoluteUrl = new URI(this.sUrl).absoluteTo(document.baseURI).pathname().toString();
-
-		// sUrl references the metadata document, make it absolute based on our $metadata URL to get
-		// rid of ".." segments and remove the filename part
-		return new URI(sUrl).absoluteTo(sAbsoluteUrl).filename("").toString();
-	};
-
-	/**
 	 * Builds the completely reduced path or a list of all reductions of the given path based on
 	 * metadata. Removes adjacent partner navigation properties and reduces binding paths to
 	 * properties of an operation's binding parameter.
@@ -2612,7 +2590,7 @@ sap.ui.define([
 	 */
 	ODataMetaModel.prototype.getOrCreateSharedModel = function (sUrl, bCopyAnnotations,
 			bAutoExpandSelect, sQualifiedParentName) {
-		sUrl = this.getAbsoluteServiceUrl(sUrl);
+		sUrl = _Helper.makeAbsolute(sUrl, this.sUrl, /*bServiceUrl*/true);
 		const sMapKey = !!bAutoExpandSelect + sUrl; // no separator needed as sUrl.startsWith("/")
 		let mSharedModelByUrl = this.mSharedModelByUrl;
 		if (!bCopyAnnotations) {
@@ -2868,8 +2846,8 @@ sap.ui.define([
 					return null;
 				}
 
-				sUrl = that.getAbsoluteServiceUrl(
-					_Helper.setLanguage(oCodeList.Url, that.sLanguage));
+				sUrl = _Helper.makeAbsolute(_Helper.setLanguage(oCodeList.Url, that.sLanguage),
+					that.sUrl, /*bServiceUrl*/true);
 				// separator needed (Note: path must not include hash)
 				sCacheKey = oCodeList.CollectionPath + "#" + sUrl;
 				oPromise = mCodeListUrl2Promise[sCacheKey];
@@ -3781,7 +3759,7 @@ sap.ui.define([
 		for (sReferenceUri in mScope.$Reference) {
 			oReference = mScope.$Reference[sReferenceUri];
 			// interpret reference URI relative to metadata URL
-			sReferenceUri = new URI(sReferenceUri).absoluteTo(this.sUrl).toString();
+			sReferenceUri = _Helper.makeAbsolute(sReferenceUri, this.sUrl);
 
 			if ("$IncludeAnnotations" in oReference) {
 				this._reportAndThrowError("Unsupported IncludeAnnotations", sUrl);

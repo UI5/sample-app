@@ -52,7 +52,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 *
 		 * @constructor
 		 * @public
@@ -429,7 +429,29 @@ function(
 		*/
 		Switch.prototype.onkeyup = function (oEvent) {
 			if (oEvent.which === KeyCodes.SPACE) {
+				if (this._bShouldCancelAction) {
+					this._bShouldCancelAction = false;
+					this._bSpacePressed = false;
+					return;
+				}
+
+				this._bSpacePressed = false;
 				this._handleSpaceOrEnter(oEvent);
+			} else if ((oEvent.which === KeyCodes.ESCAPE || oEvent.which === KeyCodes.SHIFT) && !this._bSpacePressed) {
+				this._bShouldCancelAction = false;
+			}
+		};
+
+		/**
+		 * Handles space key on key down
+		 *
+		 * @private
+		*/
+		Switch.prototype.onkeydown = function (oEvent) {
+			if (oEvent.which === KeyCodes.ESCAPE || oEvent.which === KeyCodes.SHIFT) {
+				this._bShouldCancelAction = true;
+			} else if (oEvent.which === KeyCodes.SPACE) {
+				this._bSpacePressed = true;
 			}
 		};
 

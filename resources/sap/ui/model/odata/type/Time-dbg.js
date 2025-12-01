@@ -125,7 +125,7 @@ sap.ui.define([
 	 * Constructor for an OData primitive type <code>Edm.Time</code>.
 	 *
 	 * @class This class represents the OData V2 primitive type <a
-	 * href="http://www.odata.org/documentation/odata-version-2-0/overview#AbstractTypeSystem">
+	 * href="https://www.odata.org/documentation/odata-version-2-0/overview#AbstractTypeSystem">
 	 * <code>Edm.Time</code></a>.
 	 *
 	 * In {@link sap.ui.model.odata.v2.ODataModel ODataModel} this type is represented as an
@@ -138,7 +138,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @alias sap.ui.model.odata.type.Time
 	 * @param {object} [oFormatOptions]

@@ -60,7 +60,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @constructor
 	 * @public
@@ -106,7 +106,7 @@ function(
 				 *	<li><strong>EqualSized</strong>: All buttons have equal width, regardless of their content.</li>
 				 * </ul>
 				 * @public
-				 * @since 1.42.0
+				 * @since 1.142.0
 				 */
 				contentMode: {type: "sap.m.SegmentedButtonContentMode", group: "Appearance", defaultValue: SegmentedButtonContentMode.EqualSized}
 			},

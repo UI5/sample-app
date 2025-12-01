@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -143,6 +143,10 @@ sap.ui.define([
 		this.oHeaderContext = this.bRelative
 			? null
 			: Context.createNewContext(oModel, this, sPath);
+		this.bInitial = true;
+		Promise.resolve().then(() => {
+			this.bInitial = false; // ensure to reset the initial flag after the synchronous part
+		});
 		this.sOperationMode = mParameters.$$operationMode || oModel.sOperationMode;
 		// map<string,sap.ui.model.odata.v4.Context>
 		// Maps a string path to a v4.Context with that path. A context may either be
@@ -1727,6 +1731,18 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#doSetProperty
 	 */
 	ODataListBinding.prototype.doSetProperty = function () {};
+
+	/**
+	 * @override
+	 * @see sap.ui.model.odata.v4.ODataParentBinding#doSuspend
+	 */
+	ODataListBinding.prototype.doSuspend = function () {
+		// if auto-$expand/$select is not used, this.oFetchCacheCallToken may be reset already
+		if (this.bInitial && this.oFetchCacheCallToken) {
+			this.oFetchCacheCallToken.initiallySuspended = true;
+			this.oCache = null;
+		}
+	};
 
 	/**
 	 * Expands the group node that the given context points to by the given number of levels.
@@ -3476,6 +3492,7 @@ sap.ui.define([
 	 */
 	// @override sap.ui.model.Binding#initialize
 	ODataListBinding.prototype.initialize = function () {
+		this.bInitial = false;
 		if (this.isResolved()) {
 			this.checkDataState();
 			if (this.isRootBindingSuspended()) {

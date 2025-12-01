@@ -8,11 +8,13 @@
 sap.ui.define([
 	"./ChangeReason",
 	"./TreeBinding",
+	"sap/base/util/deepEqual",
+	"sap/base/util/deepExtend",
 	"sap/base/util/each",
 	"sap/ui/model/FilterProcessor",
 	"sap/ui/model/FilterType",
 	"sap/ui/model/SorterProcessor"
-], function(ChangeReason, TreeBinding, each, FilterProcessor, FilterType, SorterProcessor) {
+], function(ChangeReason, TreeBinding, deepEqual, deepExtend, each, FilterProcessor, FilterType, SorterProcessor) {
 	"use strict";
 
 	/**
@@ -65,11 +67,12 @@ sap.ui.define([
 			};
 			this.oCombinedFilter = null;
 			this.mNormalizeCache = {};
+			this.oTreeData = this.cloneData(this.oModel._getObject(this.sPath, this.oContext));
 
 			if (aApplicationFilters) {
 				this.oModel.checkFilter(aApplicationFilters);
 
-				if (this.oModel._getObject(this.sPath, this.oContext)) {
+				if (this.oTreeData) {
 					this.filter(aApplicationFilters, FilterType.Application);
 				}
 			}
@@ -77,6 +80,21 @@ sap.ui.define([
 		}
 
 	});
+
+	ClientTreeBinding.CannotCloneData = Symbol("CannotCloneData");
+
+	/**
+	 * Returns a deep clone of the tree data or a symbol indicating that the given tree data cannot be cloned.
+	 *
+	 * @param {any} oTreeData
+	 *   The tree data to clone
+	 * @returns {any|sap.ui.model.ClientTreeBinding.CannotCloneData}
+	 *   A deep clone or the symbol ClientTreeBinding.CannotCloneData
+	 * @private
+	 */
+	ClientTreeBinding.prototype.cloneData = function(oTreeData) {
+		return deepExtend(Array.isArray(oTreeData) ? [] : {}, oTreeData);
+	};
 
 	/**
 	 * Return root contexts for the tree.
@@ -319,7 +337,7 @@ sap.ui.define([
 			this.applyFilter();
 		}
 		this._mLengthsCache = {};
-		this._fireChange({reason: "filter"});
+		this._fireChange({reason: ChangeReason.Filter});
 		/** @deprecated As of version 1.11.0 */
 		this._fireFilter({filters: aFilters});
 
@@ -446,17 +464,42 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets the context for this instance. If the context changes and the binding is relative a change event is fired
+	 * with reason {@link sap.ui.model.ChangeReason.Context}.
+	 *
+	 * @param {sap.ui.model.Context} oContext
+	 *   The new context object
+	 */
+	ClientTreeBinding.prototype.setContext = function (oContext) {
+		if (this.oContext != oContext) {
+			this.oContext = oContext;
+			if (this.isRelative()) {
+				const oTreeData = this.oModel._getObject(this.sPath, this.oContext);
+				this.oTreeData = this.cloneData(oTreeData);
+				this._fireChange({reason: ChangeReason.Context});
+			}
+		}
+	};
+
+	/**
 	 * Check whether this Binding would provide new values and in case it changed,
 	 * inform interested parties about this.
 	 *
-	 * @param {boolean} [bForceupdate] Not used in this method
+	 * @param {boolean} [bForceUpdate]
+	 *   Whether the change event will be fired regardless of the bindings state
 	 *
 	 */
-	ClientTreeBinding.prototype.checkUpdate = function(bForceupdate){
+	ClientTreeBinding.prototype.checkUpdate = function(bForceUpdate) {
+		const oCurrentTreeData = this.oModel._getObject(this.sPath, this.oContext);
+
 		// apply filter again
 		this.applyFilter();
 		this._mLengthsCache = {};
-		this._fireChange();
+
+		if (bForceUpdate || !deepEqual(this.oTreeData, oCurrentTreeData)) {
+			this.oTreeData = this.cloneData(oCurrentTreeData);
+			this._fireChange({reason: ChangeReason.Change});
+		}
 	};
 
 	/**

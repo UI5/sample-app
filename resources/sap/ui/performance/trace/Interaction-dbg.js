@@ -3,12 +3,12 @@
  * (c) Copyright 2025 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([
-], function() {
+sap.ui.define([], function() {
 	"use strict";
 
 	let bInteractionActive = false;
 	let oInteractionImpl;
+	const _a2aNavInfo = new Map();
 
 	/**
 	 * The SAP Statistics for OData
@@ -195,6 +195,12 @@ sap.ui.define([
 		notifyNavigation: function() {},
 
 		/**
+		 * Mark interaction as navigation related
+		 * @private
+		 */
+		notifyControlRendering: function() {},
+
+		/**
 		 * Start tracking busy time for a Control
 		 * @param {sap.ui.core.Control} oControl Start tracking of busy duration for the given control
 		 * @private
@@ -320,6 +326,33 @@ sap.ui.define([
 		 */
 		addBusyDuration : function (iDuration) {},
 
+		/**
+		 * Returns navigation info for A2A navigation
+		 * @returns {Map<string, object>} A2A navigation info
+		 * @ui5-restricted sap.ui.core
+		 * @private
+		 */
+		getNavInfo : function() {
+			return oInteractionImpl?._a2aNavInfo || _a2aNavInfo;
+		},
+
+		/**
+		 * Creates owner component info for the given element
+		 * @param {sap/ui/core/Element} oSrcElement The Element to check for an owner component
+		 * @returns {object} owner component info
+		 * @ui5-restricted sap.ui.core
+		 * @private
+		 */
+		createOwnerComponentInfo: function(oSrcElement) {
+			return oInteractionImpl?._createOwnerComponentInfo(oSrcElement) || {};
+		},
+
+		/**
+		 * Sets FESR instance to be used by Interaction
+		 * @param {sap/ui/performance/trace/FESR} oFESR The FESR instance if active
+		 * @ui5-restricted sap.ui.core
+		 * @private
+		 */
 		setFESR : function(oFESR) {
 			oInteractionImpl?._setFESR(oFESR);
 		}

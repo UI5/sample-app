@@ -29,6 +29,9 @@ sap.ui.define([
 		return oElement;
 	}
 
+	/**
+	 * @ui5-transform-hint replace-call true
+	 */
 	function fnIsLayoutSupported(oFormContainer) {
 		var oForm = fnFindForm(oFormContainer);
 		if (oForm &&

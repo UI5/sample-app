@@ -64,7 +64,7 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @author SAP SE
 	 *
 	 * @public
@@ -1197,12 +1197,18 @@ sap.ui.define([
 						rowDeselect: Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_DESELECT_KEY_ALTERNATIVE")
 					};
 				};
+
+				oTable.$("rowexpandtext").text(Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_EXPAND_KEY_ALTERNATIVE"));
+				oTable.$("rowcollapsetext").text(Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_COLLAPSE_KEY_ALTERNATIVE"));
 			},
 			onDeactivate: function(oTable, oPlugin) {
 				oTable.detachEvent("_change", this._onPropertyChange);
 				oTable.detachEvent("EventHandlerChange", this._onEventHandlerChange);
 
 				oTable._getAccExtension().getSelectionTexts = this._getSelectionTexts;
+
+				oTable.$("rowexpandtext").text(Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_EXPAND_KEY"));
+				oTable.$("rowcollapsetext").text(Lib.getResourceBundleFor("sap.ui.table").getText("TBL_ROW_COLLAPSE_KEY"));
 			},
 			_onPropertyChange: function(oEvent, oPlugin) {
 				oEvent.getParameter("name") == "selectionBehavior" && oPlugin._onSelectableChange();

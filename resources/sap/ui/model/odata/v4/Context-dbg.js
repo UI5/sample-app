@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -1269,6 +1269,7 @@ sap.ui.define([
 	 */
 	Context.prototype.isAggregated = function () {
 		this.oBinding.checkSuspended();
+		// see _AggregationCache#isAggregated
 		const bAggregated = this.oBinding.mParameters.$$aggregation?.$leafLevelAggregated;
 		if (bAggregated === undefined) {
 			return false;

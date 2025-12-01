@@ -97,7 +97,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 *
 		 * @constructor
 		 * @public
@@ -405,7 +405,7 @@ function(
 
 			this._oPopover._setAriaModal(false);
 			this._oPopover.addContent(this._oMessageView);
-			this._oPopover.addAssociation("ariaLabelledBy", this.getId() + "-messageView-HeadingDescr", true);
+			this._oPopover.addAssociation("ariaLabelledBy", this._oMessageView.getHeadingAriaLabelledBy(), true);
 
 			oPopupControl = this._oPopover.getAggregation("_popup");
 			oPopupControl.oPopup.setAutoClose(false);

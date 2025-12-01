@@ -118,7 +118,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 *
 		 * @constructor
 		 * @private
@@ -404,7 +404,11 @@ sap.ui.define([
 							/**
 							 * The end date as a UI5Date or JavaScript Date object of the focused grid cell.
 							 */
-							endDate: {type: "object"}
+							endDate: {type: "object"},
+							/**
+							 * The original browser event.
+							 */
+							originalEvent: {type: "object"}
 						}
 					}
 				}
@@ -1312,9 +1316,11 @@ sap.ui.define([
 
 		SinglePlanningCalendarGrid.prototype.onmouseup = function (oEvent) {
 			var bMultiDateSelection = SinglePlanningCalendarSelectionMode.MultiSelect === this.getDateSelectionMode();
+
 			if (!bMultiDateSelection && !(oEvent.metaKey || oEvent.ctrlKey)) {
 				this.removeAllSelectedDates();
 			}
+
 			this._bMultiDateSelect = true;
 			this._fireSelectionEvent(oEvent);
 		};
@@ -1414,7 +1420,8 @@ sap.ui.define([
 
 				this.fireEvent("cellPress", {
 					startDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-start-date")),
-					endDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-end-date"))
+					endDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-end-date")),
+					originalEvent: oEvent.originalEvent
 				});
 
 				const bHasSelectedApps = this.getSelectedAppointments().length > 0;

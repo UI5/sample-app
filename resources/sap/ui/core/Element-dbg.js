@@ -142,7 +142,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -2316,7 +2316,8 @@ sap.ui.define([
 	Element.getActiveElement = () => {
 		try {
 			var $Act = jQuery(document.activeElement);
-			if ($Act.is(":focus")) {
+			// do not check ":focus" when the browser window is not focused
+			if (!document.hasFocus() || $Act.is(":focus")) {
 				return Element.closestTo($Act[0]);
 			}
 		} catch (err) {

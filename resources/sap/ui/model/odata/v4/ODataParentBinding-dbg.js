@@ -731,11 +731,11 @@ sap.ui.define([
 	/**
 	 * Binding specific code for suspend.
 	 *
+	 * @abstract
+	 * @function
+	 * @name sap.ui.model.odata.v4.ODataParentBinding#doSuspend
 	 * @private
 	 */
-	ODataParentBinding.prototype.doSuspend = function () {
-		// nothing to do here
-	};
 
 	/**
 	 * Determines whether a child binding with the given context and path can use
@@ -823,9 +823,15 @@ sap.ui.define([
 
 		if (bDependsOnOperation && !sResolvedChildPath.includes("/$Parameter/")
 				|| this.isRootBindingSuspended()
-				|| _Helper.isDataAggregation(this.mParameters)) {
-			// With data aggregation, no auto-$expand/$select is needed, but the child may still use
-			// the parent's cache
+				|| _Helper.isDataAggregation(this.mParameters)
+					&& (oContext === this.getHeaderContext?.() || oContext.isAggregated()
+						|| this.mParameters.$$aggregation.aggregate[sChildPath]?.name)) {
+			// In general there is no need for auto-$expand/$select, if the given context is a
+			// header context. But exiting here always, if a header context is used, changes the
+			// timing.
+			// With data aggregation, no auto-$expand/$select is needed for a header context, a
+			// context referencing aggregated data, or a dynamic property, but the child may still
+			// use the parent's cache; in case of a single record auto-$expand/$select is used.
 			// Note: Operation bindings do not support auto-$expand/$select yet
 			return SyncPromise.resolve(sResolvedChildPath);
 		}
@@ -891,8 +897,7 @@ sap.ui.define([
 					mChildQueryOptions, bIsProperty);
 			}
 
-			if (oProperty?.["@$ui5.$count"]
-					&& oContext !== oContext.getBinding().getHeaderContext?.()
+			if (oProperty?.["@$ui5.$count"] && oContext !== that.getHeaderContext?.()
 					// avoid new $count handling in case of "manual" $expand
 					// Note: sChildPath.slice(0, -7) is the navigation property name
 					&& !mLocalQueryOptions.$expand?.[sChildPath.slice(0, -7)]) {

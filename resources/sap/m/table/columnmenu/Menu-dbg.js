@@ -99,7 +99,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.MenuBase
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -369,9 +369,10 @@ sap.ui.define([
 			horizontalScrolling: false,
 			verticalScrolling: true,
 			afterClose: [this._onPopoverAfterClose, this],
+			ariaLabelledBy: this.getId() + "-title",
 			customHeader: new OverflowToolbar({
 				content: [
-					new Title({text: this._getResourceText("table.COLUMNMENU_TITLE")}),
+					new Title({id: this.getId() + "-title", text: this._getResourceText("table.COLUMNMENU_TITLE")}),
 					new ToolbarSpacer(),
 					new Button({
 						icon: "sap-icon://decline",

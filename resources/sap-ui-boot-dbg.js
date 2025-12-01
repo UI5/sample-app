@@ -1463,13 +1463,7 @@
 	function loadScript(oModule, sAlternativeURL) {
 
 		const oScript = document.createElement('SCRIPT');
-		// Accessing the 'src' property of the script in this strange way prevents Safari 12 (or WebKit) from
-		// wrongly optimizing access. SF12 seems to check at optimization time whether there's a setter for the
-		// property and optimize accordingly. When a setter is defined or changed at a later point in time (e.g.
-		// by the AppCacheBuster), then the optimization seems not to be updated and the new setter is ignored
-		// BCP 1970035485
-		oScript["s" + "rc"] = oModule.url;
-		//oScript.src = oModule.url;
+		oScript.src = oModule.url;
 		oScript.setAttribute("data-sap-ui-module", oModule.name);
 
 		function onload(e) {
@@ -2698,7 +2692,7 @@
 	/**
 	 * Root namespace for JavaScript functionality provided by SAP SE.
 	 *
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @namespace
 	 * @public
 	 * @name sap

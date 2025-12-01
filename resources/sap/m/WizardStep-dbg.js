@@ -44,7 +44,7 @@ sap.ui.define([
 	 * <li>If the execution needs to branch after a given step, you should set all possible next steps in the <code>subsequentSteps</code> aggregation.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @constructor
 	 * @public
@@ -159,6 +159,7 @@ sap.ui.define([
 			press: this._complete.bind(this)
 		}).addStyleClass("sapMWizardNextButton");
 
+		this._oNextButton.data("sap-ui-fastnavgroup", "true", true);
 		this.setAggregation("_nextButton", this._oNextButton);
 	};
 
@@ -219,24 +220,6 @@ sap.ui.define([
 		}
 
 		return this;
-	};
-
-	/**
-	 * Handler for F6 Navigation.
-	 *
-	 * @param {Object} oEvent - The event object
-	 */
-	WizardStep.prototype.onsapskipforward = function(oEvent) {
-		oEvent.preventDefault();
-		const oEventF6 = new jQuery.Event("keydown");
-		oEventF6.target = oEvent.target;
-		oEventF6.key = 'F6';
-
-		if (!this._oNextButton.hasStyleClass("sapMWizardNextButtonHidden")) {
-			this._oNextButton.focus();
-		} else {
-			F6Navigation.handleF6GroupNavigation(oEventF6);
-		}
 	};
 
 	/**

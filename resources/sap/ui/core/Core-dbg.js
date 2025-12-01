@@ -118,7 +118,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.142.0";
+	const sVersion = "1.143.0";
 
 	/**
 	 * The buildinfo.
@@ -443,7 +443,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -1413,6 +1413,9 @@ sap.ui.define([
 		Log.info("Starting Plugins",null,METHOD);
 		this.startPlugins();
 		Log.info("Plugins started",null,METHOD);
+
+		// informs native JavaScript that UI5 is initialized
+		document.dispatchEvent(new CustomEvent("sap-ui-core-ready"));
 
 		/**
 		 * @deprecated As ofVersion 1.120

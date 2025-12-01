@@ -7,9 +7,6 @@
 /**
  * Model and related classes like bindings for OData V4.
  *
- * <b>Note:</b> Smart controls (<code>sap.ui.comp</code> library) do not support the SAPUI5 OData V4
- * model. Also controls such as {@link sap.ui.table.TreeTable} and
- * {@link sap.ui.table.AnalyticalTable} are not supported together with the SAPUI5 OData V4 model.
  * The interface for applications has been changed for easier and more efficient use of the model.
  * For a summary of these changes, see
  * {@link topic:abd4d7c7548d4c29ab8364d3904a6d74 Changes Compared to OData V2 Model}.
@@ -45,12 +42,11 @@ sap.ui.define([
 	"sap/ui/model/BindingMode",
 	"sap/ui/model/Context",
 	"sap/ui/model/Model",
-	"sap/ui/model/odata/OperationMode",
-	"sap/ui/thirdparty/URI"
+	"sap/ui/model/odata/OperationMode"
 ], function (ODataContextBinding, ODataListBinding, ODataMetaModel, ODataPropertyBinding,
 		SubmitMode, _GroupLock, _Helper, _MetadataRequestor, _Parser, _Requestor, assert, Log,
 		Localization, SyncPromise, Messaging, Rendering, Supportability, CacheManager,
-		Message, MessageType, BindingMode, BaseContext, Model, OperationMode, URI) {
+		Message, MessageType, BindingMode, BaseContext, Model, OperationMode) {
 	"use strict";
 
 	/**
@@ -156,6 +152,8 @@ sap.ui.define([
 		 *   "cross-service references". Supported since 1.81.0
 		 * @param {string} [mParameters.odataVersion="4.0"]
 		 *   The version of the OData service. Supported values are "2.0", "4.0", and "4.01".
+		 *   <b>Note:</b> "2.0" is deprecated since 1.143.0. We recommend migrating your service to
+		 *   OData V4.
 		 * @param {sap.ui.model.odata.OperationMode} [mParameters.operationMode]
 		 *   The operation mode for filtering and sorting. Since 1.39.0, the operation mode
 		 *   {@link sap.ui.model.odata.OperationMode.Server} is supported. All other operation modes
@@ -242,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -273,8 +271,8 @@ sap.ui.define([
 			sParameter,
 			mQueryParams,
 			sServiceUrl,
-			oUri,
 			mUriParameters,
+			sUrlParameters,
 			that = this;
 
 		// do not pass any parameters to Model
@@ -298,8 +296,10 @@ sap.ui.define([
 		if (!sServiceUrl) {
 			throw new Error("Missing service root URL");
 		}
-		oUri = new URI(sServiceUrl);
-		if (oUri.path()[oUri.path().length - 1] !== "/") {
+		// we don't expect the sServiceUrl to contain a "#" hash part, because it is not relevant
+		// for OData requests
+		[sServiceUrl, sUrlParameters] = sServiceUrl.split("?");
+		if (sServiceUrl.at(-1) !== "/") {
 			throw new Error("Service root URL must end with '/'");
 		}
 		if (mParameters.operationMode && mParameters.operationMode !== OperationMode.Server) {
@@ -307,15 +307,16 @@ sap.ui.define([
 				+ mParameters.operationMode);
 		}
 		this.sOperationMode = mParameters.operationMode;
+		mUriParameters = _Helper.getUrlParameters(sUrlParameters);
 		// Note: strict checking for model's URI parameters, but "sap-*" is allowed
-		mUriParameters = this.buildQueryOptions(oUri.query(true), false, true);
+		mUriParameters = this.buildQueryOptions(mUriParameters, false, true);
 		// BEWARE: these are shared across all bindings!
 		this.mUriParameters = mUriParameters;
 		if (Supportability.isStatisticsEnabled()) {
 			// Note: this way, "sap-statistics" is not sent within $batch
 			mUriParameters = Object.assign({"sap-statistics" : true}, mUriParameters);
 		}
-		this.sServiceUrl = oUri.query("").toString();
+		this.sServiceUrl = sServiceUrl;
 		this.sGroupId = mParameters.groupId;
 		if (this.sGroupId === undefined) {
 			this.sGroupId = "$auto";
@@ -967,10 +968,10 @@ sap.ui.define([
 	 *   An array of navigation property names which are omitted from the main list request (since
 	 *   1.137.0). Instead, each of them is loaded in a separate request. This results in the main
 	 *   list becoming available faster, while the separate properties are merged as soon as the
-	 *   data is received. Note that the separate properties must be single valued and part of the
-	 *   '$expand' system query option, either automatically via the "autoExpandSelect" model
-	 *   parameter (see {@link #constructor}) or manually. The <code>$$separate</code> parameter
-	 *   must not be combined with <code>$$aggregation</code>.
+	 *   data is received. Note that the separate properties must be single valued. If they are not
+	 *   part of the '$expand' system query option, either automatically via the "autoExpandSelect"
+	 *   model parameter (see {@link #constructor}) or manually, they are ignored. The
+	 *   <code>$$separate</code> parameter must not be combined with <code>$$aggregation</code>.
 	 * @param {boolean} [mParameters.$$sharedRequest]
 	 *   Whether multiple bindings for the same resource path share the data, so that it is
 	 *   requested only once.

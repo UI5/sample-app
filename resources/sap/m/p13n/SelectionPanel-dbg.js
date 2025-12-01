@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.142.0
+	 * @version 1.143.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -463,7 +463,11 @@ sap.ui.define([
 			aFilter.push(oSearchFilter);
 		}
 
-		this._oListControl.getBinding("items").filter(new Filter(aFilter, true));
+		let vFilter = [];
+		if (aFilter.length > 0) {
+			vFilter = new Filter(aFilter, true);
+		}
+		this._oListControl.getBinding("items").filter(vFilter);
 	};
 
 	SelectionPanel.prototype._onSearchFieldLiveChange = function(oEvent) {

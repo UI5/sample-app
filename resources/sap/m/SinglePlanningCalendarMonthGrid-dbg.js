@@ -99,7 +99,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.142.0
+		 * @version 1.143.0
 		 *
 		 * @constructor
 		 * @private
@@ -223,7 +223,11 @@ sap.ui.define([
 							/**
 							 * The end date as a UI5Date or JavaScript Date object of the focused grid cell.
 							 */
-							endDate: { type: "object" }
+							endDate: { type: "object" },
+							/**
+							 * The original browser event.
+							 */
+							originalEvent: {type: "object"}
 						}
 					},
 					/**
@@ -916,7 +920,7 @@ sap.ui.define([
 			this._handleMultiDateSelection(oSelectedCell, oStartDate, oEndDate, oEvent, bShiftSelection);
 
 			// eslint-disable-next-line no-unused-expressions
-			!bWeekNumberSelect && this.fireEvent("cellPress", {startDate: oStartDate, endDate: oEndDate});
+			!bWeekNumberSelect && this.fireEvent("cellPress", {startDate: oStartDate, endDate: oEndDate, originalEvent: oEvent.originalEvent});
 		};
 
 		SinglePlanningCalendarMonthGrid.prototype._toggleMarkCell = function (oTarget, oDay) {

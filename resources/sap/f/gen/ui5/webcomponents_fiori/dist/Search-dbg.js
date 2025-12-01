@@ -27,7 +27,7 @@ sap.ui.define(
      *
      * ### ES6 Module Import
      *
-     * `import "sap/f/gen/ui5/webcomponents_fiori/dist/Search.js";`
+     * `import "@ui5/webcomponents-fiori/dist/Search.js";`
      *
      * @extends sap.ui.core.webc.WebComponent
      * @constructor
@@ -39,7 +39,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.Search",
       {
         metadata: {
-          tag: "ui5-search-87689b96",
+          tag: "ui5-search-cc48984a",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 

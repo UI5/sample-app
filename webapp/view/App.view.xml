@@ -4,7 +4,7 @@
 				<customHeader>
 					<f:ShellBar core:require="{ Helper: 'sap/ui/demo/todo/util/Helper' }" title="{i18n>TITLE}">
 						<f:profile>
-							<f:Avatar id="avatar-profile" />
+							<Avatar id="avatar-profile" />
 						</f:profile>
 					</f:ShellBar>
 				</customHeader>

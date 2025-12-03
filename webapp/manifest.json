@@ -6,12 +6,11 @@
 	},
 	"sap.ui5": {
 		"dependencies": {
-			"minUI5Version": "1.136.0",
+			"minUI5Version": "1.143.0",
 			"libs": {
 				"sap.ui.core": {},
 				"sap.m": {},
-				"sap.f": {},
-				"sap.ui.commons": {}
+				"sap.f": {}
 			}
 		},
 		"rootView": {

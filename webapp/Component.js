@@ -1,7 +1,10 @@
-sap.ui.define(["sap/ui/core/UIComponent", "sap/ui/core/ComponentSupport", "sap/m/DateTimeInput"], (UIComponent, ComponentSupport, DateTimeInput) => {
+sap.ui.define(["sap/ui/core/UIComponent"], (UIComponent) => {
 	"use strict";
-	const dti = new DateTimeInput();
-	return UIComponent.extend("sap.ui.demo.todo.Component", {
 
+	return UIComponent.extend("sap.ui.demo.todo.Component", {
+		metadata: {
+			interfaces: ["sap.ui.core.IAsyncContentCreation"],
+			manifest: "json"
+		}
 	});
 });

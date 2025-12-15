@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.QueryPanel
 	 *
 	 * @author SAP SE
-	 * @version 1.143.0
+	 * @version 1.143.1
 	 *
 	 * @public
 	 * @alias sap.m.p13n.GroupPanel

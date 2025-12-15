@@ -30,7 +30,7 @@ sap.ui.define(["./library", "./ListBase", "./ListRenderer", "sap/ui/core/Lib", "
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.0
+	 * @version 1.143.1
 	 *
 	 * @constructor
 	 * @public

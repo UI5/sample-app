@@ -21,7 +21,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.143.0
+	 * @version 1.143.1
 	 * @private
 	 * @alias sap.ui.core.util.LibraryInfo
 	 */

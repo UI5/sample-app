@@ -194,7 +194,7 @@ sap.ui.define(['../base/ManagedObject', "sap/base/assert"],
 	 * @see sap.ui.core.LabelEnablement#enrich
 	 *
 	 * @author SAP SE
-	 * @version 1.143.0
+	 * @version 1.143.1
 	 * @protected
 	 * @alias sap.ui.core.LabelEnablement
 	 * @namespace

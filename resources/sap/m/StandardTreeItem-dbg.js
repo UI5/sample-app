@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.m.TreeItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.0
+	 * @version 1.143.1
 	 *
 	 * @constructor
 	 * @public

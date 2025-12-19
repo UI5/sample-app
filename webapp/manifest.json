@@ -2,7 +2,19 @@
 	"_version": "2.0.0",
 	"sap.app": {
 		"id": "sap.ui.demo.todo",
-		"type": "application"
+		"type": "application",
+		"title": "{{TITLE}}",
+		"applicationVersion": {
+			"version": "0.5.0"
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
 	},
 	"sap.ui5": {
 		"dependencies": {
@@ -12,6 +24,10 @@
 				"sap.m": {},
 				"sap.f": {}
 			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
 		},
 		"rootView": {
 			"viewName": "sap.ui.demo.todo.view.App",

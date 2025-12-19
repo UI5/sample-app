@@ -61,7 +61,7 @@ sap.ui.define([
 		 */
 		version: "1.143.1",
 		// buildinfo.lastchange is deprecated and is therefore defaulted to empty string
-		buildinfo : { lastchange : "", buildtime : "20251216-0254" }
+		buildinfo : { lastchange : "", buildtime : "20251219-1236" }
 	};
 
 	/**

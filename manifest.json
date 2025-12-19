@@ -3,6 +3,10 @@
 	"sap.app": {
 		"id": "sap.ui.demo.todo",
 		"type": "application",
+		"title": "{{TITLE}}",
+		"applicationVersion": {
+			"version": "0.5.0"
+		},
 		"i18n": {
 			"bundleUrl": "i18n/i18n.properties",
 			"supportedLocales": [
@@ -10,6 +14,14 @@
 				"de",
 				"en"
 			]
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
 		}
 	},
 	"sap.ui5": {
@@ -20,6 +32,10 @@
 				"sap.m": {},
 				"sap.f": {}
 			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
 		},
 		"rootView": {
 			"viewName": "sap.ui.demo.todo.view.App",

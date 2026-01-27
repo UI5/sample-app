@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([],function(){"use strict";var t=/^((?:[A-Z]{2,3}(?:-[A-Z]{3}){0,3})|[A-Z]{4}|[A-Z]{5,8})(?:-([A-Z]{4}))?(?:-([A-Z]{2}|[0-9]{3}))?((?:-[0-9A-Z]{5,8}|-[0-9][0-9A-Z]{3})*)((?:-[0-9A-WYZ](?:-[0-9A-Z]{2,8})+)*)(?:-(X(?:-[0-9A-Z]{1,8})+))?$/i;class i{language;script;region;variant;variantSubtags;extension;extensionSubtags;privateUse;privateUseSubtags;#t;constructor(i){var s=t.exec(i.replace(/_/g,"-"));if(s===null){throw new TypeError("The given language tag '"+i+"' does not adhere to BCP-47.")}this.language=s[1]||null;this.script=s[2]||null;this.region=s[3]||null;this.variant=s[4]&&s[4].slice(1)||null;this.variantSubtags=this.variant?this.variant.split("-"):[];this.extension=s[5]&&s[5].slice(1)||null;this.extensionSubtags=this.variant?this.variant.split("-"):[];this.privateUse=s[6]||null;this.privateUseSubtags=this.privateUse?this.privateUse.slice(2).split("-"):[];if(this.language){this.language=this.language.toLowerCase()}if(this.script){this.script=this.script.toLowerCase().replace(/^[a-z]/,function(t){return t.toUpperCase()})}if(this.region){this.region=this.region.toUpperCase()}this.#t=this.#i(this.language,this.script,this.region,this.variant,this.extension,this.privateUse);Object.freeze(this)}toString(){return this.#t}#i(){return Array.prototype.filter.call(arguments,Boolean).join("-")}}return i});

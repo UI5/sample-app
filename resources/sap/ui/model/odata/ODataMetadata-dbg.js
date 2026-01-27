@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -49,7 +49,7 @@ sap.ui.define([
 	 * Implementation to access OData metadata
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.ODataMetadata
@@ -386,7 +386,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
+	 *            [oListener=this] Context object to call the event handler with. Defaults to this
 	 *            <code>sap.ui.model.odata.ODataMetadata</code> itself
 	 *
 	 * @returns {this} Reference to <code>this</code> in order to allow method chaining
@@ -457,7 +457,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
+	 *            [oListener=this] Context object to call the event handler with. Defaults to this
 	 *            <code>sap.ui.model.odata.ODataMetadata</code> itself
 	 *
 	 * @returns {this} Reference to <code>this</code> in order to allow method chaining

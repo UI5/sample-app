@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -20,6 +20,7 @@ sap.ui.define(
      * @extends module:sap/f/gen/ui5/webcomponents/dist/ListItemBase
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents/dist/ListItem
      */
 
@@ -53,6 +54,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: "Active"
             },
+
             /**
              * Defines the additional accessibility attributes that will be applied to the component.
              * The following fields are supported:
@@ -68,6 +70,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: "{}"
             },
+
             /**
              * The navigated state of the list item.
              * If set to `true`, a navigation indicator is displayed at the end of the list item.
@@ -77,6 +80,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines the highlight state of the list items.
              * Available options are: `"None"` (by default), `"Positive"`, `"Critical"`, `"Information"` and `"Negative"`.
@@ -87,6 +91,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: "None"
             },
+
             /**
              * Defines the selected state of the component.
              */
@@ -95,6 +100,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * The text-content of the Web Component.
              */

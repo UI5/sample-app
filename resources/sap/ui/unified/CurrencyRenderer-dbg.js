@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,14 +14,14 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Lib"],
 	/**
 	 * Currency renderer.
 	 *
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @namespace
 	 */
 	var CurrencyRenderer = {
 		apiVersion: 2
 	};
 
-	// shortcut for sap.m.EmptyIndicator
+	// shortcut for sap.m.EmptyIndicatorMode
 	var EmptyIndicatorMode = mobileLibrary.EmptyIndicatorMode;
 
 	// shortcut for library resource bundle

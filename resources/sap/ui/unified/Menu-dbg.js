@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -70,7 +70,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -1255,7 +1255,7 @@ sap.ui.define([
 	/**
 	 * Returns all items that have <code>selected</code> properties set to <code>true</code>.
 	 * <b>Note:</b> Only items with <code>selected</code> property set that are members of <code>MenuItemGroup</code> with <code>ItemSelectionMode</code> property
-	 * set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.unified.ItemSelectionMode.MultiSelect}> are taken into account.
+	 * set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.core.ItemSelectionMode.MultiSelect}> are taken into account.
 	 * @since 1.127.0
 	 * @public
 	 * @returns {Array} Array of all selected items

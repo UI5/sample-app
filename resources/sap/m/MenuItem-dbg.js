@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,7 +64,7 @@ sap.ui.define([
 		 * @implements sap.m.IMenuItem, sap.m.IMenuItemBehavior
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -105,7 +105,7 @@ sap.ui.define([
 				 * Determines whether the <code>MenuItem</code> is selected.
 				 * A selected <code>MenuItem</code> has a check mark rendered at its end.
 				 * <b>Note: </b> selection functionality works only if the menu item is a member of <code>MenuItemGroup</code> with
-				 * <code>itemSelectionMode</code> set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.unified.ItemSelectionMode.MultiSelect}.
+				 * <code>itemSelectionMode</code> set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.core.ItemSelectionMode.MultiSelect}.
 				 * @since 1.127.0
 				 */
 				selected: {type: "boolean", group: "Behavior", defaultValue: false},

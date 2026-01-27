@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -110,15 +110,14 @@ sap.ui.define([
 
 	/**
 	 * The Core version, e.g. '1.127.0'
-	 * @name sap.ui.core.Core.version
+	 * @name sap.ui.core.Core.prototype.version
 	 * @final
 	 * @type {string}
-	 * @static
 	 * @since 1.127
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.143.1";
+	const sVersion = "1.144.0";
 
 	/**
 	 * The buildinfo.
@@ -131,10 +130,9 @@ sap.ui.define([
 
 	/**
 	 * The buildinfo, containing a build timestamp.
-	 * @name sap.ui.core.Core.buildinfo
+	 * @name sap.ui.core.Core.prototype.buildinfo
 	 * @final
 	 * @type {sap.ui.core.Core.BuildInfo}
-	 * @static
 	 * @since 1.127
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
@@ -443,7 +441,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -512,7 +510,7 @@ sap.ui.define([
 
 			Object.defineProperty(this, "mElements", {
 				get: function() {
-					Log.error("oCore.mElements was a private member and has been removed. Use one of the methods in sap.ui.core.ElementRegistry instead");
+					Log.error("oCore.mElements was a private member and has been removed. Use one of the methods in sap/ui/core/ElementRegistry instead");
 					return ElementRegistry.all(); // this is a very costly snapshot!
 				},
 				configurable: false
@@ -2433,7 +2431,7 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.core.ID|null|undefined} sId ID of the control to retrieve
 	 * @returns {sap.ui.core.Element|undefined} Element for the given ID or <code>undefined</code>
-	 * @deprecated As of version 1.1, use <code>sap.ui.core.Core.byId</code> instead!
+	 * @deprecated As of version 1.1, use <code>sap.ui.core.Core.prototype.byId</code> instead!
 	 * @function
 	 * @public
 	 */

@@ -1,18 +1,21 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.QuickViewBase.
 sap.ui.define([
+	"./NavContainer",
+	"./Page",
 	"./library",
 	"sap/ui/core/Control",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/thirdparty/jquery",
 	// jQuery Plugin "firstFocusableDomRef"
 	"sap/ui/dom/jquery/Focusable"
-], function (library, Control, KeyCodes, jQuery) {
+
+], function (NavContainer, Page, library, Control, KeyCodes, jQuery) {
 	"use strict";
 
 	/**
@@ -27,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -53,7 +56,12 @@ sap.ui.define([
 					multiple: true,
 					singularName: "page",
 					bindable: "bindable"
-				}
+				},
+
+				/**
+				 * The navigation container managed by the QuickViewBase control.
+				 */
+				_navContainer : {type : "sap.m.NavContainer", multiple : false, visibility : "hidden"}
 			},
 			events: {
 
@@ -201,6 +209,19 @@ sap.ui.define([
 			render: function () {}
 		}
 	});
+
+	/**
+	 * Initialize the control.
+	 *
+	 * @private
+	 */
+	QuickViewBase.prototype.init = function() {
+		this._oNavContainer = new NavContainer(this.getId() + "-navContainer");
+		this.setAggregation("_navContainer", this._oNavContainer);
+		this._oNavContainer.addPage(new Page());
+		this._oNavContainer.attachNavigate(this._navigate.bind(this));
+		this._oNavContainer.attachAfterNavigate(this._afterNavigate.bind(this));
+	};
 
 	/**
 	 * Navigates to the previous page if there is such.

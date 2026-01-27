@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -111,7 +111,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -420,7 +420,11 @@ function(
 						 * All appointments with changed selected state.
 						 * @since 1.67.0
 						 */
-						appointments : {type : "sap.ui.unified.CalendarAppointment[]"}
+						appointments : {type : "sap.ui.unified.CalendarAppointment[]"},
+						/**
+						 * The original browser event.
+						 */
+						originalEvent: {type: "object"}
 
 					}
 				},
@@ -649,6 +653,16 @@ function(
 	 */
 	SinglePlanningCalendar.prototype.onAfterRendering = function () {
 		var oHeader = this._getHeader();
+		var oEvent = {
+			size: {
+				height: this.getDomRef().offsetHeight
+			},
+			oldSize: {
+				height: 0
+			}
+		};
+
+		this._onHeaderResize(oEvent);
 
 		// Adjusting is done after rendering, because otherwise we won't have
 		// info about how much offset is actually needed.
@@ -682,6 +696,9 @@ function(
 	 * @private
 	 */
 	SinglePlanningCalendar.prototype._onHeaderResize = function (oEvent) {
+		// Update view switch label visibility in case overflow state changed
+		this._getHeader()._updateViewSwitchLabelFor();
+
 		if (oEvent.oldSize.height === oEvent.size.height) {
 			// We need only height changes
 			return this;
@@ -1341,7 +1358,8 @@ function(
 		var fnHandleAppointmentSelect = function(oEvent) {
 			this.fireAppointmentSelect({
 				appointment: oEvent.getParameter("appointment"),
-				appointments: oEvent.getParameter("appointments")
+				appointments: oEvent.getParameter("appointments"),
+				originalEvent: oEvent.getParameter("originalEvent")
 			});
 		};
 		var fnHandleAppointmentDrop = function(oEvent) {

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -355,7 +355,7 @@ sap.ui.define([
 	 *   the "with" control
 	 * @param {object} oBindingInfo
 	 *   the binding info which must be "ready" (because it refers only to models which are
-	 *   available) and normalized via {@link sap.ui.base.BindingIfo.createProperty}
+	 *   available) and normalized via {@link sap.ui.base.BindingInfo.createProperty}
 	 * @param {object} mSettings
 	 *   map/JSON-object with initial property values, etc.
 	 * @param {object} oScope

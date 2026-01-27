@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -349,7 +349,7 @@ sap.ui.define([
 			 *
 			 *         // control type is often combined with viewName - only controls that are inside of the view
 			 *         // and have the correct type will be returned
-			 *         // here all sap.m.Inputs inside of a view called 'my.View' will be returned
+			 *         // here all sap.m.Input controls inside of a view called 'my.View' will be returned
 			 *         new OpaPlugin().getMatchingControls({
 			 *             viewName: "my.View"
 			 *             controlType: "sap.m.Input"
@@ -695,7 +695,7 @@ sap.ui.define([
 		/**
 		 * marker for a return type
 		 * @private
-		 * @type {{}}
+		 * @type {string}
 		 */
 		OpaPlugin.FILTER_FOUND_NO_CONTROLS = "FILTER_FOUND_NO_CONTROL";
 
@@ -705,7 +705,7 @@ sap.ui.define([
 		/**
 		 * Returns <code>true</code> if there are any pending rendering tasks or when
 		 * such rendering tasks are currently being executed.
-		 * Internally forwards to {@link sap.ui.core.Rendering#isPending} or the corresponsing legacy API.
+		 * Internally forwards to {@link module:sap/ui/core/Rendering.isPending} or the corresponsing legacy API.
 		 * The legacy API is used when the tested app is loaded in an iframe that uses a lower UI5 version.
 		 *
 		 * @returns {boolean} true if there are pending (or executing) rendering tasks.
@@ -724,7 +724,7 @@ sap.ui.define([
 
 		/**
 		 * Retrieves a resource bundle for the given library and locale.
-		 * Internally forwards to {@link sap.ui.core.Lib#getResourceBundleFor} or the corresponsing legacy API.
+		 * Internally forwards to {@link sap.ui.core.Lib.getResourceBundleFor} or the corresponsing legacy API.
 		 * The legacy API is used when the tested app is loaded in an iframe that uses a lower UI5 version.
 		 *
 		 * @param {string} sLibraryName
@@ -743,7 +743,7 @@ sap.ui.define([
 
 		/**
 		 * Returns the registered element with the given ID, if any.
-		 * Internally forwards to {@link sap.ui.core.Element#getElementById} or the corresponsing legacy API.
+		 * Internally forwards to {@link sap.ui.core.Element.getElementById} or the corresponsing legacy API.
 		 * The legacy API is used when the tested app is loaded in an iframe that uses a lower UI5 version.
 		 *
 		 * @param {sap.ui.core.ID|null|undefined} sId ID of the element to search for
@@ -763,7 +763,7 @@ sap.ui.define([
 
 		/**
 		 * Returns the root element of the static, hidden area.
-		 * Internally forwards to {@link sap.ui.core.StaticArea#getDomRef} or the corresponsing legacy API.
+		 * Internally forwards to {@link module:sap/ui/core/StaticArea.getDomRef} or the corresponding legacy API.
 		 * The legacy API is used when the tested app is loaded in an iframe that uses a lower UI5 version.
 		 *
 		 * @returns {Element} the root DOM element of the static, hidden area
@@ -783,7 +783,7 @@ sap.ui.define([
 		/**
 		 * Return an object with all instances of <code>sap.ui.core.Element</code>,
 	 	 * keyed by their ID.
-		 * Internally requires {@link sap.ui.core.ElementRegistry} or the corresponsing legacy API.
+		 * Internally requires {@link module:sap/ui/core/ElementRegistry} or the corresponsing legacy API.
 		 * The legacy API is used when the tested app is loaded in an iframe that uses a lower UI5 version.
 		 *
 		 * @returns {Object<sap.ui.core.ID,sap.ui.core.Element>}

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -27,6 +27,7 @@ sap.ui.define(
      * @extends sap.ui.core.webc.WebComponent
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents_fiori/dist/UserMenu
      */
 
@@ -34,7 +35,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.UserMenu",
       {
         metadata: {
-          tag: "ui5-user-menu-cc48984a",
+          tag: "ui5-user-menu-68f7652d",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -51,6 +52,7 @@ sap.ui.define(
              * Defines if the User Menu is opened.
              */
             open: { type: "boolean", mapping: "property", defaultValue: false },
+
             /**
              * Defines if the User Menu shows the Manage Account option.
              */
@@ -59,6 +61,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines if the User Menu shows the Other Accounts option.
              */
@@ -67,6 +70,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines if the User Menu shows the Edit Accounts option.
              */
@@ -75,6 +79,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines if the User menu shows edit button.
              */
@@ -83,14 +88,17 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * The text-content of the Web Component.
              */
             text: { type: "string", mapping: "textContent" },
+
             /**
              * The 'width' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */
             width: { type: "sap.ui.core.CSSSize", mapping: "style" },
+
             /**
              * The 'height' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */

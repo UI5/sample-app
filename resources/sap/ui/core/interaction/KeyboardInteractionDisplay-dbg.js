@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -103,8 +103,8 @@ sap.ui.define([
  	 *   version of its text content using `getNormalizedShortcutString()` and sets this attribute.
 	 * - Replaces the <kbd> element's text content with the translated shortcut via `translateShortcut()`.
 	 *
-	 * @param {array<Element>} kbds An array of <kbd> elements to be translated and annotated.
-	 * @return {array<Element>} The modified array of <kbd> elements with translated text and attributes.
+	 * @param {Array<Element>} kbds An array of <kbd> elements to be translated and annotated.
+	 * @return {Array<Element>} The modified array of <kbd> elements with translated text and attributes.
 	 */
 	const annotateAndTranslateKbdTags = (kbds) => {
 		kbds.forEach((kbd) => {

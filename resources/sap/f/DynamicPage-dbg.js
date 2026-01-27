@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -118,7 +118,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -674,16 +674,31 @@ sap.ui.define([
 		this._headerBiggerThanAllowedHeight = this._headerBiggerThanAllowedToBeFixed();
 		bChange = bOldValue !== this._headerBiggerThanAllowedHeight;
 
-		if (!this._headerBiggerThanAllowedHeight || !bChange) {
+		if (!bChange) {
 			return;
 		}
-		//move the header to content
+
+		this._repositionHeaderBasedOnHeight();
+
+		this._adjustStickyContent();
+		this._updateTitlePositioning();
+	};
+
+	DynamicPage.prototype._repositionHeaderBasedOnHeight = function () {
+		var bMoveHeaderToContent = this._headerBiggerThanAllowedHeight;
 		if (this.getHeaderExpanded()) {
+			this._repositionExpandedHeader(bMoveHeaderToContent);
+		} else {
+			this._repositionSnappedHeader(); // will automatically move to content if possible
+		}
+	};
+
+	DynamicPage.prototype._repositionExpandedHeader = function (bMoveHeaderToContent) {
+		if (bMoveHeaderToContent) {
 			this._moveHeaderToContentArea();
 		} else {
-			this._adjustSnap(); // moves the snapped header to content if possible
+			this._moveHeaderToTitleArea();
 		}
-		this._updateTitlePositioning();
 	};
 
 	/**
@@ -820,9 +835,8 @@ sap.ui.define([
 					"sapFDynamicPageTitleSnappedTitleOnMobile" : "sapFDynamicPageTitleSnapped");
 			this._updateToggleHeaderVisualIndicators();
 			this._togglePinButtonVisibility(false);
-			this._updateTitlePositioning();
 		}
-
+		this._updateTitlePositioning();
 		this._toggleHeaderInTabChain(false);
 		this._updateARIAStates(false);
 		this._toggleHeaderBackground(true);
@@ -863,9 +877,8 @@ sap.ui.define([
 			if (!this.getPreserveHeaderStateOnScroll() && !this._headerBiggerThanAllowedToPin()) {
 				this._togglePinButtonVisibility(true);
 			}
-			this._updateTitlePositioning();
 		}
-
+		this._updateTitlePositioning();
 		this._toggleHeaderInTabChain(true);
 		this._updateARIAStates(true);
 		this._toggleHeaderBackground(false);
@@ -1266,7 +1279,7 @@ sap.ui.define([
 	 */
 	DynamicPage.prototype._needsVerticalScrollBar = function () {
 		return this._isContentOverflowingScrollContainer()
-			|| this._isContentOverflowingFullscreenContainer(); // overlap between fullscreen-area and footer-area
+			|| this.isContentOverflowingIntoFooter();
 	};
 
 	DynamicPage.prototype._isContentOverflowingScrollContainer = function () {
@@ -1279,6 +1292,10 @@ sap.ui.define([
 	DynamicPage.prototype._isContentOverflowingFullscreenContainer = function () {
 		return exists(this.$contentFitContainer)
 			&& this.$contentFitContainer[0].scrollHeight > this.$contentFitContainer[0].clientHeight;
+	};
+
+	DynamicPage.prototype.isContentOverflowingIntoFooter = function () {
+		return this.getShowFooter() && this._isContentOverflowingFullscreenContainer();
 	};
 
 	/**
@@ -1789,7 +1806,7 @@ sap.ui.define([
 	 * (2) snapping with hiding the header - when not enough content is available to allow snap header on scroll
 	 * @private
 	 */
-	DynamicPage.prototype._adjustSnap = function () {
+	DynamicPage.prototype._repositionSnappedHeader = function () {
 		var oDynamicPageHeader,
 			bIsSnapped,
 			bCanSnapWithScroll,
@@ -1898,7 +1915,7 @@ sap.ui.define([
 			this._toggleScrollingStyles(bNeedsVerticalScrollBar);
 		}
 
-		this._adjustSnap();
+		this._repositionSnappedHeader();
 
 		if (!this._bExpandingWithAClick) {
 			this._updateTitlePositioning();
@@ -1938,7 +1955,7 @@ sap.ui.define([
 
 		this._expandHeaderIfNeeded(oEvent);
 
-		this._adjustSnap();
+		this._repositionSnappedHeader();
 		this._updateTitlePositioning();
 		this._updateMedia(iCurrentWidth);
 	};

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/core/Lib", 'sap/ui/core/Renderer', './DateTimeFieldRenderer', 'sap/ui/core/library'],
@@ -25,7 +25,7 @@ sap.ui.define(["sap/ui/core/Lib", 'sap/ui/core/Renderer', './DateTimeFieldRender
 	DatePickerRenderer.writeInnerValue = function(oRm, oDP) {
 		if (oDP._inPreferredUserInteraction()) {
 			oRm.attr("value", oDP._$input.val());
-		} else if (oDP._bValid || oDP._bOutOfAllowedRange) {
+		} else if (oDP._bValid || oDP._isValueOutOfRange()) {
 			oRm.attr("value", oDP._formatValue(oDP.getDateValue()));
 		} else {
 			oRm.attr("value", oDP.getValue());

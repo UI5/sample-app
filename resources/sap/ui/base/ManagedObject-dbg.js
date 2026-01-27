@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -266,7 +266,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @public
 	 * @alias sap.ui.base.ManagedObject
 	 */
@@ -2400,7 +2400,7 @@ sap.ui.define([
 		}
 
 		if (typeof (vObject) == "string") { // ID of the object is given
-			// Note: old lookup via sap.ui.getCore().byId(vObject) only worked for Elements, not for managed objects in general!
+			// Note: lookup via ElementRegistry only works for Elements, not for managed objects in general!
 			for (i = 0; i < aChildren.length; i++) {
 				if (aChildren[i] && aChildren[i].getId() === vObject) {
 					vObject = i;

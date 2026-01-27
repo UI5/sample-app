@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -1804,14 +1804,13 @@ sap.ui.define([
 		});
 
 		//The below piece of code is written for the scenario if the link inside the TileAttribute has been clicked
-		var bIsLinkClicked = false;
-		this.getTileContent().forEach(function(oActionTileContent){
-			if (oActionTileContent._isLinkPressed) {
-				bIsLinkClicked = true;
-				oActionTileContent._isLinkPressed = false;
+		var oSrcControl = oEvent.srcControl;
+		var oActionTileContent = this.getTileContent().find(function(oActionTileContent){
+			if (oActionTileContent.isA("sap.m.ActionTileContent")){
+				return oActionTileContent._isLinkClicked(oSrcControl);
 			}
 		});
-		return !!oLinkTileContent || bIsLinkClicked;
+		return !!oLinkTileContent || !!oActionTileContent;
 	};
 
 	/**

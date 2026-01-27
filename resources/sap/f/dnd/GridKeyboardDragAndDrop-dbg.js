@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([], function() {
@@ -12,7 +12,7 @@ sap.ui.define([], function() {
 	 *
 	 * Note: This module is used only when doing keyboard drag and drop
 	 *
-	 * @name sap.f.dnd.GridDnD
+	 * @alias sap.f.dnd.GridKeyboardDragAndDrop
 	 * @namespace
 	 * @private
 	 * @since 1.81

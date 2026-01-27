@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @private
@@ -279,24 +279,48 @@ function(
 		};
 
 		SplitButton.prototype.onsapup = function(oEvent) {
+			if (!this.getEnabled()) {
+				return;
+			}
+
+			oEvent.preventDefault();
 			this._fireKeyboardArrowPress();
 		};
 
 		SplitButton.prototype.onsapdown = function(oEvent) {
+			if (!this.getEnabled()) {
+				return;
+			}
+
+			oEvent.preventDefault();
 			this._fireKeyboardArrowPress();
 		};
 
 		SplitButton.prototype.onsapupmodifiers = function(oEvent) {
+			if (!this.getEnabled()) {
+				return;
+			}
+
+			oEvent.preventDefault();
 			this._fireKeyboardArrowPress();
 		};
 
 		SplitButton.prototype.onsapdownmodifiers = function(oEvent) {
+			if (!this.getEnabled()) {
+				return;
+			}
+
+			oEvent.preventDefault();
 			this._fireKeyboardArrowPress();
 			oEvent.stopImmediatePropagation();
 		};
 
 		//F4
 		SplitButton.prototype.onsapshow = function(oEvent) {
+			if (!this.getEnabled()) {
+				return;
+			}
+
 			this._getArrowButton().firePress();
 			oEvent.preventDefault();
 		};

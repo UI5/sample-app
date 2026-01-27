@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * Applies mask support for input controls.
 	 * It should should be applied to the prototype of a <code>sap.m.InputBase</code>.
 	 *
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @private
 	 * @mixin
 	 * @alias sap.m.MaskEnabler
@@ -395,7 +395,7 @@ sap.ui.define([
 		 * Overrides the method in order to validate the placeholder symbol.
 		 * @param {string} sSymbol The placeholder symbol
 		 * @override
-		 * @returns {sap.ui.base.MaskInput} <code>this</code> pointer for chaining
+		 * @returns {this} <code>this</code> pointer for chaining
 		 */
 		this.setPlaceholderSymbol = function(sSymbol) {
 			var bSymbolFound;
@@ -763,7 +763,7 @@ sap.ui.define([
 		/**
 		 * Places the cursor on a given position (zero based).
 		 * @param {int} iPos The position the cursor to be placed on. If negative value is given, 0 is considered.
-		 * @returns {sap.ui.MaskEnabler} <code>this</code> to allow method chaining
+		 * @returns {this} <code>this</code> to allow method chaining
 		 * @private
 		 */
 		this._setCursorPosition = function (iPos) {

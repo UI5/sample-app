@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -69,14 +69,14 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/assert", "sap/base/Log"],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.ui.core.service.Service
 	 * @abstract
 	 * @private
 	 * @ui5-restricted sap.ushell
 	 * @since 1.37.0
 	 */
-	var Service = BaseObject.extend("sap.ui.core.service.Service", /** @lends sap.ui.service.Service.prototype */ {
+	var Service = BaseObject.extend("sap.ui.core.service.Service", /** @lends sap.ui.core.service.Service.prototype */ {
 
 		metadata: {
 			"abstract" : true,

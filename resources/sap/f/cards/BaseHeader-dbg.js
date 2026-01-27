@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -183,13 +183,13 @@ sap.ui.define([
 	});
 
 	BaseHeader.prototype._setRootAccessibilityRole = function () {
-		// Do nothing. The sap.f.BaseHeader has the heading role already.
+		// Do nothing. The sap.f.cards.BaseHeader has the heading role already.
 	};
 	BaseHeader.prototype._setRootAriaLevel = function () {
-		// Do nothing. The sap.f.BaseHeader has aria-level set by headingLevel already.
+		// Do nothing. The sap.f.cards.BaseHeader has aria-level set by headingLevel already.
 	};
 	BaseHeader.prototype._applyContextClassFor = function () {
-		// Do nothing. The sap.f.BaseHeader does not differ based on context classes.
+		// Do nothing. The sap.f.cards.BaseHeader does not differ based on context classes.
 	};
 
 	BaseHeader.prototype.init = function () {
@@ -525,11 +525,28 @@ sap.ui.define([
 		}
 
 		const oParent = this.getParent();
-		if (oParent && oParent.isA("sap.f.CardBase") && oParent.isRoleListItem()) {
+		if (this.isParentCard() && oParent.isRoleListItem()) {
 			return this.isInteractive();
 		}
 
 		return true;
+	};
+
+	/**
+	 * Checks whether the parent of the header is a card.
+	 * @returns {boolean} True if the parent is a card.
+	 */
+	BaseHeader.prototype.isParentCard = function() {
+		const oParent = this.getParent();
+		return oParent && oParent.isA("sap.f.CardBase");
+	};
+
+	/**
+	 * Gets the id of the focusable element in the header.
+	 */
+	BaseHeader.prototype.getFocusableHeaderId = function() {
+
+		return this.getId() + "-focusable";
 	};
 
 	BaseHeader.prototype._isInsideToolbar = function(oElement) {

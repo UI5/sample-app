@@ -1,13 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([], function() {
 	"use strict";
 
 	// validation regexes
-	var rBasicUrl = /^(?:([^:\/?#]+):)?((?:[\/\\]{2,}((?:\[[^\]]+\]|[^\/?#:]+))(?::([0-9]+))?)?([^?#]*))(?:\?([^#]*))?(?:#(.*))?$/;
+	var rBasicUrl = /^(?:([^:\/?#]+):)?((?:[\/\\]{2,}(?:(?:[^@\/?#]*@)?(\[[^\]]+\]|[^\/?#:]+)(?::([0-9]+))?)?)?([^?#]*))(?:\?([^#]*))?(?:#(.*))?$/;
 	var rCheckPath = /^([a-z0-9-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*$/i;
 	var rCheckQuery = /^([a-z0-9-._~!$&'()*+,;=:@\/?]|%[0-9a-f]{2})*$/i;
 	var rCheckFragment = rCheckQuery;

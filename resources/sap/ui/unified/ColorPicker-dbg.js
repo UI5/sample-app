@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,6 +18,7 @@ sap.ui.define([
 	"sap/ui/layout/HorizontalLayout",
 	"sap/ui/core/theming/Parameters",
 	"sap/ui/core/InvisibleText",
+	"sap/ui/core/InvisibleMessage",
 	"sap/ui/Device",
 	"sap/ui/core/library",
 	"./ColorPickerRenderer",
@@ -38,6 +39,7 @@ sap.ui.define([
 	HLayout,
 	Parameters,
 	InvisibleText,
+	InvisibleMessage,
 	Device,
 	coreLibrary,
 	ColorPickerRenderer,
@@ -51,7 +53,8 @@ sap.ui.define([
 	var ValueState = coreLibrary.ValueState,
 		// shortcut for sap.ui.unified.ColorPickerMode & sap.ui.unified.ColorPickerDisplayMode
 		ColorPickerMode = Library.ColorPickerMode,
-		ColorPickerDisplayMode = Library.ColorPickerDisplayMode;
+		ColorPickerDisplayMode = Library.ColorPickerDisplayMode,
+		InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
 	/**
 	 * Constructor for a new <code>ColorPicker</code>.
@@ -69,7 +72,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -765,6 +768,9 @@ sap.ui.define([
 				// Control container div
 				oRm.openStart("div", oControl);
 				oRm.class(CONSTANTS.CPBoxClass);
+				oRm.accessibilityState({
+					role: "presentation"
+				});
 				oRm.openEnd();
 
 				// Handle
@@ -2521,13 +2527,60 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns visible color mode (RGB, HSL or Hex) that should be displayed next.
+	 * @returns {string} visible color mode
+	 */
+	ColorPicker.prototype._getNextVisibleColorMode = function() {
+		if (!Device.system.phone) {
+			return this.bPressed ? "RGB" : this.getMode();
+		} else {
+			return this.sVisibleFiled;
+		}
+	};
+
+	/**
+	 * Returns announcement text for the color value based on the current visible color mode.
+	 * @param {string} sMode current visible color mode
+	 * @returns {string} announcement text for the color value
+	 */
+	ColorPicker.prototype._getColorFieldsAnnouncementText = function(sMode) {
+		let sText = "";
+
+		switch (sMode) {
+			case "RGB":
+				sText = `${oRb.getText("COLORPICKER_RED")} ${this.oRedField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_GREEN")} ${this.oGreenField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_BLUE")} ${this.oBlueField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_ALPHA")} ${this.oAlphaField.getValue()}`;
+				break;
+			case "HSL":
+				sText = `${oRb.getText("COLORPICKER_HUE")} ${this.oHueField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_SAT")} ${this.oSatField.getValue()} ${oRb.getText("COLORPICKER_PERCENTAGE")}, `
+					+ `${oRb.getText("COLORPICKER_LIGHTNESS")} ${this.oLitField.getValue()} ${oRb.getText("COLORPICKER_PERCENTAGE")}, `
+					+ `${oRb.getText("COLORPICKER_ALPHA")} ${this.oAlphaField2.getValue()}`;
+				break;
+			case "HSV":
+				sText = `${oRb.getText("COLORPICKER_HUE")} ${this.oHueField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_SAT")} ${this.oSatField.getValue()} ${oRb.getText("COLORPICKER_PERCENTAGE")}, `
+					+ `${oRb.getText("COLORPICKER_VALUE")} ${this.oValField.getValue()}, `
+					+ `${oRb.getText("COLORPICKER_ALPHA")} ${this.oAlphaField2.getValue()}`;
+				break;
+			case "Hex":
+				sText = `${oRb.getText("COLORPICKER_HEX")} ${this.oHexField.getValue()}`;
+				break;
+			default:
+				break;
+		}
+
+		return oRb.getText("COLORPICKER_COLOR_MODE_CHANGED", [sMode, sText]);
+	};
+
+	/**
 	 * Creates the needed elements for unified.ColorPicker
 	 * @param {string} sId
 	 * @private
 	 */
 	ColorPicker.prototype._createUnifiedColorPicker = function(sId) {
-		var that = this;
-
 		this.oRbRGB = this.oColorPickerHelper.factory.createRadioButtonItem({tooltip: oRb.getText("COLORPICKER_SELECT_RGB_TOOLTIP")});
 		this.oRbRGB.addStyleClass("sapUiCPRB");
 		this.oRbHSLV = this.oColorPickerHelper.factory.createRadioButtonItem({tooltip: oRb.getText("COLORPICKER_SELECT_HSL_TOOLTIP")});
@@ -2536,8 +2589,12 @@ sap.ui.define([
 			type: Device.system.phone ? "Default" : "Transparent",
 			tooltip: oRb.getText("COLORPICKER_TOGGLE_BTN_TOOLTIP"),
 			icon: "sap-icon://source-code",
-			press: function(oEvent) {
-				that._toggleFields();
+			press: () => {
+				const oInvisibleMessage = InvisibleMessage.getInstance(),
+					sAnnouncementText = this._getColorFieldsAnnouncementText(this._getNextVisibleColorMode());
+
+				this._toggleFields();
+				oInvisibleMessage.announce(sAnnouncementText, InvisibleMessageMode.Polite);
 			}
 		});
 		this.setAggregation("_oButton", this.oButton, true);

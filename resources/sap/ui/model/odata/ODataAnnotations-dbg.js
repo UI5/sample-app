@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -27,7 +27,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.143.1
+	 * 1.144.0
 	 *
 	 * @public
 	 * @deprecated As of version 1.66, please use {@link sap.ui.model.odata.v2.ODataAnnotations} instead.

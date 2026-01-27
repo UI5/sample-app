@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -147,7 +147,7 @@ sap.ui.define([
 			if (oMetadata) {
 				if (this._isSerializable(vPropertyValue)) {
 					if (oBindingParserResult && typeof oBindingParserResult === "object" || bError) {
-						vPropertyValue = this._escapeCurlyBracketsInString(vPropertyValue);
+						vPropertyValue = this._escapeSpecialCharactersInString(vPropertyValue);
 					}
 					const sPropertySetter = oMetadata._sMutator;
 					oControl[sPropertySetter](vPropertyValue);

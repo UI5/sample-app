@@ -65,8 +65,7 @@ sap.ui.define([
 			// An empty string is equivalent to "no theme given" here.
 			// We apply the default, but also automatically detect the dark mode.
 			if (sTheme === "") {
-				const mDefaultThemeInfo = ThemeHelper.getDefaultThemeInfo();
-				sTheme = `${mDefaultThemeInfo.DEFAULT_THEME}${mDefaultThemeInfo.DARK_MODE ? "_dark" : ""}`;
+				sTheme = ThemeHelper.validateAndFallbackTheme();
 			}
 
 			// It's only possible to provide a themeroot via theme parameter using
@@ -95,27 +94,25 @@ sap.ui.define([
 		 * @since 1.118
 		 */
 		setTheme: (sTheme) => {
-			if (sTheme) {
-				if (sTheme.indexOf("@") !== -1) {
-					throw new TypeError("Providing a theme root as part of the theme parameter is not allowed.");
-				}
+			if (sTheme && sTheme.indexOf("@") !== -1) {
+				throw new TypeError("Providing a theme root as part of the theme parameter is not allowed.");
+			}
 
-				const sOldTheme = Theming.getTheme();
-				oWritableConfig.set("sapTheme", sTheme);
-				const sNewTheme = Theming.getTheme();
-				const bThemeChanged = sOldTheme !== sNewTheme;
-				if (bThemeChanged) {
-					const mChanges = {
-						theme: {
-							"new": sNewTheme,
-							"old": sOldTheme
-						}
-					};
-					fireChange(mChanges);
-				}
-				if (!oThemeManager && bThemeChanged) {
-					fireApplied({theme: sNewTheme});
-				}
+			const sOldTheme = Theming.getTheme();
+			oWritableConfig.set("sapTheme", sTheme);
+			const sNewTheme = Theming.getTheme();
+			const bThemeChanged = sOldTheme !== sNewTheme;
+			if (bThemeChanged) {
+				const mChanges = {
+					theme: {
+						"new": sNewTheme,
+						"old": sOldTheme
+					}
+				};
+				fireChange(mChanges);
+			}
+			if (!oThemeManager && bThemeChanged) {
+				fireApplied({theme: sNewTheme});
 			}
 		},
 
@@ -465,7 +462,7 @@ sap.ui.define([
 
 		/**
 		 * Attaches the <code>fnFunction</code> event handler to the {@link #event:themeScopingChanged change} event
-		 * of <code>sap.ui.core.Theming</code>.
+		 * of <code>sap/ui/core/Theming</code>.
 		 *
 		 * @param {function(module:sap/ui/core/Theming$ThemeScopingChangedEvent)} fnFunction The function to be called when the event occurs
 		 * @private
@@ -478,7 +475,7 @@ sap.ui.define([
 
 		/**
 		 * Detaches event handler <code>fnFunction</code> from the {@link #event:themeScopingChanged change} event of
-		 * this <code>sap.ui.core.Theming</code>.
+		 * this <code>sap/ui/core/Theming</code>.
 		 *
 		 * @param {function(module:sap/ui/core/Theming$ThemeScopingChangedEvent)} fnFunction Function to be called when the event occurs
 		 * @private
@@ -676,7 +673,7 @@ sap.ui.define([
 
 		/**
 		 * Attaches the <code>fnFunction</code> event handler to the {@link #event:change change} event
-		 * of <code>sap.ui.core.Theming</code>.
+		 * of <code>sap/ui/core/Theming</code>.
 		 *
 		 * @param {function(module:sap/ui/core/Theming$ChangeEvent)} fnFunction The function to be called when the event occurs
 		 * @private
@@ -688,7 +685,7 @@ sap.ui.define([
 		},
 		/**
 		 * Detaches event handler <code>fnFunction</code> from the {@link #event:change change} event of
-		 * this <code>sap.ui.core.Theming</code>.
+		 * this <code>sap/ui/core/Theming</code>.
 		 *
 		 * @param {function(module:sap/ui/core/Theming$ChangeEvent)} fnFunction Function to be called when the event occurs
 		 * @private

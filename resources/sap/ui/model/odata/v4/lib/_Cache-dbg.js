@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define([
 	var sClassName = "sap.ui.model.odata.v4.lib._Cache",
 		// Matches if ending with a transient key predicate:
 		//   EMPLOYEE($uid=id-1550828854217-16) -> aMatches[0] === "($uid=id-1550828854217-16)"
-		//   @see sap.base.util.uid
+		//   @see sap/base/util/uid
 		rEndsWithTransientPredicate = /\(\$uid=[-\w]+\)$/,
 		rInactive = /^\$inactive\./,
 		sMessagesAnnotation = "@com.sap.vocabularies.Common.v1.Messages",
@@ -1123,7 +1123,7 @@ sap.ui.define([
 			aPromises = [];
 			mTypeForMetaPath = {};
 			aPromises.push(this.oRequestor.fetchType(mTypeForMetaPath, this.sMetaPath));
-			fetchExpandedTypes(this.sMetaPath, this.mQueryOptions);
+			fetchExpandedTypes(this.sMetaPath, this.mLateExpandSelect || this.mQueryOptions);
 			this.oTypePromise = SyncPromise.all(aPromises).then(function () {
 				return mTypeForMetaPath;
 			});
@@ -1549,7 +1549,7 @@ sap.ui.define([
 	 *
 	 * @abstract
 	 * @function
-	 * @name sap.ui.model.odata.lib._Cache#refreshSingleNoCollection
+	 * @name sap.ui.model.odata.v4.lib._Cache#refreshSingleNoCollection
 	 * @private
 	 */
 
@@ -2621,7 +2621,7 @@ sap.ui.define([
 					}
 					return; // ignore other annotations
 				}
-				if (Array.isArray(vPropertyValue) && sProperty !== sMessageProperty) {
+				if (Array.isArray(vPropertyValue)) {
 					vPropertyValue.$created = 0; // number of (client-side) created elements
 					// compute count
 					const sCount = oInstance[sProperty + "@odata.count"];
@@ -3566,7 +3566,8 @@ sap.ui.define([
 			return _Helper.getPrivateAnnotation(oElement, "predicate") === sPredicate
 				&& Object.keys(oElement).length > 1 // entity has key properties
 				&& !oElement["@$ui5.context.isDeleted"]
-				&& !that.hasPendingChangesForPath(sPredicate, bIgnorePendingChanges);
+				&& !that.hasPendingChangesForPath(sPredicate, bIgnorePendingChanges)
+				&& !that.isAggregated?.(oElement); // no refresh needed for aggregated elements
 		}
 
 		this.checkSharedRequest();
@@ -3606,7 +3607,7 @@ sap.ui.define([
 
 	/**
 	 * @override
-	 * @see sap.ui.model.odata.lib._Cache#refreshSingleNoCollection
+	 * @see sap.ui.model.odata.v4.lib._Cache#refreshSingleNoCollection
 	 */
 	_CollectionCache.prototype.refreshSingleNoCollection = function (oGroupLock, sPath) {
 		return this.requestSideEffects(oGroupLock.getUnlockedCopy(), [_Helper.getMetaPath(sPath)],
@@ -4609,7 +4610,7 @@ sap.ui.define([
 
 	/**
 	 * @override
-	 * @see sap.ui.model.odata.lib._Cache#refreshSingleNoCollection
+	 * @see sap.ui.model.odata.v4.lib._Cache#refreshSingleNoCollection
 	 */
 	_SingleCache.prototype.refreshSingleNoCollection = function (oGroupLock, sPath) {
 		return this.requestSideEffects(oGroupLock.getUnlockedCopy(), [_Helper.getMetaPath(sPath)]);

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,7 +11,6 @@ sap.ui.define([
 	"sap/ui/core/IconPool",
 	"./QuickViewBase",
 	"./ResponsivePopover",
-	"./NavContainer",
 	"./Page",
 	"./Bar",
 	"./Button"
@@ -21,7 +20,6 @@ sap.ui.define([
 	IconPool,
 	QuickViewBase,
 	ResponsivePopover,
-	NavContainer,
 	Page,
 	Bar,
 	Button
@@ -59,7 +57,7 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -161,13 +159,8 @@ sap.ui.define([
 	 * @private
 	 */
 	QuickView.prototype.init = function() {
-		var oNavConfig = {
-			pages: [new Page()],
-			navigate: this._navigate.bind(this),
-			afterNavigate: this._afterNavigate.bind(this)
-		};
-
-		this._oNavContainer = new NavContainer(oNavConfig);
+		// Call parent init to create the _navContainer aggregation
+		QuickViewBase.prototype.init.apply(this);
 
 		var that = this;
 

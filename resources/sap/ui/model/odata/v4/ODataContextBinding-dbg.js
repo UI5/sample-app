@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -74,7 +74,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
@@ -1552,7 +1552,9 @@ sap.ui.define([
 		var that = this;
 
 		if (this.oOperation && this.oOperation.bAction !== false) {
-			return SyncPromise.resolve();
+			// there may be dependent bindings that refer the parent entity
+			return this.refreshDependentBindings(sResourcePathPrefix, sGroupId, bCheckUpdate,
+				bKeepCacheOnError);
 		}
 
 		this.bHasFetchedExpandSelectProperties = false;

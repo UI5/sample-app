@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Annotation loader for OData V2 services
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @since 1.37.0
@@ -188,7 +188,7 @@ sap.ui.define([
 	 * Returns a promise that resolves when the added annotation sources were successfully
 	 * processed.
 	 *
-	 * @returns {Promise} A promise that resolves after the last added sources have been processed
+	 * @returns {Promise<void>} A promise that resolves after the last added sources have been processed
 	 * @public
 	 */
 	ODataAnnotations.prototype.loaded = function() {
@@ -217,7 +217,8 @@ sap.ui.define([
 	 *   Annotation source or array of annotation sources; an annotation source is either a string
 	 *   containing a URL or an object of type
 	 *   {@link sap.ui.model.odata.v2.ODataAnnotations.Source}.
-	 * @returns {Promise} The promise to (load,) parse and merge the given source(s). The Promise
+	 * @returns {Promise<Array<{source: sap.ui.model.odata.v2.ODataAnnotations.Source, data: any}|Error>>}
+	 *   The promise to (load,) parse and merge the given source(s). The Promise
 	 *   resolves with an array of maps containing the properties <code>source</code> and
 	 *   <code>data</code>; see the parameters of the <code>success</code> event for more
 	 *   details. In case at least one source could not be (loaded,) parsed or merged, the promise
@@ -302,7 +303,7 @@ sap.ui.define([
 	 * The <code>success</code> event is fired, whenever a source has been successfully (loaded,) parsed and merged into the
 	 * annotation data.
 	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#success
+	 * @name sap.ui.model.odata.v2.ODataAnnotations#success
 	 * @event
 	 * @param {sap.ui.base.Event} oControlEvent
 	 * @param {sap.ui.base.EventProvider} oControlEvent.getSource
@@ -327,7 +328,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public
@@ -362,7 +363,7 @@ sap.ui.define([
 	/**
 	 * The <code>error</code> event is fired, whenever a source cannot be loaded, parsed or merged into the annotation data.
 	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#error
+	 * @name sap.ui.model.odata.v2.ODataAnnotations#error
 	 * @event
 	 * @param {sap.ui.base.Event} oEvent
 	 * @param {sap.ui.base.EventProvider} oEvent.getSource
@@ -388,7 +389,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public
@@ -416,8 +417,8 @@ sap.ui.define([
 	 *
 	 * @typedef {object} sap.ui.model.odata.v2.ODataAnnotations.loadedParameters
 	 * @property {sap.ui.model.odata.v2.ODataAnnotations.Source[]|Error[]|any} result
-	 *         An array of results and Errors (see {@link sap.ui.model.v2.ODataAnnotations#success}
-	 *         and {@link sap.ui.model.v2.ODataAnnotations#error}) that occurred while loading
+	 *         An array of results and Errors (see {@link sap.ui.model.odata.v2.ODataAnnotations#success}
+	 *         and {@link sap.ui.model.odata.v2.ODataAnnotations#error}) that occurred while loading
 	 *         a group of annotations
 	 * @public
 	 */
@@ -426,7 +427,7 @@ sap.ui.define([
 	 * The <code>loaded</code> event is fired, when all annotations from a group of sources have been
 	 * (loaded,) parsed and merged successfully.
 	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#loaded
+	 * @name sap.ui.model.odata.v2.ODataAnnotations#loaded
 	 * @event
 	 * @param {sap.ui.base.Event} oEvent
 	 * @param {sap.ui.base.EventProvider} oEvent.getSource
@@ -450,7 +451,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public
@@ -477,7 +478,7 @@ sap.ui.define([
 	 * Parameters of the <code>failed</code> event.
 	 *
 	 * @typedef {object} sap.ui.model.odata.v2.ODataAnnotations.failedParameters
-	 * @property {Error[]} result An array of Errors, see {@link sap.ui.model.v2.ODataAnnotations#error} that occurred while
+	 * @property {Error[]} result An array of Errors, see {@link sap.ui.model.odata.v2.ODataAnnotations#error} that occurred while
 	 *           loading a group of annotations
 	 * @public
 	 */
@@ -486,7 +487,7 @@ sap.ui.define([
 	 * The <code>failed</code> event is fired when at least one annotation from a group of sources was not
 	 * successfully (loaded,) parsed or merged.
 	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#failed
+	 * @name sap.ui.model.odata.v2.ODataAnnotations#failed
 	 * @event
 	 * @param {sap.ui.base.Event} oEvent
 	 * @param {sap.ui.base.EventProvider} oEvent.getSource
@@ -510,7 +511,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public
@@ -550,7 +551,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public
@@ -590,7 +591,7 @@ sap.ui.define([
 	 * @param {function}
 	 *            fnFunction The function to be called, when the event occurs
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
+	 *            [oListener=this] Context object to call the event handler with, defaults to this
 	 *            <code>ODataAnnotations</code> itself
 	 * @returns {this} Reference to <code>this</code> to allow method chaining
 	 * @public

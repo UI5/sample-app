@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -400,8 +400,8 @@ sap.ui.define([
 			return isPlainObject(vPropertyValue) || Array.isArray(vPropertyValue) || Object(vPropertyValue) !== vPropertyValue;
 		},
 
-		_escapeCurlyBracketsInString: function(vPropertyValue) {
-			return typeof vPropertyValue === "string" ? vPropertyValue.replace(/({|})/g, "\\$&") : vPropertyValue;
+		_escapeSpecialCharactersInString: function(vPropertyValue) {
+			return typeof vPropertyValue === "string" ? vPropertyValue.replace(/([\\\{\}])/g, "\\$1") : vPropertyValue;
 		},
 
 		_templateFragment: function(sFragmentName, mPreprocessorSettings) {

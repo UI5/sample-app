@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -624,7 +624,7 @@ sap.ui.define([
 		 *             viewName: "my.View"
 		 *             controlType: "sap.m.Input",
 		 *             success: function (aInputs) {
-		 *                 // aInputs are all sap.m.Inputs inside of a view called 'my.View'
+		 *                 // aInputs are all sap.m.Input controls inside of a view called 'my.View'
 		 *             }
 		 *         });
 		 *     </pre>

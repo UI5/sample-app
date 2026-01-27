@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -60,7 +60,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -194,7 +194,22 @@ function(
 						/**
 						 * Reference to the item, that has been selected.
 						 */
-						item : {type : "sap.m.SegmentedButtonItem"}
+						item : {type : "sap.m.SegmentedButtonItem"},
+						/**
+						 * Reference to the previously selected item (if any).
+						 * @since 1.144
+						 */
+						previousItem: {type : "sap.m.SegmentedButtonItem"},
+						/**
+						 * Key of the selected item (if any).
+						 * @since 1.144
+						 */
+						selectedKey: { type: "string"},
+						/**
+						 * Key of the previously selected item (if any).
+						  * @since 1.144
+						 */
+						previousKey: { type: "string"}
 					}
 				}
 			},
@@ -214,6 +229,8 @@ function(
 		// Used to store previous button width
 		this._previousWidth = undefined;
 
+		this._bUpdateSelectedKey = true;
+
 		// Delegate keyboard processing to ItemNavigation, see commons.SegmentedButton
 		this._oItemNavigation = new ItemNavigation();
 		this._oItemNavigation.setCycling(false);
@@ -229,6 +246,7 @@ function(
 		//Make sure when a button gets removed to reset the selected button
 		this.removeButton = function (sButton) {
 			var oRemovedButton = SegmentedButton.prototype.removeButton.call(this, sButton);
+			this._bUpdateSelectedKey = false;
 			this.setSelectedButton(this.getButtons()[0]);
 			this._fireChangeEvent();
 			return oRemovedButton;
@@ -279,7 +297,7 @@ function(
 		} else {
 			this._adjustButtonWidth();
 		}
-    };
+	};
 
 	/**
 	 * Calculates and applies button width.
@@ -504,7 +522,7 @@ function(
 	 * @returns {object} Configuration information for the <code>sap.m.IOverflowToolbarContent</code> interface.
 	 *
 	 * @private
-	 * @ui5-restricted sap.m.OverflowToolBar
+	 * @ui5-restricted sap.m.OverflowToolbar
 	 */
 	SegmentedButton.prototype.getOverflowToolbarConfig = function() {
 		return {
@@ -792,7 +810,9 @@ function(
 	 */
 	SegmentedButton.prototype._buttonPressed = function (oEvent) {
 		var oButtonPressed = oEvent.getSource(),
-			oItemPressed;
+			oItemPressed,
+			previouslySelectedItem = this.getSelectedItem(),
+			previouslySelectedKey = this.getSelectedKey();
 
 		if (this.getSelectedButton() !== oButtonPressed.getId()) {
 			// CSN# 0001429454/2014: remove class for all other items
@@ -809,12 +829,16 @@ function(
 			oButtonPressed.$().addClass("sapMSegBBtnSel");
 			oButtonPressed.$().attr("aria-selected", true);
 
+			this._bUpdateSelectedKey = false;
 			this.setAssociation('selectedButton', oButtonPressed, true);
 			this.setProperty("selectedKey", this.getSelectedKey(), true);
 
 			this.setAssociation('selectedItem', oItemPressed, true);
 			this.fireSelectionChange({
-				item: oItemPressed
+				item: oItemPressed,
+				previousItem: previouslySelectedItem,
+				selectedKey: this.getSelectedKey(),
+				previousKey: previouslySelectedKey
 			});
 
 			/**
@@ -896,6 +920,10 @@ function(
 		// set the new value
 		this.setAssociation("selectedItem", vItem, true);
 		this.setSelectedButton(vButton);
+
+		if (this._bUpdateSelectedKey) {
+			this.setProperty("selectedKey", this.getSelectedKey(), true);
+		}
 
 		return this;
 	};
@@ -1108,19 +1136,20 @@ function(
 	};
 
 	SegmentedButton.prototype.clone = function () {
-		var sSelectedButtonId = this.getSelectedButton(),
+		const sSelectedItemId = this.getSelectedItem(),
+			aItems = this.getAggregation("items"),
 			aButtons = this.removeAllAggregation("buttons"),
-			oClone = Control.prototype.clone.apply(this, arguments),
-			iSelectedButtonIndex = aButtons.map(function(b) {
-				return b.getId();
-			}).indexOf(sSelectedButtonId),
-			i;
+			oClone = Control.prototype.clone.apply(this, arguments);
 
-		if (iSelectedButtonIndex > -1) {
-			oClone.setSelectedButton(oClone.getButtons()[iSelectedButtonIndex]);
+		const iSelectedItemIndex = aItems.findIndex(function(item) {
+				return item.getId() === sSelectedItemId;
+			});
+
+		if (iSelectedItemIndex > -1) {
+			oClone.setSelectedItem(oClone.getItems()[iSelectedItemIndex]);
 		}
 
-		for (i = 0; i < aButtons.length; i++) {
+		for (let i = 0; i < aButtons.length; i++) {
 			this.addAggregation("buttons", aButtons[i]);
 		}
 

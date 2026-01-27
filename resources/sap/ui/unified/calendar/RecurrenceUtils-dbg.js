@@ -1,16 +1,7 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
-
-// package documentation
-/**
- * Collection of utility functions to handle recurrence related operations.
- *
- * @namespace
- * @name sap.ui.unified.recurring
- * @public
  */
 
 // Provides class sap.ui.unified.calendar.RecurrenceUtils
@@ -25,7 +16,8 @@ sap.ui.define([
 		// Static class
 
 		/**
-		 * @alias sap.ui.unified.RecurrenceUtils
+		 * Collection of utility functions to handle recurrence related operations.
+		 * @alias sap.ui.unified.calendar.RecurrenceUtils
 		 * @namespace
 		 * @private
 		 */

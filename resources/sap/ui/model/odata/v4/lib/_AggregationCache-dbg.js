@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -351,13 +351,16 @@ sap.ui.define([
 	 *   Whether no ("change") events should be fired
 	 * @param {boolean} [bNested]
 	 *   Whether the "collapse all" was performed at an ancestor
+	 * @param {string[]} [aKeptElementPredicates]
+	 *   The key predicates for all (effectively) kept-alive elements incl. exceptions of selection
 	 * @returns {number}
 	 *   The number of descendant nodes that were affected
 	 *
 	 * @public
 	 * @see #expand
 	 */
-	_AggregationCache.prototype.collapse = function (sGroupNodePath, oGroupLock, bSilent, bNested) {
+	_AggregationCache.prototype.collapse = function (sGroupNodePath, oGroupLock, bSilent, bNested,
+			aKeptElementPredicates) {
 		const oGroupNode = this.getValue(sGroupNodePath);
 		const oCollapsed = _AggregationHelper.getCollapsedObject(oGroupNode);
 		_Helper.updateAll(bSilent ? {} : this.mChangeListeners, sGroupNodePath, oGroupNode,
@@ -382,13 +385,15 @@ sap.ui.define([
 			if (_Helper.hasPrivateAnnotation(oElement, "placeholder")) {
 				continue;
 			}
+			const sPredicate = _Helper.getPrivateAnnotation(oElement, "predicate");
 			if (bAll && oElement["@$ui5.node.isExpanded"]) {
-				iRemaining -= this.collapse(
-					_Helper.getPrivateAnnotation(oElement, "predicate"), oGroupLock, bSilent, true);
+				iRemaining
+					-= this.collapse(sPredicate, oGroupLock, bSilent, true, aKeptElementPredicates);
 			}
 			// exceptions of selection are effectively kept alive
-			if (!this.isSelectionDifferent(oElement)) {
-				delete aElements.$byPredicate[_Helper.getPrivateAnnotation(oElement, "predicate")];
+			if (!this.isSelectionDifferent(oElement)
+					&& !aKeptElementPredicates?.includes(sPredicate)) {
+				delete aElements.$byPredicate[sPredicate];
 				delete aElements.$byPredicate[
 					_Helper.getPrivateAnnotation(oElement, "transientPredicate")];
 			}
@@ -1602,14 +1607,13 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   A lock for the group to associate the requests with
 	 * @param {string} sChildPath
-	 *   The (child) node's path relative to the cache
+	 *   The (child) node's canonical resource path (relative to the service)
+	 * @param {string} sNonCanonicalChildPath
+	 *   The (child) node's non-canonical resource path (relative to the service)
 	 * @param {string|null} sParentPath
-	 *   The parent node's path relative to the cache
+	 *   The parent node's canonical resource path (relative to the service)
 	 * @param {string|null} [sSiblingPath]
-	 *   The next sibling's path relative to the cache
-	 * @param {string} [sNonCanonicalChildPath]
-	 *   The (child) node's non-canonical path (relative to the service); only used when
-	 *   <code>sSiblingPath</code> is given
+	 *   The next sibling's canonical resource path (relative to the service)
 	 * @param {boolean} [bRequestSiblingRank]
 	 *   Whether to request the next sibling's rank and return its new index
 	 * @param {boolean} [bCopy]
@@ -1632,8 +1636,8 @@ sap.ui.define([
 	 *
 	 * @public
 	 */
-	_AggregationCache.prototype.move = function (oGroupLock, sChildPath, sParentPath, sSiblingPath,
-			sNonCanonicalChildPath, bRequestSiblingRank, bCopy) {
+	_AggregationCache.prototype.move = function (oGroupLock, sChildPath, sNonCanonicalChildPath,
+			sParentPath, sSiblingPath, bRequestSiblingRank, bCopy) {
 		let bRefreshNeeded = !this.bUnifiedCache;
 
 		const sChildPredicate = sChildPath.slice(sChildPath.indexOf("("));
@@ -1699,7 +1703,8 @@ sap.ui.define([
 			bRefreshNeeded = true;
 			const mQueryOptions = {$select : []};
 			_Helper.selectKeyProperties(mQueryOptions, this.getTypes()[this.sMetaPath]);
-			const sResourcePath = sChildPath + "/" + this.oAggregation.$Actions.CopyAction
+			const sResourcePath = sNonCanonicalChildPath
+				+ "/" + this.oAggregation.$Actions.CopyAction
 				+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
 			oCopyActionPromise = this.oRequestor.request("POST", sResourcePath,
 				oGroupLock.getUnlockedCopy(), {
@@ -1727,8 +1732,15 @@ sap.ui.define([
 				return () => { // Note: caller MUST wait for side-effects refresh first
 					let oCopyIndexPromise;
 					if (bCopy) {
-						oCopyIndexPromise = this.requestRank(oCopy, oGroupLock, true)
-							.then((iCopyIndex) => this.findIndex(iCopyIndex));
+						const oCandidate = this.aElements.$byPredicate[
+							_Helper.getKeyPredicate(oCopy, this.sMetaPath, this.getTypes())];
+						if (oCandidate) { // copy already inside collection
+							oCopyIndexPromise = SyncPromise.resolve(
+								this.aElements.indexOf(oCandidate));
+						} else {
+							oCopyIndexPromise = this.requestRank(oCopy, oGroupLock, true)
+								.then((iCopyRank) => this.findIndex(iCopyRank));
+						}
 					}
 					return [
 						iRank === undefined ? undefined : this.findIndex(iRank),
@@ -2220,10 +2232,6 @@ sap.ui.define([
 	 */
 	_AggregationCache.prototype.refreshKeptElements = function (oGroupLock, fnOnRemove,
 			bIgnorePendingChanges, _bDropApply) {
-		if (!this.oAggregation.hierarchyQualifier) {
-			return; // no own request for data aggregation
-		}
-
 		// "super" call (like @borrows ...)
 		const fnSuper = this.oFirstLevel.refreshKeptElements;
 		return fnSuper.call(this, oGroupLock, fnOnRemove, bIgnorePendingChanges,
@@ -2533,7 +2541,7 @@ sap.ui.define([
 			this.oBackup.oFirstLevel = this.oFirstLevel;
 			this.oBackup.oGrandTotalPromise = this.oGrandTotalPromise;
 			this.oBackup.bUnifiedCache = this.bUnifiedCache;
-			this.bUnifiedCache = true;
+			this.bUnifiedCache = !!oAggregation.hierarchyQualifier;
 		} else {
 			this.oTreeState.reset();
 		}

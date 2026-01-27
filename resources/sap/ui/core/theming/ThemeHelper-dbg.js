@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -141,9 +141,14 @@ sap.ui.define([
 		//  * no theme-root is given (themes from a different endpoint (i.e. theming-service) are excluded) and
 		//  * the given theme is a standard SAP theme ('sap_' prefix)
 		//  * not supported in this version
-		if (sThemeRoot == null && sTheme.startsWith("sap_") && aKnownThemes.indexOf(sTheme) == -1) {
-			// extract the theme variant if given: "_hcb", "_hcw", "_dark"
-			const sVariant = sTheme.match(rThemeVariantPattern)?.[0] || "";
+		if (sThemeRoot == null && (!sTheme || (sTheme.startsWith("sap_") && aKnownThemes.indexOf(sTheme) == -1))) {
+			let sVariant;
+			if (sTheme) {
+				// extract the theme variant if given: "_hcb", "_hcw", "_dark"
+				sVariant = sTheme.match(rThemeVariantPattern)?.[0] || "";
+			} else {
+				sVariant = bDarkMode ? "_dark" : "";
+			}
 
 			sNewTheme = `${DEFAULT_THEME}${sVariant}`;
 
@@ -168,7 +173,7 @@ sap.ui.define([
 	 * @param {string} sTheme Name of the theme to check
 	 * @returns {boolean} true if the theme is a standard theme, false otherwise
 	 * @private
-	 * @ui5-restricted sap.ui.core.Theming, sap.ui.core.theming.ThemeManager
+	 * @ui5-restricted sap/ui/core/Theming, sap.ui.core.theming.ThemeManager
 	 * @since 1.135
 	 */
 	ThemeHelper.isStandardTheme = function(sTheme) {

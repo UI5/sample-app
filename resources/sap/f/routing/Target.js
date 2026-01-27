@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/core/routing/Target","sap/f/FlexibleColumnLayout"],function(t,n){"use strict";var o=t.extend("sap.f.routing.Target",{constructor:function(n,o,e,a){this._oTargetHandler=a;t.prototype.constructor.apply(this,arguments)},_beforePlacingViewIntoContainer:function(o){var e=o.container;var a=o.data&&o.data.routeConfig;if(e instanceof n&&a&&a.layout){e.setLayout(a.layout)}t.prototype._beforePlacingViewIntoContainer.apply(this,arguments)},_place:function(n){var o=t.prototype._place.apply(this,arguments),e=n&&n.routeConfig||{},a=this;return this._oTargetHandler._chainNavigation(function(){return o.then(function(t){a._oTargetHandler.addNavigation({navigationIdentifier:a._oOptions._name,transition:a._oOptions.transition,transitionParameters:a._oOptions.transitionParameters,eventData:n,targetControl:t.control,view:t.view,layout:e.layout,placeholderConfig:t.placeholderConfig});return t})},this._oOptions._name)},showPlaceholder:function(t){return this._oTargetHandler.showPlaceholder(t)},hidePlaceholder:function(t){}});return o});

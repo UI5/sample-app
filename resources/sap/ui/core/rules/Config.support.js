@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -193,10 +193,10 @@ sap.ui.define([
 						var sDeclaredModule = aDeclaredModules[i];
 						if (sDeclaredModule.indexOf(sLibraryWithDot) === 0 &&
 							mLibraries[sLibrary].types.indexOf(sDeclaredModule) === -1 &&
-							sDeclaredModule.lastIndexOf(".library") !== sDeclaredModule.length - ".library".length &&
-							sDeclaredModule.lastIndexOf(".library-preload") !== sDeclaredModule.length - ".library-preload".length &&
-							sDeclaredModule.lastIndexOf(".flexibility") !== sDeclaredModule.length - ".flexibility".length &&
-							sDeclaredModule.lastIndexOf(".support") !== sDeclaredModule.length - ".support".length) {
+							!sDeclaredModule.endsWith(".library") &&
+							!sDeclaredModule.endsWith(".library-preload") &&
+							!sDeclaredModule.endsWith(".flexibility") &&
+							!sDeclaredModule.endsWith(".support")) {
 							delete mLibraries[sLibrary];
 							break;
 						}

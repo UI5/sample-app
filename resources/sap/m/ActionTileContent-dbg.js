@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -27,7 +27,7 @@ sap.ui.define([
      * @extends sap.m.TileContent
      *
      * @author SAP SE
-     * @version 1.143.1
+     * @version 1.144.0
      * @since 1.122
      *
      * @public
@@ -150,6 +150,26 @@ sap.ui.define([
         }
     };
 
+    /**
+    * Returns true or false based on link click/press
+    * @private
+    */
+    ActionTileContent.prototype._isLinkClicked = function (oSrcControl) {
+        // Check header link
+        var oHeaderLink = this.getHeaderLink();
+        if (oHeaderLink && oHeaderLink.getId() === oSrcControl.getId()) {
+            return true;
+        }
+
+        // Check attributes
+        var aAttributes = this.getAttributes();
+        var bisClicked = aAttributes.some(function (oAttribute) {
+            var oLink = oAttribute.getContentConfig()?.getInnerControl();
+            return oLink && oLink.getId() === oSrcControl.getId();
+        });
+
+        return bisClicked;
+    };
     /**
     * Returns the text inside the control so that it can be used for setting the tooltip,aria-label
     * @private

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -25,6 +25,7 @@ sap.ui.define(
      * @extends module:sap/f/gen/ui5/webcomponents/dist/ListItemBase
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents_fiori/dist/SearchItem
      */
 
@@ -32,7 +33,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.SearchItem",
       {
         metadata: {
-          tag: "ui5-search-item-cc48984a",
+          tag: "ui5-search-item-68f7652d",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -50,15 +51,18 @@ sap.ui.define(
              * Defines the heading text of the search item.
              */
             text: { type: "string", mapping: "property" },
+
             /**
              * Defines the description that appears right under the item text, if available.
              */
             description: { type: "string", mapping: "property" },
+
             /**
              * Defines the icon name of the search item.
              * **Note:** If provided, the image slot will be ignored.
              */
             icon: { type: "string", mapping: "property" },
+
             /**
              * Defines whether the search item is selected.
              */
@@ -67,6 +71,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines whether the search item is deletable.
              */
@@ -75,14 +80,17 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines the scope of the search item
              */
             scopeName: { type: "string", mapping: "property" },
+
             /**
              * The 'width' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */
             width: { type: "sap.ui.core.CSSSize", mapping: "style" },
+
             /**
              * The 'height' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */

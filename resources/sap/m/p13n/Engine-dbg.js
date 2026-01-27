@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -71,7 +71,7 @@ sap.ui.define([
 	 * @alias sap.m.p13n.Engine
 	 * @extends sap.m.p13n.modules.AdaptationProvider
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @public
 	 * @since 1.104
 	 */
@@ -236,7 +236,14 @@ sap.ui.define([
 			...mSettings,
 			enableReset
 		});
-		return oDialog.getParent();
+
+		const oPopup = oDialog.getParent();
+		if (!(vPanelKeys instanceof Array)) {
+			const oController = this.getController(oControl, vPanelKeys);
+			oController?.enhancePopup?.(oPopup);
+		}
+
+		return oPopup;
 	};
 
 	/**
@@ -1260,39 +1267,21 @@ sap.ui.define([
 	};
 
 	/**
-	 * Determines global persistence mode enablement based on the given modification payload
-	 *
-	 * @private
-	 * @param {object} oModificationPayload The modification registry entry payload
-	 * @returns {boolean|undefined} <code>undefined</code> if the given payload does not allow for persistence, or a boolean indicating enablement of global persistence
-	 */
-	Engine.prototype._determineGlobalPersistence = function(oModificationPayload) {
-		const {mode, hasVM} = oModificationPayload;
-
-		if (mode === PersistenceMode.Transient) {
-			return undefined;
-		}
-
-		if (mode === PersistenceMode.Auto) {
-			return hasVM ? false : true;
-		}
-
-		return mode === PersistenceMode.Global;
-	};
-
-	/**
-	 * Executes a given callback only if the control's configuration allows for change persistence
+	 * Checks if the control's configuration allows for change persistence
 	 *
 	 * @private
 	 * @param {string|sap.ui.core.Control} vControl The control id or instance
-	 * @param {function(bGlobalPersistenceEnabled:boolean)} fCallback The callback to be executed, if change persistence is available
-	 * @returns {any} The return value of the callback
+	 * @returns {boolean} Returns whether global persistence is enabled
 	 */
-	Engine.prototype._runWithPersistence = function(vControl, fCallback) {
-		const {payload} = oEngine._determineModification(vControl);
-		const vGlobalPersistence = oEngine._determineGlobalPersistence(payload);
-		const bPersistenceEnabled = typeof vGlobalPersistence === "boolean";
-		return bPersistenceEnabled && fCallback(vGlobalPersistence);
+	Engine.prototype._getKeyUserPersistence = function(vControl) {
+		const {mode, hasVM} = oEngine._determineModification(vControl);
+
+		let bGlobalPersistence = mode === PersistenceMode.Global;
+		if (mode === PersistenceMode.Auto || mode === PersistenceMode.Transient) {
+			bGlobalPersistence = hasVM ? false : true;
+		}
+
+		return bGlobalPersistence;
 	};
 
 	Engine.prototype.hasForReference = (vControl, sControlType) => {
@@ -1492,7 +1481,7 @@ sap.ui.define([
 			});
 
 			if (aApplyChanges.length > 0) {
-				Engine.getInstance()._processChanges(oControl, mChangeMap);
+				return Engine.getInstance()._processChanges(oControl, mChangeMap);
 			}
 		});
 

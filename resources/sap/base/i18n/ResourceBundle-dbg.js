@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -873,8 +873,8 @@ sap.ui.define([
 	 *     .properties file of a bundle (.properties file without any locale information, e.g. "i18n.mybundle")
 	 * @param {string} [mParams.locale] Optional locale (aka 'language tag') to load the texts for.
 	 *     Can either be a BCP47 language tag or a JDK compatible locale string (e.g. "en-GB", "en_GB" or "en").
-	 *     Defaults to the current session locale if <code>sap.ui.getCore</code> is available, otherwise
-	 *     to the provided <code>fallbackLocale</code>
+	 *     Defaults to the current session locale ({@link module:sap/base/i18n/Localization.getLanguage Localization.getLanguage})
+	 *     if available, otherwise to the provided <code>fallbackLocale</code>
 	 * @param {boolean} [mParams.includeInfo=false] Whether to include origin information into the returned property values
 	 * @param {string[]} [mParams.supportedLocales] List of supported locales (aka 'language tags') to restrict the fallback chain.
 	 *     Each entry in the array can either be a BCP47 language tag or a JDK compatible locale string
@@ -994,7 +994,7 @@ sap.ui.define([
 	 *
 	 * @private
 	 * @ui5-restricted sap.fiori, sap.support launchpad
-	 * @deprecated As of version 1.135. Use {@link sap.base.i18n.LanguageFallback.getFallbackLocales} instead.
+	 * @deprecated As of version 1.135. Use {@link sap/base/i18n/LanguageFallback.getFallbackLocales} instead.
 	 */
 	ResourceBundle._getFallbackLocales = LanguageFallback.getFallbackLocales;
 

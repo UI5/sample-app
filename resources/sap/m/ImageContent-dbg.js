@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.38
 	 *
 	 * @public
@@ -162,13 +162,12 @@ sap.ui.define([
 	 * @returns {string} The alternative text
 	 */
 	ImageContent.prototype.getAltText = function () {
-		var oContent = this.getAggregation("_content");
+		const oContent = this.getAggregation("_content");
 		if (oContent && oContent.getAlt() !== "") {
 			return oContent.getAlt();
-		} else if (oContent && oContent.getAccessibilityInfo()) {
-			return oContent.getAccessibilityInfo().description;
 		} else {
-			return "";
+			const sText = oContent?.getAccessibilityInfo()?.description;
+			return sText || "";
 		}
 	};
 

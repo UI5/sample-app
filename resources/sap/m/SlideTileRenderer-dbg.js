@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -112,6 +112,7 @@ sap.ui.define(['./library', "sap/base/security/encodeCSS"],
 			oRm.class("sapMSTIndicatorTapArea");
 			oRm.openEnd();
 			oRm.openStart("span", oControl.getId() + "-tileIndicator-" + i );
+			oRm.attr("title", oControl._oRb.getText("SLIDETILERADIOBUTTON"));
 			oRm.class("sapMSTIndicator");
 			oRm.openEnd();
 			oRm.close("span");

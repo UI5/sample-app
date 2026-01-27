@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.143.1",
+		version: "1.144.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -640,6 +640,7 @@ sap.ui.define([
 					"hideControl": "default",
 					"unhideControl": "default"
 				},
+				"sap.m.SegmentedButton": "sap/m/flexibility/SegmentedButton",
 				"sap.m.Slider": {
 					"hideControl": "default",
 					"unhideControl": "default"
@@ -2334,7 +2335,7 @@ sap.ui.define([
 		L : "L",
 
 		/**
-		 * Small: Recommended for smaller controls, such as {@link sap.m.Switch} or {@link sap.m.Checkbox}. If there is limited space, only the label
+		 * Small: Recommended for smaller controls, such as {@link sap.m.Switch} or {@link sap.m.CheckBox}. If there is limited space, only the label
 		 * is wrapped. The input control is always right-aligned horizontally and middle-aligned vertically.
 		 * @public
 		 */
@@ -3336,7 +3337,17 @@ sap.ui.define([
 		 * <b>Note:</b> The <code>icon</code> and <code>text</code> properties must not be set in <code>sap.m.ListItemAction</code> for this action type.
 		 * @public
 		 */
-		Delete : "Delete"
+		Delete : "Delete",
+
+		/**
+		 * Makes the corresponding list item behave as if its <code>type</code> property were set to <code>Navigation</code>.
+		 *
+		 * @see sap.m.ListItemAction#isEffective
+		 * @since 1.144
+		 * @private
+		 * @ui5-restricted sap.ui.mdc
+		 */
+		Navigation : "Navigation"
 	};
 
 	/**
@@ -5012,7 +5023,7 @@ sap.ui.define([
 		L : "L",
 
 		/**
-		 * Small: Recommended for smaller controls, such as {@link sap.m.Switch} or {@link sap.m.Checkbox}. If there is limited space, only the label
+		 * Small: Recommended for smaller controls, such as {@link sap.m.Switch} or {@link sap.m.CheckBox}. If there is limited space, only the label
 		 * is wrapped. The input control is always right-aligned horizontally and middle-aligned vertically.
 		 * @public
 		 */
@@ -5487,7 +5498,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Type of the upload {@link sap.m.UploadSetItem}.
+	 * Type of the upload {@link sap.m.upload.UploadSetItem}.
 	 *
 	 * @enum {string}
 	 * @public

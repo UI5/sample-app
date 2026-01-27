@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -57,10 +57,10 @@ function(library,
 	// shortcut for sap.m.PlacementType
 	var PlacementType = library.PlacementType;
 
-	// shortcut for sap.m.ExpandableOverflowTextMode
+	// shortcut for sap.m.ExpandableTextOverflowMode
 	var ExpandableTextOverflowMode = library.ExpandableTextOverflowMode;
 
-	// shortcut for sap.m.EmptyIndicator
+	// shortcut for sap.m.EmptyIndicatorMode
 	var EmptyIndicatorMode = library.EmptyIndicatorMode;
 
 	// shortcut for sap.m.LinkAccessibleRole
@@ -105,7 +105,7 @@ function(library,
 	 * @implements sap.ui.core.IFormContent, sap.m.IHyphenation, sap.ui.core.ILabelable
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public

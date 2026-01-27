@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -92,7 +92,7 @@ sap.ui.define(['sap/ui/core/InvisibleText', "sap/ui/core/Lib", "sap/ui/unified/l
 	 *
 	 * @param {sap.ui.core.RenderManager} oRm the RenderManager that can be used for writing to the render output buffer
 	 * @param {string} sClass name of the CSS class used for this item
-	 * @param {sap.ui.unified.CalenderLegendItem} oItem item element
+	 * @param {sap.ui.unified.CalendarLegendItem} oItem item element
 	 * @param {string[]} aColorClasses Css classes to be added to the color bullet item in front of the legend item
 	 */
 	CalendarLegendRenderer.renderLegendItem = function(oRm, sClass, oItem, aColorClasses, iIndex, iCount) {

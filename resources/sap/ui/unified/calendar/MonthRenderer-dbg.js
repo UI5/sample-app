@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -385,7 +385,8 @@ sap.ui.define([
 				oFormatLong: oMonth._getFormatLong(),
 				sPrimaryCalendarType: oMonth.getPrimaryCalendarType(),
 				sSecondaryCalendarType: oMonth._getSecondaryCalendarType(),
-				oLegend: undefined
+				oLegend: undefined,
+				aSelectedDates: oMonth.getSelectedDates()
 			};
 
 		sLegendId = oMonth.getLegend();
@@ -439,6 +440,7 @@ sap.ui.define([
 		var sSpecialDateColorFilter = oHelper?.oLegend ? oHelper.oLegend._getSpecialDateColorFilter().toLowerCase() : '';
 		var bEnabled = oMonth._checkDateEnabled(oDay);
 		var bShouldBeMarkedAsSpecialDate = oMonth._isSpecialDateMarkerEnabled(oDay);
+
 		const sFirstSpecialDateType = aDayTypes.length > 0 && aDayTypes[0].type;
 		const sSecondaryDateType = aDayTypes.length > 0 && aDayTypes[0].secondaryType;
 		const bIsWeekend = oHelper.aNonWorkingDays && oHelper.aNonWorkingDays instanceof Array
@@ -552,17 +554,11 @@ sap.ui.define([
 
 		oRm.attr("tabindex", "-1");
 		oRm.attr("data-sap-day", sYyyymmdd);
-		if (bDayName) {
-			mAccProps["label"] = mAccProps["label"] + oHelper.aWeekDaysWide[iWeekDay] + " ";
-		}
-		mAccProps["label"] = mAccProps["label"] + oHelper.oFormatLong.format(oDay.toUTCJSDate(), true);
+
+		mAccProps["label"] = this._getDayAriaLabel(oDay, oHelper, oMonth, bDayName, oSecondaryDay);
 
 		if (sAriaType !== "") {
 			CalendarLegendRenderer.addCalendarTypeAccInfo(mAccProps, sAriaType, oLegend);
-		}
-
-		if (oHelper.sSecondaryCalendarType) {
-			mAccProps["label"] = mAccProps["label"] + " " + oMonth._oFormatSecondaryLong.format(oSecondaryDay.toUTCJSDate(), true);
 		}
 
 		if (aDayTypes[0] && aDayTypes[0].customData?.length && bShouldBeMarkedAsSpecialDate) {
@@ -621,6 +617,39 @@ sap.ui.define([
 
 		oRm.close("div");
 
+	};
+
+	MonthRenderer._getDayAriaLabel = function(oDay, oHelper, oMonth, bDayName, oSecondaryDay){
+		let sAriaLabel = "";
+		const aSelectedDateRange = oHelper.aSelectedDates.filter((d) => d.getStartDate() && d.getEndDate());
+		if (bDayName) {
+			sAriaLabel = `${oHelper.aWeekDaysWide[oDay.getDay()]} `;
+		}
+
+		if (aSelectedDateRange.length > 0) {
+			const oStartJSDate = CalendarDate.fromLocalJSDate(aSelectedDateRange[0].getStartDate(), oHelper.sPrimaryCalendarType);
+			const oEndJSDate = CalendarDate.fromLocalJSDate(aSelectedDateRange[0].getEndDate(), oHelper.sPrimaryCalendarType);
+			const oStartDate = aSelectedDateRange[0].getStartDate();
+			const oEndDate = aSelectedDateRange[0].getEndDate();
+			if (oDay.isSame(oStartJSDate)) {
+				sAriaLabel = `${sAriaLabel}${oMonth._oUnifiedRB.getText("CALENDAR_RANGE_SELECTION_START_DATE", [oHelper.oFormatLong.format(oStartDate)])}`;
+			} else if (oDay.isSame(oEndJSDate)) {
+				sAriaLabel = `${sAriaLabel}${oMonth._oUnifiedRB.getText("CALENDAR_RANGE_SELECTION_END_DATE", [oHelper.oFormatLong.format(oEndDate)])}`;
+			} else if (oDay.isAfter(oStartJSDate) && oDay.isBefore(oEndJSDate)) {
+				sAriaLabel = `${sAriaLabel}${oMonth._oUnifiedRB.getText("CALENDAR_RANGE_SELECTION_PART_OF_RANGE", [oHelper.oFormatLong.format(oDay.toLocalJSDate())])}`;
+			} else {
+				sAriaLabel = `${sAriaLabel}${oHelper.oFormatLong.format(oDay.toUTCJSDate(), true)}`;
+			}
+
+		} else {
+			sAriaLabel = `${sAriaLabel}${oHelper.oFormatLong.format(oDay.toUTCJSDate(), true)}`;
+		}
+
+		if (oHelper.sSecondaryCalendarType) {
+			sAriaLabel = `${sAriaLabel} ${oMonth._oFormatSecondaryLong.format(oSecondaryDay.toUTCJSDate(), true)}`;
+		}
+
+		return sAriaLabel;
 	};
 
 	MonthRenderer._renderWeekNumber = function(oRm, oDay, oHelper, oMonth) {

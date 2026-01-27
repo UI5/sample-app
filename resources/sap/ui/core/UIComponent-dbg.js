@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -67,7 +67,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 */
@@ -152,7 +152,7 @@ sap.ui.define([
 	 *             "controlId": "App",
 	 *             "controlAggregation": "pages",
 	 *             "viewNamespace": "myApplication.namespace",
-	 *             // If you are using the mobile library, you have to use an sap.m.Router, to get support for
+	 *             // If you are using the mobile library, you have to use an sap.m.routing.Router, to get support for
 	 *             // the controls sap.m.App, sap.m.SplitApp, sap.m.NavContainer and sap.m.SplitContainer.
 	 *             "routerClass": "sap.m.routing.Router",
 	 *             // What happens if no route matches the hash?

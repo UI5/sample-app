@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,6 +17,7 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/core/Popup',
 	"sap/ui/dom/containsOrEquals",
+	"sap/ui/core/LabelEnablement",
 	'./InputBaseRenderer',
 	'sap/base/Log',
 	"sap/ui/events/KeyCodes",
@@ -42,6 +43,7 @@ function(
 	Device,
 	Popup,
 	containsOrEquals,
+	LabelEnablement,
 	InputBaseRenderer,
 	log,
 	KeyCodes,
@@ -78,7 +80,7 @@ function(
 	 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -554,7 +556,7 @@ function(
 	 */
 	InputBase.prototype.onfocusout = function(oEvent) {
 		this.removeStyleClass("sapMFocus");
-		// Don't close the ValueStateMessage on focusout if it contains sap.m.Formatted text, it can contain links
+		// Don't close the ValueStateMessage on focusout if it contains sap.m.FormattedText, it can contain links
 		if (!this._bClickOnValueStateLink(oEvent)) {
 			this.closeValueStateMessage();
 		}
@@ -1236,17 +1238,15 @@ function(
 	 * @protected
 	 */
 	InputBase.prototype.getLabels = function() {
-		var aLabelIDs = this.getAriaLabelledBy().map(function(sLabelID) {
+		var aLabelIDs = this.getAriaLabelledBy()
+			.concat(LabelEnablement.getReferencingLabels(this));
+
+		aLabelIDs = aLabelIDs.filter(function(sId, iIndex) {
+			return aLabelIDs.indexOf(sId) === iIndex;
+		})
+		.map(function(sLabelID) {
 			return Element.getElementById(sLabelID);
 		});
-
-		var oLabelEnablement = sap.ui.require("sap/ui/core/LabelEnablement");
-
-		if (oLabelEnablement) {
-			aLabelIDs = aLabelIDs.concat(oLabelEnablement.getReferencingLabels(this).map(function(sLabelID) {
-				return Element.getElementById(sLabelID);
-			}));
-		}
 
 		return aLabelIDs;
 	};
@@ -1490,7 +1490,7 @@ function(
 	 * @returns {boolean} If it is an interactive Control
 	 *
 	 * @private
-	 * @ui5-restricted sap.m.OverflowToolBar, sap.m.Toolbar
+	 * @ui5-restricted sap.m.OverflowToolbar, sap.m.Toolbar
 	 */
 	InputBase.prototype._getToolbarInteractive = function () {
 		return true;

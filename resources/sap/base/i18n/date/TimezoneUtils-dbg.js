@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([], function() {
@@ -10,7 +10,7 @@ sap.ui.define([], function() {
 	 * Static collection of utility functions to handle time zone related conversions
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @namespace
 	 * @alias module:sap/base/i18n/date/TimezoneUtils
 	 * @private
@@ -317,7 +317,7 @@ sap.ui.define([], function() {
 		"America/Thunder_Bay": "America/Toronto",
 		"America/Virgin": "America/St_Thomas",
 		"America/Yellowknife": "America/Edmonton",
-		"Antarctica/South_Pole": "Pacific/Auckland",
+		"Antarctica/South_Pole": "Antarctica/McMurdo",
 		"Asia/Ashkhabad": "Asia/Ashgabat",
 		"Asia/Calcutta": "Asia/Kolkata",
 		"Asia/Choibalsan": "Asia/Ulaanbaatar",

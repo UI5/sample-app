@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.DataState
@@ -407,7 +407,11 @@ sap.ui.define([
 	 * with the properties <code>oldValue</code> with the old property value and <code>value</code>
 	 * with the new value of the property. The map only contains the changed properties.
 	 *
-	 * @returns {object} The changed properties of the data state
+	 * @returns {Object<string,{oldValue:any,value:any}>}
+	 *   The changed properties and messages of the data state.
+	 *   Changed messages are located in the <code>messages</code> property. They share the same object structure as
+	 *   the changed properties, but the values in this structure are of type {@link sap.ui.core.message.Message}.
+	 *
 	 * @public
 	 */
 	DataState.prototype.getChanges = function() {

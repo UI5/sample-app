@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -71,10 +71,10 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.core.Control
-	 * @implements sap.ui.core.IShrinkable
+	 * @implements sap.ui.core.ITitle, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.27.0
 	 *
 	 * @constructor
@@ -87,9 +87,10 @@ sap.ui.define([
 
 			library : "sap.m",
 			interfaces : [
-				 "sap.ui.core.IShrinkable",
-				 "sap.m.IHyphenation",
-				 "sap.m.IToolbarInteractiveControl"
+				"sap.ui.core.ITitle",
+				"sap.ui.core.IShrinkable",
+				"sap.m.IHyphenation",
+				"sap.m.IToolbarInteractiveControl"
 			],
 			properties : {
 
@@ -330,7 +331,7 @@ sap.ui.define([
 	 * @returns {boolean} If it is an interactive Control
 	 *
 	 * @private
-	 * @ui5-restricted sap.m.OverflowToolBar, sap.m.Toolbar
+	 * @ui5-restricted sap.m.OverflowToolbar, sap.m.Toolbar
 	 */
 	Title.prototype._getToolbarInteractive = function () {
 		return false;

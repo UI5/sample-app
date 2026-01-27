@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -120,6 +120,14 @@ sap.ui.define([
 		var mPendingPromise;
 
 		var fnWrappedExecutor = function (fnOriginalResolve, fnOriginalReject) {
+			// Handle null executor (which can happen in some polyfills like Angular's)
+			if (!fnOriginalExecutor || typeof fnOriginalExecutor !== 'function') {
+				oPromiseWaiter._oLogger.trace("Ignoring Promise with null executor");
+				// Just resolve the promise since there's no executor to call
+				fnOriginalResolve();
+				return;
+			}
+
 			var sArguments = _utils.functionToString(fnOriginalExecutor);
 
 			if (window.ES6Promise && sArguments === "'function noop() {}'") {

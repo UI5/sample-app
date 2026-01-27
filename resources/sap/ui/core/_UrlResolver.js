@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/util/_URL"],function(e){"use strict";var r={};r._processResourceConfiguration=function(e,n){n=n||{};var s=n.alreadyResolvedOnRoot||false;var a=e.bundleUrlRelativeTo||n.relativeTo;var i;if(a==="manifest"){i=n.manifestBaseURI}else if(a==="component"){i=n.baseURI}else{i=a||n.baseURI}Object.keys(e).forEach(function(o){if(o==="bundleUrl"&&!s){var t=e[o];var f=r._resolveUri(t,i);e[o]=f&&f.sourceUrl}if(o==="terminologies"){var l=e[o];for(var u in l){r._processResourceConfiguration(l[u],{relativeTo:a,baseURI:n.baseURI,manifestBaseURI:n.manifestBaseURI})}}if(o==="enhanceWith"){var c=e[o]||[];for(var v=0;v<c.length;v++){r._processResourceConfiguration(c[v],{relativeTo:a,baseURI:n.baseURI,manifestBaseURI:n.manifestBaseURI})}}})};function n(r){return r instanceof e?r:new e(r)}r._resolveUri=function(e,s){return r._resolveUriRelativeTo(n(e),n(s))};r._resolveUriRelativeTo=function(r,n){if(r.isAbsolute()||r.plainUrl?.[0]==="/"){return r}const s=new e(document.baseURI);const a=new e(r.sourceUrl,n.href);const i=a.relativeTo(s);return new e(i)};return r});

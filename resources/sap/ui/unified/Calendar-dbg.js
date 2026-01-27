@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides control sap.ui.unified.Calendar.
@@ -80,7 +80,7 @@ sap.ui.define([
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -467,6 +467,7 @@ sap.ui.define([
 		// Set keyboard shortcuts for Calendar-specific usage
 		oHeader.setProperty("_keyShortcutButton1", this._oResourceBundle.getText("CALENDAR_HEADER_MONTH_BUTTON_SHORTCUT"));
 		oHeader.setProperty("_keyShortcutButton2", this._oResourceBundle.getText("CALENDAR_HEADER_YEAR_BUTTON_SHORTCUT"));
+		oHeader.setProperty("_currentPicker", CURRENT_PICKERS.MONTH);
 
 		this._afterHeaderRenderAdjustCSS = this._createOnAfterRenderingDelegate(oHeader);
 
@@ -1610,6 +1611,7 @@ sap.ui.define([
 			oMonthPicker._setDate(oFocusedDate);
 			oMonthPicker.invalidate();
 			this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH_PICKER);
+			this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH_PICKER);
 			break;
 
 		case 2: // year picker
@@ -1626,7 +1628,6 @@ sap.ui.define([
 			break;
 			// no default
 		}
-
 	};
 
 	/**
@@ -1655,7 +1656,7 @@ sap.ui.define([
 			this._addMonthFocusDelegate();
 			break;
 
-			case 1: // month picker
+		case 1: // month picker
 			oFocusedDate.setYear(oFocusedDate.getYear() + 1);
 			this._updateHeadersYearPrimaryText(this._oYearFormat.format(oFocusedDate.toUTCJSDate(), true));
 			this._updateHeadersYearAdditionalTextHelper();
@@ -1666,6 +1667,7 @@ sap.ui.define([
 			oMonthPicker._setDate(oFocusedDate);
 			oMonthPicker.invalidate();
 			this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH_PICKER);
+			this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH_PICKER);
 			break;
 
 		case 2: // year picker
@@ -1711,11 +1713,12 @@ sap.ui.define([
 	 * @private
 	 */
 	Calendar.prototype._handleCurrentDate = function() {
-		var oNow = UI5Date.getInstance(),
+		const oNow = UI5Date.getInstance(),
 			oMaxDate = this.getMaxDate(),
 			oMinDate = this.getMinDate();
 
 		this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH);
+		this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH);
 
 		if (oMaxDate && oMaxDate.getTime() < oNow.getTime()) {
 			this.focusDate(oMaxDate);
@@ -1723,6 +1726,21 @@ sap.ui.define([
 			this.focusDate(oMinDate);
 		} else {
 			this.focusDate(oNow);
+		}
+	};
+
+	/**
+	 * Sets the _currentPicker property on the header aggregation, if available.
+	 *
+	 * @param {string} sPicker The picker type to set (e.g. from CURRENT_PICKERS).
+	 * @private
+	 */
+	Calendar.prototype._setHeaderCurrentPicker = function(sPicker) {
+		const oHeader = this.getAggregation("header");
+		try {
+			oHeader.setProperty("_currentPicker", sPicker);
+		} catch (e) {
+			Log.warning("Property '_currentPicker' could not be set on the header aggregation.");
 		}
 	};
 
@@ -1842,6 +1860,7 @@ sap.ui.define([
 
 	Calendar.prototype._closePickers = function () {
 		this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH);
+		this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH);
 		// show again hidden month button
 		this._togglePrevNext(this._getFocusedDate(), true);
 
@@ -1985,6 +2004,7 @@ sap.ui.define([
 		this._updateMonthButtonVisibility();
 
 		this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH_PICKER);
+		this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH_PICKER);
 
 		if (this._bActionTriggeredFromSecondHeader) {
 			oSecondDate.setDate(1);
@@ -2022,10 +2042,11 @@ sap.ui.define([
 	 * @private
 	 */
 	Calendar.prototype._showYearPicker = function () {
-		var oDate = this._getFocusedDate(),
+		const oDate = this._getFocusedDate(),
 			oYearPicker = this._getYearPicker();
 
 		this.setProperty("_currentPicker", CURRENT_PICKERS.YEAR_PICKER);
+		this._setHeaderCurrentPicker(CURRENT_PICKERS.YEAR_PICKER);
 
 		oYearPicker.setDate(oDate.toLocalJSDate());
 
@@ -2250,6 +2271,7 @@ sap.ui.define([
 			this._showMonthPicker();
 		} else {
 			this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH);
+			this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH);
 			this._addMonthFocusDelegate();
 		}
 	};
@@ -2422,6 +2444,7 @@ sap.ui.define([
 			oRangeMidDate = CalendarDate.fromLocalJSDate(oYearPicker.getFirstRenderedDate(), this._getPrimaryCalendarType());
 
 		this.setProperty("_currentPicker", CURRENT_PICKERS.YEAR_RANGE_PICKER);
+		this._setHeaderCurrentPicker(CURRENT_PICKERS.YEAR_RANGE_PICKER);
 
 		oYearRangePicker.getColumns() % 2 !== 0 ?
 			oRangeMidDate.setYear(oRangeMidDate.getYear() + Math.floor(oYearRangePicker.getRangeSize() / 2)) :
@@ -2609,6 +2632,7 @@ sap.ui.define([
 
 	Calendar.prototype._updateHeadersYearPrimaryText = function (sFirstHeaderYear, sSecondHeaderYear) {
 		var oYearPicker = this._getYearPicker(),
+			oMonthPicker = this._getMonthPicker(),
 			oHeader = this.getAggregation("header"),
 			oSecondMonthHeader = this.getAggregation("secondMonthHeader"),
 			sFirstHeaderText = sFirstHeaderYear,
@@ -2666,6 +2690,9 @@ sap.ui.define([
 				oHeader.setProperty("_tooltipButton4", sYearRangeTooltip);
 				oHeader.setProperty("_keyShortcutButton4", sYearRangeShortcut);
 				oHeader.setProperty("_descriptionButton4", sYearRangeLabel);
+				this._setHeaderCurrentPicker(CURRENT_PICKERS.YEAR_PICKER);
+		} else if (this._iMode === 1 && oMonthPicker) {
+			this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH_PICKER);
 		} else {
 			// Set properties for button4 when not in year picker mode (always set accessibility properties when button4 is used)
 			oHeader.setProperty("_tooltipButton4", sSecondYearTooltip);
@@ -2938,7 +2965,7 @@ sap.ui.define([
 			this._bNamesLengthChecked = true;
 
 			this.setProperty("_currentPicker", CURRENT_PICKERS.MONTH);
-
+			this._setHeaderCurrentPicker(CURRENT_PICKERS.MONTH);
 			if (!this._bLongMonth) {
 				// update short month name (long name used by default)
 				aMonths = this.getAggregation("month");

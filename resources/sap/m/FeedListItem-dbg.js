@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -65,7 +65,7 @@ function(
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -461,13 +461,13 @@ function(
 	 */
 	FeedListItem.prototype.onfocusin = function(oEvent) {
 		//Added for calculating List Count.
-        var oItem = oEvent.srcControl ,
-            oItemDomRef = oItem.getDomRef(),
-            mPosition = this.getParent().getAccessbilityPosition(oItem);
+		var oItem = oEvent.srcControl ,
+			oItemDomRef = oItem.getDomRef(),
+			mPosition = this.getParent().getAccessbilityPosition(oItem);
 
-        if ( oItem instanceof FeedListItem ) {
-            oItemDomRef.setAttribute("aria-posinset", mPosition.posInset);
-            oItemDomRef.setAttribute("aria-setsize", mPosition.setSize);
+		if ( oItem instanceof FeedListItem ) {
+			oItemDomRef.setAttribute("aria-posinset", mPosition.posinset);
+			oItemDomRef.setAttribute("aria-setsize", mPosition.setsize);
 		}
 	};
 

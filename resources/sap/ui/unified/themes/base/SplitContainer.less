@@ -1,7 +1,7 @@
 /**
- * @file
- * @deprecated As of version 1.44.0, together with the sap.ui.unified.SplitContainer
- */
+* @file
+* @deprecated As of version 1.44.0, together with the sap.ui.unified.SplitContainer
+*/
 /* ============================================== */
 /* CSS for control sap.ui.unified/SplitContainer  */
 /* Base theme                                     */
@@ -18,19 +18,20 @@
 	width: 100%;
 }
 
-
 .sapUiUfdSpltContAnim .sapUiUfdSpltContCanvas,
 .sapUiUfdSpltContAnim .sapUiUfdSpltContPane {
-	transition: height @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, width @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, left @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, top @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms;
-	-webkit-transition: height @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, width @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, left @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms, top @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms;
+	transition: height @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms,
+				width @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms,
+				left @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms,
+				top @_sap_ui_unified_SplitContainer_AnimationDuration ease 0ms;
 }
 
 .sapUiUfdSpltContPane {
-	background-color: @sapUiGroupContentBackground;
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
+	background-color: var(--sapGroup_ContentBackground);
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
 	box-sizing: border-box;
 }
 
@@ -60,18 +61,12 @@
 	padding: 10px;
 }
 
-.sapUiUfdSpltContH {}
-
 .sapUiUfdSpltContH .sapUiUfdSpltContPane {
-	border-right: 1px solid @sapUiGroupContentBorderColor;
+	border-right: 1px solid var(--sapGroup_ContentBorderColor);
 	bottom: 0;
 }
 
-
-.sapUiUfdSpltContV {}
-
 .sapUiUfdSpltContV .sapUiUfdSpltContPane {
-	border-bottom: 1px solid @sapUiGroupContentBorderColor;
+	border-bottom: 1px solid var(--sapGroup_ContentBorderColor);
 	right: 0;
 }
-

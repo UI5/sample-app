@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -1908,7 +1908,7 @@ sap.ui.define([
 	 * Otherwise, registers the 'onAfterRendering' delegate which shows the placeholder.
 	 *
 	 * @param {object} [mSettings] Object containing the placeholder instance.
-	 *                             Can be omitted if a placeholder instance is already created by <code>sap.ui.core.routing.async.Target</code>.
+	 *                             Can be omitted if a placeholder instance is already created by <code>sap.ui.core.routing.Target</code>.
 	 * @param {object} [mSettings.placeholder] The placeholder instance
 	 * @param {sap.ui.core.Placeholder} mSettings.placeholder The placeholder instance
 	 * @return {Promise} Promise that resolves with the placeholder

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ sap.ui.define(function() {
 	 * @enum {string}
 	 * @public
 	 * @alias sap.ui.model.odata.MessageScope
-	 * @see sap.ui.model.ODataModel#constructor
+	 * @see sap.ui.model.odata.v2.ODataModel#constructor
 	 */
 	var MessageScope = {
 		/**

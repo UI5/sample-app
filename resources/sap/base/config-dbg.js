@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 sap.ui.define([
@@ -18,12 +18,10 @@ sap.ui.define([
 	 * The base Configuration.
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @private
-	 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+	 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.integration, sap.ui.export
 	 * @alias module:sap/base/config
-	 * @borrows module:sap/base/config/_Configuration.get as get
-	 * @borrows module:sap/base/config/_Configuration.Type as Type
 	 * @namespace
 	 */
 

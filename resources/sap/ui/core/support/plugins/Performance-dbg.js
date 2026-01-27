@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,7 +56,7 @@ sap.ui.define([
 		 * With this plugIn the performance measurements are displayed
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 * @private
 		 * @alias sap.ui.core.support.plugins.Performance
 		 */
@@ -549,6 +549,9 @@ sap.ui.define([
 			var filterOptions = _getFilterOptions();
 			//filtered and modified data
 			var data = _applyFilters(_rawdata, filterOptions);
+
+			barRm.openStart("ol").openEnd();
+			barInfoRm.openStart("ol").openEnd();
 
 			//no data bar
 			if (data.length === 0) {

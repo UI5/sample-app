@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -108,18 +108,21 @@ sap.ui.define([
 	};
 
 	/**
-	 * Gets the (model dependent) object the context points to or the object with the given relative binding path
+	 * Gets the (model-dependent) object the context points to, or the object with the given relative binding path.
+	 *
+	 * @param {string|object} [vPath] the binding path as a string, or if an object is provided,
+	 *   it is treated as additional parameters (same as <code>mParameters</code>)
+	 * @param {object} [mParameters] additional model-specific parameters
+	 * @returns {any} the context object
+	 *
 	 * @public
-	 * @param {string} [sPath] the binding path
-	 * @param {object} [mParameters] additional model specific parameters (optional)
-	 * @return {object} the context object
 	 */
-	Context.prototype.getObject = function(sPath, mParameters) {
-		if (isPlainObject(sPath)) {
-			mParameters = sPath;
-			sPath = undefined;
+	Context.prototype.getObject = function(vPath, mParameters) {
+		if (isPlainObject(vPath)) {
+			mParameters = vPath;
+			vPath = undefined;
 		}
-		return this.oModel.getObject(sPath, this, mParameters);
+		return this.oModel.getObject(vPath, this, mParameters);
 	};
 
 	/**

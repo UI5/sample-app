@@ -9,22 +9,22 @@
 
 .sapUiUfdShellOvrlyCntnt,
 .sapUiUfdShellOvrlyHeadCntnt {
-	background-color: @sapUiShellBackground;
+	background-color: var(--sapShell_Background);
 }
 
 .sapUiUfdShellOvrlyHeadClose,
 .sapUiUfdShellOvrlyHeadClose:focus,
 .sapUiUfdShellOvrlyHeadClose:visited {
-	color: @sapUiButtonIconColor;
+	color: var(--sapButton_IconColor);
 }
 
 .sapUiUfdShellOvrlyHeadClose:active,
 .sapUiUfdShellOvrlyHeadClose:hover{
-	background-color: @sapUiButtonActiveBackground;
+	background-color: var(--sapButton_Active_Background);
 }
 
 .sapUiUfdShellOvrlyHeadClose {
-	border: 1px solid @sapUiButtonBorderColor;
+	border: 1px solid var(--sapButton_BorderColor);
 	border-radius: 6px;
 	line-height: 1;
 }
@@ -34,7 +34,7 @@
 }
 
 .sapUiUfdShellOvrlyHeadClose:focus {
-	border: 2px dotted @sapUiContentFocusColor;
+	border: 2px dotted var(--sapContent_FocusColor);
 	border-radius: 0;
 	padding: 9px;
 }
@@ -44,13 +44,13 @@
 }
 
 .sapUiUfdShellOvrlyAnim.sapUiUfdShellOvrly > div {
-	box-shadow: 0 0 40px 2px @sapUiContentShadowColor;
+	box-shadow: 0 0 40px 2px var(--sapContent_ShadowColor);
 }
 
 .sapUiUfdShellOvrlyHead,
 .sapUiUfdShellOvrlyCntnt > div {
 	border-width: 0 2px 1px 2px;
-	border-color: @sapUiGroupContentBorderColor;
+	border-color: var(--sapGroup_ContentBorderColor);
 	border-style: solid;
 }
 

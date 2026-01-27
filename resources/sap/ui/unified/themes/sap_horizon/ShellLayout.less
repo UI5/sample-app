@@ -4,36 +4,35 @@
  */
 /* =========================================== */
 /* CSS for control sap.ui.unified/ShellLayout  */
-/* Horizon theme                               */
+/* Morning Horizon theme                       */
 /* =========================================== */
 
 @_sap_ui_unified_ShellLayout_CurtainBGStartColor: fade(@sapUiGroupContentBackground,97);
 @_sap_ui_unified_ShellLayout_CurtainBGEndColor: fade(lighten(desaturate(@sapUiHighlight,37),56),97);
 
 ._sapUiUfdShellSubHdr { /* Testpage only */
-	background-color: @sapUiShellBackground;
-	color: @sapUiShellTextColor;
+	background-color: var(--sapShell_Background);
+	color: var(--sapShell_TextColor);
 }
 
 .sapUiUfdShell .sapUiUfdShellHead {
-	background-color: @sapUiBlockLayerBackground;
+	background-color: var(--sapBlockLayer_Background);
 }
 
 .sapUiUfdShell .sapUiUfdShellBrand {
-	background: @sapUiShellBackground;
+	background: var(--sapShell_Background);
 }
 
 .sapUiUfdShell.sapUiUfdShellCurtainVisible .sapUiUfdShellHead,
 .sapUiUfdShell.sapUiUfdShellCurtainVisible .sapUiUfdShellHead > div {
 	background: none;
-	background-color: @sapUiShellBackground;
+	background-color: var(--sapShell_Background);
 	filter: none;
 }
 
 .sapUiUfdShellCurtain {
-	border-bottom: 1px solid @sapUiShellBorderColor;
+	border-bottom: 1px solid var(--sapShell_BorderColor);
 	background-image: linear-gradient(to bottom, @_sap_ui_unified_ShellLayout_CurtainBGStartColor 0%, @_sap_ui_unified_ShellLayout_CurtainBGEndColor 100%);
-	background-image: -webkit-linear-gradient(top, @_sap_ui_unified_ShellLayout_CurtainBGStartColor 0%, @_sap_ui_unified_ShellLayout_CurtainBGEndColor 100%);
 	background-attachment: fixed;
 	background-repeat: repeat, no-repeat;
 }

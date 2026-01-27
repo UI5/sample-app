@@ -1,10 +1,10 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides module sap.ui.core.ControlBehavior
+// Provides module sap/ui/core/ControlBehavior
 sap.ui.define([
 	"sap/base/config",
 	"sap/base/Eventing",
@@ -51,11 +51,11 @@ sap.ui.define([
 
 		/**
 		 * Attaches the <code>fnFunction</code> event handler to the {@link #event:change change} event
-		 * of <code>sap.ui.core.ControlBehavior</code>.
+		 * of <code>sap/ui/core/ControlBehavior</code>.
 		 *
 		 * When called, the context of the event handler (its <code>this</code>) will be bound to
 		 * <code>oListener</code> if specified, otherwise it will be bound to this
-		 * <code>sap.ui.core.ControlBehavior</code> itself.
+		 * <code>sap/ui/core/ControlBehavior</code> itself.
 		 *
 		 * @param {function(module:sap/ui/core/ControlBehavior$ChangeEvent)} fnFunction
 		 *   The function to be called when the event occurs
@@ -69,7 +69,7 @@ sap.ui.define([
 
 		/**
 		 * Detaches event handler <code>fnFunction</code> from the {@link #event:change change} event of
-		 * this <code>sap.ui.core.ControlBehavior</code>.
+		 * this <code>sap/ui/core/ControlBehavior</code>.
 		 *
 		 * @param {function(module:sap/ui/core/ControlBehavior$ChangeEvent)} fnFunction Function to be called when the event occurs
 		 * @private

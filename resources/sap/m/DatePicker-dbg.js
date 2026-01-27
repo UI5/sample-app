@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -115,8 +115,9 @@ sap.ui.define([
 	 * <code>DatePicker</code> to a model using the <code>sap.ui.model.type.Date</code></li>
 	 * <caption> binding the <code>value</code> property by using types </caption>
 	 * <pre>
+	 * // UI5Date imported from sap/ui/core/date/UI5Date
 	 * new sap.ui.model.json.JSONModel({
-	 *     date: sap.ui.core.date.UI5Date.getInstance(2022,10,10,10,10,10)
+	 *     date: UI5Date.getInstance(2022,10,10,10,10,10)
 	 * });
 	 *
 	 * new sap.m.DatePicker({
@@ -186,7 +187,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -626,7 +627,7 @@ sap.ui.define([
 	 */
 	DatePicker.prototype.onsapescape = function(oEvent) {
 		var sLastValue = this.getLastValue(),
-			oDate = this._parseValue( this._getInputValue(), true),
+			oDate = this._parseValue(this._getInputValue(), true),
 			sValueFormatInputDate = this._formatValue(oDate, true);
 
 		if (sValueFormatInputDate !== sLastValue) {
@@ -796,7 +797,6 @@ sap.ui.define([
 			var oDateValue = this.getDateValue();
 			if (oDateValue && oDateValue.getTime() < oDate.getTime()) {
 				this._bValid = false;
-				this._bOutOfAllowedRange = true;
 				Log.warning("DateValue not in valid date range", this);
 			}
 		} else {
@@ -844,7 +844,6 @@ sap.ui.define([
 			var oDateValue = this.getDateValue();
 			if (oDateValue && oDateValue.getTime() > oDate.getTime()) {
 				this._bValid = false;
-				this._bOutOfAllowedRange = true;
 				Log.warning("DateValue not in valid date", this);
 			}
 		} else {
@@ -1094,6 +1093,26 @@ sap.ui.define([
 
 		return this;
 
+	};
+
+	/**
+	 * Checks if the current date value is outside the allowed min/max date range.
+	 *
+	 * @returns {boolean} True if the value is out of range, false otherwise.
+	 * @private
+	 */
+	DatePicker.prototype._isValueOutOfRange = function() {
+		const sDate = this._$input.val();
+		let oDate = this.getDateValue();
+		if (sDate) {
+			oDate = this._parseValue(sDate, true);
+			if (!oDate) {
+				return false;
+			}
+		}
+		const bIsLessThanMin = !!oDate && this._oMinDate && oDate.getTime() < this._oMinDate.getTime();
+		const bIsGreaterThanMax = !!oDate && this._oMaxDate && oDate.getTime() > this._oMaxDate.getTime();
+		return bIsLessThanMin || bIsGreaterThanMax;
 	};
 
 	DatePicker.prototype.onChange = function(oEvent) {

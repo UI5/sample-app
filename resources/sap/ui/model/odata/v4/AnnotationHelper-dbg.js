@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -289,7 +289,7 @@ sap.ui.define([
 							value : vRawValue,
 							// ensure that type information is available in sub paths of the
 							// expression even if for that sub path no complex binding is needed,
-							// e.g. see sap.ui.model.odata.v4_AnnotationHelperExpression.operator
+							// e.g. see sap.ui.model.odata.v4._AnnotationHelperExpression.operator
 							$$valueAsPromise : true
 						});
 				}

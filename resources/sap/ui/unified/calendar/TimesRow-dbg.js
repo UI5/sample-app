@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -69,7 +69,7 @@ sap.ui.define([
 	 *
 	 * The TimesRow works with UI5Date or JavaScript Date objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -130,7 +130,7 @@ sap.ui.define([
 			 * If set, the calendar type is used for display.
 			 * If not set, the calendar type of the global configuration is used.
 			 * @private
-			 * @ui5-restricted sap.ui.unified.TimesRow
+			 * @ui5-restricted sap.ui.unified.calendar.TimesRow
 			 * @since 1.108.0
 			 */
 			primaryCalendarType : {type : "sap.base.i18n.date.CalendarType", group : "Appearance"},
@@ -139,7 +139,7 @@ sap.ui.define([
 			 * If set, the days are also displayed in this calendar type
 			 * If not set, the dates are only displayed in the primary calendar type
 			 * @private
-			 * @ui5-restricted sap.ui.unified.TimesRow
+			 * @ui5-restricted sap.ui.unified.calendar.TimesRow
 			 * @since 1.109.0
 			 */
 			secondaryCalendarType : {type : "sap.base.i18n.date.CalendarType", group : "Appearance"},

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,15 +8,13 @@
 sap.ui.define([
 	"./library",
 	"./QuickViewBase",
-	"./NavContainer",
-	"./Page",
+
 	"./ScrollContainer",
 	"./QuickViewCardRenderer"
 ], function (
 	library,
 	QuickViewBase,
-	NavContainer,
-	Page,
+
 	ScrollContainer,
 	QuickViewCardRenderer
 ) {
@@ -36,7 +34,7 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -64,11 +62,7 @@ sap.ui.define([
 	 * @private
 	 */
 	QuickViewCard.prototype.init = function() {
-		var oNavConfig = {
-			pages: [new Page()],
-			navigate: this._navigate.bind(this),
-			afterNavigate: this._afterNavigate.bind(this)
-		};
+		QuickViewBase.prototype.init.apply(this);
 
 		this._oNavContainerDelegate = {
 			onAfterRendering: function () {
@@ -80,8 +74,6 @@ sap.ui.define([
 				this._oNavContainer.removeEventDelegate(this._oNavContainerDelegate);
 			}.bind(this)
 		};
-
-		this._oNavContainer = new NavContainer(oNavConfig);
 	};
 
 	QuickViewCard.prototype.onBeforeRendering = function() {

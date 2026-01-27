@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -70,7 +70,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -704,6 +704,10 @@ sap.ui.define([
 
 			ComboBoxTextField.prototype.onBeforeRendering.apply(this, arguments);
 
+			if (!this.hasListeners("modelContextChange")) {
+				this.attachModelContextChange(this._closePicker, this);
+			}
+
 			if (bSuggestionsPopoverIsOpen && ((this.getValueStateText() && sValueStateHeaderText !== this.getValueStateText()) ||
 				(this.getValueState() !== sValueStateHeaderValueState) || this.getFormattedValueStateText())) {
 				/* If new value state, value state plain text or FormattedText is set
@@ -769,6 +773,10 @@ sap.ui.define([
 				this._oGroupHeaderInvisibleText = null;
 			}
 
+			if (this.hasListeners("modelContextChange")) {
+				this.detachModelContextChange(this._closePicker, this);
+			}
+
 			if (this._oSuggestionPopover) {
 				this._oSuggestionPopover.destroy();
 				this._oSuggestionPopover = null;
@@ -778,6 +786,17 @@ sap.ui.define([
 			this.aMessageQueue = null;
 			this.fnFilter = null;
 		};
+
+		/**
+		 *Closes the popover of the ComboBox without setting the focus back to the input.
+	 	 * @private
+	 	 */
+		ComboBoxBase.prototype._closePicker = function () {
+			if (this.isOpen() && !this.hasLoadItemsEventListeners()) {
+				this.close();
+			}
+		};
+
 		/* ----------------------------------------------------------- */
 		/* Keyboard handling                                           */
 		/* ----------------------------------------------------------- */

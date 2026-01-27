@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -453,7 +453,8 @@ sap.ui.define([
 		 *   <code>buildResponse(aMatch, oResponse, oRequest, sReferencedMessage)</code> which gets
 		 *   passed the match object, the response, the request, and optionally the referenced
 		 *   response message in case of Content-ID referencing in order to allow modification of
-		 *   the response before sending.
+		 *   the response before sending. If there are two matching regular expressions for a
+		 *   $metadata requests, the first one is used.
 		 * @param {string} [sServiceUrl]
 		 *   The service URL which determines a prefix for all requests the fake server responds to;
 		 *   it responds with an error for requests not given in the fixture, except DELETE, MERGE,
@@ -554,6 +555,7 @@ sap.ui.define([
 			 * @param {number} iCode - The response code
 			 * @param {object} oRequest - The request object
 			 * @param {string|Error} vMessage - The error
+			 * @param {string} [vMessage.target] - The error target
 			 * @returns {object} The reponse object
 			 */
 			function error(iCode, oRequest, vMessage) {
@@ -566,7 +568,8 @@ sap.ui.define([
 					message : JSON.stringify({
 						error : {
 							code : "TestUtils",
-							message : vMessage instanceof Error ? vMessage.message : vMessage
+							message : vMessage instanceof Error ? vMessage.message : vMessage,
+							target : vMessage instanceof Error ? vMessage.target : undefined
 						}
 					})
 				};
@@ -652,6 +655,11 @@ sap.ui.define([
 					return aMatch;
 				});
 
+				if (aMatchingResponses.length === 2 && sUrl.includes("/$metadata")) {
+					// if there are two matches for a $metadata request, the first one wins
+					aMatches.pop();
+					aMatchingResponses.pop();
+				}
 				if (aMatchingResponses.length > 1) {
 					Log.warning("Multiple matches found for " + sRequestLine, undefined,
 						"sap.ui.test.TestUtils");

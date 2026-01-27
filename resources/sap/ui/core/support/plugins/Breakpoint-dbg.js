@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -276,7 +276,7 @@ sap.ui.define(['sap/ui/Device', "sap/ui/core/Element", 'sap/ui/core/ElementMetad
 			function findDeclaredClasses() {
 
 				var aClasses = [];
-				var aModules = LoaderExtensions.getAllRequiredModules();
+				var aModules = LoaderExtensions.getAllRequiredModules(/* omitDeprecated */ true);
 
 				for (var i = 0; i < aModules.length; i++) {
 					if (aClasses.indexOf(aModules[i]) > -1) {

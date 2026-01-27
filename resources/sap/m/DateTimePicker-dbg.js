@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -112,7 +112,10 @@ sap.ui.define([
 	 * <code>sap.ui.model.type.DateTime</code></li>
      * <caption> binding the <code>value</code> property by using types </caption>
 	 * <pre>
-	 * new sap.ui.model.json.JSONModel({date: sap.ui.core.date.UI5Date.getInstance(2022,10,10,12,10,10)});
+	 * // UI5Date imported from sap/ui/core/date/UI5Date
+	 * new sap.ui.model.json.JSONModel({
+	 *     date: UI5Date.getInstance(2022,10,10,12,10,10)
+	 * });
 	 *
 	 * new sap.m.DateTimePicker({
 	 *     value: {
@@ -183,7 +186,7 @@ sap.ui.define([
 	 * mobile devices, it opens in full screen.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public

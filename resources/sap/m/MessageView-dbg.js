@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -123,7 +123,7 @@ sap.ui.define([
 	 * The responsiveness of the <code>MessageView</code> is determined by the container in which it is embedded. For that reason the control could not be visualized if the
 	 * container’s sizes are not defined.
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -555,7 +555,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * If there's no items binding, attach the MessageView to the sap.ui.core.Messaging.getMessageModel()
+	 * If there's no items binding, attach the MessageView to the sap/ui/core/Messaging.getMessageModel()
 	 *
 	 * @private
 	 * @ui5-restricted sap.m.MessagePopover

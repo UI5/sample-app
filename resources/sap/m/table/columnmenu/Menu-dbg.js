@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -99,7 +99,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.MenuBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -571,7 +571,7 @@ sap.ui.define([
 
 		this._oItemsContainer.setListHeader(new OverflowToolbar({
 			content: [
-				new Title({text: sTitle})
+				new Title({text: sTitle, level: coreLibrary.TitleLevel.H3})
 			]
 		}));
 		this._oItemsContainer.getHeader().addContentRight(new Button({
@@ -703,7 +703,7 @@ sap.ui.define([
 		if (aQuickActions.length) {
 			oList = new List({
 				headerToolbar: new OverflowToolbar({
-					content: [new Title({text: sTitle})]
+					content: [new Title({text: sTitle, level: coreLibrary.TitleLevel.H3})]
 				}),
 				keyboardMode: "Edit",
 				items: []

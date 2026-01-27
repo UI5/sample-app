@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @private
 	 *
@@ -68,6 +68,7 @@ sap.ui.define([
 	 * @param {boolean} [mSettings.enableReset] Determines the enablement status of the <code>Reset</code> button
 	 * (Note: only takes effect if the button is shown via <code>showReset</code>)
 	 * @param {function} [mSettings.reset] Custom reset handling to opt out the default reset which will trigger a reset for all open tabs.
+	 * @param {function} [mSettings.open] Event handler once the Popup has been opened
 	 * @param {function} [mSettings.close] Event handler once the Popup has been closed
 	 * @param {string} [mSettings.activePanel] Key of active panel that is opened initially
 	 * @param {boolean} [mSettings.refreshPropertyHelper] Determines if the property helper should be refreshed
@@ -103,7 +104,7 @@ sap.ui.define([
 							close: function(oEvt) {
 
 								const sReason = oEvt.getParameter("reason");
-								if (sReason == "Ok") {
+								if (sReason == "Ok" || sReason == "Filter") {
 									that.oAdaptationProvider.handleP13n(oControl, aPanelKeys);
 								}
 								const aPanels = oP13nContainer.getPanels();
@@ -121,6 +122,11 @@ sap.ui.define([
 									}
 									oP13nContainer.destroy();
 								});
+							},
+							open: function(oEvt) {
+								if (mSettings.open instanceof Function) {
+									mSettings.open(oEvt);
+								}
 							}
 						});
 

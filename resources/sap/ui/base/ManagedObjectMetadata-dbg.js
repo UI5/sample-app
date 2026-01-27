@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -79,7 +79,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -1966,7 +1966,7 @@ function(
 	 * you need to take care of identification yourself.
 	 *
 	 * @param {sap.ui.base.ManagedObject} [oManagedObject] instance that could have instance specific design time metadata
-	 * @param {string} [sScopeKey] scope name for which metadata will be resolved, see sap.ui.base.ManagedObjectMetadataScope
+	 * @param {string} [sScopeKey] scope name for which metadata will be resolved, see sap.ui.dt.DesignTime
 	 * @return {Promise} A promise which will return the loaded design time metadata
 	 * @private
 	 * @ui5-restricted sap.ui.dt, com.sap.webide

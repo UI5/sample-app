@@ -1,13 +1,12 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	'sap/ui/core/Icon',
 	'sap/ui/core/_IconRegistry',
-	"sap/base/Log",
-	'./Core' // provides sap.ui.getCore()
+	"sap/base/Log"
 ], function(Icon, _IconRegistry, Log) {
 		"use strict";
 

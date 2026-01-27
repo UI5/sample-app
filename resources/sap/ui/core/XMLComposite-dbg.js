@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -144,11 +144,14 @@ sap.ui.define([
 		 * @see sap.ui.core.Control
 		 * @see sap.ui.core.Fragment
 		 *
+		 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
+		 * @param {object} [mSettings] Initial settings for the new control
+		 *
 		 * @class Base Class for XMLComposite controls.
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 * @since 1.56.0
 		 * @alias sap.ui.core.XMLComposite
 		 * @see {@link topic:b83a4dcb7d0e46969027345b8d32fd44 XML Composite Controls}

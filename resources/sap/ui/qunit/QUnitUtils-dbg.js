@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -359,7 +359,7 @@ sap.ui.define('sap/ui/qunit/QUnitUtils', [
 	 *
 	 * @param {string} sEventType The name of the browser keyboard event (like "keydown")
 	 * @param {string | Element} oTarget The ID of a DOM element or a DOM element which serves as target of the event
-	 * @param {string | int} sKey The keys name as defined in {@link sap.ui.events.KeyCodes} or its key code
+	 * @param {string | int} sKey The keys name as defined in {@link module:sap/ui/events/KeyCodes} or its key code
 	 * @param {boolean} bShiftKey Indicates whether the shift key is down in addition
 	 * @param {boolean} bAltKey Indicates whether the alt key is down in addition
 	 * @param {boolean} bCtrlKey Indicates whether the ctrl key is down in addition
@@ -393,7 +393,7 @@ sap.ui.define('sap/ui/qunit/QUnitUtils', [
 	 * @see sap.ui.test.qunit.triggerKeyEvent
 	 *
 	 * @param {string | Element} oTarget The ID of a DOM element or a DOM element which serves as target of the event
-	 * @param {string | int} sKey The keys name as defined in {@link sap.ui.events.KeyCodes} or its key code
+	 * @param {string | int} sKey The keys name as defined in {@link module:sap/ui/events/KeyCodes} or its key code
 	 * @param {boolean} bShiftKey Indicates whether the shift key is down in addition
 	 * @param {boolean} bAltKey Indicates whether the alt key is down in addition
 	 * @param {boolean} bCtrlKey Indicates whether the ctrl key is down in addition
@@ -409,7 +409,7 @@ sap.ui.define('sap/ui/qunit/QUnitUtils', [
 	 * @see sap.ui.test.qunit.triggerKeyEvent
 	 *
 	 * @param {string | Element} oTarget The ID of a DOM element or a DOM element which serves as target of the event
-	 * @param {string | int} sKey The keys name as defined in {@link sap.ui.events.KeyCodes} or its key code
+	 * @param {string | int} sKey The keys name as defined in {@link module:sap/ui/events/KeyCodes} or its key code
 	 * @param {boolean} bShiftKey Indicates whether the shift key is down in addition
 	 * @param {boolean} bAltKey Indicates whether the alt key is down in addition
 	 * @param {boolean} bCtrlKey Indicates whether the ctrl key is down in addition

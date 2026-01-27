@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 */
 	var Raw = ODataType.extend("sap.ui.model.odata.type.Raw", {
 			constructor : function (oFormatOptions, oConstraints) {
@@ -68,7 +68,7 @@ sap.ui.define([
 	/**
 	 * Returns the type's name.
 	 *
-	 * @returns {string}
+	 * @returns {"sap.ui.model.odata.type.Raw"}
 	 *   The type's name
 	 *
 	 * @public

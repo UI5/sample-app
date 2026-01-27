@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -258,8 +258,8 @@ sap.ui.define(["sap/ui/core/ControlBehavior", "./library", "sap/ui/Device", "sap
 			return "";
 		}
 
-		var aDescribedBy = [],
-			sType = oLI.getType();
+		const aDescribedBy = [];
+		const sType = oLI.getEffectiveType();
 
 		if (oLI.getListProperty("showUnread") && oLI.getUnread()) {
 			aDescribedBy.push(this.getAriaAnnouncement("unread"));
@@ -429,7 +429,7 @@ sap.ui.define(["sap/ui/core/ControlBehavior", "./library", "sap/ui/Device", "sap
 			if (iMaxActionsCount > 0) {
 				this.renderActions(rm, oLI);
 			}
-			if (oLI.getType() === ListItemType.Navigation) {
+			if (oLI.getEffectiveType() === ListItemType.Navigation) {
 				this.renderType(rm, oLI);
 			}
 		}
@@ -500,8 +500,9 @@ sap.ui.define(["sap/ui/core/ControlBehavior", "./library", "sap/ui/Device", "sap
 		rm.class("sapMLIB");
 		rm.class("sapMLIB-CTX");
 		rm.class("sapMLIBShowSeparator");
-		if (oLI._getMaxActionsCount() === -1 || !oLI.getType().startsWith("Detail")) {
-			rm.class("sapMLIBType" + oLI.getType());
+		const sType = oLI.getEffectiveType();
+		if (oLI._getMaxActionsCount() === -1 || !sType.startsWith("Detail")) {
+			rm.class("sapMLIBType" + sType);
 		}
 
 		if (oLI.isActionable(true)) {

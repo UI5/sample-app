@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -20,7 +20,7 @@ sap.ui.define(['./Binding'],
 	 * @param {string} sPath
 	 * @param {sap.ui.model.Context} oContext
 	 * @param {object} [mParameters]
-	 * @param {object} [oEvents] object defining event handlers
+	 * @param {object} [oEvents] <b>Deprecated as of version 1.144.0</b> - unused
 	 * @abstract
 	 * @public
 	 * @alias sap.ui.model.ContextBinding
@@ -28,8 +28,8 @@ sap.ui.define(['./Binding'],
 	 */
 	var ContextBinding = Binding.extend("sap.ui.model.ContextBinding", /** @lends sap.ui.model.ContextBinding.prototype */ {
 
-		constructor : function(oModel, sPath, oContext, mParameters, oEvents){
-			Binding.call(this, oModel, sPath, oContext, mParameters, oEvents);
+		constructor : function(oModel, sPath, oContext, mParameters){
+			Binding.call(this, oModel, sPath, oContext, mParameters);
 			this.oElementContext = null;
 			this.bInitial = true;
 		},

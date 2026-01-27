@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -80,7 +80,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -355,6 +355,20 @@ function(
 		this._updateActiveButtonText();
 	};
 
+	/**
+	 * @returns {Array} Toolbar interactive, visible and enabled Controls that should be included in the arrow navigation
+	 * @private
+	 */
+	Toolbar.prototype._getToolbarNavigatableControls = function () {
+		return this._getToolbarInteractiveControls().filter(function (oControl) {
+			var oDomRef = oControl.getDomRef(),
+				bDomVisible = oDomRef && oDomRef.offsetParent !== null,
+				bEnabled = (typeof oControl.getEnabled !== "function" || oControl.getEnabled() !== false);
+
+			return bDomVisible && bEnabled;
+		});
+	};
+
 	Toolbar.prototype._handleKeyNavigation = function(oEvent) {
 		const focusedElement = document.activeElement;
 		const toolbarDom = this.getDomRef();
@@ -407,7 +421,7 @@ function(
 	};
 
 	Toolbar.prototype._moveFocus = function(sDirection, oEvent) {
-		var aFocusableElements = this._getToolbarInteractiveControls(),
+		var aFocusableElements = this._getToolbarNavigatableControls(),
 			oActiveElement = Toolbar._getActiveElement(),
 			oActiveDomElement = document.activeElement;
 
@@ -418,9 +432,9 @@ function(
 			bIsFirst = this._isFirst(sDirection, iCurrentIndex),
 			bIsLast = this._isLast(sDirection, iCurrentIndex, aFocusableElements);
 
-			if (this._shouldAllowDefaultBehavior(oActiveDomElement, oActiveElement, oEvent)) {
-				return;
-			}
+		if (this._shouldAllowDefaultBehavior(oActiveDomElement, oActiveElement, oEvent)) {
+			return;
+		}
 
 		// Handle specific behaviour for the input based controls
 		if (this._isInputBasedControl(oActiveDomElement, oActiveElement, oEvent)) {
@@ -461,12 +475,13 @@ function(
 				});
 			},
 			bIsSelectOrComboBox = fnHasType(["sap.m.Select", "sap.m.ComboBox"]),
+			bIsMenuButton = fnHasType("sap.m.MenuButton"),
 			bIsUpOrDownArrowKey = [KeyCodes.ARROW_UP, KeyCodes.ARROW_DOWN].includes(oEvent.keyCode),
 			bIsBreadcrumbs = fnHasType("sap.m.Breadcrumbs"),
 			bIsSlider = fnHasType(["sap.m.Slider", "sap.m.RangeSlider"]),
-			bIsTokenizer = fnHasType("sap.m.OverflowToolbarTokenizer");
+			bIsTokenizer = fnHasType(["sap.m.OverflowToolbarTokenizer", "sap.m.Tokenizer"]);
 
-		if (bIsUpOrDownArrowKey && bIsSelectOrComboBox || bIsBreadcrumbs || bIsSlider || bIsTokenizer) {
+		if (bIsUpOrDownArrowKey && (bIsSelectOrComboBox  || bIsMenuButton || bIsBreadcrumbs || bIsSlider || bIsTokenizer)) {
 			return true;
 		}
 
@@ -686,7 +701,7 @@ function(
 			return oControl.getVisible()
 				&& oControl.isA("sap.m.IToolbarInteractiveControl")
 				&& typeof (oControl._getToolbarInteractive) === "function" && oControl._getToolbarInteractive();
-		});
+		}, this);
 	};
 
 	/**
@@ -781,37 +796,25 @@ function(
 	};
 
 	/**
-	 * Returns the first sap.m.Title control instance inside the toolbar for the accessibility
+	 * Returns the first visible control inside the toolbar that implements the {@link sap.ui.core.ITitle} interface.
 	 *
-	 * @returns {sap.m.Title|undefined} The <code>sap.m.Title</code> instance or undefined
+	 * @returns {sap.ui.core.ITitle|undefined} The visible control implementing {@link sap.ui.core.ITitle}, or <code>undefined</code> if none exists.
 	 * @since 1.44
 	 * @protected
 	 */
 	Toolbar.prototype.getTitleControl = function() {
-		var Title = sap.ui.require("sap/m/Title");
-		if (!Title) {
-			return;
-		}
-
-		var aContent = this.getContent();
-		for (var i = 0; i < aContent.length; i++) {
-			var oContent = aContent[i];
-			if (oContent instanceof Title && oContent.getVisible()) {
-				return oContent;
-			}
-		}
+		return this.getContent().find((oContent) => oContent.isA("sap.ui.core.ITitle") && oContent.getVisible());
 	};
 
 	/**
-	 * Returns the first sap.m.Title control id inside the toolbar for the accessibility
+	 * Returns the ID of the first visible control inside the toolbar that implements the {@link sap.ui.core.ITitle} interface.
 	 *
-	 * @returns {sap.ui.core.ID} The <code>sap.m.Title</code> ID
+	 * @returns {sap.ui.core.ID} The ID of the visible control implementing {@link sap.ui.core.ITitle}, or an empty string if none exists.
 	 * @since 1.28
 	 * @protected
 	 */
 	Toolbar.prototype.getTitleId = function() {
-		var oTitle = this.getTitleControl();
-		return oTitle ? oTitle.getId() : "";
+		return this.getTitleControl()?.getId() || "";
 	};
 
 	///////////////////////////

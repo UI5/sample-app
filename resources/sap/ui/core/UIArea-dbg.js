@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -170,7 +170,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @param {object} [oRootNode] reference to the DOM element that should be 'hosting' the UI Area.
 	 * @public
 	 * @alias sap.ui.core.UIArea
@@ -640,9 +640,10 @@ sap.ui.define([
 	 *
 	 * Either renders the whole <code>UIArea</code> or a set of descendant controls that have been invalidated.
 	 *
-	 * @param {boolean} bForce Whether a re-rendering of the <code>UIArea</code> should be enforced
+	 * @param {boolean} [bForce=false] Whether a re-rendering of the <code>UIArea</code> should be enforced
 	 * @return {boolean} Whether a redraw was necessary or not
 	 * @private
+	 * @ui5-restricted sap/ui/core/Rendering
 	 */
 	 UIArea.prototype.rerender = function(bForce) {
 		var that = this;

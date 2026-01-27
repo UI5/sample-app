@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -223,12 +223,22 @@ function(jQuery, Passport, Interaction, FESR, Log, BaseConfig/* ,Global */) {
 	jQuery.sap.passport.traceFlags = Passport.traceFlags;
 
 	// activate FESR header generation
-	FESR.setActive(BaseConfig.get({
+	let sUrl,
+		bActive = false;
+
+	const sFesr = BaseConfig.get({
 		name: "sapUiFesr",
-		type: BaseConfig.Type.Boolean,
+		type: BaseConfig.Type.String,
 		external: true,
 		freeze: true
-	}));
+	});
+
+	if (sFesr) {
+		bActive = sFesr != "false";
+		sUrl = ["true", "false", "x", "X", undefined].indexOf(sFesr) === -1 ? sFesr : undefined;
+	}
+
+	FESR.setActive(bActive, sUrl);
 
 	// *********** Include E2E-Trace Scripts *************
 	if (BaseConfig.get({

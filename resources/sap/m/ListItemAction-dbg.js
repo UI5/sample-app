@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -33,7 +33,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.m.ListItemActionBase
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -93,6 +93,12 @@ sap.ui.define([
 		if (oParent && oParent.bOutput) {
 			ListItemActionBase.prototype.invalidate.apply(this, arguments);
 		}
+	};
+
+	ListItemAction.prototype.isEffective = function() {
+		// Navigation actions do not have any visual representation in the item actions area
+		// They are used to make the list item behave as if its type property were set to Navigation
+		return this.getType() !== ListItemActionType.Navigation;
 	};
 
 	ListItemAction.prototype.setType = function(sType) {

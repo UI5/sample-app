@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -63,7 +63,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -452,18 +452,14 @@ sap.ui.define([
 			if ((!oOriginalEvent || bOpenerCoordinates) && oOpenerData) {
 				// opener is provided, no event is provided, or there are missing important coordinates in the event,
 				// we should use the opener's position data
-				const iPointerPageX = oOpenerData.left + (oOpenerData.width / 2) + iScrollX;
-				const iPointerPageY = oOpenerData.top + (oOpenerData.height / 2) + iScrollY;
-
-				// compute inline-start offset (start = left in LTR, right in RTL)
 				if (isRTL) {
-					// distance from opener's right edge to pointer
-					iX = (oOpenerData.right + iScrollX) - iPointerPageX;
+					// In RTL, calculate distance from right edge of viewport to center of opener
+					iX = (document.documentElement.clientWidth - (oOpenerData.right - iScrollX)) + (oOpenerData.width / 2);
 				} else {
-					// distance from opener's left edge to pointer
-					iX = iPointerPageX - (oOpenerData.left + iScrollX);
+					// In LTR, calculate distance from left edge of viewport to center of opener
+					iX = oOpenerData.left + (oOpenerData.width / 2) + iScrollX;
 				}
-				iY = iPointerPageY - (oOpenerData.top + iScrollY);
+				iY = oOpenerData.top + (oOpenerData.height / 2) + iScrollY;
 			} else if (oOriginalEvent && bPageCoordinates) {
 				// the event with coordinates is provided, we should use them
 				const iPageX = (oOriginalEvent.pageX || oOriginalEvent.clientX) + iScrollX;
@@ -543,7 +539,7 @@ sap.ui.define([
 		/**
 		 * Returns an array containing the selected menu items.
 		 * <b>Note:</b> Only items with <code>selected</code> property set that are members of <code>MenuItemGroup</code> with <code>ItemSelectionMode</code> property
-		 * set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.unified.ItemSelectionMode.MultiSelect}> are taken into account.
+		 * set to {@link sap.ui.core.ItemSelectionMode.SingleSelect} or {@link sap.ui.core.ItemSelectionMode.MultiSelect}> are taken into account.
 		 *
 		 * @since 1.127.0
 		 * @public

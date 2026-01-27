@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -255,7 +255,7 @@ sap.ui.define([
 	/**
 	 * Constructor for a new ODataModel.
 	 *
-	 * @param {object} mParameters
+	 * @param {object} [mParameters={}]
 	 *   The parameters
 	 * @throws {Error} If an unsupported synchronization mode is given, if the given service root
 	 *   URL does not end with a forward slash, if an unsupported parameter is given, if OData
@@ -2351,8 +2351,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates a lock for a group. {@link sap.ui.model.odata.v4._Requestor#submitBatch} has to wait
-	 * until all locks for <code>sGroupId</code> are unlocked. Delegates to
+	 * Creates a lock for a group. {@link sap.ui.model.odata.v4.lib._Requestor#submitBatch} has to
+	 * wait until all locks for <code>sGroupId</code> are unlocked. Delegates to
 	 * {@link sap.ui.model.odata.v4.lib._Requestor#lockGroup}.
 	 *
 	 * The goal of such a lock is to allow using an API that creates a request in a batch group and
@@ -3106,6 +3106,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype.waitForKeepAliveBinding = function (oBinding) {
+		// Note: ODPrB does not have mParameters
 		if (oBinding.mParameters?.$$getKeepAliveContext) {
 			// $$canonicalPath is not allowed, binding path and resource path are (almost) identical
 			const oTemporaryBinding = this.mKeepAliveBindingsByPath[oBinding.getResolvedPath()];

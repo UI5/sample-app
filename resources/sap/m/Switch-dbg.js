@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,7 +52,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -502,7 +502,7 @@ function(
 	 * @returns {object} Configuration information for the <code>sap.m.IOverflowToolbarContent</code> interface.
 	 *
 	 * @private
-	 * @ui5-restricted sap.m.OverflowToolBar
+	 * @ui5-restricted sap.m.OverflowToolbar
 	 */
 	Switch.prototype.getOverflowToolbarConfig = function() {
 		return {
@@ -517,7 +517,7 @@ function(
 	 * @returns {boolean} If it is an interactive Control
 	 *
 	 * @private
-	 * @ui5-restricted sap.m.OverflowToolBar, sap.m.Toolbar
+	 * @ui5-restricted sap.m.OverflowToolbar, sap.m.Toolbar
 	 */
 	 Switch.prototype._getToolbarInteractive = function () {
 		return true;

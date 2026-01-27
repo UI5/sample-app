@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -24,6 +24,7 @@ sap.ui.define(
      * @extends sap.ui.core.webc.WebComponent
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents_fiori/dist/UserMenuAccount
      */
 
@@ -31,7 +32,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.UserMenuAccount",
       {
         metadata: {
-          tag: "ui5-user-menu-account-cc48984a",
+          tag: "ui5-user-menu-account-68f7652d",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -53,10 +54,12 @@ sap.ui.define(
               mapping: "property",
               defaultValue: ""
             },
+
             /**
              * Defines the avatar initials of the user.
              */
             avatarInitials: { type: "string", mapping: "property" },
+
             /**
              * Defines the title text of the user.
              */
@@ -65,6 +68,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: ""
             },
+
             /**
              * Defines additional text of the user.
              */
@@ -73,6 +77,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: ""
             },
+
             /**
              * Defines description of the user.
              */
@@ -81,6 +86,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: ""
             },
+
             /**
              * Defines if the user is selected.
              */
@@ -89,6 +95,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Indicates whether a loading indicator should be shown.
              */
@@ -97,14 +104,17 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * The text-content of the Web Component.
              */
             text: { type: "string", mapping: "textContent" },
+
             /**
              * The 'width' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */
             width: { type: "sap.ui.core.CSSSize", mapping: "style" },
+
             /**
              * The 'height' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */

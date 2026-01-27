@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -106,7 +106,7 @@ sap.ui.define([
 		_setProperty: function(oControl, sPropertyName, vPropertyValue, bEscapeBindingStrings) {
 			let sValue = XmlTreeModifier._getSerializedValue(vPropertyValue);
 			if (bEscapeBindingStrings) {
-				sValue = XmlTreeModifier._escapeCurlyBracketsInString(sValue);
+				sValue = XmlTreeModifier._escapeSpecialCharactersInString(sValue);
 			}
 			oControl.setAttribute(sPropertyName, sValue);
 		},
@@ -197,7 +197,7 @@ sap.ui.define([
 		 * @inheritDoc
 		 */
 		createAndAddCustomData: function(oControl, sCustomDataKey, sValue) {
-			oControl.setAttributeNS(CUSTOM_DATA_NS, "custom.data.via.modifier:" + sCustomDataKey, XmlTreeModifier._escapeCurlyBracketsInString(sValue));
+			oControl.setAttributeNS(CUSTOM_DATA_NS, "custom.data.via.modifier:" + sCustomDataKey, XmlTreeModifier._escapeSpecialCharactersInString(sValue));
 			return Promise.resolve();
 		},
 

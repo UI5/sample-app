@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -53,6 +53,7 @@ sap.ui.define(
      * @extends module:sap/f/gen/ui5/webcomponents_fiori/dist/NotificationListItemBase
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents_fiori/dist/NotificationListItem
      */
 
@@ -60,7 +61,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.NotificationListItem",
       {
         metadata: {
-          tag: "ui5-li-notification-cc48984a",
+          tag: "ui5-li-notification-68f7652d",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -87,6 +88,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: "None"
             },
+
             /**
              * Defines the status indicator of the item.
              * @type module:sap/ui/core/ValueState
@@ -99,6 +101,7 @@ sap.ui.define(
               },
               defaultValue: "None"
             },
+
             /**
              * Defines if the `Close` button would be displayed.
              */
@@ -107,6 +110,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines the `Important` label of the item.
              * @type module:sap/f/gen/ui5/webcomponents_fiori.NotificationListItemImportance
@@ -116,10 +120,12 @@ sap.ui.define(
               mapping: "property",
               defaultValue: "Standard"
             },
+
             /**
              * Defines the `titleText` of the item.
              */
             titleText: { type: "string", mapping: "property" },
+
             /**
              * Defines if the `notification` is new or has been already read.
              *
@@ -127,6 +133,7 @@ sap.ui.define(
              * if set to true - it has a normal font.
              */
             read: { type: "boolean", mapping: "property", defaultValue: false },
+
             /**
              * Defines if a busy indicator would be displayed over the item.
              */
@@ -135,6 +142,7 @@ sap.ui.define(
               mapping: "property",
               defaultValue: false
             },
+
             /**
              * Defines the delay in milliseconds, after which the busy indicator will show up for this component.
              */
@@ -143,10 +151,12 @@ sap.ui.define(
               mapping: "property",
               defaultValue: 1000
             },
+
             /**
              * The 'width' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */
             width: { type: "sap.ui.core.CSSSize", mapping: "style" },
+
             /**
              * The 'height' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */

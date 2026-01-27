@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -48,7 +48,7 @@ sap.ui.define([
 	 * <ul>
 	 * <li>{@link sap.ui.mdc.Table MDC Table}</li>
 	 * <li>{@link sap.m.Table Responsive Table}</li>
-	 * <li>{@link sap.m.GridTable Grid Table}</li>
+	 * <li>{@link sap.ui.table.Table Grid Table}</li>
 	 * <li>{@link sap.ui.table.TreeTable Tree Table}</li>
 	 * </ul>
 	 *
@@ -77,7 +77,7 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @author SAP SE
 	 * @public
 	 * @since 1.124
@@ -189,7 +189,7 @@ sap.ui.define([
 				 * @property {string} characters The file name validation configuration characters.
 				 * <br> <br> The default restricted filename character set is: \:/*?"<>|[]{}@#$
 				 * @public
-				 * @since since 1.136
+				 * @since 1.136
 				**/
 
 				/**
@@ -205,7 +205,7 @@ sap.ui.define([
 				 */
 				fileNameValidationConfig: { type: 'object', defaultValue: null }
 			},
-				aggregations: {
+			aggregations: {
 				/**
 				 * Defines the uploader to be used. If not specified, the default implementation is used.
 				 */
@@ -910,7 +910,11 @@ sap.ui.define([
 			afterClose: function () {
 				oDialog.destroy();
 			},
-			escapeHandler: (oPromise) => { oPromise?.reject();}
+			escapeHandler: (oPromise) => {
+				oDialog.close();
+				this.fireItemRenameCanceled({item: oItem});
+				oPromise?.reject();
+			}
 		});
 
 		return oDialog;
@@ -1355,7 +1359,8 @@ sap.ui.define([
 		return new Promise((resolve, reject) => {
 			const aEntriesPromises = [];
 			for (let i = 0; i < dataTransferItems.length; i++) {
-				aEntriesPromises.push(traverseFileTreePromise(dataTransferItems[i]?.webkitGetAsEntry()));
+				const oTransferItem = dataTransferItems[i];
+				aEntriesPromises.push(traverseFileTreePromise(oTransferItem?.webkitGetAsEntry(), oTransferItem));
 			}
 			Promise.all(aEntriesPromises)
 				.then( (entries) => {
@@ -1365,9 +1370,15 @@ sap.ui.define([
 				});
 		});
 
-		function traverseFileTreePromise(item) {
+		function traverseFileTreePromise(item, oDataTransferItem) {
 			return new Promise((resolve, reject) => {
 				if (item.isFile) {
+					if (oDataTransferItem && oDataTransferItem.getAsFile) {
+						const oFile = oDataTransferItem.getAsFile();
+						aFiles.push(oFile);
+						resolve(oFile);
+						return;
+					}
 					item.file((oFile) => {
 						aFiles.push(oFile);
 						resolve(oFile);
@@ -1573,8 +1584,8 @@ sap.ui.define([
 	/**
 	 * Internal API to initiate file preview dialog.
 	 * Invoked from the plugin configuration with the items created on the fly from the contexts of the table.
-	 * @param {sap.m.upload.UploadSetwitTableItem} oItem target item to be previewed.
-	 * @param {sap.m.upload.UploadSetwitTableItem[]} aItems all items in the table.
+	 * @param {sap.m.upload.UploadItem} oItem target item to be previewed.
+	 * @param {sap.m.upload.UploadItem[]} aItems all items in the table.
 	 * @private
 	 */
 	UploadSetwithTable.prototype._initiateFilePreview = function (oItem, aItems) {

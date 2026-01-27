@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -59,33 +59,17 @@ function(
 ) {
 	"use strict";
 
-
-	// shortcut for sap.m.ListType
-	var ListItemType = library.ListType;
-
-	// shortcut for sap.m.ListGrowingDirection
-	var ListGrowingDirection = library.ListGrowingDirection;
-
-	// shortcut for sap.m.SwipeDirection
-	var SwipeDirection = library.SwipeDirection;
-
-	// shortcut for sap.m.ListSeparators
-	var ListSeparators = library.ListSeparators;
-
-	// shortcut for sap.m.ListMode
-	var ListMode = library.ListMode;
-
-	// shortcut for sap.m.ListHeaderDesign
-	var ListHeaderDesign = library.ListHeaderDesign;
-
-	// shortcut for sap.m.Sticky
-	var Sticky = library.Sticky;
-
-	// shortcut for sap.m.MultiSelectMode
-	var MultiSelectMode = library.MultiSelectMode;
-
-	// shortcut for sap.ui.core.TitleLevel
-	var TitleLevel = coreLibrary.TitleLevel;
+	// shortcut for enums
+	const {
+		ListType: ListItemType,
+		ListGrowingDirection,
+		SwipeDirection,
+		ListSeparators,
+		ListMode,
+		ListHeaderDesign,
+		Sticky,
+		MultiSelectMode
+	} = library;
 
 	/**
 	 * Constructor for a new ListBase.
@@ -105,7 +89,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -145,7 +129,7 @@ function(
 				 *
 				 * @since 1.117.0
 				 */
-				headerLevel : {type : "sap.ui.core.TitleLevel", group : "Misc", defaultValue : TitleLevel.Auto},
+				headerLevel : {type : "sap.ui.core.TitleLevel", group : "Misc", defaultValue : coreLibrary.TitleLevel.Auto},
 
 				/**
 				 * Defines the header style of the control. Possible values are <code>Standard</code> and <code>Plain</code>.
@@ -276,7 +260,8 @@ function(
 				 * prevent the sticky elements of the control from becoming fixed at the top of the viewport.</li>
 				 * <li>If sticky column headers are enabled in the <code>sap.m.Table</code> control, setting focus on the column headers will let the table scroll to the top.</li>
 				 * <li>A transparent toolbar design is not supported for sticky bars. The toolbar will automatically get an intransparent background color.</li>
-				 * <li>This feature supports only the default height of the toolbar control.</li>
+				 * <li>This feature supports only the default height of the toolbar control and the column headers.</li>
+				 * <li>When sticky group headers are enabled, wrapping in the column headers is not supported.</li>
 				 * </ul>
 				 *
 				 * @since 1.58
@@ -1730,19 +1715,18 @@ function(
 
 	// this gets called from item when item is pressed(enter/tap/click)
 	ListBase.prototype.onItemPress = function(oListItem, oSrcControl) {
-
 		// do not fire press event for inactive type
-		if (oListItem.getType() == ListItemType.Inactive) {
+		if (oListItem.getEffectiveType() === ListItemType.Inactive) {
 			return;
 		}
 
 		// fire event async
-		setTimeout(function() {
+		setTimeout(() => {
 			this.fireItemPress({
 				listItem : oListItem,
 				srcControl : oSrcControl
 			});
-		}.bind(this), 0);
+		}, 0);
 	};
 
 	ListBase.prototype.onItemKeyDown = function (oItem, oEvent) {

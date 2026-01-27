@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -121,7 +121,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -597,17 +597,25 @@ function(
 		 * Changes the value of the control and fires the change event.
 		 *
 		 * @param {boolean} bForce If true, will force value change
+		 * @param {boolean} bShouldFormat If true, will format the value
 		 * @returns {this} Reference to the control instance for chaining
 		 * @private
 		 */
-		StepInput.prototype._changeValue = function (bForce) {
+		StepInput.prototype._changeValue = function (bForce, bShouldFormat = false) {
+			this._verifyValue();
+			this._bValueStatePreset = false;
 			if ((this._fTempValue != this._fOldValue) || bForce) {
 				// change the value and fire the event
+				const bIsValueWithValidPrecision = this._isValueWithCorrectPrecision(this._sTempValue || "");
+				const fFormattedValue = this._getFormattedValue(this._fTempValue);
+				const fValueToSet = bIsValueWithValidPrecision || bShouldFormat ? fFormattedValue : this._sTempValue;
 				this.setValue(this._fTempValue);
+				this._getInput().setValue(fValueToSet);
+				this._sTempValue = bIsValueWithValidPrecision ? fValueToSet.toString() : this._sTempValue;
 				this.fireChange({value: this._fTempValue});
 			} else {
 				// just update the visual value and buttons
-				this._applyValue(this._fTempValue);
+				this._getInput().setValue(this._sTempValue || this._fTempValue);
 				this._disableButtons(this._parseNumber(this._getInput().getValue()), this._getMax(), this._getMin());
 			}
 			return this;
@@ -627,7 +635,7 @@ function(
 				this._bDelayedEventFire = false;
 				this._changeValueWithStep(fMultiplier);
 				this._btndown = false;
-				this._changeValue();
+				this._changeValue(false, true);
 			} else {
 				// long click, skip it
 				this._bSpinStarted = false;
@@ -730,6 +738,7 @@ function(
 		StepInput.prototype._verifyValue = function () {
 			var min = this._getMin(),
 				max = this._getMax(),
+				sValue = this._getInput().getValue(),
 				value = this._parseNumber(this._getInput().getValue()),
 				oCoreMessageBundle = Library.getResourceBundleFor("sap.ui.core"),
 				oBinding = this.getBinding("value"),
@@ -742,7 +751,7 @@ function(
 				bHasValidationErrorListeners = false,
 				oEventProvider;
 
-			if (oBindingValueState && oBindingValueState.oValue) {
+			if (oBindingValueState && oBindingValueState.oValue && this._bValueStatePreset) {
 				return;
 			}
 
@@ -770,6 +779,9 @@ function(
 				aViolatedConstraints.push("minimum");
 			} else if (this._areFoldChangeRequirementsFulfilled() && (value % this.getStep() !== 0)) {
 				sMessage = this.getValueStateText() ? this.getValueStateText() : oCoreMessageBundle.getText("Float.Invalid");
+			} else if (!this._isValueWithCorrectPrecision(sValue)) {
+				aViolatedConstraints.push("precision");
+				sMessage = this.getValueStateText() ? this.getValueStateText() : oCoreMessageBundle.getText("EnterNumberWithPrecision", [this.getDisplayValuePrecision()]);
 			}
 
 			if (sMessage) {
@@ -795,7 +807,6 @@ function(
 				this.setProperty("valueState", ValueState.None, true);
 				this._getInput().setValueState(ValueState.None);
 			}
-
 		};
 
 		/**
@@ -840,7 +851,7 @@ function(
 			}
 
 			this._sOriginalValue = oValue;
-			this._applyValue(oValue);
+			this._getInput().setValue(oValue);
 			this._disableButtons(this._parseNumber(this._getInput().getValue()), this._getMax(), this._getMin());
 
 			if (oValue !== this._fOldValue) {
@@ -944,7 +955,7 @@ function(
 			}
 
 			// calculates delta (difference) between input value and real control value
-			if (this._getFormattedValue(this._fTempValue) !== sInputValue) {
+			if (this._getFormattedValue(this._fTempValue) !== this._getFormattedValue(sInputValue)) {
 				fDelta = this._parseNumber(sInputValue) - this._fTempValue;
 			}
 			return fDelta;
@@ -1144,9 +1155,10 @@ function(
 		 * Attaches the <code>liveChange</code> handler for the input.
 		 * @private
 		 */
-		StepInput.prototype._liveChange = function () {
+		StepInput.prototype._liveChange = function (oEvent) {
 			this._disableButtons(this._parseNumber(this._getInput().getValue()), this._getMax(), this._getMin());
 			this._verifyValue();
+			this._bValueStatePreset = false;
 		};
 
 		/**
@@ -1166,6 +1178,8 @@ function(
 					if (this._fOldValue === undefined) {
 						this._fOldValue = fOldValue;
 					}
+
+					this._sTempValue = oNewValue;
 
 					this._bDelayedEventFire = false;
 					this._changeValueWithStep(0);
@@ -1290,70 +1304,26 @@ function(
 		 * @private
 		 */
 		StepInput.prototype._inputLiveChangeHandler = function (oEvent) {
-			var iValue = this._restrictCharsWhenDecimal(oEvent);
 			this.bLiveChange = true;
-			this._getInput().setProperty("value", iValue ? iValue : oEvent.getParameter("newValue"), true);
+			this._getInput().setProperty("value", oEvent.getParameter("value"), true);
 		};
 
-		/**
-		 * Handles the value after the decimal point when user types or pastes.
-		 *
-		 * @param {sap.ui.base.Event} oEvent Event object
-		 * @private
-		 */
-		StepInput.prototype._restrictCharsWhenDecimal = function(oEvent) {
-			var sDecimalSeparator = Device.system.desktop ? this._getNumberFormatter().oFormatOptions.decimalSeparator : ".";
-			var iDecimalMark = oEvent.getParameter("value").indexOf(sDecimalSeparator),
-				iCharsSet = this.getDisplayValuePrecision(),
-				sEventValue = oEvent.getParameter("value"),
-				sValue;
+		StepInput.prototype._isValueWithCorrectPrecision = function (sValue) {
+			const sDecimalSeparator = Device.system.desktop ? this._getNumberFormatter().oFormatOptions.decimalSeparator : ".",
+				iDecimalMark = sValue.indexOf(sDecimalSeparator),
+				iCharsSet = this.getDisplayValuePrecision();
 
 			if (iDecimalMark > 0 && iCharsSet >= 0) { //only for decimals
-				var sEventValueAfterTheDecimal = sEventValue.split(sDecimalSeparator)[1],
-					iCharsAfterTheDecimalSign = sEventValueAfterTheDecimal ? sEventValueAfterTheDecimal.length : 0,
-					sCharsBeforeTheEventDecimalValue = sEventValue.split(sDecimalSeparator)[0],
-					sCharsAfterTheEventDecimalValue = iCharsSet > 0 ? sEventValue.substring(sEventValue.indexOf(sDecimalSeparator) + 1, sEventValue.length) : '';
+				const sEventValueAfterTheDecimal = sValue.split(sDecimalSeparator)[1],
+					iCharsAfterTheDecimalSign = sEventValueAfterTheDecimal ? sEventValueAfterTheDecimal.length : 0;
 
-				//scenario 1 - user typing after the decimal mark:
-				if (!this._bPaste) {
 					//if the characters after the decimal are more than the displayValuePrecision -> keep the current value after the decimal
 					if (iCharsAfterTheDecimalSign > iCharsSet) {
-						sValue = sCharsBeforeTheEventDecimalValue + (iCharsSet > 0 ? sDecimalSeparator + sCharsAfterTheEventDecimalValue.substr(0, iCharsSet) : '');
-						this._showWrongValueVisualEffect();
+						return false;
 					}
-
-					//scenario 2 - paste - cut the chars with length, bigger than displayValuePrecision
-				} else {
-					if (sEventValue.indexOf(sDecimalSeparator)){
-						sValue = sEventValue.split(sDecimalSeparator)[0] + (iCharsSet > 0 ? sDecimalSeparator + sEventValueAfterTheDecimal.substring(0, iCharsSet) : '');
-					}
-					this._bPaste = false;
-				}
-			} else {
-				sValue = sEventValue;
 			}
 
-			if (this._getInput()._getInputValue() !== sValue) {
-				this._getInput().updateDomValue(sValue);
-			}
-			return sValue;
-		};
-
-		/**
-		 * Triggers the value state "Error" for 1s, and resets the state to the previous one.
-		 *
-		 * @private
-		 */
-		StepInput.prototype._showWrongValueVisualEffect = function() {
-			var sOldValueState = this.getValueState(),
-				oInput = this._getInput();
-
-			if (sOldValueState === ValueState.Error) {
-				return;
-			}
-
-			oInput.setValueState(ValueState.Error);
-			setTimeout(oInput["setValueState"].bind(oInput, sOldValueState), 1000);
+			return true;
 		};
 
 		/**

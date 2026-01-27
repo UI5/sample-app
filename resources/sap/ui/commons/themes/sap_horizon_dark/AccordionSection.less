@@ -4,76 +4,76 @@
 /* ================================================ */
 
 .sapUiAcdSection {
-  font-family: @sapUiDesktopFontFamily;
-  font-size: @sapUiDesktopFontSize;
+	font-family: var(--sapFontFamily);
+	font-size: @sapUiDesktopFontSize;
 }
 
 .sapUiAcdSectionHdr {
-  color: darken(@sapUiTextTitle, 6.5); // @sapUiExtraDarkText = #222222
-  background-color: @sapUiListSelectionBackgroundColor;
-  min-height: 27px;
-  font-size: @sapUiDesktopFontSize;
-  border-bottom: 2px solid @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
+	color: darken(@sapUiTextTitle, 6.5);
+	background-color: var(--sapList_SelectionBackgroundColor);
+	min-height: 27px;
+	font-size: @sapUiDesktopFontSize;
+	border-bottom: 2px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiAcdSectionColl .sapUiAcdSectionHdr {
-  background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 }
 
 .sapUiAcdSectionHdr:hover {
-  color: @sapUiContentContrastTextColor;
-  background-color: @sapUiHighlight;
+	color: var(--sapContent_ContrastTextColor);
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiAcdSectionDis .sapUiAcdSectionHdr {
-  background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
-  color: darken(@sapUiTextTitle, 6.5); // @sapUiExtraDarkText = #222222
+	background-color: lighten(@sapUiContentForegroundColor, 10);
+	color: darken(@sapUiTextTitle, 6.5);
 }
 
 .sapUiAcdSectionCont {
-  border-top-width: 0;
-  padding: 6px;
-  border-bottom: 2px solid @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
+	border-top-width: 0;
+	padding: 6px;
+	border-bottom: 2px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiAcdSectionHdr > div > span {
-  margin-top: 5px;
+	margin-top: 5px;
 }
 
 .sapUiAcdSectionColl .sapUiAcdSectionHdr > div > span {
-  margin-top: 6px;
+	margin-top: 6px;
 }
 
 .sapUiAcdSectionDis .sapUiAcdSectionHdr > div > span {
-  opacity: 0.3;
+	opacity: 0.3;
 }
 
 .sapUiAcdSectionMinArrow {
-  /* the 'collapse' icon on the left-hand side of the panel header */
-  background-image: url(img/arrow_down.png);
-  width: 16px;
-  height: 16px;
-  margin-top: -1px;
+	/* the 'collapse' icon on the left-hand side of the panel header */
+	background-image: url('img/arrow_down.png');
+	width: 16px;
+	height: 16px;
+	margin-top: -1px;
 }
 
 .sapUiAcdSectionHdr:hover .sapUiAcdSectionMinArrow,
 .sapUiAcdSectionMinArrow:hover {
-  /* the 'collapse' icon on the left-hand side of the panel header */
-  background-image: url(img/arrow_down_hover.png);
+	/* the 'collapse' icon on the left-hand side of the panel header */
+	background-image: url('img/arrow_down_hover.png');
 }
 
 .sapUiAcdSectionColl .sapUiAcdSectionMinArrow {
-  background-image: url(img/arrow_right.png);
-  width: 16px;
-  height: 16px;
+	background-image: url('img/arrow_right.png');
+	width: 16px;
+	height: 16px;
 }
 
 .sapUiAcdSectionColl .sapUiAcdSectionHdr:hover .sapUiAcdSectionMinArrow,
 .sapUiAcdSectionColl .sapUiAcdSectionMinArrow:hover {
-  background-image: url(img/arrow_right_hover.png);
+	background-image: url('img/arrow_right_hover.png');
 }
 
 .sapUiAcdSectionDis.sapUiAcdSectionColl .sapUiAcdSectionHdr:hover .sapUiAcdSectionMinArrow,
 .sapUiAcdSectionDis.sapUiAcdSectionColl .sapUiAcdSectionMinArrow:hover {
-  background-image: url(img/arrow_right.png);
+	background-image: url('img/arrow_right.png');
 }

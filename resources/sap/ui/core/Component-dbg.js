@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -288,7 +288,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -423,7 +423,7 @@ sap.ui.define([
 					"sap.xx.new.Main": {
 						"extensionX": {
 							name: "sap.xx.new.Fragment1",
-							type: "sap.ui.core.XMLFragment"
+							className: "sap.ui.core.Fragment"
 						},
 						"extensionY": {
 							...
@@ -450,7 +450,8 @@ sap.ui.define([
 				config : "any"
 			},
 			*/
-			library: "sap.ui.core"
+			library: "sap.ui.core",
+			designtime: "sap/ui/core/designtime/Component.designtime"
 		}
 
 	}, /* Metadata constructor */ ComponentMetadata);

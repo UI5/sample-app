@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -420,62 +420,62 @@
 		 * @enum {string}
 		 * @alias module:sap/base/config.Type
 		 * @private
-		 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+		 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 		 */
 		var TypeEnum = {
 			/**
 			 * defaultValue: false
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"Boolean": "boolean",
 			/**
 			 * defaultValue: undefined
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 * @deprecated As of Version 1.120
 			 */
 			"Code": "code",
 			/**
 			 * defaultValue: 0
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"Integer": "integer",
 			/**
 			 * defaultValue: ""
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"String": "string",
 			/**
 			 * defaultValue: []
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"StringArray": "string[]",
 			/**
 			 * defaultValue: []
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"FunctionArray": "function[]",
 			/**
 			 * defaultValue: undefined
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"Function": "function",
 			/**
 			 * defaultValue: {}
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"Object":  "object",
 			/**
 			 * defaultValue: {}
 			 * @private
-			 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.intergration, sap.ui.export
+			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 			 */
 			"MergedObject":  "mergedObject"
 		};
@@ -671,7 +671,7 @@
 		 * @returns {any} Value of the configuration parameter
 		 * @throws {TypeError} Throws an error if the given parameter name does not match the definition.
 		 * @private
-		 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.integration, sap.ui.export
+		 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
 		 */
 		function get(mOptions) {
 			var sCacheKey = mOptions.name;

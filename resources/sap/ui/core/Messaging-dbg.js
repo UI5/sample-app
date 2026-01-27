@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -31,7 +31,7 @@ sap.ui.define([
 	var oControlMessageProcessor;
 
 	/**
-	 * Messaging provides a central place for managing <code>sap.ui.core.message.Messages</code>.
+	 * Messaging provides a central place for managing <code>sap.ui.core.message.Message</code>s.
 	 *
 	 * @namespace
 	 * @alias module:sap/ui/core/Messaging
@@ -43,7 +43,7 @@ sap.ui.define([
 		/**
 		 * Add messages to Messaging
 		 *
-		 * @param {sap.ui.core.message.Message|sap.ui.core.message.Message[]} vMessages Array of sap.ui.core.message.Message or single sap.ui.core.message.Message
+		 * @param {sap.ui.core.message.Message|sap.ui.core.message.Message[]} vMessages Array of <code>Message</code> or single <code>Message</code>
 		 * @public
 		 */
 		addMessages: function(vMessages) {
@@ -356,7 +356,7 @@ sap.ui.define([
 	}
 
 	/**
-	 * Like sap.ui.core.Messaging#removeMessage but with an additional argument to only remove validation
+	 * Like module:sap/ui/core/Messaging.removeMessage but with an additional argument to only remove validation
 	 * messages.
 	 *
 	 * @param {sap.ui.core.message.Message|sap.ui.core.message.Message[]} vMessages - The message(s) to be removed.

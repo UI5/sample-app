@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,6 +17,8 @@ sap.ui.define([
 	'./Popover',
 	'./Title',
 	'./ToolbarSpacer',
+	'./Label',
+	'./OverflowToolbarLayoutData',
 	'./SegmentedButton',
 	"sap/ui/core/Lib",
 	'sap/ui/unified/Calendar',
@@ -44,6 +46,8 @@ function(
 	Popover,
 	Title,
 	ToolbarSpacer,
+	Label,
+	OverflowToolbarLayoutData,
 	SegmentedButton,
 	Library,
 	Calendar,
@@ -60,9 +64,6 @@ function(
 	UI5Date
 ) {
 	"use strict";
-
-	// shortcut for sap.m.ToolbarDesign
-	var ToolbarDesign = library.ToolbarDesign;
 
 	// shortcut for sap.ui.core.TitleLevel
 	var TitleLevel = coreLibrary.TitleLevel;
@@ -106,7 +107,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @private
@@ -316,12 +317,11 @@ function(
 			oMonthPicker,
 			oYearPicker;
 
-		this.setAggregation("_actionsToolbar", new AssociativeOverflowToolbar(sOPHId + "-ActionsToolbar", {
-			design: ToolbarDesign.Transparent
-		})
+		this.setAggregation("_actionsToolbar", new AssociativeOverflowToolbar(sOPHId + "-ActionsToolbar", {})
 			.addStyleClass("sapMPCHeadActionsToolbar")
 			.addContent(this._getOrCreateTitleControl())
 			.addContent(this._getOrCreateToolbarSpacer())
+			.addContent(this._getOrCreateViewSwitchLabel())
 			.addContent(this._getOrCreateViewSwitch())
 		);
 
@@ -413,7 +413,6 @@ function(
 		});
 
 		this.setAggregation("_navigationToolbar", new Toolbar(sNavToolbarId, {
-			design: ToolbarDesign.Transparent,
 			content: [
 				this._oPrevBtn,
 				this._oTodayBtn,
@@ -438,6 +437,10 @@ function(
 			this._oViewSwitch.destroy();
 			this._oViewSwitch = null;
 		}
+		if (this._oViewSwitchLabel) {
+			this._oViewSwitchLabel.destroy();
+			this._oViewSwitchLabel = null;
+		}
 		if (this._oPopup) {
 			if (this._oCalendarAfterRenderDelegate) {
 				this._oCalendar.removeDelegate(this._oCalendarAfterRenderDelegate);
@@ -456,7 +459,8 @@ function(
 	};
 
 	PlanningCalendarHeader.prototype.onBeforeRendering = function () {
-		var bVisible = !!this.getActions().length || !!this.getTitle() || this._getOrCreateViewSwitch().getItems().length > 1;
+		var oViewSwitch = this._getOrCreateViewSwitch();
+		var bVisible = !!this.getActions().length || !!this.getTitle() || oViewSwitch.getItems().length > 1;
 		var sSecondaryCalendarType = this.getProperty("_secondaryCalendarType");
 		this._getActionsToolbar().setVisible(bVisible);
 
@@ -613,14 +617,32 @@ function(
 	PlanningCalendarHeader.prototype._getOrCreateViewSwitch = function () {
 		if (!this._oViewSwitch) {
 			this._oViewSwitch = new SegmentedButton(this.getId() + "-ViewSwitch", {
-				ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PCH_VIEW_SWITCH")
+				layoutData: new OverflowToolbarLayoutData({
+					group: 1,
+					priority: library.OverflowToolbarPriority.High
+				})
 			});
-
 			this._oViewSwitch.attachEvent("selectionChange", this._handleViewSwitchChange, this);
 			this.addDependent(this._oViewSwitch);
 		}
 
 		return this._oViewSwitch;
+	};
+
+	PlanningCalendarHeader.prototype._getOrCreateViewSwitchLabel = function () {
+		if (!this._oViewSwitchLabel) {
+			this._oViewSwitchLabel = new Label(this.getId() + "-ViewSwitchLabel", {
+				text: Library.getResourceBundleFor("sap.m").getText("PCH_VIEW_SWITCH"),
+				visible: false, // Start invisible, will be shown only in select mode
+				layoutData: new OverflowToolbarLayoutData({
+					group: 1,
+					priority: library.OverflowToolbarPriority.High
+				})
+			});
+			this.addDependent(this._oViewSwitchLabel);
+		}
+
+		return this._oViewSwitchLabel;
 	};
 
 	/**
@@ -630,6 +652,7 @@ function(
 	PlanningCalendarHeader.prototype._convertViewSwitchToSelect = function () {
 		this._oViewSwitch._bForcedSelectMode = true;
 		this._oViewSwitch._toSelectMode();
+		this._updateViewSwitchLabelFor();
 	};
 
 	/**
@@ -639,6 +662,32 @@ function(
 	PlanningCalendarHeader.prototype._convertViewSwitchToSegmentedButton = function () {
 		this._oViewSwitch._bForcedSelectMode = false;
 		this._oViewSwitch._toNormalMode();
+		this._updateViewSwitchLabelFor();
+	};
+
+	/**
+	 * Updates the labelFor property of the view switch label to reference the correct element
+	 * depending on whether the view switch is in SegmentedButton or Select mode.
+	 * Also controls label visibility - only show when in select mode.
+	 * @private
+	 */
+	PlanningCalendarHeader.prototype._updateViewSwitchLabelFor = function () {
+		var oViewSwitch = this._getOrCreateViewSwitch();
+		var oViewSwitchLabel = this._getOrCreateViewSwitchLabel();
+
+		// Check if the SegmentedButton is in overflow mode (select mode)
+		// Use _bInOverflow property first, fallback to CSS class check for robustness
+		var bIsSelectMode = oViewSwitch._bInOverflow || oViewSwitch.hasStyleClass("sapMSegBSelectWrapper");
+
+		if (bIsSelectMode) {
+			// In select mode (overflow): show label and set labelFor to select element
+			oViewSwitchLabel.setVisible(true);
+			oViewSwitchLabel.setLabelFor(oViewSwitch.getId() + "-select");
+		} else {
+			// In normal SegmentedButton mode: hide label and clear labelFor
+			oViewSwitchLabel.setVisible(false);
+			oViewSwitchLabel.setLabelFor("");
+		}
 	};
 
 	/**

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -138,7 +138,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @alias sap.ui.model.odata.type.Time
 	 * @param {object} [oFormatOptions]
@@ -285,7 +285,7 @@ sap.ui.define([
 	 * @param {Date|module:sap/ui/core/date/UI5Date|null} oDate
 	 *   The date object considering the configured time zone. Must be created via
 	 *   {@link module:sap/ui/core/date/UI5Date.getInstance}
-	 * @returns {{__edmType: string, ms: int}|null}
+	 * @returns {{__edmType: "Edm.Time", ms: int}|null}
 	 *   The model representation of the time
 	 * @throws {Error}
 	 *   If the given date object is not valid or does not consider the configured time zone
@@ -316,7 +316,7 @@ sap.ui.define([
 	 *
 	 * @param {string|null} sISOString
 	 *   A string according to ISO 8601, as returned by {@link #getISOStringFromModelValue}
-	 * @returns {{__edmType: string, ms: int}|null}
+	 * @returns {{__edmType: "Edm.Time", ms: int}|null}
 	 *   The model representation for the given ISO string for this type, or <code>null</code> if
 	 *   the given ISO string is falsy
 	 *
@@ -335,7 +335,7 @@ sap.ui.define([
 	/**
 	 * Returns the type's name.
 	 *
-	 * @returns {string}
+	 * @returns {"sap.ui.model.odata.type.Time"}
 	 *   the type's name
 	 * @public
 	 */
@@ -352,7 +352,7 @@ sap.ui.define([
 	 *   the source type (the expected type of <code>sValue</code>); must be "string", or a type
 	 *   with "string" as its {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
 	 *   See {@link sap.ui.model.odata.type} for more information.
-	 * @returns {object}
+	 * @returns {{__edmType: "Edm.Time", ms: int}}
 	 *   the parsed value as described in {@link #formatValue formatValue}
 	 * @throws {sap.ui.model.ParseException}
 	 *   if <code>sSourceType</code> is unsupported
@@ -379,7 +379,7 @@ sap.ui.define([
 	 * Validates whether the given value in model representation is valid and meets the
 	 * defined constraints.
 	 *
-	 * @param {object} oValue
+	 * @param {{__edmType: "Edm.Time", ms: int}} oValue
 	 *   the value to be validated
 	 * @throws {sap.ui.model.ValidateException} if the value is not valid
 	 * @public

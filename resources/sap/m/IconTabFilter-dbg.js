@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -94,7 +94,7 @@ sap.ui.define([
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -1222,6 +1222,16 @@ sap.ui.define([
 			aCustomData = oItem.getCustomData();
 			for (iCustomDataItemIndex = 0; iCustomDataItemIndex < aCustomData.length; iCustomDataItemIndex++) {
 				oListItem.addCustomData(aCustomData[iCustomDataItemIndex].clone());
+			}
+
+			// clone tooltip aggregation
+			var oTooltip = oItem.getTooltip();
+			if (oTooltip) {
+				if (typeof oTooltip === "string") {
+					oListItem.setTooltip(oTooltip);
+				} else if (oTooltip.clone) {
+					oListItem.setTooltip(oTooltip.clone());
+				}
 			}
 
 			oListItem._oRealItem = oItem; // link list item to its underlying item from the items aggregation

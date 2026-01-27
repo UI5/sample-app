@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -182,7 +182,7 @@ sap.ui.define([
 				if (oHeader._applyContextClassFor) {
 					oHeader._applyContextClassFor("header");
 				}
-				oRM.openStart("div")
+				oRM.openStart("div", sId + "-titleGroup")
 					.class("sapMDialogTitleGroup");
 
 				if (oDialog._isDraggableOrResizable()) {

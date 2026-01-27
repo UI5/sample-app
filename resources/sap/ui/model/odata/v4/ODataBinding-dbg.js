@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides mixin sap.ui.model.odata.v4.ODataBinding for classes extending sap.ui.model.Binding
@@ -49,8 +49,6 @@ sap.ui.define([
 		this.fnDeregisterChangeListener = undefined;
 		// used to create cache only for the latest call to #fetchCache
 		this.oFetchCacheCallToken = undefined;
-		// query options resulting from child bindings added when this binding already has data
-		this.mLateQueryOptions = undefined;
 		// the absolute binding path (possibly reduced if the binding uses a parent binding's cache)
 		// may be incorrect while cache creation is pending (this.oCache === undefined)
 		this.sReducedPath = undefined;
@@ -418,7 +416,6 @@ sap.ui.define([
 		this.oCache = null;
 		this.oCachePromise = SyncPromise.resolve(null); // be nice to #withCache
 		this.mCacheQueryOptions = undefined;
-		this.mLateQueryOptions = undefined;
 		// resolving functions e.g. for oReadPromise in #checkUpdateInternal may run after destroy
 		// of this binding and must not access the context
 		this.oContext = undefined;
@@ -1427,6 +1424,7 @@ sap.ui.define([
 	 * @since 1.87.0
 	 */
 	ODataBinding.prototype.requestRefresh = function (sGroupId) {
+		// Note: ODPrB does not have mParameters
 		if (!this.mParameters?.$$ownRequest && !this.isRoot()) {
 			throw new Error("Refresh on this binding is not supported");
 		}

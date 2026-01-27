@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(
@@ -22,6 +22,7 @@ sap.ui.define(
      * @extends sap.ui.core.webc.WebComponent
      * @constructor
      * @private
+     * @ui5-restricted sap.ushell,sap.esh.search.ui
      * @alias module:sap/f/gen/ui5/webcomponents_fiori/dist/ShellBarBranding
      */
 
@@ -29,7 +30,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.ShellBarBranding",
       {
         metadata: {
-          tag: "ui5-shellbar-branding-cc48984a",
+          tag: "ui5-shellbar-branding-68f7652d",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -49,6 +50,7 @@ sap.ui.define(
              * **Note:** Standard hyperlink behavior is supported.
              */
             href: { type: "string", mapping: "property" },
+
             /**
              * Defines the component target.
              *
@@ -63,19 +65,23 @@ sap.ui.define(
              * **This property must only be used when the `href` property is set.**
              */
             target: { type: "string", mapping: "property" },
+
             /**
              * Defines the text alternative of the component.
              * If not provided a default text alternative will be set, if present.
              */
             accessibleName: { type: "string", mapping: "property" },
+
             /**
              * The text-content of the Web Component.
              */
             text: { type: "string", mapping: "textContent" },
+
             /**
              * The 'width' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */
             width: { type: "sap.ui.core.CSSSize", mapping: "style" },
+
             /**
              * The 'height' of the Web Component in <code>sap.ui.core.CSSSize</code>.
              */

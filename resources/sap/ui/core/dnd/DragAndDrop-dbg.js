@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -10,9 +10,10 @@ sap.ui.define([
 	"sap/ui/core/Element",
 	"sap/ui/core/StaticArea",
 	"../UIArea",
+	"sap/ui/core/Popup",
 	"sap/ui/thirdparty/jquery"
 ],
-function(lib, Localization, Device, Element, StaticArea, UIArea, jQuery) {
+function(lib, Localization, Device, Element, StaticArea, UIArea, Popup, jQuery) {
 	"use strict";
 
 	var RelativeDropPosition = lib.dnd.RelativeDropPosition;
@@ -502,6 +503,7 @@ function(lib, Localization, Device, Element, StaticArea, UIArea, jQuery) {
 			$Indicator.attr("data-drop-layout", sDropLayout);
 			$Indicator.attr("data-drop-position", sDropPosition);
 			$Indicator.css(Object.assign(mStyle, mIndicatorConfig));
+			$Indicator.css("z-index", Math.max(Popup.getNextZIndex() + 1, 99)); // ensure indicator is always on top
 			$Indicator.show();
 			mLastIndicatorStyle = mStyle;
 		}

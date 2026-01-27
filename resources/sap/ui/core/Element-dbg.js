@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -142,7 +142,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -699,7 +699,7 @@ sap.ui.define([
 	 * the entire aggregation area needs to be skipped sinceh its DOM element will be removed
 	 * leaving no focusable element within the aggregation.
 	 *
-	 * @param {sap.ui.core.ManagedObject[]} aChildren The children that belong to the aggregation
+	 * @param {sap.ui.base.ManagedObject[]} aChildren The children that belong to the aggregation
 	 * @returns {HTMLElement|null} Returns the DOM which needs to be skipped, or 'null' if no relevant area is found.
 	 */
 	function searchAggregationAreaToSkip(aChildren) {

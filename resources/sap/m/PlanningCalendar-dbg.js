@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -208,7 +208,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -3419,6 +3419,9 @@ sap.ui.define([
 		this._applyContextualSettings({
 			contextualWidth: this.iWidth
 		});
+
+		// Update view switch label visibility in case overflow state changed due to resizing
+		this._getHeader()._updateViewSwitchLabelFor();
 
 		var aRows = this.getRows();
 		var oRow;

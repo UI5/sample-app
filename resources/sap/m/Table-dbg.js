@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,7 +37,7 @@ sap.ui.define([
 	// shortcut for sap.m.PopinLayout
 	var PopinLayout = library.PopinLayout;
 
-	// shortcut for sap.m.Screensize
+	// shortcut for sap.m.ScreenSizes
 	var ScreenSizes = library.ScreenSizes;
 
 	/**
@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -1155,8 +1155,6 @@ sap.ui.define([
 		} else if (oTarget.id == this.getId("tblFooter")) {
 			this._setFooterAnnouncement();
 			this._setFirstLastVisibleCells(oTarget);
-		} else if (oTarget.id == this.getId("nodata")) {
-			this._setFirstLastVisibleCells(oTarget);
 		} else if (!this._bIgnoreFocusIn && this.getShowOverlay()) {
 			this._bIgnoreFocusIn = true;
 			this.$("overlay").trigger("focus");
@@ -1192,7 +1190,7 @@ sap.ui.define([
 			return; // no pasted data
 		}
 
-		//var oRow = sap.ui.getCore().byId(jQuery(oEvent.target).closest(".sapMLIB").attr("id"));
+		// var oRow = Element.getElementById(jQuery(oEvent.target).closest(".sapMLIB").attr("id"));
 		this.firePaste({data: aData});
 	};
 

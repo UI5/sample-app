@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -141,6 +141,14 @@ sap.ui.define([
 
 		renderer: DateTimeFieldRenderer
 	});
+
+	DateTimeField.prototype.onBeforeRendering = function() {
+
+		InputBase.prototype.onBeforeRendering.apply(this, arguments);
+
+		// Ensure value state header is always updated
+		this._updateValueStateHeader();
+	};
 
 	DateTimeField.prototype.setValue = function (sValue) {
 		sValue = this.validateProperty("value", sValue); // to convert null and undefined to ""
@@ -312,21 +320,22 @@ sap.ui.define([
 
 	DateTimeField.prototype.onfocusin = function(oEvent) {
 
-		if (!jQuery(oEvent.target).hasClass("sapUiIcon")) {
+		this._sPreviousValue = this.getDOMValue();
+
+		const oTarget = oEvent.target;
+
+		if (!oTarget || !oTarget.classList) {
+			return;
+		}
+
+		if (!oTarget.classList.contains("sapUiIcon")) {
 			this.addStyleClass("sapMFocus");
 		}
 
-		if (!jQuery(oEvent.target).hasClass("sapMInputBaseIconContainer") && !(this._oPopup && this._oPopup.isOpen())) {
+		if (!oTarget.classList.contains("sapMInputBaseIconContainer") && !(this._oPopup && this._oPopup.isOpen())) {
 			// open value state message popup when focus is in the input
 			this.openValueStateMessage();
-		} else if (this._oValueStateHeader) {
-			this._oValueStateHeader
-				.setValueState(this.getValueState())
-				.setText(this._getTextForPickerValueStateContent())
-				.setVisible(this.getValueState() !== ValueState.None);
 		}
-
-		this._sPreviousValue = this.getDOMValue();
 	};
 
 	DateTimeField.prototype.shouldValueStateMessageBeOpened = function() {
@@ -371,19 +380,27 @@ sap.ui.define([
 	};
 
 	DateTimeField.prototype._getValueStateHeader = function () {
-		var sValueState;
-
 		if (!this._oValueStateHeader) {
-			sValueState = this.getValueState();
-
-			this._oValueStateHeader = new ValueStateHeader({
-				text: this._getTextForPickerValueStateContent(),
-				valueState: sValueState,
-				visible: sValueState !== ValueState.None
-			});
+			this._oValueStateHeader = new ValueStateHeader();
+			this._updateValueStateHeader();
 		}
 
 		return this._oValueStateHeader;
+	};
+
+	DateTimeField.prototype._updateValueStateHeader = function () {
+		if (!this._oValueStateHeader) {
+			return;
+		}
+
+		const sValueState = this.getValueState();
+		const sText = this._getTextForPickerValueStateContent();
+		const bVisible = sValueState !== ValueState.None;
+
+		this._oValueStateHeader
+			.setValueState(sValueState)
+			.setText(sText)
+			.setVisible(bVisible);
 	};
 
 	DateTimeField.prototype._dateValidation = function (oDate) {

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -22,7 +22,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @private
@@ -46,7 +46,13 @@ sap.ui.define([
 				 * @private
 				 * @ui5-restricted sap.f.cards.loading.PlaceholderBase
 				 */
-				hasContent: { type: "boolean", defaultValue: true}
+				hasContent: { type: "boolean", defaultValue: true},
+
+				/**
+				 * Width of the placeholder
+				 * @public
+				 */
+				width: { type: "sap.ui.core.CSSSize", defaultValue: "" }
 			}
 		},
 

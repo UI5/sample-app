@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -255,6 +255,10 @@ sap.ui.define([
 	 * example due to a filter), and the group ID must not have
 	 * {@link sap.ui.model.odata.v4.SubmitMode.API}. Such a deletion is not a pending change.
 	 *
+	 * When using data aggregation without group levels, single entities can be deleted
+	 * (@experimental as of version 1.144.0, see {@link #isAggregated}). The same restrictions as
+	 * for a recursive hierarchy apply.
+	 *
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used for the DELETE request; if not specified, the update group ID for
 	 *   the context's binding is used, see {@link #getUpdateGroupId}. Since 1.81, if this context
@@ -290,10 +294,12 @@ sap.ui.define([
 	 *     <li> a <code>null</code> group ID is used with a context which is not
 	 *       {@link #isKeepAlive kept alive},
 	 *     <li> the context is already being deleted,
-	 *     <li> the context's binding is a list binding with data aggregation,
+	 *     <li> the context's binding is a list binding with data aggregation, and either has group
+	 *       levels or this context does not represent a single entity (see {@link #isAggregated}),
 	 *     <li> the context is transient but its binding is not a list binding ("upsert") and it
 	 *       therefore must be reset via {@link #resetChanges},
-	 *     <li> the restrictions for deleting from a recursive hierarchy (see above) are not met.
+	 *     <li> the restrictions for deleting from a recursive hierarchy or data aggregation (see
+	 *       above) are not met.
 	 *   </ul>
 	 *
 	 * @function
@@ -316,10 +322,10 @@ sap.ui.define([
 		if (this.isDeleted()) {
 			throw new Error("Must not delete twice: " + this);
 		}
-		if (_Helper.isDataAggregation(this.oBinding.mParameters)) {
-			throw new Error("Cannot delete " + this + " when using data aggregation");
+		this.oBinding.checkSuspended(); // do it here even if it is contained in #isAggregated
+		if (this.isAggregated() || this.oBinding.mParameters.$$aggregation?.groupLevels?.length) {
+			throw new Error("Unsupported on aggregated data: " + this);
 		}
-		this.oBinding.checkSuspended();
 		if (this.isTransient()) {
 			if (!this.oBinding.getHeaderContext) { // upsert
 				throw new Error("Cannot delete " + this);
@@ -1251,21 +1257,20 @@ sap.ui.define([
 	};
 
 	/**
-	 * Tells whether this context represents aggregated data, as opposed to a single entity
+	 * Indicates whether this context represents aggregated data rather than a single entity
 	 * instance. This method returns <code>true</code> only in case of data aggregation (but not for
-	 * a recursive hierarchy)
-	 * and not for non-expandable nodes (so-called leaves; see {@link #isExpanded}) if all of the
-	 * entity type's key properties are available as groups. For a list binding's
+	 * a recursive hierarchy) and not for non-expandable nodes (so-called leaves; see
+	 * {@link #isExpanded}) if all of the entity type's key properties are available as groups. For
+	 * a list binding's
 	 * {@link sap.ui.model.odata.v4.ODataListBinding#getHeaderContext header context}, the returned
-	 * value is the same as for every leaf.
+	 * value matches that of every leaf.
 	 *
 	 * @returns {boolean} Whether this context represents aggregated data
 	 * @throws {Error} If this context's root binding is suspended
 	 *
-	 * @private
+	 * @public
 	 * @see sap.ui.model.odata.v4.ODataListBinding#setAggregation
-	 * @since 1.132.0
-	 * @ui5-restricted sap.fe
+	 * @since 1.144.0
 	 */
 	Context.prototype.isAggregated = function () {
 		this.oBinding.checkSuspended();
@@ -2309,13 +2314,25 @@ sap.ui.define([
 	 *
 	 * Note: This is only supported if the model uses the <code>autoExpandSelect</code> parameter.
 	 *
+	 * Note: This can be used for single entities in a data aggregation scenario (@experimental as
+	 * of version 1.144.0), see {@link #isAggregated}. Such a kept-alive context
+	 * <ul>
+	 *   <li> can be used as a binding context,
+	 *   <li> can be used for updating data (see {@link #setProperty}),
+	 *   <li> is refreshed when its list binding's
+	 *     {@link sap.ui.model.odata.v4.ODataListBinding#refresh}) is called, and
+	 *   <li> is refreshed when {@link #requestSideEffects}) is called on its list binding's header
+	 *     context.
+	 * </ul>
+	   Other APIs are not supported.
+	 *
 	 * @param {boolean} bKeepAlive
 	 *   Whether to keep the context alive
 	 * @param {function((sap.ui.model.odata.v4.Context|undefined))} [fnOnBeforeDestroy]
 	 *   Callback function that is called once for a kept-alive context without any argument just
 	 *   before the context is destroyed; see {@link #destroy}. If a context has been replaced in a
 	 *   list binding (see {@link #replaceWith} and
-	 *   {@link sap.ui.odata.v4.ODataContextBinding#invoke}), the callback will later also be
+	 *   {@link sap.ui.model.odata.v4.ODataContextBinding#invoke}), the callback will later also be
 	 *   called just before the replacing context is destroyed, but with that context as the only
 	 *   argument. Supported since 1.84.0
 	 * @param {boolean} [bRequestMessages]
@@ -2338,8 +2355,10 @@ sap.ui.define([
 	 *       parameter (see {@link sap.ui.model.odata.v4.ODataModel#bindList}),
 	 *     <li> the list binding uses or inherits the <code>$$sharedRequest</code> parameter
 	 *       (see {@link sap.ui.model.odata.v4.ODataModel#bindList}),
-	 *     <li> the list binding uses data aggregation, but no recursive hierarchy
-	 *       (see {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}),
+	 *     <li> the list binding uses data aggregation but no recursive hierarchy (see
+	 *       {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}), and either the
+	 *       context's root binding is suspended or this context does not represent a single entity
+	 *       (see {@link #isAggregated}),
 	 *     <li> messages are requested, but the model does not use the <code>autoExpandSelect</code>
 	 *       parameter.
 	 *   </ul>

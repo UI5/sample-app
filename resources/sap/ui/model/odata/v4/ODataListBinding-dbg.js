@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -305,6 +305,7 @@ sap.ui.define([
 			sApply = _AggregationHelper.buildApply(mParameters.$$aggregation).$apply;
 		}
 
+		// Note: called from c'tor before mParameters are stored for the 1st time
 		const bResetSelection = this.mParameters?.$$clearSelectionOnFilter
 			&& (aChangedParameters?.includes("$filter") || aChangedParameters?.includes("$search")
 				|| mParameters.$$aggregation?.search !== this.mParameters.$$aggregation?.search);
@@ -734,8 +735,10 @@ sap.ui.define([
 		if (oContext === this.oHeaderContext) {
 			throw new Error("Unsupported header context " + oContext);
 		}
-		if (_Helper.isDataAggregation(this.mParameters)) {
-			throw new Error("Unsupported $$aggregation at " + this);
+		// Context#isAggregated() throws an error if its root binding is suspended; avoid that error
+		// in non data aggregation cases
+		if (_Helper.isDataAggregation(this.mParameters) && oContext?.isAggregated()) {
+			throw new Error("Unsupported on aggregated data: " + oContext);
 		}
 		if (this.bSharedRequest) {
 			throw new Error("Unsupported $$sharedRequest at " + this);
@@ -778,7 +781,7 @@ sap.ui.define([
 
 		iCount ??= this.oCache.collapse(
 			_Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath()),
-			bAll ? this.lockGroup() : undefined, bSilent);
+			bAll ? this.lockGroup() : undefined, bSilent, false, this.getKeepAlivePredicates());
 
 		if (iCount > 0) {
 			const aContexts = this.aContexts;
@@ -1943,7 +1946,7 @@ sap.ui.define([
 	 * Returns a URL by which the complete content of the list can be downloaded in JSON format. The
 	 * request delivers all entities considering the binding's query options (such as filters or
 	 * sorters). Returns <code>null</code> if the binding's filter is
-	 * {@link sap.ui.filter.Filter.NONE}.
+	 * {@link sap.ui.model.Filter.NONE}.
 	 *
 	 * @returns {sap.ui.base.SyncPromise<string|null>}
 	 *   A promise that is resolved with the download URL or <code>null</code>
@@ -1983,7 +1986,7 @@ sap.ui.define([
 	/**
 	 * Requests a $filter query option value for this binding; the value is computed from the
 	 * given arrays of dynamic application and control filters and the given static filter. If
-	 * {@link sap.ui.filter.Filter.NONE} is set as any of the dynamic filters, it will override
+	 * {@link sap.ui.model.Filter.NONE} is set as any of the dynamic filters, it will override
 	 * all static filters.
 	 *
 	 * As a side effect, this method computes <code>$$aggregation.$leafLevelAggregated</code>.
@@ -2247,7 +2250,7 @@ sap.ui.define([
 	 * next one (via offset +1) or the previous one (via offset -1).
 	 *
 	 * @param {sap.ui.model.odata.v4.Context} oNode - A node
-	 * @param {number} iOffset - An offset, either -1 or +1
+	 * @param {number} [iOffset=+1] - An offset, either -1 or +1
 	 * @param {boolean} [bAllowRequest]
 	 *   Whether it is allowed to send a GET request to fetch the sibling
 	 * @returns {sap.ui.model.odata.v4.Context|null|undefined
@@ -2931,7 +2934,7 @@ sap.ui.define([
 	 * If known, the value represents the sum of the element count of the collection on the server
 	 * and the number of {@link sap.ui.model.odata.v4.Context#isInactive active}
 	 * {@link sap.ui.model.odata.v4.Context#isTransient transient} entities created on the client,
-	 * minus the {@link #sap.ui.model.data.v4.Context#delete deleted} entities. Otherwise, it is
+	 * minus the {@link #sap.ui.model.odata.v4.Context#delete deleted} entities. Otherwise, it is
 	 * <code>undefined</code>. The value is a number of type <code>Edm.Int64</code>. Since 1.91.0,
 	 * in case of data aggregation with group levels, the count is the leaf count on the server; it
 	 * is only determined if the <code>$count</code> system query option is given. Since 1.110.0,
@@ -3055,7 +3058,7 @@ sap.ui.define([
 	 * Returns a URL by which the complete content of the list can be downloaded in JSON format. The
 	 * request delivers all entities considering the binding's query options (such as filters or
 	 * sorters). Returns <code>null</code> if the binding's filter is
-	 * {@link sap.ui.filter.Filter.NONE}.
+	 * {@link sap.ui.model.Filter.NONE}.
 
 	 * The returned URL does not specify <code>$skip</code> and <code>$top</code> and leaves it up
 	 * to the server how many rows it delivers. Many servers tend to choose a small limit without
@@ -3208,7 +3211,8 @@ sap.ui.define([
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> the binding is part of a {@link #create deep create} because it is relative to a
 	 *       {@link sap.ui.model.odata.v4.Context#isTransient transient} context,
-	 *     <li> {@link sap.ui.model.odata.v4.Context#setKeepAlive} fails
+	 *     <li> {@link sap.ui.model.odata.v4.Context#setKeepAlive} fails, or
+	 *     <li> data aggregation but no recursive hierarchy (see {@link #setAggregation}) is used.
 	 *   </ul>
 	 *
 	 * @public
@@ -3223,6 +3227,9 @@ sap.ui.define([
 			iPredicateIndex = _Helper.getPredicateIndex(sPath),
 			sResolvedPath = this.getResolvedPath();
 
+		if (_Helper.isDataAggregation(this.mParameters)) {
+			throw new Error("Unsupported $$aggregation at " + this);
+		}
 		this.checkKeepAlive();
 		this.checkSuspended();
 		this.checkTransient();
@@ -3791,21 +3798,19 @@ sap.ui.define([
 		}
 		this.checkSuspended();
 
-		const sUpdateGroupId = this.getUpdateGroupId();
-		const oGroupLock = this.lockGroup(sUpdateGroupId, true, true);
-		const sChildPath = oChildContext.getCanonicalPath().slice(1);
+		const sChildPath = oChildContext.getCanonicalPath().slice(1); // before #lockGroup!
 		const sParentPath = oParentContext === null
 			? null
 			: oParentContext.getCanonicalPath().slice(1); // before #lockGroup!
 		const sSiblingPath = oSiblingContext === null
 			? null
 			: oSiblingContext?.getCanonicalPath().slice(1); // before #lockGroup!
-		const sNonCanonicalChildPath = oSiblingContext === undefined
-			? undefined
-			: oChildContext.getPath().slice(1);
+		const sUpdateGroupId = this.getUpdateGroupId();
+		const oGroupLock = this.lockGroup(sUpdateGroupId, true, true); // after #getCanonicalPath!
 		const bUpdateSiblingIndex = oSiblingContext?.isEffectivelyKeptAlive();
 		const {promise : oPromise, refresh : bRefresh} = this.oCache.move(oGroupLock, sChildPath,
-			sParentPath, sSiblingPath, sNonCanonicalChildPath, bUpdateSiblingIndex, bCopy);
+			oChildContext.getPath().slice(1), sParentPath, sSiblingPath, bUpdateSiblingIndex,
+			bCopy);
 
 		if (bRefresh) {
 			return SyncPromise.all([
@@ -4382,7 +4387,7 @@ sap.ui.define([
 	 * Resolves with a URL by which the complete content of the list can be downloaded in JSON
 	 * format. The request delivers all entities considering the binding's query options (such as
 	 * filters or sorters). Resolves with <code>null</code> if the binding's filter is
-	 * {@link sap.ui.filter.Filter.NONE}.
+	 * {@link sap.ui.model.Filter.NONE}.
 	 *
 	 * The returned URL does not specify <code>$skip</code> and <code>$top</code> and leaves it up
 	 * to the server how many rows it delivers. Many servers tend to choose a small limit without

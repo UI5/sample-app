@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -311,10 +311,10 @@ sap.ui.define([
 	 * Every currently running {@link sap.ui.model.json.JSONModel#loadData} call is respected by the returned Promise.
 	 * This also includes a potential loadData call from the JSONModel's constructor in case a URL was given.
 	 * The data-loaded Promise will resolve once all running requests have finished.
-	 * Only request, which have been queued up to the point of calling
+	 * Only requests, which have been queued up to the point of calling
 	 * this function will be respected by the returned Promise.
 	 *
-	 * @return {Promise} a Promise, which resolves if all pending data-loading requests have finished
+	 * @return {Promise<undefined>} a Promise, which resolves if all pending data-loading requests have finished
 	 * @public
 	 */
 	JSONModel.prototype.dataLoaded = function() {

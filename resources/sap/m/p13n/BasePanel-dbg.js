@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,7 +82,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @abstract
@@ -623,12 +623,14 @@ sap.ui.define([
 					priority: "High",
 					maxWidth: "16rem"
 				}),
-				change: () => {
-					TableUtil.announceTableUpdate(this.getTableInvisibleText().getText(), this._oListControl.getItems().length);
-				}
+				change: [this._announceSearchUpdate, this]
 			});
 		}
 		return this._oSearchField;
+	};
+
+	BasePanel.prototype._announceSearchUpdate = function() {
+		TableUtil.announceTableUpdate(this.getTableInvisibleText().getText(), this._oListControl.getItems().length);
 	};
 
 	/**

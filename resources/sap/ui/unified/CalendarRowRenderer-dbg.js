@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -91,7 +91,7 @@ sap.ui.define([
 			oRm.style("height", sHeight);
 		}
 
-	//		var rb = sap.ui.getCore().getLibraryResourceBundle("sap.ui.unified");
+	//		var rb = Lib.getResourceBundleFor("sap.ui.unified");
 		oRm.openEnd(); // div element
 
 		this.renderAppointmentsRow(oRm, oRow, aTypes);

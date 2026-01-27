@@ -1,10 +1,10 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-// Provides control sap.ui.unified.ColorPalettePopover
+// Provides control sap.m.ColorPalettePopover
 sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/Device',
@@ -39,7 +39,7 @@ sap.ui.define([
 		 * A thin wrapper over {@link sap.m.ColorPalette} allowing the latter to be used in a popover.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @public
 		 * @since 1.54

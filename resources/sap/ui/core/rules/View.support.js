@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -160,7 +160,7 @@ sap.ui.define(["sap/base/Log", "sap/ui/support/library", "sap/ui/core/Element", 
 					if (sName.match("xmlns:")
 						&& sLocalName !== "xmlns:support"
 						&& sLocalName !== "mvc"
-						&& sFullName.indexOf("schemas.sap.com") < 0) {
+						&& !/^https?:\/\/schemas.sap.com\//.test(sFullName)) {
 							// get the xml code of the view as a string
 							var sContent = jQuery(oXMLView._xContent)[0].outerHTML;
 

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 1.34
 	 *
 	 * @public
@@ -217,6 +217,7 @@ sap.ui.define([
 	 * Handler for afterrendering
 	 */
 	SlideTile.prototype.onAfterRendering = function () {
+		this.getDomRef()?.getElementsByClassName("sapMSTIconClickTapArea")[0]?.setAttribute("title", this._oRb.getText("SLIDETILEPAUSE"));
 		this._setupResizeClassHandler();
 
 		var cTiles = this.getTiles().length,
@@ -1066,9 +1067,11 @@ sap.ui.define([
 			if (this._bAnimationPause) {
 				this.getAggregation("_pausePlayIcon").setSrc("sap-icon://media-play");
 				this.$().removeClass("sapMSTPauseIcon");
+				this.getDomRef().getElementsByClassName('sapMSTIconClickTapArea')[0].setAttribute("title", this._oRb.getText("SLIDETILEPLAY"));
 			} else {
 				this.getAggregation("_pausePlayIcon").setSrc("sap-icon://media-pause");
 				this.$().addClass("sapMSTPauseIcon");
+				this.getDomRef().getElementsByClassName('sapMSTIconClickTapArea')[0].setAttribute("title", this._oRb.getText("SLIDETILEPAUSE"));
 			}
 		}
 	};

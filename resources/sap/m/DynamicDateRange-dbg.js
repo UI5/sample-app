@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -288,7 +288,7 @@ sap.ui.define([
 		 * is opened. The dialog is closed via a date time period value selection or by pressing the "Cancel" button.
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -608,6 +608,11 @@ sap.ui.define([
 			this._onBeforeInputRenderingDelegate = undefined;
 			this.oValueObserver.destroy();
 
+			if (this._oInvisibleLabelText) {
+				this._oInvisibleLabelText.destroy();
+				this._oInvisibleLabelText = undefined;
+			}
+
 			this._infoDatesFooter = undefined;
 			this.aInputControls = undefined;
 
@@ -748,20 +753,28 @@ sap.ui.define([
 				this._removeAllListItemDelegates();
 				this._oOptionsList.destroyAggregation("items");
 
-				this._collectValueHelpItems(this._getOptions(), true).map(function(vOption) {
+				const aGroupSizes = [];
+				let iCurrentGroupIndex = -1;
+
+				this._collectValueHelpItems(this._getOptions(), true).forEach(function(vOption) {
+					let oItem;
 					// check if it's a group header
 					if (typeof (vOption) === "string") {
-						return this._createHeaderListItem(vOption);
+						aGroupSizes[++iCurrentGroupIndex] = 0;
+						oItem = this._createHeaderListItem(vOption);
+					} else {
+						aGroupSizes[iCurrentGroupIndex]++;
+
+						if (vOption.getKey() === "FROMDATETIME") {
+							vOption._bAdditionalTimeText = !!this._findOption("FROM");
+						} else if (vOption.getKey() === "TODATETIME") {
+							vOption._bAdditionalTimeText = !!this._findOption("TO");
+						} else if (vOption.getKey() === "DATETIMERANGE") {
+							vOption._bAdditionalTimeText = !!this._findOption("DATERANGE");
+						}
+						oItem = this._createListItem(vOption);
 					}
-					if (vOption.getKey() === "FROMDATETIME") {
-						vOption._bAdditionalTimeText = !!this._findOption("FROM");
-					} else if (vOption.getKey() === "TODATETIME") {
-						vOption._bAdditionalTimeText = !!this._findOption("TO");
-					} else if (vOption.getKey() === "DATETIMERANGE") {
-						vOption._bAdditionalTimeText = !!this._findOption("DATERANGE");
-					}
-					return this._createListItem(vOption);
-				}, this).forEach(function(oItem) {
+
 					oItem.addDelegate(this._oListItemDelegate, this);
 					this._oOptionsList.addItem(oItem);
 				}, this);
@@ -770,6 +783,42 @@ sap.ui.define([
 				this._oNavContainer.to(this._oNavContainer.getPages()[0]);
 
 				this._openPopup(oDomRef);
+
+				if (this.getEnableGroupHeaders()) {
+					this._updateOptionsListAccessibilityAttributes(aGroupSizes);
+				}
+			}
+		};
+
+		/**
+		 * Updates accessibility attributes for options list items with group-specific aria-setsize and aria-posinset.
+		 *
+		 * @param {Array<number>} aGroupSizes Array containing the size of each group
+		 * @private
+		 */
+		DynamicDateRange.prototype._updateOptionsListAccessibilityAttributes = function(aGroupSizes) {
+			const aOptionsListItems = this._oOptionsList.getItems();
+			const iItemCount = aOptionsListItems.length;
+
+			if (!iItemCount) {
+				return;
+			}
+
+			let iPositionInGroup = 1;
+			let iCurrentGroupIndex = -1;
+
+			for (let i = 0; i < iItemCount; i++) {
+				const oItem = aOptionsListItems[i];
+
+				if (oItem.isA("sap.m.GroupHeaderListItem")) {
+					iCurrentGroupIndex++;
+					iPositionInGroup = 1;
+				} else {
+					oItem.updateAccessibilityState({
+						"aria-setsize": aGroupSizes[iCurrentGroupIndex],
+						"aria-posinset": iPositionInGroup++
+					});
+				}
 			}
 		};
 
@@ -1704,6 +1753,59 @@ sap.ui.define([
 		DynamicDateRange.prototype._reApplyFocusToElement = function (oToPage, oValue) {};
 
 		/**
+		 * Returns the invisible label text for the DynamicDateRange options page.
+		 * @private
+		 * @returns {sap.ui.core.InvisibleText} The invisible label text
+		 */
+		DynamicDateRange.prototype._getInvisibleLabelText = function() {
+			if (!this._oInvisibleLabelText) {
+				this._oInvisibleLabelText = new InvisibleText({
+					text: ""
+				}).toStatic();
+			}
+
+			return this._oInvisibleLabelText;
+		};
+
+		/**
+		 * Updates the invisible label text with the options page title.
+		 * @param {sap.m.Page} oToPage The options page
+		 * @private
+		 */
+		DynamicDateRange.prototype._updateInvisibleLabelText = function(oToPage) {
+			// Ensure the invisible label is created first
+			this._getInvisibleLabelText();
+
+			if (this._oInvisibleLabelText && oToPage && oToPage.getTitle) {
+				this._oInvisibleLabelText.setText(oToPage.getTitle());
+			}
+		};
+
+		/**
+		 * Adds the invisible label to the popover's ariaLabelledBy association.
+		 * @private
+		 */
+		DynamicDateRange.prototype._addInvisibleLabelToPopover = function() {
+			if (this._oPopup && this._oInvisibleLabelText) {
+				var aCurrentLabels = this._oPopup.getAriaLabelledBy();
+				var sInvisibleLabelId = this._oInvisibleLabelText.getId();
+				if (aCurrentLabels.indexOf(sInvisibleLabelId) === -1) {
+					this._oPopup.addAriaLabelledBy(sInvisibleLabelId);
+				}
+			}
+		};
+
+		/**
+		 * Removes the invisible label from the popover's ariaLabelledBy association.
+		 * @private
+		 */
+		DynamicDateRange.prototype._removeInvisibleLabelFromPopover = function() {
+			if (this._oPopup && this._oInvisibleLabelText) {
+				this._oPopup.removeAriaLabelledBy(this._oInvisibleLabelText.getId());
+			}
+		};
+
+		/**
 		 * Creates the title text for the options page.
 		 *
 		 * @returns {string} title text
@@ -1726,18 +1828,22 @@ sap.ui.define([
 		 */
 		DynamicDateRange.prototype._navContainerAfterNavigate = function(oEvent) {
 			var oOptionDetailsPage = this._oNavContainer.getPages()[1],
-				oToPage = oEvent.getParameters()["to"];
+				oToPage = oEvent.getParameters()["to"],
+				oOptionsListPage = this._oNavContainer.getPages()[0];
 
 			if (oToPage === oOptionDetailsPage) {
-				this.aInputControls.forEach(function(oControl) {
-					if (oControl.$().firstFocusableDomRef()) {
-						oControl.addAriaLabelledBy && oControl.addAriaLabelledBy(oToPage.getId() + "-title");
+				// Update the invisible label text with the page title and add it to popover
+				this._updateInvisibleLabelText(oToPage);
+				this._addInvisibleLabelToPopover();
 
-						if (!this._isCalendarBasedControl(oControl) && oControl.addAriaDescribedBy) {
-							oControl.addAriaDescribedBy(oToPage.getFooter().getContent()[0]);
-						}
+				this.aInputControls.forEach(function(oControl) {
+					if (oControl.$().firstFocusableDomRef() && !this._isCalendarBasedControl(oControl) && oControl.addAriaDescribedBy) {
+						oControl.addAriaDescribedBy(oToPage.getFooter().getContent()[0]);
 					}
 				}, this);
+			} else if (oToPage === oOptionsListPage) {
+				// Remove the invisible label from popover when navigating back to options list
+				this._removeInvisibleLabelFromPopover();
 			}
 
 			if (this._oPopup && this._oPopup.isOpen()) {

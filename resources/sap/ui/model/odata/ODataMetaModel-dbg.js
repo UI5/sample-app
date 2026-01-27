@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*eslint-disable max-len */
@@ -881,7 +881,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public
@@ -1685,7 +1685,7 @@ sap.ui.define([
 
 	/**
 	 * Gets the metadata context for the given function import and parameter name. The result can be
-	 * used with {@link sap.ui.model.ODataMetaModel#getODataValueLists} to request the metadata for
+	 * used with {@link sap.ui.model.odata.ODataMetaModel#getODataValueLists} to request the metadata for
 	 * the value lists for that function import parameter.
 	 *
 	 * @param {string} sFunctionName
@@ -1899,7 +1899,7 @@ sap.ui.define([
 	 * Returns a promise which is fulfilled once the meta model data is loaded and can be used.
 	 *
 	 * @public
-	 * @returns {Promise} a Promise
+	 * @returns {Promise<void>} a Promise
 	 */
 	ODataMetaModel.prototype.loaded = function () {
 		return this.oLoadedPromise;

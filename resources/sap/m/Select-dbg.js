@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -126,7 +126,7 @@ function(
 		 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -3442,7 +3442,7 @@ function(
 		 * @returns {boolean} If it is an interactive Control
 		 *
 		 * @private
-		 * @ui5-restricted sap.m.OverflowToolBar, sap.m.Toolbar
+		 * @ui5-restricted sap.m.OverflowToolbar, sap.m.Toolbar
 		 */
 		Select.prototype._getToolbarInteractive = function () {
 			return true;

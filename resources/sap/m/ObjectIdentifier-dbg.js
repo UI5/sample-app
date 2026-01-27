@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,7 +42,7 @@ function(
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
 
-	// shortcut for sap.m.EmptyIndicator
+	// shortcut for sap.m.EmptyIndicatorMode
 	var EmptyIndicatorMode = library.EmptyIndicatorMode;
 
 	// shortcut for sap.m.ReactiveAreaMode
@@ -59,7 +59,7 @@ function(
 	 *
 	* <b>Note:</b> This control should not be used with {@link sap.m.Label} or in Forms along with {@link sap.m.Label}.
 	 * @extends sap.ui.core.Control
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public

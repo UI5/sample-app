@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,7 +12,7 @@ sap.ui.define(["sap/base/assert", "sap/base/Log", "sap/ui/core/Element"],
 		/**
 		 * @class Mixin for Controls which enables stashing of controls declaratively in XMLViews
 		 *
-		 * NOTE: stashing of <code>sap.ui.core.Fragments</code> and <code>sap.ui.core.mvc.View</code> is not supported!
+		 * NOTE: stashing of <code>sap.ui.core.Fragment</code> and <code>sap.ui.core.mvc.View</code> is not supported!
 		 *
 		 * <code>stashed</code> Controls are created as placeholder control without any content and bindings
 		 * and added to the Control tree. That means it is available with <code>Element.getElementById</code>

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -26,7 +26,7 @@ sap.ui.define([
 		"use strict";
 
 		/**
-		 * Instantiates a cache repository that creates and caches views and components which are loaded by {@link sap.u.core.routing.Targets}.
+		 * Instantiates a cache repository that creates and caches views and components which are loaded by {@link sap.ui.core.routing.Targets}.
 		 *
 		 * If it is destroyed, all the views and components which it created are destroyed. If the views or components are still being loaded,
 		 * they will be destroyed after they are loaded.

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @implements sap.m.ITableItem
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @constructor
 	 * @public
@@ -81,6 +81,9 @@ sap.ui.define([
 
 	/**
 	 * TablePopin element that handles own events.
+	 *
+	 * @class
+	 * @alias sap.m.TablePopin
 	 */
 	var TablePopin = Element.extend("sap.m.TablePopin", {
 		ontap: function(oEvent) {
@@ -119,8 +122,8 @@ sap.ui.define([
 	ColumnListItem.prototype.onAfterRendering = function() {
 		if (this._oPopin) {
 			this.$().attr("aria-owns", this.aAriaOwns.join(" "));
-			this.isActionable(true) && this.$Popin().on("mouseenter mouseleave", function(oEvent) {
-				this.previousSibling.classList.toggle("sapMPopinHovered", oEvent.type == "mouseenter");
+			this.isActionable(true) && this.$Popin().on("mouseenter mouseleave", (oEvent) => {
+				this.toggleStyleClass("sapMPopinHovered", oEvent.type == "mouseenter");
 			});
 		}
 
@@ -280,7 +283,7 @@ sap.ui.define([
 
 	ColumnListItem.prototype.getContentAnnouncementOfRowAction = function() {
 		// Only if the item is inactive, to announce empty row action cell
-		if (this.getType() === ListItemType.Inactive) {
+		if (this.getEffectiveType() === ListItemType.Inactive) {
 			return ListItemBase.getAccessibilityText(null, true);
 		}
 	};
@@ -370,7 +373,7 @@ sap.ui.define([
 			sEventHandler = this.getMode() == "Delete" ? "onsapdelete" : "onsapspace";
 		} else if (sTargetId == this.getId() + "-TypeCell") {
 			oEvent.target = this.getDomRef();
-			if (this.getType() == "Navigation") {
+			if (this.getEffectiveType() == "Navigation") {
 				sEventHandler = "onsapenter";
 			} else {
 				oEvent.code = "KeyE";
@@ -414,7 +417,7 @@ sap.ui.define([
 			return false;
 		}
 
-		var sType = this.getType();
+		const sType = this.getEffectiveType();
 		return sType === ListItemType.Navigation ? true : sType.startsWith(ListItemType.Detail) && this._getMaxActionsCount() === -1;
 	};
 

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -58,7 +58,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @public
 	 * @alias sap.m.p13n.SelectionController
@@ -160,6 +160,13 @@ sap.ui.define([
 	SelectionController.prototype.formatToInternalState = (oExternalState) => {
 		return oExternalState;
 	};
+
+	/**
+	 * Enhances the p13n popup. Can be used to add additional content to the popup.
+	 *
+	 * @param {sap.m.Dialog} oPopup The popup that is used to host the personalization UI
+	 */
+	SelectionController.prototype.enhancePopup = (oPopup) => {};
 
 	/**
 	 * The actual UI used for personalization.

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,8 +42,9 @@ sap.ui.define([
 		 * @param {object} mSettings.target Target for which the TitleProvider is created
 		 * @private
 		 * @extends sap.ui.core.Element
+		 * @alias sap.ui.core.routing.Target.TitleProvider
 		 */
-		var TitleProvider = Element.extend("sap.ui.core.routing.Target.TitleProvider", /** @lends sap.ui.core.routing.TitleProvider.prototype */ {
+		var TitleProvider = Element.extend("sap.ui.core.routing.Target.TitleProvider", /** @lends sap.ui.core.routing.Target.TitleProvider.prototype */ {
 			metadata: {
 				library: "sap.ui.core",
 				properties: {

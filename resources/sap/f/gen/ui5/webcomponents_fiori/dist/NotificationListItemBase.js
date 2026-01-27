@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/f/gen/ui5/webcomponents/dist/ListItemBase","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/NotificationListItem"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.NotificationListItemBase",{metadata:{tag:"",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/NotificationListItemBase.designtime",interfaces:[],defaultAggregation:"",properties:{titleText:{type:"string",mapping:"property"},read:{type:"boolean",mapping:"property",defaultValue:false},loading:{type:"boolean",mapping:"property",defaultValue:false},loadingDelay:{type:"float",mapping:"property",defaultValue:1e3}},aggregations:{},associations:{},events:{},getters:[],methods:[]}});return t});

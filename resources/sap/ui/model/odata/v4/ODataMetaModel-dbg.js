@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -203,7 +203,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -1405,16 +1405,15 @@ sap.ui.define([
 			 *   binding parameter (bound and unbound cases).
 			 */
 			function isRightOverload(oOverload) {
-				return !oOverload.$IsBound && vBindingParameterType === UNBOUND
-					|| oOverload.$IsBound
-					&& vBindingParameterType === oOverload.$Parameter[0].$Type;
+				return vBindingParameterType
+					=== (oOverload.$IsBound ? oOverload.$Parameter[0].$Type : UNBOUND);
 			}
 
 			/*
 			 * Outputs a log message for the given level. Leads to an <code>undefined</code> result
 			 * in case of a WARNING.
 			 *
-			 * @param {sap.base.Log.Level} iLevel
+			 * @param {module:sap/base/Log.Level} iLevel
 			 *   A log level, either DEBUG or WARNING
 			 * @param {...string} aTexts
 			 *   The main text of the message is constructed from the rest of the arguments by
@@ -1664,7 +1663,9 @@ sap.ui.define([
 									if (sSegment === "@$ui5.overload") {
 										return true;
 									}
-									if (vResult.length !== 1) {
+									if (vResult.length !== 1
+										&& (vBindingParameterType !== UNBOUND
+											|| maybeParameter(sSegment, vResult))) {
 										return log(WARNING, "Expected a single overload, but found "
 											+ vResult.length);
 									}
@@ -2602,7 +2603,7 @@ sap.ui.define([
 			oSharedModel = new this.oModel.constructor({
 				autoExpandSelect : bAutoExpandSelect,
 				groupId : bCopyAnnotations ? undefined : "$direct",
-				httpHeaders : this.oModel.getHttpHeaders(),
+				httpHeaders : this.oModel.getHttpHeaders(), // Note: includes X-CSRF-Token
 				metadataUrlParams : this.sLanguage && {"sap-language" : this.sLanguage},
 				operationMode : OperationMode.Server,
 				serviceUrl : sUrl,
@@ -2617,6 +2618,7 @@ sap.ui.define([
 			oSharedModel.setRetryAfterHandler((oError) => {
 				return this.oModel.getOrCreateRetryAfterPromise(oError);
 			});
+			oSharedModel.oRequestor.copySecurityTokenPromise(this.oModel.oRequestor);
 			mSharedModelByUrl[sMapKey] = oSharedModel;
 		}
 		return oSharedModel;
@@ -3194,7 +3196,7 @@ sap.ui.define([
 	 *
 	 * A segment which represents an OData simple identifier (or the special names "$ReturnType",
 	 * since 1.71.0, or "$Parameter", since 1.73.0) needs special preparations. The same applies to
-	 * the empty segment after a trailing slash.
+	 * the empty segment (typically after a trailing slash).
 	 * <ol>
 	 *   <li> If the current object has a "$Action", "$Function" or "$Type" property, it is used for
 	 *     scope lookup first. This way, "/EMPLOYEES/ENTRYDATE" addresses the same object as
@@ -3223,7 +3225,9 @@ sap.ui.define([
 	 *
 	 *     Operation overloads are then filtered by binding parameter; multiple overloads after
 	 *     filtering are invalid except if addressing all overloads via the segment
-	 *     "@$ui5.overload", for example "/acme.NewAction/@$ui5.overload".
+	 *     "@$ui5.overload", for example "/acme.NewAction/@$ui5.overload". Since 1.144.0, multiple
+	 *     overloads for an unbound function are tolerated when addressing the return type (which is
+	 *     the same for all of them).
 	 *
 	 *     Once a single overload has been determined, its parameters can be immediately addressed,
 	 *     for example "/TEAMS/acme.NewAction/Team_ID", or the special name "$Parameter" can be used

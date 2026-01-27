@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	// shortcuts for sap.ui.core.ValueState
 	var ValueState = coreLibrary.ValueState;
 
-	// shortcut for sap.m.EmptyIndicator
+	// shortcut for sap.m.EmptyIndicatorMode
 	var EmptyIndicatorMode = library.EmptyIndicatorMode;
 
 	// shortcut for sap.m.ReactiveAreaMode
@@ -62,7 +62,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent, sap.ui.core.ISemanticFormContent
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 *
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormFormattedValue as #getFormFormattedValue
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormValueProperty as #getFormValueProperty
@@ -236,12 +236,18 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectStatus.prototype._getImageControl = function() {
-		if (!this._oImageControl || this.getTooltip()) {
+		var sIcon = this.getIcon() ?? "";
+		var bTooltipPresent = !!this.getTooltip();
+		// Recreate or update the image control when:
+		// - there's no existing image control
+		// - the bound icon changed (src differs)
+		// - a tooltip is present
+		if (!this._oImageControl || (this._oImageControl.getSrc && this._oImageControl.getSrc() !== sIcon) || bTooltipPresent) {
 			var sImgId = this.getId() + '-icon',
 				bIsIconOnly = !this.getText() && !this.getTitle(),
 				bUseIconTooltip = !this.getText() && !this.getTitle() && !this.getTooltip(),
 				mProperties = {
-					src : this.getIcon(),
+					src : sIcon,
 					densityAware : this.getIconDensityAware(),
 					useIconTooltip : bUseIconTooltip,
 					decorative: !this.getActive() && !bIsIconOnly
@@ -445,6 +451,10 @@ sap.ui.define([
 
 		if (this.getIcon()) {
 			sResult += sId + "-statusIcon ";
+		}
+
+		if (this.getState() !== ValueState.None) {
+			sResult += sId + "-state-text ";
 		}
 
 		return sResult.trim();

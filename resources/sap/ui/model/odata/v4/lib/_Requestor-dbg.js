@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -68,10 +68,10 @@ sap.ui.define([
 	 * @param {string} sServiceUrl
 	 *   URL of the service document to request the CSRF token from; also used to resolve
 	 *   relative resource paths (see {@link #request})
-	 * @param {object} [mHeaders={}]
+	 * @param {object} mHeaders
 	 *   Map of default headers; may be overridden with request-specific headers; certain
 	 *   predefined OData V4 headers are added by default, but may be overridden
-	 * @param {object} [mQueryParams={}]
+	 * @param {object} mQueryParams
 	 *   A map of query parameters as described in
 	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF token
 	 * @param {object} oModelInterface
@@ -89,7 +89,7 @@ sap.ui.define([
 			bWithCredentials) {
 		this.mBatchQueue = {};
 		this.bBatchSent = false;
-		this.mHeaders = mHeaders || {};
+		this.mHeaders = mHeaders;
 		this.aLockedGroupLocks = [];
 		this.oModelInterface = oModelInterface;
 		this.sODataVersion = sODataVersion;
@@ -99,7 +99,7 @@ sap.ui.define([
 		this.iSessionTimer = 0;
 		this.iSerialNumber = 0;
 		this.sServiceUrl = sServiceUrl;
-		this.vStatistics = mQueryParams && mQueryParams["sap-statistics"];
+		this.vStatistics = mQueryParams["sap-statistics"];
 		this.bWithCredentials = bWithCredentials;
 		this.processSecurityTokenHandlers(); // sets this.oSecurityTokenPromise
 
@@ -657,6 +657,25 @@ sap.ui.define([
 			clearInterval(this.iSessionTimer);
 			this.iSessionTimer = 0;
 		}
+	};
+
+	/**
+	 * Copies the <code>oSecurityTokenPromise</code> from the given other requestor, if available,
+	 * and uses it to copy its "X-CSRF-Token" once the promise resolves.
+	 *
+	 * @param {sap.ui.model.odata.v4.lib._Requestor} oOtherRequestor - Some other requestor instance
+	 *
+	 * @public
+	 */
+	_Requestor.prototype.copySecurityTokenPromise = function (oOtherRequestor) {
+		this.oSecurityTokenPromise = oOtherRequestor.oSecurityTokenPromise?.then(() => {
+			const sCsrfToken = oOtherRequestor.mHeaders["X-CSRF-Token"];
+			if (sCsrfToken) {
+				this.mHeaders["X-CSRF-Token"] = sCsrfToken;
+			}
+		}).finally(() => {
+			this.oSecurityTokenPromise = null;
+		});
 	};
 
 	/**
@@ -2140,15 +2159,16 @@ sap.ui.define([
 				}
 				jQuery.ajax(sRequestUrl, oAjaxSettings)
 				.then(function (/*{object|string}*/vResponse, _sTextStatus, jqXHR) {
-					var sETag = jqXHR.getResponseHeader("ETag"),
-						sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
+					var sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token"),
+						sETag = jqXHR.getResponseHeader("ETag"),
+						sODataVersion;
 
 					that.oModelInterface.onHttpResponse(
 						_Helper.parseRawHeaders(jqXHR.getAllResponseHeaders()));
 
 					try {
-						that.doCheckVersionHeader(jqXHR.getResponseHeader, sResourcePath,
-							!vResponse);
+						sODataVersion = that.doCheckVersionHeader(jqXHR.getResponseHeader,
+							sResourcePath, !vResponse);
 					} catch (oError) {
 						fnReject(oError);
 						return;
@@ -2164,8 +2184,13 @@ sap.ui.define([
 					// With GET it must be visible that there is no content, with the other
 					// methods it must be possible to insert the ETag from the header
 					vResponse ||= sMethod === "GET" ? null : {};
-					if (sETag && typeof vResponse === "object") {
-						vResponse["@odata.etag"] = sETag;
+					if (typeof vResponse === "object") {
+						if (sODataVersion === "4.01") {
+							vResponse = JSON.parse(JSON.stringify(vResponse), _Requestor.reviver);
+						}
+						if (sETag) {
+							vResponse["@odata.etag"] = sETag;
+						}
 					}
 
 					fnResolve({
@@ -2465,7 +2490,7 @@ sap.ui.define([
 	 *   A function to report messages to {@link module:sap/ui/core/Messaging}, expecting two arrays
 	 *   of {@link sap.ui.core.message.Message} as parameters. The first array should be the old
 	 *   messages and the second array the new messages.
-	 * @param {object} [mHeaders={}]
+	 * @param {object} mHeaders
 	 *   Map of default headers; may be overridden with request-specific headers; certain
 	 *   OData V4 headers are predefined, but may be overridden by the default or
 	 *   request-specific headers:
@@ -2478,7 +2503,7 @@ sap.ui.define([
 	 *   <code>_Requestor</code> always sets the "Content-Type" header value to
 	 *   "application/json;charset=UTF-8;IEEE754Compatible=true" for OData V4 or
 	 *   "application/json;charset=UTF-8" for OData V2.
-	 * @param {object} [mQueryParams={}]
+	 * @param {object} mQueryParams
 	 *   A map of query parameters as described in
 	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF
 	 *   token

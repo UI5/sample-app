@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -532,7 +532,7 @@ sap.ui.define([
 	 * needed by the specific control or class definition.
 	 *
 	 * @param {string} sTypeName Qualified name of the type to retrieve
-	 * @param {sap.ui.base.ManagedObject.MetaOptions.Property} [oProperty] Metadata of the property
+	 * @param {sap.ui.base.ManagedObject.MetadataOptions.Property} [oProperty] Metadata of the property
 	 * @returns {sap.ui.base.DataType|undefined} Type object or <code>undefined</code> when
 	 *     no such type has been defined yet
 	 * @public

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,13 +27,13 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @since 0.8
 	 * @public
 	 */
 	 var thisLib = Library.init({
 		 name: "sap.ui.core",
-		 version: "1.143.1",
+		 version: "1.144.0",
 		 designtime: "sap/ui/core/designtime/library.designtime",
 		 apiVersion: 2,
 		 ...{
@@ -106,6 +106,7 @@ sap.ui.define([
 			 "sap.ui.core.dnd.IDragInfo",
 			 "sap.ui.core.dnd.IDropInfo",
 			 "sap.ui.core.IDScope",
+			 "sap.ui.core.ITitle",
 			 "sap.ui.core.ITitleContent",
 			 "sap.ui.core.IAsyncContentCreation",
 			 "sap.ui.core.IPlaceholderSupport",
@@ -1646,7 +1647,7 @@ sap.ui.define([
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -2060,7 +2061,17 @@ sap.ui.define([
 	 * @public
 	 */
 
-
+	/**
+	 * Interface for controls that represent a title.
+	 *
+	 * This marker interface can be implemented by controls that are semantically suitable
+	 * to act as a title or heading inside a toolbar.
+	 *
+	 * @since 1.144
+	 * @name sap.ui.core.ITitle
+	 * @interface
+	 * @public
+	 */
 
 	/**
 	 * Whether a control wants to keep its original width even when used in a {@link sap.ui.layout.form.Form Form}.

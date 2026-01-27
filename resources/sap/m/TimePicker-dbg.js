@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -111,7 +111,8 @@ function(
 		 * <code>sap.ui.model.type.Time</code></li>
 		 * <caption> binding the <code>value</code> property by using types </caption>
 		 * <pre>
-		 * new sap.ui.model.json.JSONModel({date: sap.ui.core.date.UI5Date.getInstance(2022,10,10,10,15,10)});
+		 * // UI5Date imported from sap/ui/core/date/UI5Date
+		 * new sap.ui.model.json.JSONModel({date: UI5Date.getInstance(2022,10,10,10,15,10)});
 		 *
 		 * new sap.m.TimePicker({
 		 *     value: {
@@ -185,7 +186,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.143.1
+		 * @version 1.144.0
 		 *
 		 * @constructor
 		 * @public
@@ -491,10 +492,22 @@ function(
 		 TimePicker.prototype.onBeforeRendering = function() {
 			DateTimeField.prototype.onBeforeRendering.apply(this, arguments);
 
-			var oValueHelpIcon = this._getValueHelpIcon();
+			const oValueHelpIcon = this._getValueHelpIcon(),
+				sAccessibleName = this._getPickerAccessibleName();
 
 			if (oValueHelpIcon) {
 				oValueHelpIcon.setProperty("visible", this.getEditable());
+			}
+
+			// update invisible label
+			if (this._invisibleLabelText) {
+				this._invisibleLabelText.setText(sAccessibleName);
+			}
+
+			// update title of the dialog on mobile devices
+			if (Device.system.phone) {
+				const oPicker = this._getPicker();
+				oPicker?.setTitle(sAccessibleName);
 			}
 		};
 
@@ -598,6 +611,10 @@ function(
 			if (!this._isMobileDevice()) {
 				DateTimeField.prototype.onfocusin.apply(this, arguments);
 				MaskEnabler.onfocusin.apply(this, arguments);
+				if (this.getMaskMode() !== TimePickerMaskMode.Off) {
+					var sPlaceholder = this._getPlaceholder();
+					this._$input.attr("aria-description", sPlaceholder);
+				}
 			}
 			if (oPicker && oPicker.isOpen() && !bIconClicked) {
 				this._closePicker();
@@ -614,6 +631,20 @@ function(
 				this.toggleNumericOpen(bOpen);
 			}
 			this._openByFocusIn = true;
+		};
+
+		var _maskEnablerOnFocusOut = TimePicker.prototype.onfocusout;
+
+		/**
+		 * Handles the focusout event.
+		 *
+		 * @param {jQuery.Event} oEvent Event object
+		 */
+		TimePicker.prototype.onfocusout = function(oEvent) {
+			if (!this._isMobileDevice()) {
+				_maskEnablerOnFocusOut.apply(this, arguments);
+				this._$input.removeAttr("aria-description");
+			}
 		};
 
 		/**
@@ -922,24 +953,6 @@ function(
 				oInputs.setSecondsStep(step);
 			}
 			return this.setProperty("secondsStep", step, true);
-		};
-
-		/**
-		 * Sets the title label inside the picker.
-		 *
-		 * @param {string} title A title
-		 * @returns {this} Reference to <code>this</code> for method chaining
-		 */
-		TimePicker.prototype.setTitle = function(title) {
-			var oClocks = this._getClocks();
-
-			if (oClocks) {
-				oClocks.setLabelText(title);
-			}
-
-			this.setProperty("title", title, true);
-
-			return this;
 		};
 
 		/**
@@ -1609,7 +1622,6 @@ function(
 					oHeader,
 					oClocks
 				],
-				ariaLabelledBy: this._getInvisibleLabelText().getId(),
 				beforeOpen: this.onBeforeOpen.bind(this),
 				afterOpen: this.onAfterOpen.bind(this),
 				afterClose: this.onAfterClose.bind(this)
@@ -1625,9 +1637,11 @@ function(
 			oPopover.oPopup.setExtraContent([oIcon]);
 
 			if (Device.system.phone) {
-				oPicker.setTitle(this._getLabelledText());
+				oPicker.setTitle(this._getPickerAccessibleName());
 				oPicker.setShowHeader(true);
 			} else {
+				oPicker.addAriaLabelledBy(this._getInvisibleLabelText().getId());
+
 				this._oPopoverKeydownEventDelegate = {
 					onkeydown: function(oEvent) {
 						var oKC = KeyCodes,
@@ -1753,7 +1767,11 @@ function(
 		 * @returns {string} The accessible name
 		 */
 		TimePicker.prototype._getPickerAccessibleName = function() {
-			return this._oResourceBundle.getText("TIMEPICKER_SET_TIME", [this._getLabelledText()]);
+			const sLabelledText = this._getLabelledText();
+
+			return this.getTitle() ||
+				(sLabelledText && this._oResourceBundle.getText("TIMEPICKER_SET_TIME", [sLabelledText])) ||
+				this._oResourceBundle.getText("TIMEPICKER_DEFAULT_TITLE");
 		};
 
 		/**

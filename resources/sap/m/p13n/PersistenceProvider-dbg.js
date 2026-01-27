@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2025 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.143.1
+	 * @version 1.144.0
 	 * @alias sap.m.p13n.PersistenceProvider
 	 *
 	 * @private
@@ -24,14 +24,14 @@ sap.ui.define([
 	 *
 	 * @since 1.104
 	 */
-	const PersistenceProvider = CoreControl.extend("sap.m.p13n.PersistenceProvider", /** @lends sap.ui.mdc.p13n.PersistenceProvider.prototype */ {
+	const PersistenceProvider = CoreControl.extend("sap.m.p13n.PersistenceProvider", /** @lends sap.m.p13n.PersistenceProvider.prototype */ {
 		metadata: {
 			library: "sap.m",
 			designtime: "sap/m/designtime/PersistenceProvider.designtime",
 			properties: {
 				/**
 				 * Provides the mode setting for the <code>PersistenceProvider</code>.
-				 * Allowed options are {@link sap.ui.mdc.enum.PersistenceMode}.
+				 * Allowed options are {@link sap.m.p13n.enums.PersistenceMode}.
 				 *
 				 * <b>Note:</b> The <code>PersistenceMode</code> option must not be changed after changes have already been made and persisted for a control instance.
 				 * For example, changing the mode from <code>Global</code> to <code>Auto</code> might result in an incompatible mix of different types of changes.

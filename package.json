@@ -22,7 +22,7 @@
 		"@ui5/linter": "^1.20.9",
 		"@ui5/middleware-code-coverage": "^2.0.3",
 		"eslint": "^9.39.2",
-		"globals": "^17.1.0",
+		"globals": "^17.3.0",
 		"local-web-server": "^5.4.0",
 		"rimraf": "^6.1.2",
 		"ui5-test-runner": "^5.13.0"

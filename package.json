@@ -17,11 +17,11 @@
 		"serve-dist": "ws --compress -d dist"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.39.2",
+		"@eslint/js": "^10.0.1",
 		"@ui5/cli": "^4.0.43",
 		"@ui5/linter": "^1.20.10",
 		"@ui5/middleware-code-coverage": "^2.0.3",
-		"eslint": "^9.39.2",
+		"eslint": "^10.0.0",
 		"globals": "^17.3.0",
 		"local-web-server": "^5.4.0",
 		"rimraf": "^6.1.2",

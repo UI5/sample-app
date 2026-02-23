@@ -246,8 +246,10 @@ sap.ui.define([
 		 *   The value for a "$top" system query option; it is removed from the returned map and
 		 *   turned into a "top()" transformation
 		 * @param {number} [iLevel=0]
-		 *   The current level; use <code>0</code> to bypass group levels
-		 * @param {boolean} [bFollowUp]
+		 *   The current level; use <code>0</code> to bypass group levels; use <code>-1</code> and
+		 *   only the query option "$$filterBeforeAggregate" (all others have to be omitted) to
+		 *   build the apply expression for grand totals only
+		 * @param {boolean} [bFollowUp=false]
 		 *   Tells whether this method is called for a follow-up request, not for the first one; in
 		 *   this case, neither the count nor grand totals or minimum or maximum values are
 		 *   requested again and <code>mAlias2MeasureAndMethod</code> is ignored
@@ -263,8 +265,8 @@ sap.ui.define([
 		 *
 		 * @public
 		 */
-		buildApply : function (oAggregation, mQueryOptions, iLevel, bFollowUp,
-				mAlias2MeasureAndMethod) {
+		buildApply : function (oAggregation, mQueryOptions, iLevel = 0, bFollowUp = false,
+				mAlias2MeasureAndMethod = undefined) {
 			var aAliases,
 				sApply = "",
 				aGrandTotalAggregate = [], // concat(aggregate(???),.) content for grand totals
@@ -314,12 +316,12 @@ sap.ui.define([
 			oAggregation.groupLevels.forEach(function (sGroup) {
 				oAggregation.group[sGroup] ??= {};
 			});
-			aSortedGroups = Object.keys(oAggregation.group).sort();
+			aSortedGroups = iLevel < 0 ? [] : Object.keys(oAggregation.group).sort();
 			if (aSortedGroups.length === oAggregation.groupLevels.length) {
 				// no other groups than those in groupLevels
 				oAggregation.groupLevels.pop();
 			}
-			bIsLeafLevel = !iLevel || iLevel > oAggregation.groupLevels.length;
+			bIsLeafLevel = iLevel <= 0 || iLevel > oAggregation.groupLevels.length;
 			aGroupBy = bIsLeafLevel
 				? aSortedGroups.filter(function (sGroup) {
 					return !oAggregation.groupLevels.includes(sGroup);
@@ -1033,6 +1035,40 @@ sap.ui.define([
 			}
 
 			return oExpanded;
+		},
+
+		/**
+		 * Returns the property metadata for a filter which has an alias as path. The EDM type is
+		 * determined either based on the filter value's type (number, boolean, null) or falls back
+		 * to the alias' original property type.
+		 *
+		 * @param {sap.ui.model.Filter} oFilter
+		 *   A filter for which the EDM type should be determined
+		 * @param {object} oAggregation
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
+		 * @param {string} sResolvedPath
+		 *   The resolved meta path for <code>oFilter</code>
+		 * @returns {{$Type: string}|undefined}
+		 *   An object containing the determined EDM type; or <code>undefined</code> if no type
+		 *   could be found
+		 *
+		 * @public
+		 */
+		getPropertyMetadataForFilter : function (oFilter, oAggregation, sResolvedPath) {
+			const sAlias = oFilter.getPath();
+			const sOriginalPropertyName = oAggregation?.aggregate?.[sAlias]?.name;
+			if (!sOriginalPropertyName) {
+				return;
+			}
+
+			const vValue = oFilter.getValue1();
+			if (typeof vValue === "number" || vValue === null) { // null: type is irrelevant
+				return {$Type : "Edm.Decimal"};
+			} else if (typeof vValue === "boolean") {
+				return {$Type : "Edm.Boolean"};
+			}
+			const sPath = sResolvedPath.slice(0, -sAlias.length) + sOriginalPropertyName;
+			return oAggregation.$fetchMetadata(sPath).getResult();
 		},
 
 		/**

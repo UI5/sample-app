@@ -20,10 +20,6 @@
 	height: 3rem;
 }
 
-.sapMPlanCalWithWeekNumbers .sapMPlanCalHead{
-	height: 6rem;
-}
-
 .sapPCRelative.sapMPlanCalWithWeekNumbers .sapMPlanCalHead{
 	height: 3rem;
 }
@@ -67,7 +63,6 @@
 		height: 2rem;
 	}
 
-	.sapMPlanCalWithWeekNumbers .sapMPlanCalHead,
 	.sapMPlanCalWithDayNamesLine .sapMPlanCalHead {
 		height: 3rem;
 	}
@@ -197,8 +192,7 @@
 }
 
 .sapMPlanCal.sapMPlanCalNoHead > .sapMList .sapMListInfoTBar,
-.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar,
-.sapMSize1.sapMPlanCal > .sapMList .sapMListInfoTBar{
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow {
 	display: block;
 }
 
@@ -207,13 +201,30 @@
 	display: flex;
 }
 
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow.sapMPlanWeeksRowDayView .sapMPlanWeeksLabelRow,
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow.sapMPlanWeeksRowWeekView .sapMPlanWeeksLabelRow {
+	display: none;
+}
+
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapUiCalWeeksRow.sapMPlanWeeksRowOneMonthView,
+.sapMSize1.sapMPlanCal > .sapMList .sapMListInfoTBar .sapUiCalWeeksRow.sapMPlanWeeksRowOneMonthView{
+	display: none;
+}
+
 .sapMPlanCal.sapMPlanCalNoHead > .sapMList .sapMListInfoTBar > .sapMPlanCalHead,
 .sapMPlanCal.sapMPlanCalNoHead > .sapMList .sapMListInfoTBar > .sapUiCalRow,
 .sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapMPlanCalHead,
 .sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapUiCalRow,
-.sapMSize1.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapMPlanCalHead,
-.sapMSize1.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapUiCalRow{
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow .sapMPlanWeeksLabelRow,
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow .sapMPlanWeeksDataRow,
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow .sapMPlanWeeksDataRow,
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow .sapMPlanWeeksLabelRow .sapUiCalRowWeekLabel{
 	width: 100%;
+}
+
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapMPlanCalCalendarWeeksRow .sapMPlanWeeksLabelRow .sapUiCalRowWeekLabel{
+	text-align: center;
+	padding-left: 0;
 }
 
 .sapMSize0.sapMPlanCal.sapPCRelative > .sapMList .sapMListInfoTBar > .sapMPlanCalHead,

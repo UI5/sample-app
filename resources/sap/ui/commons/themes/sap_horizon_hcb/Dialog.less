@@ -12,43 +12,43 @@
 }
 
 .sapUiDlgHdr {
-	background-color: @sapUiGroupContentBackground;
+	background-color: var(--sapGroup_ContentBackground);
 	margin:0;
 	padding: 6px 10px 0 10px;
-	color: @sapUiTextTitle;
-	border-width: 1px 1px 0px 1px;
-	border-color: @sapUiContentForegroundBorderColor;
+	color: var(--sapTitleColor);
+	border-width: 1px 1px 0 1px;
+	border-color: var(--sapContent_ForegroundBorderColor);
 	border-style: solid;
 }
 
 .sapUiDlgHdrBtns > a {
-	color: @sapUiTextTitle;
-	background-color: @sapUiGroupContentBackground;
+	color: var(--sapTitleColor);
+	background-color: var(--sapGroup_ContentBackground);
 	text-align: center;
 	border-width: 1px;
-	border-color: @sapUiContentForegroundBorderColor;
+	border-color: var(--sapContent_ForegroundBorderColor);
 	border-style: solid;
 	margin: 4px 1px 0 0;
 }
 
 .sapUiDlgCloseBtn {
-  background-image: url(img/formattedTextView/close-hcb.png);
-  background-position: center center;
-  background-repeat: no-repeat;
-  outline: none;
+	background-image: url('img/formattedTextView/close-hcb.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	outline: none;
 }
 
 .sapUiDlgCloseBtn:hover,
 .sapUiDlgCloseBtn:focus {
-  background-image: url(img/formattedTextView/close-hcb-hover.png);
+	background-image: url('img/formattedTextView/close-hcb-hover.png');
 }
 
 /* content */
 
 .sapUiDlgCont {
-	background-color: @sapUiGroupContentBackground;
-	border-width: 1px 1px 0px 1px;
-	border-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapGroup_ContentBackground);
+	border-width: 1px 1px 0 1px;
+	border-color: var(--sapContent_ForegroundBorderColor);
 	border-style: solid;
 	top: 27px;
 }
@@ -61,9 +61,9 @@
 /* footer */
 
 .sapUiDlgFooter {
-	background-color: @sapUiGroupContentBackground;
+	background-color: var(--sapGroup_ContentBackground);
 	border-width: 1px 1px 1px 1px;
-	border-color: @sapUiContentForegroundBorderColor;
+	border-color: var(--sapContent_ForegroundBorderColor);
 	border-style: solid;
 }
 
@@ -73,7 +73,7 @@
 }
 
 .sapUiDlgBtns {
-	background-color: @sapUiGroupContentBackground;  /* to cover the other background image with the lower line */
+	background-color: var(--sapGroup_ContentBackground); /* to cover the other background image with the lower line */
 	padding: 9px 25px 3px 16px;
 }
 
@@ -82,8 +82,8 @@
 	display: none;
 }
 
-.sapUiDlgGrip{
-	color: @sapUiBaseText;
+.sapUiDlgGrip {
+	color: var(--sapTextColor);
 	text-align: center;
 	padding: 3px;
 	height: 8px;

@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -271,8 +271,8 @@ sap.ui.define([
 			sParameter,
 			mQueryParams,
 			sServiceUrl,
-			mUriParameters,
-			sUrlParameters,
+			mURLParameters,
+			sURLParameters,
 			that = this;
 
 		// do not pass any parameters to Model
@@ -298,7 +298,7 @@ sap.ui.define([
 		}
 		// we don't expect the sServiceUrl to contain a "#" hash part, because it is not relevant
 		// for OData requests
-		[sServiceUrl, sUrlParameters] = sServiceUrl.split("?");
+		[sServiceUrl, sURLParameters] = sServiceUrl.split("?");
 		if (sServiceUrl.at(-1) !== "/") {
 			throw new Error("Service root URL must end with '/'");
 		}
@@ -307,14 +307,14 @@ sap.ui.define([
 				+ mParameters.operationMode);
 		}
 		this.sOperationMode = mParameters.operationMode;
-		mUriParameters = _Helper.getUrlParameters(sUrlParameters);
-		// Note: strict checking for model's URI parameters, but "sap-*" is allowed
-		mUriParameters = this.buildQueryOptions(mUriParameters, false, true);
+		mURLParameters = _Helper.getUrlParameters(sURLParameters);
+		// Note: strict checking for model's URL parameters, but "sap-*" is allowed
+		mURLParameters = this.buildQueryOptions(mURLParameters, false, true);
 		// BEWARE: these are shared across all bindings!
-		this.mUriParameters = mUriParameters;
+		this.mURLParameters = mURLParameters;
 		if (Supportability.isStatisticsEnabled()) {
 			// Note: this way, "sap-statistics" is not sent within $batch
-			mUriParameters = Object.assign({"sap-statistics" : true}, mUriParameters);
+			mURLParameters = Object.assign({"sap-statistics" : true}, mURLParameters);
 		}
 		this.sServiceUrl = sServiceUrl;
 		this.sGroupId = mParameters.groupId;
@@ -359,7 +359,7 @@ sap.ui.define([
 		this.mHeaders = {"Accept-Language" : sLanguageTag};
 		this.mMetadataHeaders = {"Accept-Language" : sLanguageTag};
 
-		mQueryParams = Object.assign({}, mUriParameters, mParameters.metadataUrlParams);
+		mQueryParams = Object.assign({}, mURLParameters, mParameters.metadataUrlParams);
 		const fnGetOrCreateRetryAfterPromise = this.getOrCreateRetryAfterPromise.bind(this);
 		this.oMetaModel = new ODataMetaModel(
 			_MetadataRequestor.create(this.mMetadataHeaders, sODataVersion,
@@ -400,7 +400,7 @@ sap.ui.define([
 			}
 		};
 		this.oRequestor = _Requestor.create(this.sServiceUrl, this.oInterface, this.mHeaders,
-			mUriParameters, sODataVersion, mParameters.withCredentials);
+			mURLParameters, sODataVersion, mParameters.withCredentials);
 		this.changeHttpHeaders(mParameters.httpHeaders);
 		this.bEarlyRequests = mParameters.earlyRequests;
 		if (this.bEarlyRequests) {
@@ -438,7 +438,7 @@ sap.ui.define([
 	/**
 	 * Requests changes to annotations.
 	 *
-	 * @returns {Promise<Array<object>>|sap.ui.base.SyncPromise<undefined>}
+	 * @returns {Promise<Array<object>>|sap.ui.base.SyncPromise<void>}
 	 *   A promise resolving with an optional array of change objects defining a metamodel path and
 	 *   a value to be set for that path
 	 *
@@ -1134,21 +1134,17 @@ sap.ui.define([
 	 * Method not supported, use {@link #bindList} with <code>mParameters.$$aggregation</code>
 	 * instead.
 	 *
-	 * @param {string} _sPath
-	 * @param {sap.ui.model.Context} [_oContext]
-	 * @param {sap.ui.model.Filter[]} [_aFilters]
-	 * @param {object} [_mParameters]
-	 * @param {sap.ui.model.Sorter[]} [_aSorters]
 	 * @returns {sap.ui.model.TreeBinding}
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Model#bindTree
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#bindTree
-	ODataModel.prototype.bindTree = function (_sPath, _oContext, _aFilters, _mParameters,
-			_aSorters) {
+	ODataModel.prototype.bindTree = function () {
 		throw new Error("Unsupported operation: v4.ODataModel#bindTree");
 	};
 
@@ -1518,16 +1514,13 @@ sap.ui.define([
 	 *   the longtext URL
 	 * @param {string} [sCachePath]
 	 *   The cache-relative path to the entity; used to resolve the targets
-	 * @param {object} [oOriginalMessage=oRawMessage]
-	 *   The original message object which is used to create the technical details
 	 * @returns {sap.ui.core.message.Message}
 	 *   The created UI5 message object
 	 *
 	 * @private
 	 */
 	// eslint-disable-next-line valid-jsdoc -- .@$ui5. is not understood properly
-	ODataModel.prototype.createUI5Message = function (oRawMessage, sResourcePath, sCachePath,
-			oOriginalMessage = oRawMessage) {
+	ODataModel.prototype.createUI5Message = function (oRawMessage, sResourcePath, sCachePath) {
 		var bIsBound = typeof oRawMessage.target === "string",
 			sMessageLongtextUrl = oRawMessage.longtextUrl,
 			aTargets,
@@ -1562,7 +1555,7 @@ sap.ui.define([
 			// Note: "" instead of undefined makes filtering easier (agreement with FE!)
 			target : bIsBound ? aTargets : "",
 			technical : oRawMessage.technical,
-			technicalDetails : _Helper.createTechnicalDetails(oOriginalMessage),
+			technicalDetails : _Helper.createTechnicalDetails(oRawMessage),
 			type : aMessageTypes[oRawMessage.numericSeverity] || MessageType.None
 		});
 	};
@@ -1634,7 +1627,7 @@ sap.ui.define([
 
 		return oPromise.then(function (aResults) {
 			return that.oRequestor.request("DELETE",
-					aResults[0].slice(1) + _Helper.buildQuery(that.mUriParameters),
+					aResults[0].slice(1) + _Helper.buildQuery(that.mURLParameters),
 					that.lockGroup(sGroupId, that, true, true),
 					{"If-Match" : aResults[1]}
 			).catch(function (oError) {
@@ -1676,8 +1669,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#destroyBindingContext
 	ODataModel.prototype.destroyBindingContext = function () {
@@ -1886,20 +1881,18 @@ sap.ui.define([
 	 * @see #constructor
 	 */
 	ODataModel.prototype.getGroupProperty = function (sGroupId, sPropertyName) {
-		switch (sPropertyName) {
-			case "submit":
-				if (sGroupId.startsWith("$auto.")) {
-					return SubmitMode.Auto;
-				}
-				if (sGroupId === "$single") {
-					return "Single";
-				}
-				return this.mGroupProperties[sGroupId]
-					? this.mGroupProperties[sGroupId].submit
-					: SubmitMode.API;
-			default:
-				throw new Error("Unsupported group property: '" + sPropertyName + "'");
+		if (sPropertyName !== "submit") {
+			throw new Error("Unsupported group property: '" + sPropertyName + "'");
 		}
+		if (sGroupId.startsWith("$auto.")) {
+			return SubmitMode.Auto;
+		}
+		if (sGroupId === "$single") {
+			return "Single";
+		}
+		return this.mGroupProperties[sGroupId]
+			? this.mGroupProperties[sGroupId].submit
+			: SubmitMode.API;
 	};
 
 	/**
@@ -2081,8 +2074,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#getObject
 	ODataModel.prototype.getObject = function () {
@@ -2124,7 +2119,7 @@ sap.ui.define([
 	 * none, an error is given, and a {@link #setRetryAfterHandler handler} is known.
 	 *
 	 * @param {Error} [oRetryAfterError] - A "Retry-After" error from a back-end call
-	 * @returns {Promise|null} The current "Retry-After" promise
+	 * @returns {Promise<void>|null} The current "Retry-After" promise
 	 *
 	 * @private
 	 */
@@ -2152,8 +2147,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#getOriginalProperty
 	ODataModel.prototype.getOriginalProperty = function () {
@@ -2165,9 +2162,11 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Model#getProperty
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	ODataModel.prototype.getProperty = function () {
 		throw new Error("Unsupported operation: v4.ODataModel#getProperty");
@@ -2678,16 +2677,15 @@ sap.ui.define([
 		}
 
 		const aUI5Messages = aMessages.map((oMessage) => {
-			const oOriginalMessage = oMessage;
+			oMessage["@$ui5.originalMessage"] ??= _Helper.clone(oMessage);
+			oMessage.transition = true;
 			if (oOperationMetadata) {
-				oMessage = _Helper.clone(oMessage);
 				// make targets absolute, will not be adjusted again in #createUI5Message
 				_Helper.adjustTargets(oMessage, oOperationMetadata, undefined, sContextPath,
 					sOriginalResourcePath);
 			}
-			oMessage.transition = true;
 
-			return this.createUI5Message(oMessage, sResourcePath, undefined, oOriginalMessage);
+			return this.createUI5Message(oMessage, sResourcePath);
 		});
 		if (!bSilent) {
 			Messaging.updateMessages(undefined, aUI5Messages);
@@ -2954,8 +2952,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#setLegacySyntax
 	ODataModel.prototype.setLegacySyntax = function () {
@@ -3032,7 +3032,7 @@ sap.ui.define([
 	 * is rejected with the same <code>Error</code> reason as previously passed to the handler, then
 	 * this reason is reported to the message model.
 	 *
-	 * @param {function(Error):Promise<undefined>} fnRetryAfter
+	 * @param {function(Error):Promise<void>} fnRetryAfter
 	 *   A "Retry-After" handler
 	 *
 	 * @public

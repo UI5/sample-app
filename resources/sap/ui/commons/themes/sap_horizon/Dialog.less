@@ -1,31 +1,31 @@
 /* ====================================== */
 /* CSS for control sap.ui.commons/Dialog  */
-/* Horizon theme                          */
+/* Morning Horizon theme                  */
 /* ====================================== */
 
 @_sap_ui_commons_Dialog_HeaderHeight: 40px;
 @_sap_ui_commons_Dialog_FooterHeight: 44px;
 
 .sapUiDlg {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: @sapUiGroupContentBackground; // @sapUiLightestBG = #ffffff
-	border: 1px solid @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
+	background-color: var(--sapGroup_ContentBackground);
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiDlg.sapUiDlgModal {
-	border: 1px solid darken(@sapUiContentForegroundBorderColor, 35); // @sapUiDarkBorder = #bfbfbf
+	border: 1px solid darken(@sapUiContentForegroundBorderColor, 35);
 }
 
 .sapUiDlgHdr {
 	height: @_sap_ui_commons_Dialog_HeaderHeight;
-	color: @sapUiPageHeaderTextColor; // @sapUiLightText = #666666
+	color: var(--sapPageHeader_TextColor);
 	border-bottom: 0;
 	margin-top: 0;
 }
 
 .sapUiDlgHdr > .sapUiDlgHdrLeft {
-	color: @sapUiPageHeaderTextColor; // @sapUiLightText = #666666
+	color: var(--sapPageHeader_TextColor);
 	font-size: 16px;
 	top: 30%;
 	position: relative;
@@ -33,7 +33,7 @@
 
 .sapUiDlgHdrSep {
 	height: 1px;
-	background-color: @sapUiPageHeaderBorderColor; // @sapUiLightBorder = #dddddd
+	background-color: var(--sapPageHeader_BorderColor);
 }
 
 .sapUiDlgHdrBtns {
@@ -46,7 +46,7 @@
 }
 
 .sapUiDlgCloseBtn {
-	background-image: url(img/dlg-close.png);
+	background-image: url('img/dlg-close.png');
 	background-position: center center;
 	background-repeat: no-repeat;
 	outline: none;
@@ -54,26 +54,28 @@
 
 .sapUiDlgCloseBtn:hover,
 .sapUiDlgCloseBtn:focus {
-	background-image: url(img/dlg-close-hov.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/dlg-close-hov.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiDlgCloseBtn:active {
-	background-image: url(img/dlg-close-hov.png);
-	background-color: @sapUiButtonLiteActiveBackground; // @sapUiDarkBG = #777777
+	background-image: url('img/dlg-close-hov.png');
+	background-color: var(--sapButton_Lite_Active_Background);
 }
 
 .sapUiDlgCont {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	padding: 10px 10px 12px;
 	font-size: 13px;
 	top: 41px;
 	border-width: 0;
 	bottom: 44px;
 }
+
 .sapUiDlgFlexHeight.sapUiDlgNoButtons .sapUiDlgCont {
 	margin-bottom: 4px;
 }
+
 .sapUiDlgNoButtons .sapUiDlgCont {
 	bottom: 4px;
 	margin-bottom: 0;
@@ -83,13 +85,13 @@
 	height: 1px;
 	position: absolute;
 	bottom: 44px;
-	background: @sapUiListBorderColor; // @sapUiExtraLightBorder = #e5e5e5
+	background: var(--sapList_BorderColor);
 	width: 100%;
 }
 
 .sapUiDlgFooter {
 	padding: 0 10px 0;
-	background-color: @sapUiPageFooterBackground; // @sapUiExtraDarkBG = #333333
+	background-color: var(--sapPageFooter_Background);
 	height: 44px;
 	box-sizing: border-box;
 }

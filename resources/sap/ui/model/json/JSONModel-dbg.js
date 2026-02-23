@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -407,7 +407,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the value for the property with the given path and context.
+	 * Returns the value for the given <code>sPath</code> and <code>oContext</code>.
 	 *
 	 * @param {string} sPath
 	 *   The path to the property
@@ -420,17 +420,16 @@ sap.ui.define([
 	 */
 	JSONModel.prototype.getProperty = function(sPath, oContext) {
 		return this._getObject(sPath, oContext);
-
 	};
 
 	/**
-	 * Returns the value for the property with the given path and context.
+	 * Returns the value for the given <code>sPath</code> and <code>oContext</code>.
 	 *
 	 * @param {string} sPath
 	 *   The path to the property
 	 * @param {object|sap.ui.model.Context} [oContext]
 	 *   The context or a JSON object
-	 * @returns {any}
+	 * @returns {any|null|undefined}
 	 *   The value of the property. If the property path derived from the given path and context is
 	 *   absolute (starts with a "/") but does not lead to a property in the data structure,
 	 *   <code>undefined</code> is returned. If the property path is not absolute, <code>null</code>
@@ -488,6 +487,43 @@ sap.ui.define([
 	JSONModel.prototype.getMetaModel = function() {
 		return this._oMetaModel;
 	};
+
+	/**
+	 * Returns the value of the property for the given <code>sPath</code> and <code>oContext</code>.
+	 *
+	 * @param {string} sPath The path to the object you want to read
+	 * @param {sap.ui.model.Context} [oContext] The context that resolves the path
+	 *
+	 * @returns {any|null|undefined}
+	 *   The value for the given <code>sPath</code> and <code>oContext</code>.
+	 *   If the property path derived from the given <code>sPath</code> and <code>oContext</code> is
+	 *   absolute (starts with a "/") but does not lead to a property in the data structure,
+	 *   <code>undefined</code> is returned. If the property <code>sPath</code> is not absolute, <code>null</code>
+	 *   is returned.
+	 *
+	 * @function
+	 * @name sap.ui.model.json.JSONModel.getObject
+	 * @deprecated As of version 1.145.0, use {@link #getProperty} instead
+	 * @public
+	 */
+
+	/**
+	 * Returns the original value for the property with the given <code>sPath</code> and <code>oContext</code>.
+	 *
+	 * @param {string} sPath The path/name of the property
+	 * @param {sap.ui.model.Context} [oContext] Context for accessing the property value
+	 *
+	 * @returns {any|null|undefined}
+	 *   The value of the property for the given <code>sPath</code> and <code>oContext</code>.
+	 *   If the property path derived from the given <code>sPath</code> and <code>oContext</code> is
+	 *   absolute (starts with a "/") but does not lead to a property in the data structure,
+	 *   <code>undefined</code> is returned. If the property <code>sPath</code> is not absolute, <code>null</code>
+	 *   is returned.
+	 * @function
+	 * @name sap.ui.model.json.JSONModel.getOriginalProperty
+	 * @deprecated As of version 1.145.0, use {@link #getProperty} instead
+	 * @public
+	 */
 
 	return JSONModel;
 

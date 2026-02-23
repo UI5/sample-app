@@ -20,7 +20,7 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @private
 	 * @experimental Since 1.73. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -248,19 +248,24 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	PluginBase.prototype.onDeactivate = function(oControl) {};
 
 	/**
+	 * Deactivates the plugin when the plugin is destroyed.
+	 *
+	 * @override
+	 */
+	PluginBase.prototype.exit = function() {
+		Element.prototype.exit.call(this);
+		this._deactivate();
+	};
+
+	/**
 	 * Activates or deactivates the plugin when the parent of the plugin is set.
 	 *
 	 * @override
 	 */
 	PluginBase.prototype.setParent = function() {
 		this._deactivate();
-
 		Element.prototype.setParent.apply(this, arguments);
-
-		if (this.getEnabled()) {
-			this._activate();
-		}
-
+		this._activate();
 		return this;
 	};
 
@@ -302,7 +307,7 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	 * Internal plugin activation handler
 	 */
 	PluginBase.prototype._activate = function() {
-		if (this._bActive) {
+		if (this._bActive || !this.getEnabled()) {
 			return;
 		}
 

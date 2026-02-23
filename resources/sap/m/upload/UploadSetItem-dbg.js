@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Item that represents one file to be uploaded using the {@link sap.m.upload.UploadSet} control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @constructor
 	 * @public
 	 * @since 1.63
@@ -721,7 +721,8 @@ sap.ui.define([
 			oSplit = UploadSetItem._splitFileName(this.getFileName());
 			this._oFileNameEdit = new Input({
 				id: this.getId() + "-fileNameEdit",
-				type: MobileLibrary.InputType.Text
+				type: MobileLibrary.InputType.Text,
+				placeholder: this._oRb.getText("UPLOAD_SET_FILE_NAME")
 			});
 			this._oFileNameEdit.addStyleClass("sapMUCEditBox");
 			this._oFileNameEdit.setFieldWidth("75%");

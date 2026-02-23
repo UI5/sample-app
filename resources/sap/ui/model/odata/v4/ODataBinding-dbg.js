@@ -336,7 +336,7 @@ sap.ui.define([
 	 * properties.
 	 *
 	 * @param {object} mQueryOptions
-	 *   The cache query options; the options of oModel.mUriParameters are added
+	 *   The cache query options; the options of oModel.mURLParameters are added
 	 * @param {string} sResourcePath
 	 *   The resource path
 	 * @param {sap.ui.model.Context} [oContext]
@@ -357,7 +357,7 @@ sap.ui.define([
 			sGroupId, bSideEffectsRefresh, oOldCache) {
 		var oCache, sDeepResourcePath, iGeneration;
 
-		this.mCacheQueryOptions = Object.assign({}, this.oModel.mUriParameters, mQueryOptions);
+		this.mCacheQueryOptions = Object.assign({}, this.oModel.mURLParameters, mQueryOptions);
 		if (this.bRelative) { // quasi-absolute or relative binding
 			// mCacheByResourcePath has to be reset if parameters are changing
 			oCache = this.mCacheByResourcePath && this.mCacheByResourcePath[sResourcePath];
@@ -384,7 +384,7 @@ sap.ui.define([
 			oOldCache.setActive(false);
 		}
 		if (this.mLateQueryOptions) {
-			oCache.setLateQueryOptions(this.mLateQueryOptions);
+			oCache.setLateQueryOptions(this.mLateQueryOptions, /*bInvalidateTypes*/true);
 		}
 		this.oCache = oCache;
 
@@ -1092,8 +1092,10 @@ sap.ui.define([
 	 * @returns {boolean}
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Binding#isInitial
 	ODataBinding.prototype.isInitial = function () {
@@ -1582,7 +1584,7 @@ sap.ui.define([
 	 *   loaded because they may have changed due to side effects of a previous update
 	 * @param {sap.ui.model.odata.v4.Context} [oContext]
 	 *   The context for which to request side effects; if missing, the whole binding is affected
-	 * @param {Promise[]} aPromises
+	 * @param {Array<sap.ui.base.SyncPromise<void>>} aPromises
 	 *   List of (sync) promises which is extended for each call to
 	 *   {@link sap.ui.model.odata.v4.ODataParentBinding#requestSideEffects} or
 	 *   {@link #refreshInternal}

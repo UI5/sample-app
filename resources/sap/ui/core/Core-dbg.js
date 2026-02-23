@@ -117,7 +117,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.144.0";
+	const sVersion = "1.145.0";
 
 	/**
 	 * The buildinfo.
@@ -441,7 +441,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -985,7 +985,6 @@ sap.ui.define([
 				"applyTheme","setThemeRoot","attachThemeChanged","detachThemeChanged",
 				"isThemeApplied",
 				"notifyContentDensityChanged",
-				"attachThemeScopingChanged","detachThemeScopingChanged","fireThemeScopingChanged",
 				"includeLibraryTheme"
 			]
 		}
@@ -1013,7 +1012,7 @@ sap.ui.define([
 	 * Map of event names and ids, that are provided by this class
 	 * @private
 	 */
-	Core.M_EVENTS = {ControlEvent: "ControlEvent", UIUpdated: "UIUpdated", ThemeChanged: "ThemeChanged", ThemeScopingChanged: "themeScopingChanged", LocalizationChanged: "localizationChanged",
+	Core.M_EVENTS = {ControlEvent: "ControlEvent", UIUpdated: "UIUpdated", ThemeChanged: "ThemeChanged", LocalizationChanged: "localizationChanged",
 			LibraryChanged : "libraryChanged",
 			ValidationError : "validationError", ParseError : "parseError", FormatError : "formatError", ValidationSuccess : "validationSuccess"};
 
@@ -2202,40 +2201,6 @@ sap.ui.define([
 		_oEventProvider.detachEvent(Core.M_EVENTS.ThemeChanged, fnFunction, oListener);
 	};
 
-	/**
-	 * Fired when a scope class has been added or removed on a control/element
-	 * by using the custom style class API <code>addStyleClass</code>,
-	 * <code>removeStyleClass</code> or <code>toggleStyleClass</code>.
-	 *
-	 * Scope classes are defined by the library theme parameters coming from the
-	 * current theme.
-	 *
-	 * <b>Note:</b> The event will only be fired after the
-	 * <code>sap.ui.core.theming.Parameters</code> module has been loaded.
-	 * By default this is not the case.
-	 *
-	 * @name sap.ui.core.Core#themeScopingChanged
-	 * @event
-	 * @param {sap.ui.base.Event} oEvent
-	 * @param {sap.ui.base.EventProvider} oEvent.getSource
-	 * @param {object} oEvent.getParameters
-	 * @param {string[]} oEvent.getParameters.scopes Array of the CSS scope classes
-	 * @param {boolean} oEvent.getParameters.added Whether the class has been added or removed
-	 * @param {sap.ui.core.Element} oEvent.getParameters.element Element instance on which the scope change happened
-	 * @deprecated since 1.119. Moved to {@link module:/sap/ui/core/Theming.event:themeScopingChanged themeScopingChanged}.
-	 */
-
-	Core.prototype.attachThemeScopingChanged = function(fnFunction, oListener) {
-		_oEventProvider.attachEvent(Core.M_EVENTS.ThemeScopingChanged, fnFunction, oListener);
-	};
-
-	Core.prototype.detachThemeScopingChanged = function(fnFunction, oListener) {
-		_oEventProvider.detachEvent(Core.M_EVENTS.ThemeScopingChanged, fnFunction, oListener);
-	};
-
-	Theming.attachThemeScopingChanged(function(oEvent) {
-		_oEventProvider.fireEvent(Core.M_EVENTS.ThemeScopingChanged, BaseEvent.getParameters(oEvent));
-	});
 
 	/**
 	 * Fired when any of the localization relevant configuration settings has changed

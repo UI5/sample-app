@@ -142,7 +142,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -195,10 +195,10 @@ sap.ui.define([
 				layoutData : {type : "sap.ui.core.LayoutData", multiple : false, singularName : "layoutData"},
 
 				/**
-				 * Dependents are not rendered, but their databinding context and lifecycle are bound to the aggregating Element.
+				 * Dependents are not rendered, but their databinding context and lifecycle are bound to the aggregating ManagedObject.
 				 * @since 1.19
 				 */
-				dependents : {type : "sap.ui.core.Element", multiple : true},
+				dependents : {type : "sap.ui.base.ManagedObject", multiple : true},
 
 				/**
 				 * Defines the drag-and-drop configuration.

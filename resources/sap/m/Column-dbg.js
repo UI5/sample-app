@@ -7,13 +7,15 @@
 // Provides control sap.m.Column.
 sap.ui.define([
 	"./library",
+	"./ListItemBase",
+	"./plugins/PluginBase",
+	"sap/ui/Device",
 	"sap/ui/core/Element",
 	"sap/ui/core/Renderer",
 	"sap/ui/core/library",
-	"sap/ui/Device",
 	"sap/ui/core/InvisibleText"
 ],
-	function(library, Element, Renderer, coreLibrary, Device, InvisibleText) {
+	function(library, ListItemBase, PluginBase, Device, Element, Renderer, coreLibrary, InvisibleText) {
 	"use strict";
 
 
@@ -45,7 +47,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -277,6 +279,28 @@ sap.ui.define([
 			oMenu.openBy(this);
 			oEvent.preventDefault();
 		}
+	};
+
+	Column.prototype.getAccessibilityDescription = function(bLessDetails) {
+		const oHeader = this.getHeader();
+		let sDescription = ListItemBase.getAccessibilityText(oHeader, false, bLessDetails);
+		if (bLessDetails) {
+			return sDescription;
+		}
+
+		const oColumnAIAction = PluginBase.getPlugin(this, "sap.m.plugins.ColumnAIAction");
+		if (oColumnAIAction?.getEnabled()) {
+			sDescription += " " + oColumnAIAction.getActionTooltip();
+		}
+		return sDescription;
+	};
+
+	Column.prototype.onfocusin = function() {
+		this.getTable().updateInvisibleText(this.getAccessibilityDescription());
+	};
+
+	Column.prototype.onfocusout = function() {
+		this.getTable().removeInvisibleTextAssociation(this.getDomRef());
 	};
 
 	Column.prototype.invalidate = function() {

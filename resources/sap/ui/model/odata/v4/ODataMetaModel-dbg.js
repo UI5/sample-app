@@ -43,9 +43,9 @@ sap.ui.define([
 	"sap/ui/model/odata/type/TimeOfDay"
 ], function (AnnotationHelper, ValueListType, _Helper, assert, Log, JSTokenizer, ObjectPath,
 		ManagedObject, SyncPromise, BindingMode, ChangeReason, ClientListBinding, BaseContext,
-		ContextBinding, MetaModel, PropertyBinding, OperationMode, Boolean, Byte, EdmDate,
+		ContextBinding, MetaModel, PropertyBinding, OperationMode, EdmBoolean, Byte, EdmDate,
 		DateTimeOffset, Decimal, Double, Guid, Int16, Int32, Int64, Raw, SByte, Single, Stream,
-		String, TimeOfDay) {
+		EdmString, TimeOfDay) {
 	"use strict";
 	/*eslint max-nested-callbacks: 0 */
 
@@ -118,7 +118,7 @@ sap.ui.define([
 			messageChange : true
 		},
 		mUi5TypeForEdmType = {
-			"Edm.Boolean" : {Type : Boolean},
+			"Edm.Boolean" : {Type : EdmBoolean},
 			"Edm.Byte" : {Type : Byte},
 			"Edm.Date" : {Type : EdmDate},
 			"Edm.DateTimeOffset" : {
@@ -153,7 +153,7 @@ sap.ui.define([
 					"@com.sap.vocabularies.Common.v1.IsDigitSequence" : "isDigitSequence",
 					$MaxLength : "maxLength"
 				},
-				Type : String
+				Type : EdmString
 			},
 			"Edm.TimeOfDay" : {
 				constraints : {
@@ -203,7 +203,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -1047,21 +1047,17 @@ sap.ui.define([
 	/**
 	 * Method not supported
 	 *
-	 * @param {string} _sPath
-	 * @param {sap.ui.model.Context} [_oContext]
-	 * @param {sap.ui.model.Filter[]} [_aFilters]
-	 * @param {object} [_mParameters]
-	 * @param {sap.ui.model.Sorter[]} [_aSorters]
 	 * @returns {sap.ui.model.TreeBinding}
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Model#bindTree
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#bindTree
-	ODataMetaModel.prototype.bindTree = function (_sPath, _oContext, _aFilters, _mParameters,
-			_aSorters) {
+	ODataMetaModel.prototype.bindTree = function () {
 		throw new Error("Unsupported operation: v4.ODataMetaModel#bindTree");
 	};
 
@@ -1830,7 +1826,7 @@ sap.ui.define([
 			}
 			if (sLastSegment.startsWith("@$ui5.context.is")
 					|| sLastSegment.startsWith("@$ui5.node.is")) {
-				oBooleanType ??= new Boolean();
+				oBooleanType ??= new EdmBoolean();
 				return SyncPromise.resolve(oBooleanType);
 			}
 		}
@@ -2271,7 +2267,7 @@ sap.ui.define([
 	 *   Absolute path that points to the annotation
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   Context to resolve edm:Path references contained in the annotation
-	 * @returns {Promise}
+	 * @returns {Promise<Object<object>>}
 	 *   A promise which is resolved with the filtered map of qualifier to value list mapping
 	 *   objects
 	 *
@@ -2629,8 +2625,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#getOriginalProperty
 	ODataMetaModel.prototype.getOriginalProperty = function () {
@@ -2778,9 +2776,11 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Model#refresh
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#refresh
 	ODataMetaModel.prototype.refresh = function () {
@@ -2802,7 +2802,7 @@ sap.ui.define([
 	 *   If present, it must point to this meta model's root entity container, that is,
 	 *   <code>oDetails.context.getModel() === this</code> and
 	 *   <code>oDetails.context.getPath() === "/"</code>
-	 * @returns {Promise}
+	 * @returns {Promise<Object<{StandardCode:string,Text:string,UnitSpecificScale:number}>|null>}
 	 *   A promise resolving with the customizing which is a map from the code key to an object with
 	 *   the following properties:
 	 *   <ul>
@@ -2986,7 +2986,7 @@ sap.ui.define([
 	 *   If present, it must point to this meta model's root entity container, that is,
 	 *   <code>oDetails.context.getModel() === this</code> and
 	 *   <code>oDetails.context.getPath() === "/"</code>
-	 * @returns {Promise<Object<string,{StandardCode: string, Text: string, UnitSpecificScale: string}>|null>}
+	 * @returns {Promise<Object<{StandardCode:string,Text:string,UnitSpecificScale:number}>|null>}
 	 *   A promise resolving with the currency customizing which is a map from currency key to an
 	 *   object with the following properties:
 	 *   <ul>
@@ -3338,7 +3338,7 @@ sap.ui.define([
 	 *   If present, it must point to this meta model's root entity container, that is,
 	 *   <code>oDetails.context.getModel() === this</code> and
 	 *   <code>oDetails.context.getPath() === "/"</code>
-	 * @returns {Promise<Object<string,{StandardCode: string, Text: string, UnitSpecificScale: string}>|null>}
+	 * @returns {Promise<Object<{StandardCode:string,Text:string,UnitSpecificScale:number}>|null>}
 	 *   A promise resolving with the unit customizing which is a map from unit key to an object
 	 *   with the following properties:
 	 *   <ul>
@@ -3387,7 +3387,7 @@ sap.ui.define([
 	 *   Absolute path that points to the given annotation
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   Context to resolve edm:Path references contained in the given annotation
-	 * @returns {Promise}
+	 * @returns {Promise<any>}
 	 *   A promise that resolves with the value of the dynamic expression
 	 *
 	 * @private
@@ -3715,8 +3715,10 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Model#setLegacySyntax
 	ODataMetaModel.prototype.setLegacySyntax = function () {

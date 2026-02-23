@@ -186,7 +186,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @public
@@ -641,6 +641,9 @@ function(
 		 * @param {jQuery.Event} oEvent Event object
 		 */
 		TimePicker.prototype.onfocusout = function(oEvent) {
+			if (this._bClickOnValueStateLink(oEvent)) {
+				return;
+			}
 			if (!this._isMobileDevice()) {
 				_maskEnablerOnFocusOut.apply(this, arguments);
 				this._$input.removeAttr("aria-description");

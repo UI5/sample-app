@@ -121,7 +121,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.144.0
+		* @version 1.145.0
 		*
 		* @public
 		* @alias sap.m.Popover

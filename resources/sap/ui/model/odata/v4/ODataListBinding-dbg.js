@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -781,7 +781,7 @@ sap.ui.define([
 
 		iCount ??= this.oCache.collapse(
 			_Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath()),
-			bAll ? this.lockGroup() : undefined, bSilent, false, this.getKeepAlivePredicates());
+			this.getKeepAlivePredicates(), bAll ? this.lockGroup() : undefined, bSilent, false);
 
 		if (iCount > 0) {
 			const aContexts = this.aContexts;
@@ -1585,7 +1585,6 @@ sap.ui.define([
 	ODataListBinding.prototype.doCreateCache = function (sResourcePath, mQueryOptions, oContext,
 			sDeepResourcePath, sGroupId, bSideEffectsRefresh, oOldCache) {
 		var oCache,
-			aKeepAlivePredicates,
 			mKeptElementsByPredicate,
 			bResetViaSideEffects = this.bResetViaSideEffects;
 
@@ -1593,8 +1592,8 @@ sap.ui.define([
 
 		if (oOldCache && oOldCache.getResourcePath() === sResourcePath
 				&& oOldCache.$deepResourcePath === sDeepResourcePath) {
-			aKeepAlivePredicates = this.getKeepAlivePredicates();
-			if (this.iCreatedContexts || this.iDeletedContexts || aKeepAlivePredicates.length
+			const bHasEffectivelyKeptAlive = this.hasEffectivelyKeptAlive();
+			if (this.iCreatedContexts || this.iDeletedContexts || bHasEffectivelyKeptAlive
 					// the cache in a recursive hierarchy must be reused (to keep the tree state)
 					// but immediately after #setAggregation it might still be a _CollectionCache
 					|| this.mParameters.$$aggregation?.hierarchyQualifier
@@ -1604,9 +1603,12 @@ sap.ui.define([
 					bSideEffectsRefresh = true;
 					oOldCache.resetOutOfPlace();
 				}
+				const mKeepAlivePredicates = bHasEffectivelyKeptAlive
+					? this.getKeepAlivePredicates()
+					: {};
 				// Note: #inheritQueryOptions as called below should not matter in case of own
 				// requests, which are a precondition for kept-alive elements
-				oOldCache.reset(aKeepAlivePredicates, bSideEffectsRefresh ? sGroupId : undefined,
+				oOldCache.reset(mKeepAlivePredicates, bSideEffectsRefresh ? sGroupId : undefined,
 					mQueryOptions, this.mParameters.$$aggregation, this.isGrouped());
 				// validate selection after the old cache is reset
 				this.validateSelection(oOldCache, sGroupId);
@@ -1618,11 +1620,10 @@ sap.ui.define([
 		mQueryOptions = this.inheritQueryOptions(mQueryOptions, oContext);
 		oCache = this.getCacheAndMoveKeepAliveContexts(sResourcePath, mQueryOptions);
 		if (oCache && this.mParameters.$$aggregation) {
-			mKeptElementsByPredicate = {};
-			aKeepAlivePredicates = this.getKeepAlivePredicates();
-			aKeepAlivePredicates.forEach(function (sPredicate) {
+			mKeptElementsByPredicate = this.getKeepAlivePredicates();
+			for (const sPredicate in mKeptElementsByPredicate) {
 				mKeptElementsByPredicate[sPredicate] = oCache.getValue(sPredicate);
-			});
+			}
 			oCache.setActive(false);
 			oCache = undefined; // create _AggregationCache instead of _CollectionCache
 		}
@@ -1632,9 +1633,9 @@ sap.ui.define([
 			this.bSharedRequest, this.isGrouped());
 		oCache.setSeparate?.(this.mParameters.$$separate);
 		if (mKeptElementsByPredicate) {
-			aKeepAlivePredicates.forEach(function (sPredicate) {
+			for (const sPredicate in mKeptElementsByPredicate) {
 				oCache.addKeptElement(mKeptElementsByPredicate[sPredicate]);
-			});
+			}
 		} else if (this.bSharedRequest) {
 			oCache.registerChangeListener("", this);
 		}
@@ -1778,7 +1779,7 @@ sap.ui.define([
 		let bDataRequested = false;
 		const sPath = _Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath());
 
-		return this.oCache.expand(this.lockGroup(), sPath, iLevels,
+		return this.oCache.expand(this.lockGroup(), sPath, iLevels, this.getKeepAlivePredicates(),
 			/*fnDataRequested*/ () => {
 				bDataRequested = true;
 				this.fireDataRequested();
@@ -1957,7 +1958,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataListBinding.prototype.fetchDownloadUrl = function () {
-		var mUriParameters = this.oModel.mUriParameters;
+		var mURLParameters = this.oModel.mURLParameters;
 
 		this.checkTransient();
 		if (!this.isResolved()) {
@@ -1979,7 +1980,7 @@ sap.ui.define([
 		}
 
 		return this.withCache(function (oCache, sPath) {
-			return oCache.getDownloadUrl(sPath, mUriParameters, mAdditionalExpand);
+			return oCache.getDownloadUrl(sPath, mURLParameters, mAdditionalExpand);
 		});
 	};
 
@@ -2012,6 +2013,7 @@ sap.ui.define([
 		let aFiltersNoThese;
 		const oMetaModel = this.oModel.getMetaModel();
 		const oMetaContext = oMetaModel.getMetaContext(this.oModel.resolve(this.sPath, oContext));
+		const that = this;
 
 		/*
 		 * Returns the $filter value for the given single filter using the given Edm type to
@@ -2102,6 +2104,8 @@ sap.ui.define([
 			return oMetaModel.fetchObject(sResolvedPath).then(function (oPropertyMetadata) {
 				var oCondition, sLambdaVariable, sOperator;
 
+				oPropertyMetadata ??= _AggregationHelper.getPropertyMetadataForFilter(oFilter,
+					that.mParameters.$$aggregation, sResolvedPath);
 				if (!oPropertyMetadata) {
 					throw new Error("Type cannot be determined, no metadata for path: "
 						+ sResolvedPath);
@@ -3041,16 +3045,17 @@ sap.ui.define([
 	/**
 	 * Method not supported
 	 *
-	 * @param {string} [_sPath]
 	 * @returns {Array}
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.ListBinding#getDistinctValues
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.ListBinding#getDistinctValues
-	ODataListBinding.prototype.getDistinctValues = function (_sPath) {
+	ODataListBinding.prototype.getDistinctValues = function () {
 		throw new Error("Unsupported operation: v4.ODataListBinding#getDistinctValues");
 	};
 
@@ -3270,26 +3275,25 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns a list of key predicates of all kept-alive contexts.
+	 * Returns a set of key predicates of all kept-alive contexts.
 	 *
-	 * @returns {string[]} The list of key predicates
+	 * @returns {Object<boolean>} The set of key predicates
 	 *
 	 * @private
 	 */
 	ODataListBinding.prototype.getKeepAlivePredicates = function () {
-		var sBindingPath;
+		const mSet = {};
+		const sBindingPath = this.getHeaderContext().getPath();
+		const addKeepAlivePredicate = (oContext) => {
+			if (oContext.isEffectivelyKeptAlive()) {
+				const sPredicate = _Helper.getRelativePath(oContext.getPath(), sBindingPath);
+				mSet[sPredicate] = true;
+			}
+		};
+		Object.values(this.mPreviousContextsByPath).forEach(addKeepAlivePredicate);
+		this.aContexts.forEach(addKeepAlivePredicate);
 
-		if (!this.getHeaderContext()) {
-			return [];
-		}
-		sBindingPath = this.getHeaderContext().getPath();
-
-		return Object.values(this.mPreviousContextsByPath).concat(this.aContexts)
-			.filter(function (oContext) {
-				return oContext.isEffectivelyKeptAlive();
-			}).map(function (oContext) {
-				return _Helper.getRelativePath(oContext.getPath(), sBindingPath);
-			});
+		return mSet;
 	};
 
 	/**
@@ -3426,6 +3430,19 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.getSelectionCount = function () {
 		return this.getHeaderContext()?.getProperty("$selectionCount");
+	};
+
+	/**
+	 * Tells whether this list binding has at least one context that is effectively kept alive.
+	 *
+	 * @returns {boolean} Whether it has a context effectively kept alive
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.hasEffectivelyKeptAlive = function () {
+		return Object.values(this.mPreviousContextsByPath)
+				.some((oContext) => oContext.isEffectivelyKeptAlive())
+			|| this.aContexts.some((oContext) => oContext.isEffectivelyKeptAlive());
 	};
 
 	/**
@@ -3808,9 +3825,9 @@ sap.ui.define([
 		const sUpdateGroupId = this.getUpdateGroupId();
 		const oGroupLock = this.lockGroup(sUpdateGroupId, true, true); // after #getCanonicalPath!
 		const bUpdateSiblingIndex = oSiblingContext?.isEffectivelyKeptAlive();
-		const {promise : oPromise, refresh : bRefresh} = this.oCache.move(oGroupLock, sChildPath,
-			oChildContext.getPath().slice(1), sParentPath, sSiblingPath, bUpdateSiblingIndex,
-			bCopy);
+		const {promise : oPromise, refresh : bRefresh} = this.oCache.move(oGroupLock,
+			this.getKeepAlivePredicates(), sChildPath, oChildContext.getPath().slice(1),
+			sParentPath, sSiblingPath, bUpdateSiblingIndex, bCopy);
 
 		if (bRefresh) {
 			return SyncPromise.all([
@@ -4017,7 +4034,7 @@ sap.ui.define([
 				that.removeCachesAndMessages(sResourcePathPrefix);
 				if (that.bSharedRequest) {
 					oPromise = that.createRefreshPromise();
-					oCache.reset([]);
+					oCache.reset({});
 				} else {
 					that.fetchCache(that.oContext, false, /*bKeepQueryOptions*/true,
 						sGroupId, bKeepCacheOnError, bSync);
@@ -4137,33 +4154,43 @@ sap.ui.define([
 	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which resolves without a defined value when the entity is updated in the cache,
 	 *   or rejects if the refresh failed.
-	 * @throws {Error}
-	 *   If the given context does not represent a single entity (see {@link #getHeaderContext}), or
-	 *   if <code>bAllowRemoval</code> is combined with <code>bWithMessages</code> or with a
-	 *   recursive hierarchy
+	 * @throws {Error} If
+	 *   <ul>
+	 *     <li> the given context does not represent a single entity (see
+	 *       {@link #getHeaderContext}),
+	 *     <li> the context is not effectively kept alive and currently not part of the recursive
+	 *       hierarchy,
+	 *     <li> data aggregation with <code>groupLevels</code> (see {@link #setAggregation}) is
+	 *       used,
+	 *     <li> <code>bAllowRemoval</code> is either combined with <code>bWithMessages</code> or
+	 *       with "$$aggregation".
+	 *   </ul>
 	 *
 	 * @private
 	 */
 	ODataListBinding.prototype.refreshSingle = function (oContext, sGroupId, bLocked, bAllowRemoval,
 			bKeepCacheOnError, bWithMessages) {
-		var sContextPath = oContext.getPath(),
+		var oAggregation = this.mParameters.$$aggregation,
+			sContextPath = oContext.getPath(),
 			sResourcePathPrefix = sContextPath.slice(1),
 			that = this;
 
 		if (oContext === this.oHeaderContext) {
 			throw new Error("Unsupported header context: " + oContext);
 		}
-		if (this.mParameters.$$aggregation?.hierarchyQualifier) {
-			if (!oContext.isEffectivelyKeptAlive()
-					&& this.aContexts[oContext.iIndex] !== oContext) {
-				throw new Error("Not currently part of the hierarchy: " + oContext);
-			}
-			if (bAllowRemoval) {
-				throw new Error("Unsupported parameter bAllowRemoval: " + bAllowRemoval);
+		if (bAllowRemoval) {
+			if (bWithMessages) {
+				throw new Error("Unsupported: bAllowRemoval && bWithMessages");
+			} else if (oAggregation) {
+				throw new Error("Unsupported: bAllowRemoval && $$aggregation");
 			}
 		}
-		if (bAllowRemoval && bWithMessages) {
-			throw new Error("Unsupported: bAllowRemoval && bWithMessages");
+		if (oAggregation?.hierarchyQualifier && !oContext.isEffectivelyKeptAlive()
+				&& this.aContexts[oContext.iIndex] !== oContext) {
+			throw new Error("Not currently part of the hierarchy: " + oContext);
+		}
+		if (oAggregation?.groupLevels?.length) {
+			throw new Error("Unsupported for data aggregation with groupLevels: " + this);
 		}
 
 		return this.withCache(function (oCache, sPath, oBinding) {
@@ -4571,8 +4598,8 @@ sap.ui.define([
 		 * Adds an error handler to the given promise which reports errors to the model and ignores
 		 * cancellations.
 		 *
-		 * @param {Promise} oPromise - A promise
-		 * @returns {Promise} A promise including an error handler
+		 * @param {Promise<any>} oPromise - A promise
+		 * @returns {Promise<any>} A promise including an error handler
 		 */
 		function reportError(oPromise) {
 			return oPromise.catch(function (oError) {
@@ -4775,7 +4802,7 @@ sap.ui.define([
 				return;
 			}
 			if (sResumeAction === "resetCache") {
-				this.oCache.reset([]);
+				this.oCache.reset({});
 				return;
 			}
 			this.reset();
@@ -4996,7 +5023,7 @@ sap.ui.define([
 		}
 		const bOldUseCase = useCase(this.mParameters.$$aggregation);
 		const bNewUseCase = useCase(oAggregation);
-		if (bOldUseCase !== bNewUseCase && this.getKeepAlivePredicates().length) {
+		if (bOldUseCase !== bNewUseCase && this.hasEffectivelyKeptAlive()) {
 			throw new Error("Cannot set $$aggregation due to a kept-alive context");
 		}
 

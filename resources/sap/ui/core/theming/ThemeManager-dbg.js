@@ -224,30 +224,23 @@ sap.ui.define([
 			CORE_VERSION = version;
 		}
 
-		if (!mAllLoadedLibraries.has(libName)) {
-			/**
-			 * include the stylesheet for the library (except for "classic" and "legacy" lib)
-			 * @deprecated
-			 */
-			if (libName === "sap.ui.legacy" || libName === "sap.ui.classic") {
-				return;
-			}
-
-			const oLibInfo = getLibraryInfo({
-				libName,
-				variant
-			});
-
-			if (!oLibInfo.cssLinkElement) {
-				updateThemeUrl({
-					libInfo: oLibInfo,
-					suppressFOUC: true
-				});
-
-				// if parameters have been used, update them with the new style sheet
-				sap.ui.require("sap/ui/core/theming/Parameters")?._addLibraryTheme(oLibInfo.id);
-			}
+		/**
+		 * include the stylesheet for the library (except for "classic" and "legacy" lib)
+		 * @deprecated
+		 */
+		if (libName === "sap.ui.legacy" || libName === "sap.ui.classic") {
+			return;
 		}
+
+		const oLibInfo = getLibraryInfo({
+			libName,
+			variant
+		});
+
+		updateThemeUrl({
+			libInfo: oLibInfo,
+			suppressFOUC: true
+		});
 	}
 
 	/**
@@ -274,7 +267,7 @@ sap.ui.define([
 			Log.error("UI5 theming lifecycle requires valid version information when a theming service is active. Please check why the version info could not be loaded in this system.", undefined, MODULE_NAME);
 		}
 		// Compare the link including the UI5 version only if it is already available; otherwise, compare the link without the version to prevent unnecessary requests.
-		const sOldUrl = libInfo.cssLinkElement?.getAttribute("href");
+		const sOldUrl = libInfo.cssLinkElement?.href;
 		const sOldUrlWoVersion = sOldUrl?.replace(/\?.*/, "");
 		const sUrl = libInfo.getUrl(theme).baseUrl;
 		if (!sUrl || sOldUrlWoVersion !== sUrl || force) {
@@ -348,23 +341,23 @@ sap.ui.define([
 	 * @param {boolean} suppressFOUC - Whether to suppress Flash of Unstyled Content during theme changes
 	 */
 	function includeStyleSheetPostProcessing(libInfo, cssLoadededPromise, suppressFOUC) {
-		libInfo.cssLoaded = cssLoadededPromise.finally(function() {
-			if (!libInfo.cssLoaded.aborted) {
+		const cssLoaded = libInfo.cssLoaded = cssLoadededPromise.finally(function() {
+			if (!cssLoaded.aborted) {
 				libInfo.finishedLoading = true;
 				document.querySelector(`link[data-sap-ui-foucmarker='${libInfo.linkId}']`)?.remove();
 				libInfo.cssLinkElement = document.getElementById(`${libInfo.linkId}`);
 				Log.debug(`New stylesheet loaded and old stylesheet removed for library: ${libInfo.id}`, undefined, MODULE_NAME);
 			}
 		}).then(function() {
-			if (!libInfo.cssLoaded.aborted) {
+			if (!cssLoaded.aborted) {
 				handleThemeSucceeded(libInfo.id);
 			}
 		}).catch(function() {
-			if (!libInfo.cssLoaded.aborted) {
+			if (!cssLoaded.aborted) {
 				handleThemeFailed(libInfo.id);
 			}
 		}).finally(function() {
-			if (!libInfo.cssLoaded.aborted) {
+			if (!cssLoaded.aborted) {
 				handleThemeFinished(libInfo.id);
 				pAllCssRequests = Promise.allSettled([...mAllLoadedLibraries.values()].map((libInfo) => libInfo.cssLoaded));
 				pAllCssRequests.finally(function() {

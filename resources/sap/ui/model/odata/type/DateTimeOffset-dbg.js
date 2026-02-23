@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.DateTimeBase
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @alias sap.ui.model.odata.type.DateTimeOffset
 	 * @param {object} [oFormatOptions]

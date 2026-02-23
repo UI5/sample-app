@@ -38,7 +38,7 @@ function(
 	 * @extends sap.m.Input
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @private
@@ -106,6 +106,14 @@ function(
 
 			return;
 		}
+
+		var sDecimalSeparator = this._getNumberFormat().oFormatOptions.decimalSeparator;
+		if (oEvent.originalEvent.key === sDecimalSeparator && iCursorPos === 0) {
+			oEvent.preventDefault();
+			this.setDOMValue(sDecimalSeparator);
+			return;
+		}
+
 		var oIsMinusSignAtZeroPosition =  iCursorPos === 0 && (oEvent.which === KeyCodes.SLASH || oEvent.which === KeyCodes.NUMPAD_MINUS);
 		sTypedValue = this.getValue().substring(0, iCursorPos) + oEvent.originalEvent.key + this.getValue().substring(iCursorPos);
 		fParsedValue = this._getNumberFormat().parse(sTypedValue);

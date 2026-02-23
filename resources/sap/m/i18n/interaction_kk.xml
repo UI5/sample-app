@@ -130,11 +130,19 @@
 	<control-interactions>
 		<control name="sap.m.VariantManagement"/>
 		<interaction> <kbd>F4</kbd> <kbd>Spacebar</kbd> <kbd>Alt + ArrowUp</kbd> <kbd>Alt + ArrowDown</kbd> <description>
-				<p>Нұсқаларды басқару функциясын ашады.</p>
-			</description>
+				<p>Көріністерді басқару функциясын ашады.</p>
+			</description> 
 		</interaction>
 		<interaction> <kbd>PageUp</kbd> <description>
-				<p>Нұсқаларды басқару функциясының қате туралы қалқымалы терезесін жабады</p>
+				<p>Көріністерді басқару функциясының қате туралы қалқымалы терезесін жабады</p>
+			</description>
+		</interaction>
+		<interaction> <kbd>Ctrl + Enter</kbd> <description>
+				<p>&quot;Басқаша сақтау&quot; диалогінде жаңа көріністі сақтайды.</p>
+			</description>
+		</interaction>
+		<interaction> <kbd>Ctrl + S</kbd> <description>
+				<p>Көріністерге жасалған өзгерістерді сақтайды.</p>
 			</description>
 		</interaction>
 	</control-interactions>
@@ -146,9 +154,9 @@
 				<p><kbd>ArrowDown</kbd></p>
 				<p>Қолжетімді болса, тармақты бір позицияға төмен жылжытады.</p>
 				<p><kbd>Home</kbd></p>
-				<p>Қолжетімді болса, тармақты жоғарыға жылжытады.</p>
+				<p>Қолжетімді болса, тармақты ең үстіне жылжытады.</p>
 				<p><kbd>End</kbd></p>
-				<p>Қолжетімді болса, тармақты төменге жылжытады.</p>
+				<p>Қолжетімді болса, тармақты ең астына жылжытады.</p>
 			</description>
 		</interaction>
 	</control-interactions>

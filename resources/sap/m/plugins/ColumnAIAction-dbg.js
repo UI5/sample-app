@@ -18,7 +18,7 @@ sap.ui.define(["./PluginBase", "../library", "../Button" ,"sap/ui/core/Lib"], fu
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @public
 	 * @since 1.136
@@ -55,12 +55,16 @@ sap.ui.define(["./PluginBase", "../library", "../Button" ,"sap/ui/core/Lib"], fu
 		}
 	};
 
+	ColumnAIAction.prototype.getActionTooltip = function() {
+		return Lib.getResourceBundleFor("sap.m").getText("COLUMNACTIONAI_TOOLTIP");
+	};
+
 	ColumnAIAction.prototype._getAction = function() {
 		this._oAction ??= new Button({
 			icon: "sap-icon://ai",
 			type: library.ButtonType.Transparent,
 			press: [this._onActionPress, this],
-			tooltip: Lib.getResourceBundleFor("sap.m").getText("COLUMNACTIONAI_TOOLTIP")
+			tooltip: this.getActionTooltip()
 		}).addStyleClass("sapMPluginsColumnAIAction");
 		return this._oAction;
 	};

@@ -54,7 +54,7 @@ sap.ui.define([
 		 * @extends sap.m.DynamicDateOption
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @private
 		 * @alias sap.m.StandardDynamicDateOption
@@ -571,7 +571,7 @@ sap.ui.define([
 
 		StandardDynamicDateOption.prototype._createIntegerControl = function(oValue, iIndex, fnControlsUpdated) {
 			var oControl = DynamicDateOption.prototype._createIntegerControl.call(this, oValue, iIndex, fnControlsUpdated);
-			var iMin = this.getKey() === "TODAYFROMTO" ? -MAX_VALUE_HELP_INTEGER : MIN_VALUE_HELP_INTEGER;
+			var iMin = this.getKey() === "TODAYFROMTO" ? 0 : MIN_VALUE_HELP_INTEGER;
 			var bUseDefaultValue = !oValue || this.getKey() !== oValue.operator;
 
 			if (bUseDefaultValue) {

@@ -1,1 +1,1 @@
-{"version":3,"file":"webcomponents-base.js","names":["sap","ui","define","webcomponentsBase","Icons","PackageModule"],"sources":["webcomponents-base-dbg.js"],"mappings":"AAAAA,IAAIC,GAAGC,OAAO,CAAC,iCAAkC,0BAA2B,SAAWC,EAAmBC,GAAS,aAIlH,OAAOD,EAAkBE,aAEzB","ignoreList":[]}
+{"version":3,"file":"webcomponents-base.js","names":["sap","ui","define","webcomponentsBase","Theme","Icons","PackageModule"],"sources":["webcomponents-base-dbg.js"],"mappings":"AAAAA,IAAIC,GAAGC,OAAO,CAAC,iCAAkC,yBAA0B,0BAA2B,SAAWC,EAAmBC,EAAOC,GAAS,aAInJ,OAAOF,EAAkBG,aAEzB","ignoreList":[]}

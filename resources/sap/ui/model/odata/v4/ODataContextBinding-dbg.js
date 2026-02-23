@@ -74,7 +74,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
@@ -206,7 +206,7 @@ sap.ui.define([
 	 *   Whether this operation binding's parent context, which must belong to a list binding, is
 	 *   replaced with the operation's return value context (see below) and that new list context is
 	 *   returned instead. Since 1.97.0.
-	 * @returns {Promise}
+	 * @returns {Promise<sap.ui.model.odata.v4.Context|undefined>}
 	 *   A promise that is resolved without data or with a return value context when the operation
 	 *   call succeeded, or rejected with an <code>Error</code> instance <code>oError</code> in case
 	 *   of failure.
@@ -540,7 +540,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataContextBinding.prototype.computeOperationQueryOptions = function () {
-		return Object.assign({}, this.oModel.mUriParameters, this.getQueryOptionsFromParameters());
+		return Object.assign({}, this.oModel.mURLParameters, this.getQueryOptionsFromParameters());
 	};
 
 	/**
@@ -615,7 +615,7 @@ sap.ui.define([
 		/*
 		 * Calls back into the application with the messages whether to repeat the action.
 		 * @param {Error} oError The error from the failed request
-		 * @returns {Promise} A promise resolving with a boolean
+		 * @returns {Promise<boolean>} A promise resolving with a boolean
 		 * @throws {Error} If <code>fnOnStrictHandlingFailed</code> does not return a promise
 		 */
 		function onStrictHandling(oError) {
@@ -1726,8 +1726,8 @@ sap.ui.define([
 		 * Adds an error handler to the given promise which reports errors to the model and ignores
 		 * cancellations.
 		 *
-		 * @param {Promise} oPromise - A promise
-		 * @returns {Promise} A promise including an error handler
+		 * @param {Promise<any>} oPromise - A promise
+		 * @returns {Promise<any>} A promise including an error handler
 		 */
 		function reportError(oPromise) {
 			return oPromise.catch(function (oError) {

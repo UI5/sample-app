@@ -130,11 +130,19 @@
 	<control-interactions>
 		<control name="sap.m.VariantManagement"/>
 		<interaction> <kbd>F4</kbd> <kbd>Spacebar</kbd> <kbd>Alt + ArrowUp</kbd> <kbd>Alt + ArrowDown</kbd> <description>
-				<p>Varyant yönetimini açar.</p>
-			</description>
+				<p>Görünüm yönetimini açar.</p>
+			</description> 
 		</interaction>
 		<interaction> <kbd>PageUp</kbd> <description>
-				<p>Varyant yönetiminin hata açılır menüsünü kapatır</p>
+				<p>Görünüm yönetimi için hata açılır menüsünü kapatır</p>
+			</description>
+		</interaction>
+		<interaction> <kbd>Ctrl + Enter</kbd> <description>
+				<p>Farklı kaydet iletişim kutusunda yeni görünümü kaydeder.</p>
+			</description>
+		</interaction>
+		<interaction> <kbd>Ctrl + S</kbd> <description>
+				<p>Görünümlerde yapılan değişiklikleri kaydeder.</p>
 			</description>
 		</interaction>
 	</control-interactions>
@@ -146,9 +154,9 @@
 				<p><kbd>ArrowDown</kbd></p>
 				<p>Varsa öğeyi bir konum aşağı taşır.</p>
 				<p><kbd>Home</kbd></p>
-				<p>Varsa öğeyi bir yukarı taşır.</p>
+				<p>Varsa öğeyi en üste taşır.</p>
 				<p><kbd>End</kbd></p>
-				<p>Varsa öğeyi bir aşağı taşır.</p>
+				<p>Varsa öğeyi en sona taşır.</p>
 			</description>
 		</interaction>
 	</control-interactions>

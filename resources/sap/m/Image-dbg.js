@@ -63,7 +63,7 @@ sap.ui.define([
 	 * @borrows sap.ui.core.IFormContent.getFormDoNotAdjustWidth as #getFormDoNotAdjustWidth
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @public
 	 * @alias sap.m.Image

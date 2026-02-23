@@ -37,6 +37,10 @@ sap.ui.define(["sap/ui/core/Element", 'sap/ui/unified/calendar/CalendarUtils', '
 		oRm.class("sapUiCalMonthsRow");
 		oRm.class("sapUiCalRow");
 
+		if (oMonthsRow.getShowWeekNumbers()) {
+			oRm.class("sapUiCalRowWithWeekNumbers");
+		}
+
 		if (sTooltip) {
 			oRm.attr("title", sTooltip);
 		}
@@ -167,7 +171,6 @@ sap.ui.define(["sap/ui/core/Element", 'sap/ui/unified/calendar/CalendarUtils', '
 			this.renderMonth(oRm, oMonthsRow, oMonthDate, oHelper, sWidth);
 			oMonthDate.setMonth(oMonthDate.getMonth() + 1);
 		}
-
 	};
 
 	/**

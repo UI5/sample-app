@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.144.0",
+		version: "1.145.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -3722,6 +3722,18 @@ sap.ui.define([
 	 */
 
 	/**
+	 * Optional hook that will be executed when the panel is used by a <code>sap.m.p13n.Popup</code> that is called before the popup is closed
+	 *
+	 * @param {string} sReason reason for closing the container
+	 * @returns {Promise} A Promise that is fullfilled if the panel is ready to be closed
+	 *
+	 * @function
+	 * @name sap.m.p13n.IContent.onBeforeClose?
+	 * @public
+	 * @since 1.145
+	 */
+
+	/**
 	 * Type of popup used in the <code>sap.m.p13n.Popup</code>.
 	 *
 	 * @enum {string}
@@ -5318,6 +5330,7 @@ sap.ui.define([
 		 * The mask will always be enforced for any time patterns.
 		 * <b>Note:</b> The mask functions correctly only with fixed-length time formats.
 		 * Using the <code>Enforce</code> value with time formats that do not have a fixed length may lead to unpredictable behavior.
+		 * @public
 		 */
 		Enforce: "Enforce",
 

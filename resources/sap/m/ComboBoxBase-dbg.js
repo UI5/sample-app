@@ -70,7 +70,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @public
@@ -192,7 +192,7 @@ sap.ui.define([
 		 * @ui5-restricted sap.m.ComboBox,sap.m.MultiComboBox
 		 */
 		ComboBoxBase.prototype.shouldShowClearIcon = function () {
-			return this.getProperty("effectiveShowClearIcon") && !!this.getValue() && this.getEditable() && this.getEnabled();
+			return this.getShowClearIcon() && this.getProperty("effectiveShowClearIcon") && !!this.getValue() && this.getEditable() && this.getEnabled();
 		};
 
 		/**
@@ -519,7 +519,6 @@ sap.ui.define([
 			this._oClearIcon = this.addEndIcon({
 				src: IconPool.getIconURI("decline"),
 				noTabStop: true,
-				visible: false,
 				alt: this._oRb.getText("INPUT_CLEAR_ICON_ALT"),
 				useIconTooltip: false,
 				decorative: false,

@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @alias sap.m.p13n.PersistenceProvider
 	 *
 	 * @private

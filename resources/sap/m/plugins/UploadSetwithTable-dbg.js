@@ -77,7 +77,7 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @author SAP SE
 	 * @public
 	 * @since 1.124
@@ -483,15 +483,6 @@ sap.ui.define([
 	UploadSetwithTable.prototype.onDeactivate = function (oControl) {
 		this.getConfig("cleanupPluginInstanceSettings", oControl, this);
 		this.fireOnDeactivated({control: oControl});
-	};
-
-	UploadSetwithTable.prototype.exit = function() {
-		this.getConfig("cleanupPluginInstanceSettings", this.getControl(), this);
-		PluginBase.prototype.exit.call(this);
-	};
-
-	UploadSetwithTable.prototype.setParent = function() {
-		PluginBase.prototype.setParent.apply(this, arguments);
 	};
 
 	// Overriden Setter methods

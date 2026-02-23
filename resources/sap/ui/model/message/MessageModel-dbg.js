@@ -29,7 +29,7 @@ sap.ui.define(['sap/ui/model/BindingMode', 'sap/ui/model/ClientModel', 'sap/ui/m
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.message.MessageModel

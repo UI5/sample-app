@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -388,12 +388,15 @@ sap.ui.define([
 	};
 
 	/**
+	 * Note: You may want to call {@link #delete} instead in order to delete the OData entity on the
+	 * server side.
+	 *
 	 * Destroys this context, that is, it removes this context from all dependent bindings and drops
 	 * references to {@link #getBinding binding} and {@link #getModel model}, so that the context
 	 * cannot be used anymore; it keeps path and index for debugging purposes. A destroyed context
 	 * can be recognized by calling {@link #getBinding}, which returns <code>undefined</code>.
 	 *
-	 * <b>BEWARE:</b> Do not call this function! The lifetime of an OData V4 context is completely
+	 * <b>BEWARE: Do not call this function!</b> The lifetime of an OData V4 context is completely
 	 * controlled by its binding.
 	 *
 	 * @public
@@ -622,17 +625,23 @@ sap.ui.define([
 						: oResult.editUrl;
 					const fnSetUpsertPromise = _Helper.hasPathSuffix(that.sPath, sEntityPath)
 						? that.setCreated.bind(that)
-						: null;
+						: undefined;
 
 					// if request is canceled fnPatchSent and fnErrorCallback are not called and
 					// returned Promise is rejected -> no patch events
-					return oCache.update(oGroupLock, oResult.propertyPath, vValue,
-						bSkipRetry ? undefined : errorCallback, sEditUrl, sEntityPath,
+					return oCache.update(oResult.propertyPath, vValue, {
+						sEditUrl : sEditUrl,
+						sEntityPath : sEntityPath,
+						fnErrorCallback : bSkipRetry ? undefined : errorCallback,
+						oGroupLock : oGroupLock,
+						fnIsKeepAlive : that.isEffectivelyKeptAlive.bind(that),
+						fnPatchSent : patchSent,
+						bPatchWithoutSideEffects : oBinding.isPatchWithoutSideEffects(),
+						fnSetUpsertPromise : fnSetUpsertPromise,
 						// Note: use that.oModel intentionally, fails if already destroyed!
-						oMetaModel.getUnitOrCurrencyPath(that.oModel.resolve(sPath, that)),
-						oBinding.isPatchWithoutSideEffects(), patchSent,
-						that.isEffectivelyKeptAlive.bind(that), fnSetUpsertPromise
-					).then(function () {
+						sUnitOrCurrencyPath : oMetaModel.getUnitOrCurrencyPath(
+							that.oModel.resolve(sPath, that))
+					}).then(function () {
 						firePatchCompleted(true);
 					}, function (oError) {
 						firePatchCompleted(false);
@@ -1582,6 +1591,12 @@ sap.ui.define([
 	 * Refreshes the single entity represented by this context. Use {@link #requestRefresh} if you
 	 * want to wait for the refresh.
 	 *
+	 * When using data aggregation without <code>groupLevels</code> and without
+	 * <code>"grandTotal like 1.84"</code> (see
+	 * {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}), single entities (see
+	 * {@link #isAggregated}) can be refreshed and the grand total is updated accordingly
+	 * (@experimental as of version 1.145.0).
+	 *
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used for the refresh; if not specified, the group ID for the context's
 	 *   binding is used, see {@link #getGroupId}.
@@ -1603,10 +1618,12 @@ sap.ui.define([
 	 *       <ul>
 	 *         <li> {@link #isInactive is inactive},
 	 *         <li> {@link #hasPendingChanges has pending changes},
-	 *         <li> does not represent a single entity (see
+	 *         <li> does not represent a single entity (see {@link #isAggregated} and
 	 *           {@link sap.ui.model.odata.v4.ODataListBinding#getHeaderContext}),
+	 *         <li> is not effectively kept alive and currently not part of the recursive hierarchy,
 	 *       </ul>
-	 *     <li> the binding is a list binding with data aggregation,
+	 *     <li> the context's binding is a list binding with data aggregation which has
+	 *       <code>groupLevels</code> or <code>"grandTotal like 1.84"</code>,
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> the <code>bAllowRemoval</code> parameter is set for a context belonging to a context
 	 *       binding or to a list binding with "$$aggregation".
@@ -1833,7 +1850,7 @@ sap.ui.define([
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used
 	 * @param {boolean} [bAllowRemoval]
-	 *   Allows to remove the context
+	 *   Allows to remove the context, see {@link #refresh} for details
 	 * @returns {Promise<void>}
 	 *   A promise which is resolved without a defined result when the refresh is finished, or
 	 *   rejected with an error if the refresh failed
@@ -1847,10 +1864,10 @@ sap.ui.define([
 		var oPromise;
 
 		_Helper.checkGroupId(sGroupId);
-		if (_Helper.isDataAggregation(this.oBinding.mParameters)) {
-			throw new Error("Cannot refresh " + this + " when using data aggregation");
+		this.oBinding.checkSuspended(); // do it here even if it is contained in #isAggregated
+		if (this.isAggregated()) {
+			throw new Error("Unsupported on aggregated data: " + this);
 		}
-		this.oBinding.checkSuspended();
 		if (this.hasPendingChanges()) {
 			throw new Error("Cannot refresh entity due to pending changes: " + this);
 		}
@@ -1958,7 +1975,9 @@ sap.ui.define([
 	 *   Since 1.82.0, absolute paths are supported. Absolute paths must start with the entity
 	 *   container (example "/com.sap.gateway.default.iwbep.tea_busi.v0001.Container/TEAMS") of the
 	 *   service. All (navigation) properties in the complete model matching such an absolute path
-	 *   are updated. Since 1.85.0, "14.3.11 Expression edm:String" is accepted as well.
+	 *   are updated. Since 1.85.0, "14.3.11 Expression edm:String" is accepted as well. Since
+	 *   1.145.0, you can use <code>null</code> values (and <code>{$Null : null}</code>) as synonyms
+	 *   for empty navigation property paths.
 	 *
 	 *   Since 1.108.8, a property path matching the "com.sap.vocabularies.Common.v1.Messages"
 	 *   annotation of a list binding's entity type is treated specially for a row context of a list
@@ -2060,7 +2079,12 @@ sap.ui.define([
 
 		sEntityContainer = "/" + sEntityContainer + "/";
 		aPathExpressions.map(function (vPath) {
-			if (vPath && typeof vPath === "object") {
+			if (vPath === null) {
+				return "";
+			} else if (typeof vPath === "object") {
+				if (vPath.$Null === null) {
+					return "";
+				}
 				if (isPropertyPath(vPath.$PropertyPath)) {
 					return vPath.$PropertyPath;
 				}
@@ -2319,6 +2343,7 @@ sap.ui.define([
 	 * <ul>
 	 *   <li> can be used as a binding context,
 	 *   <li> can be used for updating data (see {@link #setProperty}),
+	 *   <li> can be refreshed (see {@link #refresh} and {@link #requestRefresh}),
 	 *   <li> is refreshed when its list binding's
 	 *     {@link sap.ui.model.odata.v4.ODataListBinding#refresh}) is called, and
 	 *   <li> is refreshed when {@link #requestSideEffects}) is called on its list binding's header

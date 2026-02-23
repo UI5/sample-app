@@ -62,7 +62,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent, sap.ui.core.ISemanticFormContent
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormFormattedValue as #getFormFormattedValue
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormValueProperty as #getFormValueProperty
@@ -291,6 +291,8 @@ sap.ui.define([
 	ObjectStatus.prototype.ontap = function(oEvent) {
 		if (this._isClickable(oEvent)) {
 			this.firePress();
+			// mark the event that it is handled by the control
+			oEvent.setMarked();
 		}
 	};
 

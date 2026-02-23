@@ -106,7 +106,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -477,6 +477,7 @@ sap.ui.define([
 		ComboBox.prototype.onBeforeRendering = function() {
 			ComboBoxBase.prototype.onBeforeRendering.apply(this, arguments);
 			var aItems = this.getItems();
+			var oClearIcon = this.getShowClearIcon() ? this._getClearIcon() : this._oClearIcon;
 
 			if (this.getRecreateItems()) {
 				ListHelpers.fillList(aItems, this._getList(), this._mapItemToListItem.bind(this));
@@ -497,11 +498,16 @@ sap.ui.define([
 				this.setValue(sValue);
 			}
 
-			if (this.getShowClearIcon()) {
-				this._getClearIcon().setVisible(this.shouldShowClearIcon());
-			} else if (this._oClearIcon) {
-				this._getClearIcon().setVisible(false);
+			if (!oClearIcon) {
+				return;
 			}
+
+			if (this.shouldShowClearIcon()) {
+				oClearIcon.removeStyleClass("sapMComboBoxBaseHideClearIcon");
+				return;
+			}
+
+			oClearIcon.addStyleClass("sapMComboBoxBaseHideClearIcon");
 		};
 
 		/**

@@ -78,7 +78,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @public
 	 * @deprecated As of version 1.48, please use {@link sap.ui.model.odata.v2.ODataModel} instead.
@@ -1959,7 +1959,7 @@ sap.ui.define([
 		//collect keys
 		each(aBatchRequests, function(i, oBatchOperation) {
 			if (oBatchOperation["__changeRequests"]) {
-				//this is a changeset
+				//this is a change set
 				each(oBatchOperation["__changeRequests"],function(j, oChangeRequest){
 					if (oChangeRequest.keys && oChangeRequest.method != "POST") {
 						each(oChangeRequest.keys, function(k,sKey){
@@ -2808,7 +2808,7 @@ sap.ui.define([
 	/**
 	 * Appends the change batch operations to the end of the batch stack. Only <code>PUT</code,
 	 * <code>POST</code> or <code>DELETE</code> batch operations should be included in the specified
-	 * array. The operations in the array will be included in a single changeset. To embed change
+	 * array. The operations in the array will be included in a single change set. To embed change
 	 * operations in different change sets call this method with the corresponding change operations
 	 * again. If an illegal batch operation is added to the change set nothing will be performed and
 	 * false will be returned.

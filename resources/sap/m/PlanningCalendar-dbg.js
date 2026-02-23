@@ -19,6 +19,7 @@ sap.ui.define([
 	'sap/ui/unified/calendar/OneMonthDatesRow',
 	'sap/ui/unified/calendar/MonthsRow',
 	'sap/ui/unified/calendar/TimesRow',
+	'sap/ui/unified/calendar/WeeksRow',
 	'sap/ui/unified/DateRange',
 	'sap/ui/unified/DateTypeRange',
 	'sap/ui/unified/CalendarAppointment',
@@ -72,6 +73,7 @@ sap.ui.define([
 	OneMonthDatesRow,
 	MonthsRow,
 	TimesRow,
+	WeeksRow,
 	DateRange,
 	DateTypeRange,
 	CalendarAppointment,
@@ -208,7 +210,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -763,12 +765,17 @@ sap.ui.define([
 		"sap.ui.unified.calendar.TimesRow",
 		"sap.ui.unified.calendar.DatesRow",
 		"sap.ui.unified.calendar.MonthsRow",
-		"sap.ui.unified.calendar.OneMonthDatesRow"
+		"sap.ui.unified.calendar.OneMonthDatesRow",
+		"sap.ui.unified.calendar.WeeksRow"
 	];
 
 	var CalendarHeader = Control.extend("sap.m._PlanningCalendarInternalHeader", {
 
 		metadata : {
+			properties : {
+				showWeekNumbers : {type : "boolean", group : "Appearance", defaultValue : false}
+			},
+
 			aggregations: {
 				"toolbar"   : {type: "sap.m.Toolbar", multiple: false},
 				"allCheckBox" : {type: "sap.m.CheckBox", multiple: false}
@@ -839,6 +846,8 @@ sap.ui.define([
 			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PC_INTERVAL_TOOLBAR")
 		});
 
+		this._oInfoToolbar.addStyleClass("sapMPlanCalInfoToolbar");
+
 		var oTable = new Table(sId + "-Table", {
 			sticky: [], // set sticky property to an empty array this correspondents to PlanningCalendar stickyHeader = false
 			infoToolbar: this._oInfoToolbar,
@@ -854,7 +863,7 @@ sap.ui.define([
 					demandPopin: true
 				})
 			],
-			ariaLabelledBy: sId + "-Descr"
+			ariaLabelledBy: `${this.getId()}-Descr`
 		});
 		oTable.attachEvent("selectionChange", handleTableSelectionChange, this);
 
@@ -954,6 +963,11 @@ sap.ui.define([
 		if (this._rowHeaderPressEventKeyboard) {
 			this._rowHeaderPressEventKeyboard.off();
 			this._rowHeaderPressEventKeyboard = null;
+		}
+
+		if (this._oCalendarWeeks) {
+			this._oCalendarWeeks.destroy();
+			this._oCalendarWeeks = null;
 		}
 	};
 
@@ -1117,9 +1131,18 @@ sap.ui.define([
 		oHeader.attachEvent("pressToday", this._handleTodayPress, this);
 		oHeader.attachEvent("pressNext", this._handlePressArrow, this);
 		oHeader.attachEvent("dateSelect", this._handleDateSelect, this);
+		oHeader.attachEvent("_titleChange", this._handleTitleChange, this);
 
 		return this;
 	};
+
+	PlanningCalendar.prototype._handleTitleChange = function (oEvent) {
+		const oTitle = oEvent.getParameter("title");
+		const sTitleId = oTitle?.getId() || "";
+		this.getDomRef()?.setAttribute("aria-labelledby", sTitleId);
+		this._resetTableLabelledBy(oTitle);
+	};
+
 
 	/**
 	 * Handler for the pressPrevious and pressNext events in the _header aggregation.
@@ -1498,104 +1521,6 @@ sap.ui.define([
 		}
 	};
 
-	PlanningCalendar.prototype.addToolbarContent = function(oContent) {
-		this._prepareHeaderTitle(oContent);
-		this.addAggregation("toolbarContent", oContent);
-
-		return this;
-	 };
-
-	PlanningCalendar.prototype.insertToolbarContent = function(oContent, iIndex) {
-		this._prepareHeaderTitle(oContent);
-		this.insertAggregation("toolbarContent", oContent, iIndex);
-
-		return this;
-	};
-
-	PlanningCalendar.prototype.removeToolbarContent = function(oContent) {
-		var oRemoved;
-
-		if (oContent && oContent.isA("sap.m.Title")) {
-			this._getHeader().setTitle("");
-			this._disconnectAndDestroyHeaderObserver();
-		} else {
-			oRemoved = this.removeAggregation("toolbarContent", oContent);
-		}
-
-		return oRemoved;
-	};
-
-	PlanningCalendar.prototype.removeAllToolbarContent = function() {
-		var aRemoved = this.removeAllAggregation("toolbarContent");
-		this._getHeader().setTitle("");
-		this._disconnectAndDestroyHeaderObserver();
-		return aRemoved;
-	};
-
-	PlanningCalendar.prototype.destroyToolbarContent = function() {
-		var destroyed = this.destroyAggregation("toolbarContent");
-		this._getHeader().setTitle("");
-		this._disconnectAndDestroyHeaderObserver();
-		return destroyed;
-	};
-
-	/**
-	* Returns the ManagedObjectObserver for the title.
-	*
-	* @return {sap.ui.base.ManagedObjectObserver} The header observer object
-	* @private
-	*/
-	PlanningCalendar.prototype._getHeaderObserver = function () {
-		if (!this._oHeaderObserver) {
-			this._oHeaderObserver = new ManagedObjectObserver(this._handleTitleTextChange.bind(this));
-		}
-		return this._oHeaderObserver;
-	};
-
-	/**
-	* Observes the text property of the title.
-	*
-	* @param {sap.m.Title} oTitle text property will be observed
-	* @private
-	*/
-	PlanningCalendar.prototype._observeHeaderTitleText = function (oTitle) {
-		this._getHeaderObserver().observe(oTitle, {
-			properties: ["text"]
-		});
-	};
-
-	PlanningCalendar.prototype._prepareHeaderTitle = function (oTitle) {
-		if (oTitle && oTitle.isA("sap.m.Title")) {
-			this._observeHeaderTitleText(oTitle);
-			const oHeader = this._getHeader(),
-				sLabel = `${this._getHeader().getId()}-Title`,
-				oLevel = oTitle.getLevel(),
-				oTitleStyle = oTitle.getTitleStyle();
-			oHeader.setTitle(oTitle.getText());
-			oHeader.setLevel(oLevel);
-			oHeader.setTitleStyle(oTitleStyle);
-			oTitle.setVisible(false);
-			this.addAriaLabelledBy(sLabel);
-		}
-	};
-
-	 PlanningCalendar.prototype._handleTitleTextChange = function (oChanges) {
-		this._getHeader().setTitle(oChanges.current);
-	};
-
-	/**
-	 * Disconnects and destroys the ManagedObjectObserver observing title's text.
-	 *
-	 * @private
-	 */
-	PlanningCalendar.prototype._disconnectAndDestroyHeaderObserver = function () {
-		if (this._oHeaderObserver) {
-			this._oHeaderObserver.disconnect();
-			this._oHeaderObserver.destroy();
-			this._oHeaderObserver = null;
-		}
-	};
-
 	/**
 	 * Gets current value of property <code>startDate</code>.
 	 *
@@ -1681,6 +1606,7 @@ sap.ui.define([
 		this._dateNav.setStart(oStartDate);
 		this._dateNav.setCurrent(oStartDate);
 		this._getHeader().setStartDate(oStartDate);
+		this._oCalendarWeeks?.setStartDate(oStartDate);
 
 		INTERVAL_CTR_REFERENCES.forEach(function (sControlRef) {
 			if (this[sControlRef]) {
@@ -1740,6 +1666,9 @@ sap.ui.define([
 		}
 		if (this._oOneMonthsRow) {
 			this._oOneMonthsRow.setPrimaryCalendarType(sPrimaryCalendarType);
+		}
+		if (this._oCalendarWeeks) {
+			this._oCalendarWeeks.setPrimaryCalendarType(sPrimaryCalendarType);
 		}
 	};
 
@@ -1975,6 +1904,8 @@ sap.ui.define([
 		for (key in INTERVAL_METADATA) {
 			this[INTERVAL_METADATA[key].sInstanceName] && this[INTERVAL_METADATA[key].sInstanceName].setCalendarWeekNumbering(sCalendarWeekNumbering);
 		}
+
+		this._oCalendarWeeks?.setCalendarWeekNumbering(sCalendarWeekNumbering);
 	};
 
 	PlanningCalendar.prototype.removeIntervalInstanceFromInfoToolbar = function () {
@@ -2146,14 +2077,32 @@ sap.ui.define([
 						oHeader.setAssociation("currentPicker", oAssociation);
 						oAssociation.addDelegate(MONTH_DELEGATE, oAssociation);
 					}
-					break;
+					if (!this._oCalendarWeeks) {
+							this._oCalendarWeeks = new WeeksRow(this.getId() + "-CalendarWeeksRow", {
+							startDate: this.getStartDate(),
+							primaryCalendarType: this.getPrimaryCalendarType(),
+							interval: iIntervals,
+							viewKey: sKey,
+							showWeekNumbers: this.getShowWeekNumbers(),
+							calendarWeekNumbering: this.getCalendarWeekNumbering()
+						});
+					} else {
+						this._oCalendarWeeks.setInterval(iIntervals);
+						this._oCalendarWeeks.setShowWeekNumbers(this.getShowWeekNumbers());
+						this._oCalendarWeeks.setPrimaryCalendarType(this.getPrimaryCalendarType());
+						this._oCalendarWeeks.setStartDate(this.getStartDate());
+						this._oCalendarWeeks.setViewKey(sKey);
+					}
+					this._oInfoToolbar.addContent(this._oCalendarWeeks);
+				break;
 
 				case CalendarIntervalType.Month:
 					if (!this._oMonthsRow) {
 						this._oMonthsRow = new MonthsRow(this.getId() + "-MonthsRow", {
 							startDate: UI5Date.getInstance(oStartDate.getTime()), // use new date object
 							months: iIntervals,
-							legend: this.getLegend()
+							legend: this.getLegend(),
+							showWeekNumbers: this.getShowWeekNumbers()
 						});
 						this._oMonthsRow.setProperty("primaryCalendarType", this._getPrimaryCalendarType());
 						if (sSecondaryCalendarType) {
@@ -2178,6 +2127,24 @@ sap.ui.define([
 					oAssociation = oHeader.getAggregation("_yearPicker") ? oHeader.getAggregation("_yearPicker") : oHeader._oPopup.getContent()[0];
 					oHeader.setAssociation("currentPicker", oAssociation);
 					oAssociation.addDelegate(YEAR_PICKER_DELEGATE, oAssociation);
+
+					if (!this._oCalendarWeeks) {
+						this._oCalendarWeeks = new WeeksRow(this.getId() + "-CalendarWeeksRow", {
+							startDate: this.getStartDate(),
+							primaryCalendarType: this.getPrimaryCalendarType(),
+							interval: iIntervals,
+							viewKey: CalendarIntervalType.Month,
+							showWeekNumbers: this.getShowWeekNumbers(),
+							calendarWeekNumbering: this.getCalendarWeekNumbering()
+						});
+					} else {
+						this._oCalendarWeeks.setInterval(iIntervals);
+						this._oCalendarWeeks.setShowWeekNumbers(this.getShowWeekNumbers());
+						this._oCalendarWeeks.setPrimaryCalendarType(this.getPrimaryCalendarType());
+						this._oCalendarWeeks.setStartDate(this.getStartDate());
+						this._oCalendarWeeks.setViewKey(CalendarIntervalType.Month);
+					}
+					this._oInfoToolbar.addContent(this._oCalendarWeeks);
 					break;
 
 				default:
@@ -2566,6 +2533,14 @@ sap.ui.define([
 				adaptCalHeaderForWeekNumbers.call(this, bShowWeekNumbers, bViewAllowsWeekNumbers);
 			}
 		}, this);
+
+		if (this._oCalendarWeeks) {
+			this._oCalendarWeeks.setShowWeekNumbers(bShowWeekNumbers);
+		}
+
+		if (this._oMonthsRow) {
+			this._oMonthsRow.setShowWeekNumbers(bShowWeekNumbers);
+		}
 	};
 
 	PlanningCalendar.prototype._setShowRowHeaders = function(){
@@ -2823,15 +2798,28 @@ sap.ui.define([
 	};
 
 	PlanningCalendar.prototype.removeAllAriaLabelledBy = function() {
-
+		const oHeader = this.getAggregation("header");
+		const oTitle = oHeader?.getTitle();
 		this.removeAllAssociation("ariaLabelledBy", true);
-
-		var oTable = this.getAggregation("table");
-		oTable.removeAllAriaLabelledBy();
-		oTable.addAriaLabelledBy(this.getId() + "-Descr");
+		this._resetTableLabelledBy(oTitle);
 
 		return this;
+	};
 
+	/**
+	 * Gets the internal table aggregation, retrieves the title ID if available, and constructs an invisible description ID.
+	 * This is a private helper method for managing accessibility-related IDs within the PlanningCalendar control.
+	 *
+	 * @param {sap.m.Title} [oTitle] - The title control instance used to retrieve the ID for accessibility purposes
+	 * @private
+	 */
+	PlanningCalendar.prototype._resetTableLabelledBy = function(oTitle) {
+		const oTable = this.getAggregation("table"),
+			sTitleId = oTitle?.getId() || "",
+			sInvisibleDescrId = `${this.getId()}-Descr`;
+
+		oTable.removeAllAriaLabelledBy();
+		oTable.addAriaLabelledBy(`${sInvisibleDescrId} ${sTitleId}`.trim());
 	};
 
 	PlanningCalendar.prototype.invalidate = function(oOrigin) {
@@ -3461,6 +3449,7 @@ sap.ui.define([
 						this._oDatesRow.setDays(iIntervals);
 						this._dateNav.setStep(iIntervals * iIntervalSize);
 					}
+					this._oCalendarWeeks?.setInterval(iIntervals);
 					break;
 
 				case CalendarIntervalType.Month:
@@ -3468,6 +3457,7 @@ sap.ui.define([
 						this._oMonthsRow.setMonths(iIntervals);
 						this._dateNav.setStep(iIntervals * iIntervalSize);
 					}
+					this._oCalendarWeeks?.setInterval(iIntervals);
 					break;
 
 				case CalendarIntervalType.Week:
@@ -3475,6 +3465,7 @@ sap.ui.define([
 						this._oWeeksRow.setDays(iIntervals);
 						this._dateNav.setStep(iIntervals * iIntervalSize);
 					}
+					this._oCalendarWeeks?.setInterval(iIntervals);
 					break;
 
 				case CalendarIntervalType.OneMonth:
@@ -3487,6 +3478,7 @@ sap.ui.define([
 							this._setRowsStartDate(UI5Date.getInstance(this.getStartDate().getTime()));
 						}
 					}
+					this._oCalendarWeeks?.setInterval(iIntervals);
 					break;
 
 				default:

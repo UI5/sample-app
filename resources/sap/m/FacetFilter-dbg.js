@@ -181,7 +181,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -543,6 +543,23 @@ sap.ui.define([
 		// This is the reset button shown for Simple type (not the same as the button created for the summary bar)
 		this.setAggregation("resetButton", this._createResetButton());
 
+		// Attach event delegate for click handling
+		this._oFacetPopoverCloseDelegate = {
+			onclick: function(oEvent) {
+				// Only handle clicks for Simple type
+				if (this.getType() !== FacetFilterType.Simple) {
+					return;
+				}
+
+				var oPopover = this.getAggregation("popover");
+				var oPopoverDom = oPopover && oPopover.getDomRef();
+				if (oPopoverDom && !oPopoverDom.contains(oEvent.target)) {
+					this._closePopover();
+				}
+			}
+		};
+		this.addEventDelegate(this._oFacetPopoverCloseDelegate, this);
+
 		// Enable touch support for the carousel
 		if (EventSimulation.touchEventMode === "ON" && !Device.system.phone) {
 			this._enableTouchSupport();
@@ -559,6 +576,10 @@ sap.ui.define([
 	FacetFilter.prototype.exit = function() {
 		var oCtrl;
 		IntervalTrigger.removeListener(this._checkOverflow, this);
+
+		if (this._oFacetPopoverCloseDelegate) {
+			this.removeEventDelegate(this._oFacetPopoverCloseDelegate);
+		}
 
 		if (this.oItemNavigation) {
 			this.removeDelegate(this.oItemNavigation);

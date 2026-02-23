@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @class Static class for enabling declarative UI support.
 	 *
 	 * @author Peter Muessig, Tino Butz
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 * @since 1.7.0
 	 * @public
 	 * @alias sap.ui.core.DeclarativeSupport

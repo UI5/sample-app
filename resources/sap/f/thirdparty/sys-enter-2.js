@@ -1,2 +1,2 @@
-sap.ui.define(["exports","sap/f/thirdparty/Icons","sap/f/thirdparty/information"],function(t,s,e){"use strict";var r="sys-enter-2";t.selectedAccount=r});
+sap.ui.define(["exports","sap/f/thirdparty/Theme","sap/f/thirdparty/information"],function(t,e,r){"use strict";var s="sys-enter-2";t.selectedAccount=s});
 //# sourceMappingURL=sys-enter-2.js.map

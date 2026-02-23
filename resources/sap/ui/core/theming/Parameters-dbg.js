@@ -4,26 +4,25 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/ui/core/Theming',
-	'../Element',
 	'sap/base/future',
 	'sap/base/Log',
 	'sap/base/util/syncFetch',
 	'sap/ui/base/OwnStatics',
-	'./ThemeManager',
+	'sap/ui/core/Theming',
+	'sap/ui/core/theming/ThemeManager',
 	'sap/ui/util/_URL'
 ], function(
-	Theming,
-	Element,
 	future,
 	Log,
 	syncFetch,
 	OwnStatics,
+	Theming,
 	ThemeManager,
 	_URL
 ) {
 	"use strict";
 
+	/** @deprecated */
 	const syncCallBehavior = sap.ui.loader._.getSyncCallBehavior();
 	const { attachChange } = OwnStatics.get(Theming);
 	const { getAllLibraryInfoObjects } = OwnStatics.get(ThemeManager);
@@ -37,20 +36,19 @@ sap.ui.define([
 	 * @public
 	 * @alias sap.ui.core.theming.Parameters
 	 */
-	var Parameters = {};
+	const Parameters = {};
 
-	var mParameters = null;
-	var sTheme = null;
+	let mParameters = {};
+	let sTheme = null;
 
-	var aParametersToLoad = [...getAllLibraryInfoObjects().keys()];
+	const parsedLibraries = new Set();
+	const aCallbackRegistry = [];
+	const rCssUrl = /url[\s]*\('?"?([^\'")]*)'?"?\)/;
 
-	var aCallbackRegistry = [];
+	/** @deprecated */
+	const sBootstrapOrigin = new URL(sap.ui.require.toUrl(""), document.baseURI).origin;
+	const mOriginsNeedingCredentials = {};
 
-	var sBootstrapOrigin = new URL(sap.ui.require.toUrl(""), document.baseURI).origin;
-	var mOriginsNeedingCredentials = {};
-
-	// match a CSS url
-	var rCssUrl = /url[\s]*\('?"?([^\'")]*)'?"?\)/;
 
 	/**
 	 * Resolves relative URLs in parameter values.
@@ -81,68 +79,59 @@ sap.ui.define([
 		return sUrl;
 	}
 
-	function mergeParameterSet(mCurrent, mNew, sThemeBaseUrl) {
-		for (var sParam in mNew) {
-			if (typeof mCurrent[sParam] === "undefined") {
-				mCurrent[sParam] = checkAndResolveRelativeUrl(mNew[sParam], sThemeBaseUrl);
-			}
-		}
-		return mCurrent;
-	}
-
 	function mergeParameters(mNewParameters, sThemeBaseUrl) {
-
 		// normalize parameter maps
-		// scoped themes like sap_belize already provide nested objects:
-		if (typeof mNewParameters["default"] !== "object") {
-			mNewParameters = {
-				"default": mNewParameters,
-				"scopes": {}
-			};
+		// for legacy reasons themes may provide nested objects:
+		if (typeof mNewParameters["default"] === "object") {
+			mNewParameters = mNewParameters["default"];
 		}
 
-		// ensure parameters objects
-		mParameters = mParameters || {};
-		mParameters["default"] = mParameters["default"] || {};
-		mParameters["scopes"] = mParameters["scopes"] || {};
-
-		// merge default parameters
-		mergeParameterSet(mParameters["default"], mNewParameters["default"], sThemeBaseUrl);
-
-		// merge scopes
-		if (typeof mNewParameters["scopes"] === "object") {
-			for (var sScopeName in mNewParameters["scopes"]) {
-				// ensure scope object
-				mParameters["scopes"][sScopeName] = mParameters["scopes"][sScopeName] || {};
-				// merge scope set
-				mergeParameterSet(mParameters["scopes"][sScopeName], mNewParameters["scopes"][sScopeName], sThemeBaseUrl);
+		// merge new parameters with existing ones
+		for (const sParam in mNewParameters) {
+			if (typeof mParameters[sParam] === "undefined") {
+				mParameters[sParam] = checkAndResolveRelativeUrl(mNewParameters[sParam], sThemeBaseUrl);
 			}
 		}
 	}
 
-	function forEachStyleSheet(fnCallback) {
-		for (const [libId, libInfo] of getAllLibraryInfoObjects()) {
-			fnCallback(libId, libInfo);
-		}
+	function processLibraries(callback) {
+		const mAllLibraryInfoObjects = getAllLibraryInfoObjects();
+		new Set([...mAllLibraryInfoObjects.keys()]).difference(parsedLibraries).forEach((id) => callback(mAllLibraryInfoObjects.get(id)));
 	}
 
-	function parseParameters(libInfo, bAsync) {
-		var oUrl = getThemeBaseUrlForId(libInfo);
+	/**
+	 * Parses theming parameters from the library.css file for a given library.
+	 *
+	 * The function attempts to extract and parse inline parameters embedded in the CSS file's
+	 * background-image property as a data URI.
+	 *
+	 * @param {object} libInfo Library info object containing metadata about the library
+	 * @param {string} libInfo.id The library identifier (e.g., 'sap.ui.core')
+	 * @param {string} libInfo.linkId The ID of the CSS link element
+	 * @param {boolean} libInfo.finishedLoading Indicates whether the library CSS has finished loading
+	 * @param {boolean} bSync Indicates whether the function is called in synchronous mode.
+	 *   In sync mode, the function returns `true` only if parameters are successfully parsed.
+	 *   In async mode, it returns `true` if the CSS is loaded (regardless of parse success).
+	 * @returns {boolean} `true` if parameters were successfully parsed (sync mode) or if the CSS
+	 *   is loaded (async mode); `false` otherwise
+	 * @private
+	 * @ui5-transform-hint replace-param bSync false
+	 */
+	function parseParameters(libInfo, bSync) {
+		const oUrl = getThemeBaseUrlForId(libInfo);
 
-		var bThemeApplied = libInfo.finishedLoading;
-
-		if (!bThemeApplied && !bAsync) {
+		if (!libInfo.finishedLoading && bSync) {
 			Log.warning("Parameters have been requested but theme is not applied, yet.", "sap.ui.core.theming.Parameters");
 		}
 
 		// In some browsers (e.g. Safari) it might happen that after switching the theme or adopting the <link>'s href,
 		// the parameters from the previous stylesheet are taken. This can be prevented by checking whether the theme is applied.
-		if (bThemeApplied) {
-			var oLink = document.getElementById(libInfo.linkId);
-			var sDataUri = window.getComputedStyle(oLink).getPropertyValue("background-image");
-			var aParams = /\(["']?data:text\/plain;utf-8,(.*?)['"]?\)$/i.exec(sDataUri);
+		if (libInfo.finishedLoading) {
+			const oLink = document.getElementById(libInfo.linkId);
+			const sDataUri = window.getComputedStyle(oLink).getPropertyValue("background-image");
+			const aParams = /\(["']?data:text\/plain;utf-8,(.*?)['"]?\)$/i.exec(sDataUri);
 			if (aParams && aParams.length >= 2) {
-				var sParams = aParams[1];
+				let sParams = aParams[1];
 				// decode only if necessary
 				if (sParams.charAt(0) !== "{" && sParams.charAt(sParams.length - 1) !== "}") {
 					try {
@@ -152,19 +141,28 @@ sap.ui.define([
 					}
 				}
 				try {
-					var oParams = JSON.parse(sParams);
+					const oParams = JSON.parse(sParams);
 					mergeParameters(oParams, oUrl.themeBaseUrl);
+					parsedLibraries.add(libInfo.id);
 					return true; // parameters successfully parsed
 				} catch (ex) {
 					future.warningThrows("Could not parse theme parameters from " + oUrl.styleSheetUrl + ".", { cause: ex , suffix: "Loading library-parameters.json as fallback solution." });
 				}
 			}
+			if (bSync) {
+				// sync: return false if parameter could not be parsed OR theme is not applied OR library has no parameters
+				//       For sync path this triggers a sync library-parameters.json request as fallback
+				return false;
+			} else {
+				// async: always return bThemeApplied. Issues during parsing are not relevant for further processing because
+				//        there is no fallback as in the sync case
+				parsedLibraries.add(libInfo.id);
+				return true;
+			}
 		}
-		// sync: return false if parameter could not be parsed OR theme is not applied OR library has no parameters
-		//       For sync path this triggers a sync library-parameters.json request as fallback
-		// async: always return bThemeApplied. Issues during parsing are not relevant for further processing because
-		//        there is no fallback as in the sync case
-		return bAsync ? bThemeApplied : false;
+
+		// return false if theme is not applied
+		return false;
 	}
 
 	/**
@@ -172,15 +170,15 @@ sap.ui.define([
 	 * @param {object} libInfo Library info object from ThemeManager
 	 */
 	function loadParameters(libInfo) {
-		var oUrl = getThemeBaseUrlForId(libInfo);
+		const oUrl = getThemeBaseUrlForId(libInfo);
 
 		// try to parse the inline-parameters for the given library
 		// this may fail for a number of reasons, see below
-		if (!parseParameters(libInfo)) {
+		if (!parseParameters(libInfo, true)) {
 			// derive parameter file URL from CSS file URL
 			// $1: name of library (incl. variants)
-			// $2: additional parameters, e.g. for sap-ui-merged, version/sap-ui-dist-version
-			var sUrl = oUrl.styleSheetUrl.replace(/\/(?:css_variables|library)([^\/.]*)\.(?:css|less)($|[?#])/, function($0, $1, $2) {
+			// $2: additional parameters, such as `sap-ui-dist-version`
+			const sUrl = oUrl.styleSheetUrl.replace(/\/(?:css_variables|library)([^\/.]*)\.(?:css|less)($|[?#])/, function($0, $1, $2) {
 				return "/library-parameters.json" + ($2 ? $2 : "");
 			});
 
@@ -195,8 +193,8 @@ sap.ui.define([
 			// Note: sThemeBaseUrl must always be absolute, as it's derived from libInfo.getUrl().baseUrl which returns absolute URLs.
 			//       If this fails, there's an error in the URL construction logic upstream.
 			const sThemeOrigin = new URL(oUrl.themeBaseUrl).origin;
-			var bWithCredentials = mOriginsNeedingCredentials[sThemeOrigin];
-			var aWithCredentials = [];
+			const bWithCredentials = mOriginsNeedingCredentials[sThemeOrigin];
+			let aWithCredentials = [];
 
 			// initially we don't have any information if the target origin needs credentials or not ...
 			if (bWithCredentials === undefined) {
@@ -213,6 +211,7 @@ sap.ui.define([
 
 			// trigger a sync. loading of the parameters.json file
 			loadParametersJSON(sUrl, oUrl.themeBaseUrl, aWithCredentials);
+			parsedLibraries.add(libInfo.id);
 		}
 	}
 
@@ -222,7 +221,7 @@ sap.ui.define([
 			return undefined;
 		}
 
-		var sStyleSheetUrl = libInfo.getUrl().url || libInfo.cssLinkElement?.getAttribute("href");
+		const sStyleSheetUrl = libInfo.getUrl().url || libInfo.cssLinkElement?.getAttribute("href");
 		// The baseUrl from libInfo.getUrl() returns an absolute URL without query parameters or fragments.
 		// To derive the theme base directory, we only need to remove the filename portion after the last "/"
 		// (e.g., "https://example.com/resources/sap/ui/core/themes/base/library.css" → "https://example.com/resources/sap/ui/core/themes/base/")
@@ -242,11 +241,11 @@ sap.ui.define([
 	 * @param {boolean[]} aWithCredentials probing values for requesting with or without credentials
 	 */
 	function loadParametersJSON(sUrl, sThemeBaseUrl, aWithCredentials) {
-		var oHeaders = {
+		const oHeaders = {
 			Accept: syncFetch.ContentTypes.JSON
 		};
 
-		var bCurrentWithCredentials = aWithCredentials.shift();
+		const bCurrentWithCredentials = aWithCredentials.shift();
 		if (bCurrentWithCredentials) {
 			// the X-Requested-With Header is essential for the Theming-Service to determine if a GET request will be handled
 			// This forces a preflight request which should give us valid Allow headers:
@@ -276,27 +275,19 @@ sap.ui.define([
 
 		// load and evaluate parameter file
 		try {
-			var response = syncFetch(sUrl, {
+			const response = syncFetch(sUrl, {
 				credentials: bCurrentWithCredentials ? "include" : "omit",
 				headers: oHeaders
 			});
 			if (response.ok) {
-				var data = response.json();
+				const data = response.json();
 				// Note: sThemeBaseUrl must always be absolute, as it's derived from libInfo.getUrl().baseUrl which returns absolute URLs.
 				//       If this fails, there's an error in the URL construction logic upstream.
 				const sThemeOrigin = new URL(sThemeBaseUrl).origin;
 				// Once we have a successful request we track the credentials setting for this origin
 				mOriginsNeedingCredentials[sThemeOrigin] = bCurrentWithCredentials;
 
-				if (Array.isArray(data)) {
-					// in the sap-ui-merged use case, multiple JSON files are merged into and transferred as a single JSON array
-					for (var j = 0; j < data.length; j++) {
-						var oParams = data[j];
-						mergeParameters(oParams, sThemeBaseUrl);
-					}
-				} else {
-					mergeParameters(data, sThemeBaseUrl);
-				}
+				mergeParameters(data, sThemeBaseUrl);
 			} else {
 				throw new Error(response.statusText || response.status);
 			}
@@ -307,223 +298,36 @@ sap.ui.define([
 	}
 
 	/**
-	 * Retrieves a map containing all inline-parameters.
-	 *
-	 * @param {boolean} bAsync=undefined whether to load and parse the parameters asynchronously, default sync
-	 * @returns {object} a map of all parameters
-	 */
-	function getParameters(bAsync) {
-		// Initial loading
-		if (!mParameters) {
-			// Merge an empty parameter set to initialize the internal object
-			mergeParameters({}, "");
-
-			forEachStyleSheet(function (libId, libInfo) {
-				if (bAsync) {
-					if (!parseParameters(libInfo, bAsync)) {
-						aParametersToLoad.push(libId);
-					}
-				} else {
-					loadParameters(libInfo);
-				}
-			});
-		}
-
-		return mParameters;
-	}
-
-	function parsePendingLibraryParameters() {
-		var aPendingThemes = [];
-
-		aParametersToLoad.forEach(function (sId) {
-			// Try to parse parameters (in case theme is already applied). Else keep parameter ID for later
-			if (!parseParameters(getAllLibraryInfoObjects(sId), /*bAsync=*/true)) {
-				aPendingThemes.push(sId);
-			}
-		});
-
-		// Keep theme IDs which are not ready for later
-		aParametersToLoad = aPendingThemes;
-	}
-
-	/**
-	 * Loads library-parameters.json files if some libraries are missing.
-	 */
-	function loadPendingLibraryParameters() {
-		// lazy loading of further library parameters
-		aParametersToLoad.map((id) => getAllLibraryInfoObjects(id)).forEach(loadParameters);
-
-		// clear queue
-		aParametersToLoad = [];
-	}
-
-	/**
-	 * Called by the Core when a new library and its stylesheet have been loaded.
-	 * Must be called AFTER a link-tag (with id: "sap-ui-theme" + sLibName) for the theme has been created.
-	 * @param {string} sLibId id of theme link-tag
-	 * @private
-	 */
-	Parameters._addLibraryTheme = function(sLibId) {
-		aParametersToLoad.push(sLibId);
-	};
-
-	/**
 	 * Returns parameter value from given map and handles legacy parameter names
 	 *
-	 * @param {object} mOptions options map
-	 * @param {string} mOptions.parameterName Parameter name / key
-	 * @param {string} mOptions.scopeName Scope name
-	 * @param {boolean} mOptions.loadPendingParameters If set to "true" and no parameter value is found,
-	 *                                                 all pending parameters will be loaded (see Parameters._addLibraryTheme)
-	 * @param {boolean} mOptions.async whether the parameter value should be retrieved asynchronous
+	 * @param {string} sParameterName Parameter name / key
+	 * @param {boolean} [bAsync=false] whether the parameter value should be retrieved asynchronous
 	 * @returns {string|undefined} parameter value or undefined
 	 * @private
+	 * @ui5-transform-hint replace-param bAsync true
 	 */
-	function getParam(mOptions) {
-		var bAsync = mOptions.async, oParams = getParameters(bAsync);
-		if (mOptions.scopeName) {
-			oParams = oParams["scopes"][mOptions.scopeName];
+	function getParameter(sParameterName, bAsync) {
+		if (bAsync) {
+			processLibraries(parseParameters);
 		} else {
-			oParams = oParams["default"];
+			processLibraries(loadParameters);
 		}
 
-		var sParamValue = oParams[mOptions.parameterName];
+
+		let sParamValue = mParameters[sParameterName];
 
 		// [Compatibility]: if a parameter contains a prefix, we cut off the ":" and try again
 		// e.g. "my.lib:paramName"
 		if (!sParamValue) {
-			var iIndex = mOptions.parameterName.indexOf(":");
+			const iIndex = sParameterName.indexOf(":");
 			if (iIndex != -1) {
-				var sParamNameWithoutColon = mOptions.parameterName.substr(iIndex + 1);
-				sParamValue = oParams[sParamNameWithoutColon];
+				const sParamNameWithoutColon = sParameterName.slice(iIndex + 1);
+				sParamValue = mParameters[sParamNameWithoutColon];
 			}
-		}
-
-		// Sync: Fallback path for when parameter could not be found so far, library.css MIGHT be not loaded
-		if (mOptions.loadPendingParameters && typeof sParamValue === "undefined" && !bAsync) {
-			loadPendingLibraryParameters();
-
-			sParamValue = getParam({
-				parameterName: mOptions.parameterName,
-				scopeName: mOptions.scopeName,
-				loadPendingParameters: false // prevent recursion
-			});
 		}
 
 		return sParamValue;
 	}
-
-	function getParamForActiveScope(sParamName, oElement, bAsync) {
-		// check for scopes and try to find the classes in Control Tree
-		var aScopeChain = Parameters.getActiveScopesFor(oElement, bAsync);
-
-		var aFilteredScopeChain = aScopeChain.flat().reduce(function (aResult, sScope) {
-			if (aResult.indexOf(sScope) === -1) {
-				aResult.push(sScope);
-			}
-			return aResult;
-		}, []);
-
-		for (var i = 0; i < aFilteredScopeChain.length; i++) {
-			var sScopeName = aFilteredScopeChain[i];
-
-			var sParamValue = getParam({
-				parameterName: sParamName,
-				scopeName: sScopeName,
-				async: bAsync
-			});
-
-			if (sParamValue) {
-				return sParamValue;
-			}
-		}
-		// if no matching scope was found return the default parameter
-		return getParam({
-			parameterName: sParamName,
-			async: bAsync
-		});
-	}
-
-	/**
-	 * Returns the scopes from current theming parameters.
-	 *
-	 * @private
-	 * @ui5-restricted sap.ui.core
-	 * @param {boolean} [bAvoidLoading] Whether loading of parameters should be avoided
-	 * @param {boolean} [bAsync] Whether loading of parameters should be asynchronous
-	 * @return {string[]|undefined} Scope names
-	 */
-	Parameters._getScopes = function(bAvoidLoading, bAsync) {
-		if ( bAvoidLoading && !mParameters ) {
-			return undefined;
-		}
-		var oParams = getParameters(bAsync);
-		var aScopes = Object.keys(oParams["scopes"]);
-		return aScopes;
-	};
-
-	/**
-	 * Returns the active scope(s) for a given control by looking up the hierarchy.
-	 *
-	 * The lookup navigates the DOM hierarchy if it's available. Otherwise if controls aren't rendered yet,
-	 * it navigates the control hierarchy. By navigating the control hierarchy, inner-html elements
-	 * with the respective scope classes can't get recognized as the Custom Style Class API does only for
-	 * root elements.
-	 *
-	 * @private
-	 * @ui5-restricted sap.viz
-	 * @param {object} oElement element/control instance
-	 * @param {boolean} bAsync Whether the scope should be retrieved asynchronous
-	 * @return {Array.<Array.<string>>} Two dimensional array with scopes in bottom up order
-	 */
-	Parameters.getActiveScopesFor = function(oElement, bAsync) {
-		var aScopeChain = [];
-
-		if (oElement instanceof Element) {
-			var domRef = oElement.getDomRef();
-
-			// make sure to first load all pending parameters
-			// doing it later (lazy) might change the behavior in case a scope is initially not defined
-			if (bAsync) {
-				parsePendingLibraryParameters();
-			} else {
-				loadPendingLibraryParameters();
-			}
-
-			// check for scopes and try to find the classes in parent chain
-			var aScopes = this._getScopes(undefined, bAsync);
-
-			if (aScopes.length) {
-				if (domRef) {
-					var fnNodeHasStyleClass = function(sScopeName) {
-						var scopeList = domRef.classList;
-						return scopeList && scopeList.contains(sScopeName);
-					};
-
-					while (domRef) {
-						const aFoundScopeClasses = aScopes.filter(fnNodeHasStyleClass);
-						if (aFoundScopeClasses.length > 0) {
-							aScopeChain.push(aFoundScopeClasses);
-						}
-						domRef = domRef.parentNode;
-					}
-				} else {
-					var fnControlHasStyleClass = function(sScopeName) {
-						return typeof oElement.hasStyleClass === "function" && oElement.hasStyleClass(sScopeName);
-					};
-
-					while (oElement) {
-						const aFoundScopeClasses = aScopes.filter(fnControlHasStyleClass);
-						if (aFoundScopeClasses.length > 0) {
-							aScopeChain.push(aFoundScopeClasses);
-						}
-						oElement = typeof oElement.getParent === "function" && oElement.getParent();
-					}
-				}
-			}
-		}
-		return aScopeChain;
-	};
 
 	/**
 	 *
@@ -590,7 +394,7 @@ sap.ui.define([
 	 *  // Scenario 1 (all parameters are available): the returned parameter map can be used to merge with a map of default values.
 	 *  // Scenario 2 (one or more parameters are missing): the returned undefined value does not change the default parameters
 	 *  // This allows you to always retrieve a consistent set of parameters, either synchronously via the return-value or asynchronously via the provided callback.
-	 *  var mMyParams = Object.assign({
+	 *  const mMyParams = Object.assign({
 	 *     sapUiParam1: "1rem",
 	 *     sapUiParam2: "#FF0000",
 	 *     sapUiParam3: "16px"
@@ -603,28 +407,27 @@ sap.ui.define([
 	 *  }));
 	 *
 	 * @param {string | string[] | object} vName the (array with) CSS parameter name(s) or an object containing the (array with) CSS parameter name(s),
-	 *     the scopeElement and a callback for async retrieval of parameters.
+	 *     and a callback for async retrieval of parameters.
 	 * @param {string | string[]} vName.name the (array with) CSS parameter name(s)
-	 * @param {sap.ui.core.Element} [vName.scopeElement]
-	 *                           Element / control instance to take into account when looking for a parameter value.
-	 *                           This can make a difference when a parameter value is overridden in a theme scope set via a CSS class.
 	 * @param {function(sap.ui.core.theming.Parameters.Value)} [vName.callback] If given, the callback is only executed in case there are still parameters pending and one or more of the requested parameters is missing.
-	 * @param {sap.ui.core.Element} [oElement]
-	 *                           Element / control instance to take into account when looking for a parameter value.
-	 *                           This can make a difference when a parameter value is overridden in a theme scope set via a CSS class.
 	 * @returns {sap.ui.core.theming.Parameters.Value} the CSS parameter value(s) or <code>undefined</code> if the parameters could not be retrieved.
 	 *
 	 * @public
 	 */
-	Parameters.get = function(vName, oElement) {
-		let sParamName, fnAsyncCallback, bAsync, aNames, iIndex;
+	Parameters.get = function(vName) {
+		let fnAsyncCallback, aNames;
+
+		/**
+		 * @ui5-transform-hint replace-local true
+		 */
+		let bAsync;
 
 		// Whether parameters containing CSS URLs should be parsed into regular URL strings,
 		// e.g. a parameter value of url('https://myapp.sample/image.jpeg') will be returned as "https://myapp.sample/image.jpeg".
 		// Empty strings as well as the special CSS value 'none' will be parsed to null.
 		let bParseUrls;
 
-		var findRegisteredCallback = function (oCallbackInfo) { return oCallbackInfo.callback === fnAsyncCallback; };
+		const findRegisteredCallback = function (oCallbackInfo) { return oCallbackInfo.callback === fnAsyncCallback; };
 
 		if (!sTheme) {
 			sTheme = Theming.getTheme();
@@ -647,8 +450,8 @@ sap.ui.define([
 
 			// retrieve parameters
 			// optionally might also trigger a sync JSON request, if a library was loaded but not parsed yet
-			var oParams = getParameters();
-			return Object.assign({}, oParams["default"]);
+			processLibraries(loadParameters);
+			return Object.assign({}, mParameters);
 		}
 
 		if (!vName) {
@@ -661,60 +464,43 @@ sap.ui.define([
 				future.warningThrows("sap.ui.core.theming.Parameters: Get was called with an object argument without one or more parameter names.");
 				return undefined;
 			}
-			oElement = vName.scopeElement;
 			fnAsyncCallback = vName.callback;
 			bParseUrls = vName._restrictedParseUrls || false;
 			aNames = typeof vName.name === "string" ? [vName.name] : vName.name;
 			bAsync = true;
 		} else {
+			future.warningThrows(
+				`Legacy variant usage of sap.ui.core.theming.Parameters.get API detected for parameter(s): '${(vName.join?.(", ") ?? vName)}'.`,
+				{
+					suffix: "This could lead to bad performance and additional synchronous XHRs, as parameters might not be available yet. Use asynchronous variant instead."
+				},
+				"LegacyParametersGet",
+				"sap.ui.support",
+				function() { return { type: "LegacyParametersGet" }; }
+			);
+
 			// legacy variant
 			if (typeof vName === "string") {
 				aNames = [vName];
 			} else { // vName is Array
 				aNames = vName;
 			}
-
-			Log.warning(
-				"[FUTURE FATAL] Legacy variant usage of sap.ui.core.theming.Parameters.get API detected for parameter(s): '" + aNames.join(", ") +
-				"'. This could lead to bad performance and additional synchronous XHRs, as parameters might not be available yet. Use asynchronous variant instead.",
-				"LegacyParametersGet",
-				"sap.ui.support",
-				function() { return { type: "LegacyParametersGet" }; }
-			);
 		}
-
-		var resolveWithParameter;
-		var lookForParameter = function (sName) {
-			if (oElement instanceof Element) {
-				return getParamForActiveScope(sName, oElement, bAsync);
-			} else {
-				if (bAsync) {
-					parsePendingLibraryParameters();
-				}
-				return getParam({
-					parameterName: sName,
-					loadPendingParameters: !bAsync,
-					async: bAsync
-				});
-			}
-		};
 
 		const mResult = {};
 
-		for (var i = 0; i < aNames.length; i++) {
-			sParamName = aNames[i];
-			var sParamValue = lookForParameter(sParamName);
+		for (const sParamName of aNames) {
+			const sParamValue = getParameter(sParamName, bAsync);
 			if (!bAsync || sParamValue) {
 				mResult[sParamName] = sParamValue;
 			}
 		}
 
 		if (bAsync && fnAsyncCallback && Object.keys(mResult).length !== aNames.length) {
-			resolveWithParameter = function () {
+			const resolveWithParameter = function () {
 				Theming.detachApplied(resolveWithParameter);
-				var vParams = this.get({ // Don't pass callback again
-					name: vName.name,
-					scopeElement: vName.scopeElement
+				const vParams = this.get({ // Don't pass callback again
+					name: vName.name
 				});
 
 				if (!vParams || (typeof vParams === "object" && (Object.keys(vParams).length !== aNames.length))) {
@@ -726,7 +512,7 @@ sap.ui.define([
 			}.bind(this);
 
 			// Check if identical callback is already registered and reregister with current parameters
-			iIndex = aCallbackRegistry.findIndex(findRegisteredCallback);
+			const iIndex = aCallbackRegistry.findIndex(findRegisteredCallback);
 			if (iIndex >= 0) {
 				Theming.detachApplied(aCallbackRegistry[iIndex].eventHandler);
 				aCallbackRegistry[iIndex].eventHandler = resolveWithParameter;
@@ -803,13 +589,13 @@ sap.ui.define([
 	function reset() {
 		/**
 		 * hidden parameter {boolean} bForce
-		 * @deprecated
+		 * @ui5-transform-hint replace-local false
 		 */
 		const bForce = arguments[0] === true;
 		if ( bForce || Theming.getTheme() !== sTheme ) {
 			sTheme = Theming.getTheme();
-			aParametersToLoad = [...getAllLibraryInfoObjects().keys()];
-			mParameters = null;
+			parsedLibraries.clear();
+			mParameters = {};
 		}
 	}
 
@@ -823,9 +609,9 @@ sap.ui.define([
 	 */
 	Parameters._getThemeImage = function(sParamName, bForce) {
 		sParamName = sParamName || "sapUiGlobalLogo";
-		var logo = Parameters.get(sParamName);
+		let logo = Parameters.get(sParamName);
 		if (logo) {
-			var match = rCssUrl.exec(logo);
+			const match = rCssUrl.exec(logo);
 			if (match) {
 				logo = match[1];
 			} else if (logo === "''" || logo === "none") {

@@ -94,7 +94,7 @@ sap.ui.define([
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public

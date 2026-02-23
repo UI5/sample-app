@@ -577,7 +577,7 @@ sap.ui.define([
 	 * @param {boolean} bPreventBubbling
 	 *   Whether the dataRequested and dataReceived events related to the refresh must not be
 	 *   bubbled up to the model
-	 * @returns {Promise} The created promise
+	 * @returns {Promise<any>} The created promise
 	 *
 	 * @see #isRefreshWithoutBubbling
 	 * @see #resolveRefreshPromise
@@ -670,15 +670,16 @@ sap.ui.define([
 	 * @since 1.61.0
 	 */
 	ODataParentBinding.prototype.destroy = function () {
-		this.mAggregatedQueryOptions = undefined;
-		this.aChildCanUseCachePromises = [];
-		// cannot be set to undefined, it might be modified after destruction
-		this.mChildPathsReducedToParent = {};
 		this.mLateQueryOptions = undefined;
 		this.removeReadGroupLock();
 		this.oRefreshPromise = undefined;
 		this.oResumePromise = undefined;
 		this.mCanUseCachePromiseByChildPath = undefined;
+
+		// cannot be set to undefined, might be modified after destruction
+		this.mAggregatedQueryOptions = {};
+		this.aChildCanUseCachePromises = [];
+		this.mChildPathsReducedToParent = {};
 
 		asODataBinding.prototype.destroy.call(this);
 	};
@@ -984,7 +985,7 @@ sap.ui.define([
 						oCache = that.createAndSetCache(that.mAggregatedQueryOptions,
 							oCache.getResourcePath(), oContext);
 					} else {
-						oCache.setQueryOptions(_Helper.merge({}, that.oModel.mUriParameters,
+						oCache.setQueryOptions(_Helper.merge({}, that.oModel.mURLParameters,
 							that.mAggregatedQueryOptions));
 					}
 				}
@@ -1420,8 +1421,8 @@ sap.ui.define([
 	 * If there is a refresh promise created by {@link #createRefreshPromise}, it is resolved with
 	 * the given promise and cleared. Does not reject the refresh promise with a canceled error.
 	 *
-	 * @param {Promise} oPromise - The promise to resolve with
-	 * @returns {Promise} oPromise for chaining
+	 * @param {Promise<any>} oPromise - The promise to resolve with
+	 * @returns {Promise<any>} oPromise for chaining
 	 *
 	 * @private
 	 */

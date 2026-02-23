@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/Lib","sap/ui/core/format/NumberFormat"],function(e,t){"use strict";const n={apiVersion:2};n.render=function(n,o){const s=o.getTitle();const l=t.getIntegerInstance({groupingEnabled:true});const a=o.getTotalCount();const T=o.getSelectedCount();const i=l.format(o.getTotalCount());const c=l.format(o.getSelectedCount());const r=e.getResourceBundleFor("sap.m");let u;n.openStart("div",o);if(!o.getVisible()){n.style("display","none")}n.class("sapMTableTitle");n.openEnd();n.renderControl(s);n.openStart("span",o.getId()+"-tableTitleContent");n.class("sapMTableTitleText");if(T>0&&a>0){n.class("sapMTableTitleSelectedRowCount");if(o.getShowExtendedView()){u=r.getText("TABLETITLE_SELECTED_ROW_COUNT_EXT",[c,i])}else{u=r.getText("TABLETITLE_SELECTED_ROW_COUNT_COMP",[c,i])}}else if(a>0){n.class("sapMTableTitleTotalCount");u=i}else if(T>0){n.class("sapMTableTitleSelectedCount");u=r.getText("TABLETITLE_SELECTED_COUNT_ONLY",[c])}n.openEnd();if(u){n.text(`(${u})`)}n.close("span");n.close("div")};return n},true);
+//# sourceMappingURL=TableTitleRenderer.js.map

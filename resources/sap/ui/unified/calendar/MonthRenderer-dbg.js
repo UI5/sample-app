@@ -295,6 +295,7 @@ sap.ui.define([
 				oRm.openEnd();
 
 				if (bWeekNum) {
+					this.renderWeekNumbers = true;
 					this._renderWeekNumber(oRm, aDays[i], oHelper, oMonth);
 				}
 			}
@@ -422,11 +423,13 @@ sap.ui.define([
 		CalendarUtils._checkCalendarDate(oDay);
 		var oSecondaryDay = new CalendarDate(oDay, oHelper.sSecondaryCalendarType),
 			bSelectable = oMonth._getAriaRole() === "gridcell" && oMonth._getSelectableAccessibilitySemantics(),
+			sDayDescription = bSelectable ? oMonth._getDayDescription() : "",
+			sDayNameId = (!bDayName && iNumber >= 0) ? oHelper.sId + "-WH" + iNumber : "",
 			mAccProps = {
 				role: oMonth._getAriaRole(),
 				selected: bSelectable ? false : null,
 				label: "",
-				describedby: bSelectable ? oMonth._getDayDescription() : null
+				describedby: `${sDayDescription} ${sDayNameId}`.trim() || ""
 			},
 			bBeforeFirstYear = oDay._bBeforeFirstYear,
 			sAriaType = "",
@@ -505,12 +508,18 @@ sap.ui.define([
 		}
 
 		if (this.renderWeekNumbers && oMonth.getShowWeekNumbers() && oMonth._oDate) {
+			// This path is for controls that render week numbers inline (e.g., Month, OneMonthDatesRow)
 			// TODO: We could replace the following lines with a sap.ui.unified.calendar.CalendarUtils.calculateWeekNumber usage
 			// once the same method starts to respect the sap/base/i18n/date/CalendarWeekNumbering types.
 			const oWeekConfig = CalendarDateUtils.getWeekConfigurationValues(oMonth.getCalendarWeekNumbering(), new Locale(oMonth._getLocale()));
 			oWeekConfig.firstDayOfWeek = oMonth._getFirstDayOfWeek();
-			const oFirstDateOfWeek = CalendarDate.fromUTCDate(CalendarUtils.getFirstDateOfWeek(oDay.toLocalJSDate(), oWeekConfig), oMonth.getPrimaryCalendarType());
+			const oFirstDateOfWeek = CalendarDate.fromLocalJSDate(CalendarUtils.getFirstDateOfWeek(oDay.toLocalJSDate(), oWeekConfig), oMonth.getPrimaryCalendarType());
 			mAccProps["describedby"] = mAccProps["describedby"] + " " + oMonth.getId() + "-week-" + oMonth._calculateWeekNumber(oFirstDateOfWeek) + "-text";
+		} else if (oMonth.getShowWeekNumbers() && oMonth._oDate) {
+			// This path is for controls that render week numbers separately (e.g., CalendarDateInterval with WeeksRow)
+			const sParentId = oMonth.getParent() ? oMonth.getParent().getId() : oMonth.getId();
+			const iWeekNumber = oMonth._calculateWeekNumber(oDay);
+			mAccProps["describedby"] = mAccProps["describedby"] + " " + sParentId + "-WeeksRow" + "-week-" + iWeekNumber + "-text";
 		}
 
 		if (bNonWorking) {

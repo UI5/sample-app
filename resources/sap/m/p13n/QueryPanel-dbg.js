@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @public
 	 *

@@ -50,7 +50,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.NotificationList",
       {
         metadata: {
-          tag: "ui5-notification-list-68f7652d",
+          tag: "ui5-notification-list-0df29cf2",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 

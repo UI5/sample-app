@@ -68,7 +68,7 @@ sap.ui.define([
 	 * The MontsRow works with UI5Date or JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -138,7 +138,14 @@ sap.ui.define([
 			 * @private
 			 * @since 1.139.0
 			 */
-			selectableAccessibilitySemantics : {type : "boolean", group : "Behavior", defaultValue : true, visibility: "hidden"}
+			selectableAccessibilitySemantics : {type : "boolean", group : "Behavior", defaultValue : true, visibility: "hidden"},
+
+			/**
+			 * Determines if the week numbers are displayed.
+			 *
+			 * @since 1.145.0
+			 */
+			showWeekNumbers : {type : "boolean", group : "Appearance", defaultValue : false}
 		},
 		aggregations : {
 

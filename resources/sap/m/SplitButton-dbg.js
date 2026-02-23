@@ -48,7 +48,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @private
@@ -163,7 +163,16 @@ function(
 		};
 
 		SplitButton.prototype._handleAction = function(oEvent) {
+			const oOriginalEvent = oEvent.getParameter("originalEvent");
+			const sPressedButtonCode = oOriginalEvent?.keyCode;
+			const bArrowKeyPress = sPressedButtonCode === KeyCodes?.ARROW_DOWN || sPressedButtonCode === KeyCodes?.ARROW_UP;
+			const bOpenByArrowKeyPress = bArrowKeyPress && !oOriginalEvent?.ctrlKey && (oOriginalEvent?.altKey || oOriginalEvent?.metaKey);
+
 			if (oEvent.getSource().hasStyleClass("sapMSBArrow")) {
+				if (bArrowKeyPress && !bOpenByArrowKeyPress) {
+					return;
+				}
+
 				this.fireArrowPress({
 					keyboard: oEvent.getParameter("keyboard")
 				});
@@ -262,8 +271,8 @@ function(
 			return sText.charAt(0).toUpperCase() + sText.slice(1);
 		}
 
-		SplitButton.prototype._fireKeyboardArrowPress = function() {
-			this._getArrowButton().firePress({keyboard: true});
+		SplitButton.prototype._fireKeyboardArrowPress = function(oEvent) {
+			this._getArrowButton().firePress(oEvent);
 		};
 
 		SplitButton.prototype.onkeydown = function(oEvent) {
@@ -284,7 +293,7 @@ function(
 			}
 
 			oEvent.preventDefault();
-			this._fireKeyboardArrowPress();
+			this._fireKeyboardArrowPress({keyboard: true, originalEvent: oEvent.originalEvent});
 		};
 
 		SplitButton.prototype.onsapdown = function(oEvent) {
@@ -293,7 +302,7 @@ function(
 			}
 
 			oEvent.preventDefault();
-			this._fireKeyboardArrowPress();
+			this._fireKeyboardArrowPress({keyboard: true, originalEvent: oEvent.originalEvent});
 		};
 
 		SplitButton.prototype.onsapupmodifiers = function(oEvent) {
@@ -302,7 +311,7 @@ function(
 			}
 
 			oEvent.preventDefault();
-			this._fireKeyboardArrowPress();
+			this._fireKeyboardArrowPress({keyboard: true, originalEvent: oEvent.originalEvent});
 		};
 
 		SplitButton.prototype.onsapdownmodifiers = function(oEvent) {
@@ -311,7 +320,7 @@ function(
 			}
 
 			oEvent.preventDefault();
-			this._fireKeyboardArrowPress();
+			this._fireKeyboardArrowPress({keyboard: true, originalEvent: oEvent.originalEvent});
 			oEvent.stopImmediatePropagation();
 		};
 
@@ -321,7 +330,7 @@ function(
 				return;
 			}
 
-			this._getArrowButton().firePress();
+			this._getArrowButton().firePress({keyboard: true, originalEvent: oEvent.originalEvent});
 			oEvent.preventDefault();
 		};
 

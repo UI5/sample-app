@@ -105,7 +105,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.TreeBinding
 	 * @hideconstructor
 	 * @public
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 */
 	var ODataTreeBinding = TreeBinding.extend("sap.ui.model.odata.v2.ODataTreeBinding", /** @lends sap.ui.model.odata.v2.ODataTreeBinding.prototype */ {
 
@@ -2717,7 +2717,7 @@ sap.ui.define([
 	 * @param {object} [mParameters]
 	 *   A map of the following parameters:
 	 * @param {string} [mParameters.changeSetId]
-	 *   The ID of the <code>ChangeSet</code> that this request should belong to
+	 *   The ID of the change set that this request should belong to
 	 * @param {function} [mParameters.created]
 	 *   The callback function that is called after the metadata of the service has been loaded and the
 	 *   {@link sap.ui.model.odata.v2.Context} instance for the newly created entry is available;

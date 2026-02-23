@@ -288,7 +288,7 @@ sap.ui.define([
 		 * is opened. The dialog is closed via a date time period value selection or by pressing the "Cancel" button.
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @public
@@ -568,6 +568,11 @@ sap.ui.define([
 		var aLastIncludedOptions = ["LASTMINUTESINCLUDED", "LASTHOURSINCLUDED", "LASTDAYSINCLUDED", "LASTWEEKSINCLUDED", "LASTMONTHSINCLUDED", "LASTQUARTERSINCLUDED", "LASTYEARSINCLUDED"];
 		var aNextIncludedOptions = ["NEXTMINUTESINCLUDED", "NEXTHOURSINCLUDED", "NEXTDAYSINCLUDED", "NEXTWEEKSINCLUDED", "NEXTMONTHSINCLUDED", "NEXTQUARTERSINCLUDED", "NEXTYEARSINCLUDED"];
 
+		const POPUP_MAX_HEIGHT = 512;
+		const POPUP_HEADER_HEIGHT = 45;
+		const POPUP_LIST_ITEM_HEIGHT = 51;
+		const POPUP_LIST_ITEM_COMPACT_HEIGHT = 49;
+
 		DynamicDateRange.prototype.init = function() {
 			var bValueHelpDecorative = !Device.support.touch || Device.system.desktop ? true : false;
 			this._oInput = new DynamicDateRangeInput(this.getId() + "-input", {
@@ -753,18 +758,17 @@ sap.ui.define([
 				this._removeAllListItemDelegates();
 				this._oOptionsList.destroyAggregation("items");
 
-				const aGroupSizes = [];
-				let iCurrentGroupIndex = -1;
+				let oCurrentGroupHeader;
 
 				this._collectValueHelpItems(this._getOptions(), true).forEach(function(vOption) {
 					let oItem;
 					// check if it's a group header
 					if (typeof (vOption) === "string") {
-						aGroupSizes[++iCurrentGroupIndex] = 0;
-						oItem = this._createHeaderListItem(vOption);
+						// Create and add group header using ListBase.addItemGroup
+						const oGroupData = { text: vOption };
+						oCurrentGroupHeader = this._oOptionsList.addItemGroup(oGroupData, null, true);
+						oCurrentGroupHeader.addDelegate(this._oListItemDelegate, this);
 					} else {
-						aGroupSizes[iCurrentGroupIndex]++;
-
 						if (vOption.getKey() === "FROMDATETIME") {
 							vOption._bAdditionalTimeText = !!this._findOption("FROM");
 						} else if (vOption.getKey() === "TODATETIME") {
@@ -773,54 +777,19 @@ sap.ui.define([
 							vOption._bAdditionalTimeText = !!this._findOption("DATERANGE");
 						}
 						oItem = this._createListItem(vOption);
+						oItem.addDelegate(this._oListItemDelegate, this);
+						this._oOptionsList.addItem(oItem);
 					}
-
-					oItem.addDelegate(this._oListItemDelegate, this);
-					this._oOptionsList.addItem(oItem);
 				}, this);
 
 				//reset value help page
 				this._oNavContainer.to(this._oNavContainer.getPages()[0]);
 
 				this._openPopup(oDomRef);
-
-				if (this.getEnableGroupHeaders()) {
-					this._updateOptionsListAccessibilityAttributes(aGroupSizes);
-				}
 			}
 		};
 
-		/**
-		 * Updates accessibility attributes for options list items with group-specific aria-setsize and aria-posinset.
-		 *
-		 * @param {Array<number>} aGroupSizes Array containing the size of each group
-		 * @private
-		 */
-		DynamicDateRange.prototype._updateOptionsListAccessibilityAttributes = function(aGroupSizes) {
-			const aOptionsListItems = this._oOptionsList.getItems();
-			const iItemCount = aOptionsListItems.length;
 
-			if (!iItemCount) {
-				return;
-			}
-
-			let iPositionInGroup = 1;
-			let iCurrentGroupIndex = -1;
-
-			for (let i = 0; i < iItemCount; i++) {
-				const oItem = aOptionsListItems[i];
-
-				if (oItem.isA("sap.m.GroupHeaderListItem")) {
-					iCurrentGroupIndex++;
-					iPositionInGroup = 1;
-				} else {
-					oItem.updateAccessibilityState({
-						"aria-setsize": aGroupSizes[iCurrentGroupIndex],
-						"aria-posinset": iPositionInGroup++
-					});
-				}
-			}
-		};
 
 		/**
 		 * Searches if there is an option with the given key included.
@@ -1304,11 +1273,21 @@ sap.ui.define([
 			return this._calendarParser;
 		};
 
+		DynamicDateRange.prototype._getPopupHeight = function() {
+			let height;
+			if (document.body.classList.contains("sapUiSizeCompact") || this.hasStyleClass("sapUiSizeCompact") || this.getDomRef()?.closest(".sapUiSizeCompact")) {
+				height = this.getStandardOptions().length * POPUP_LIST_ITEM_COMPACT_HEIGHT + POPUP_HEADER_HEIGHT;
+			} else {
+				height = this.getStandardOptions().length * POPUP_LIST_ITEM_HEIGHT + POPUP_HEADER_HEIGHT;
+			}
+			return (height < POPUP_MAX_HEIGHT) ? height + "px" : POPUP_MAX_HEIGHT + "px";
+		};
+
 		DynamicDateRange.prototype._createPopup = function() {
 			if (!this._oPopup) {
 				this._oPopup = new ResponsivePopover(this.getId() + "-RP", {
 					//read the documentation about those two - the page addapts its size to its container...
-					contentHeight: '512px',
+					contentHeight: this._getPopupHeight(),
 					contentWidth: '320px',
 					showCloseButton: false,
 					showArrow: false,
@@ -1488,13 +1467,6 @@ sap.ui.define([
 			});
 		};
 
-		DynamicDateRange.prototype._createHeaderListItem = function(sHeader) {
-			var oHeader = new GroupHeaderListItem();
-			oHeader.setTitle(sHeader);
-			oHeader._bGroupHeader = true;
-
-			return oHeader;
-		};
 
 		DynamicDateRange.prototype._handleOptionPress = function(oEvent) {
 			var sOptionKey = oEvent.getSource().getOptionKey(),
@@ -1668,7 +1640,6 @@ sap.ui.define([
 					mode: ListMode.SingleSelectMaster
 				});
 
-				this._oOptionsList.applyAriaRole("listbox");
 			}
 
 			if (!this._oNavContainer) {
@@ -1700,13 +1671,13 @@ sap.ui.define([
 				)[0];
 
 			if (!oOption) {
-				if (aLastOptions.indexOf(oValue.operator) > -1) {
+				if (this.lastOptionsIndex(oValue.operator) > -1) {
 					oOption = aOptions.filter(
-						function (oItem) { return oItem.getOptionKey && oItem.getOptionKey() === aLastOptions[0];}
+						function (oItem) { return oItem.getOptionKey && StandardDynamicDateOption.LastXKeys.indexOf(oItem.getOptionKey()) !== -1;}
 					)[0];
 				} else if (this.nextOptionsIndex(oValue.operator) > -1) {
 					oOption = aOptions.filter(
-						function (oItem) { return oItem.getOptionKey && oItem.getOptionKey() === aNextOptions[0];}
+						function (oItem) { return oItem.getOptionKey && StandardDynamicDateOption.NextXKeys.indexOf(oItem.getOptionKey()) !== -1;}
 					)[0];
 				}
 			}

@@ -14,6 +14,7 @@ sap.ui.define([
 	"sap/ui/core/Lib",
 	'sap/ui/core/library',
 	'./SelectDialogBase',
+	'sap/ui/dom/detectTextSelection',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/InvisibleMessage',
 	'sap/ui/core/StaticArea',
@@ -34,6 +35,7 @@ sap.ui.define([
 	Library,
 	CoreLibrary,
 	SelectDialogBase,
+	detectTextSelection,
 	InvisibleText,
 	InvisibleMessage,
 	StaticArea,
@@ -116,7 +118,7 @@ sap.ui.define([
 	 * When using the <code>sap.m.TableSelectDialog</code> in SAP Quartz and Horizon themes, the breakpoints and layout paddings could be determined by the dialog's width. To enable this concept and add responsive paddings to an element of the control, you have to add the following classes depending on your use case: <code>sapUiResponsivePadding--header</code>, <code>sapUiResponsivePadding--subHeader</code>, <code>sapUiResponsivePadding--content</code>, <code>sapUiResponsivePadding--footer</code>.
 	 * @extends sap.m.SelectDialogBase
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -1326,6 +1328,10 @@ sap.ui.define([
 	};
 
 	TableSelectDialog.prototype._tableColumnsEventDelegates = function (oEvent) {
+		if (detectTextSelection(this.getDomRef())) {
+			return;
+		}
+
 		let oTarget = oEvent.target.closest(".sapMLIB"),
 				oListItem;
 

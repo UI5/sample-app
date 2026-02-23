@@ -63,7 +63,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @public
@@ -286,6 +286,7 @@ sap.ui.define([
 
 			this._openPopoverBy(oPopover, oControl);
 
+			this._getMenuWrapper()._bOpenedByMenuButton = oControl.isA && oControl.isA("sap.m.MenuButton"); // set flag on MenuWrapper for keyboard handling
 			this.bIgnoreOpenerFocus = true; // reset the flag to allow the opener to be focused after the menu is closed
 
 			return this;
@@ -586,6 +587,7 @@ sap.ui.define([
 			this.fireClosed();
 
 			if (oOpener && !this.bIgnoreOpenerFocus) {
+				this._getMenuWrapper()._bOpenedByMenuButton = false;
 				try {
 					oOpener.focus();
 				} catch (e) {

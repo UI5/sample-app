@@ -75,8 +75,6 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 			append: true
 		};
 
-		// aria-readonly is not valid for the current role of the tokenizer.
-		oRm.accessibilityState(oControl, oAccAttributes);
 		oRm.openEnd(); // div element
 		oRm.renderControl(oControl.getAggregation("_tokensInfo"));
 
@@ -96,6 +94,10 @@ sap.ui.define(['sap/ui/Device', 'sap/ui/core/InvisibleText'],
 		}
 
 		oRm.openStart("div", oControl.getId() + "-scrollContainer");
+
+		// CS20250010881646 - Render the accessibility state like role, aria-labelledby and aria-describedby to the scroll container instead of the root div
+		oRm.accessibilityState(oControl, oAccAttributes);
+
 		oRm.class(bMultiLine ? "sapMTokenizerMultiLineContainer" : "sapMTokenizerScrollContainer");
 
 		if (oControl.getHiddenTokensCount() === oControl.getTokens().length) {

@@ -162,7 +162,7 @@ function(
 	 * @extends sap.m.InputBase
 	 * @implements sap.ui.core.IAccessKeySupport
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -1450,7 +1450,7 @@ function(
 
 			// revert autocompleted value on desktop
 			if (this._getTypedInValue() !== this.getValue()) {
-				this.setValue(this._getTypedInValue());
+				this.$("inner").val(this._getTypedInValue());
 			}
 			return; // override InputBase.onsapescape()
 		}

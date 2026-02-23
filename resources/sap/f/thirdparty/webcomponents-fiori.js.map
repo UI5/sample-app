@@ -1,1 +1,1 @@
-{"version":3,"file":"webcomponents-fiori.js","names":["sap","ui","define","webcomponentsBase","Icons"],"sources":["webcomponents-fiori-dbg.js"],"mappings":"AAAAA,IAAIC,GAAGC,OAAO,CAAC,iCAAkC,0BAA2B,SAAWC,EAAmBC,GAAS,YAIlH","ignoreList":[]}
+{"version":3,"file":"webcomponents-fiori.js","names":["sap","ui","define","webcomponentsBase","Theme","Icons"],"sources":["webcomponents-fiori-dbg.js"],"mappings":"AAAAA,IAAIC,GAAGC,OAAO,CAAC,iCAAkC,yBAA0B,0BAA2B,SAAWC,EAAmBC,EAAOC,GAAS,YAInJ","ignoreList":[]}

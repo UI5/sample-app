@@ -80,7 +80,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -474,7 +474,7 @@ function(
 					return oElement && oElement.isA(vType);
 				});
 			},
-			bIsSelectOrComboBox = fnHasType(["sap.m.Select", "sap.m.ComboBox"]),
+			bIsSelectOrComboBox = fnHasType(["sap.m.Select", "sap.m.ComboBox", "sap.m.MultiComboBox"]),
 			bIsMenuButton = fnHasType("sap.m.MenuButton"),
 			bIsUpOrDownArrowKey = [KeyCodes.ARROW_UP, KeyCodes.ARROW_DOWN].includes(oEvent.keyCode),
 			bIsBreadcrumbs = fnHasType("sap.m.Breadcrumbs"),

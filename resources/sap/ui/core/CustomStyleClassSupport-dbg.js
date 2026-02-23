@@ -5,8 +5,15 @@
  */
 
 // Provides helper sap.ui.core.CustomStyleClassSupport
-sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/Log"],
-	function(Element, Theming, assert, Log) {
+sap.ui.define([
+	"./Element",
+	"sap/base/assert",
+	"sap/base/Log"],
+function(
+	Element,
+	assert,
+	Log
+) {
 	"use strict";
 
 
@@ -101,18 +108,12 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 			var aCustomStyleClasses = this.aCustomStyleClasses || (this.aCustomStyleClasses = []),
 				mCustomStyleClassMap = this.mCustomStyleClassMap || (this.mCustomStyleClassMap = Object.create(null)),
 				aClasses,
-				bModified = false,
-				aChangedScopes = [],
-				aScopes = getScopes();
+				bModified = false;
 
 			function check(sClass) {
 				if (!mCustomStyleClassMap[sClass]) {
 					mCustomStyleClassMap[sClass] = true;
 					aCustomStyleClasses.push(sClass);
-
-					if (aScopes && aScopes.indexOf(sClass) > -1){
-						aChangedScopes.push(sClass);
-					}
 
 					bModified = true;
 				}
@@ -140,10 +141,6 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 			} else if (bSuppressRerendering === false) {
 				this.invalidate();
 			}
-			if (aChangedScopes.length > 0) {
-				// scope has been added
-				fireThemeScopingChangedEvent(this, aChangedScopes, true);
-			}
 
 			return this;
 		};
@@ -163,8 +160,6 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 				mCustomStyleClassMap = this.mCustomStyleClassMap,
 				aClasses,
 				bExist = false,
-				aChangedScopes = [],
-				aScopes = getScopes(),
 				nIndex;
 
 			function check(sClass) {
@@ -174,10 +169,6 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 					if (nIndex !== -1) {
 						aCustomStyleClasses.splice(nIndex, 1);
 						delete mCustomStyleClassMap[sClass];
-
-						if (aScopes && aScopes.indexOf(sClass) > -1) {
-							aChangedScopes.push(sClass);
-						}
 					}
 				}
 			}
@@ -199,10 +190,6 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 					}
 				} else if (bSuppressRerendering === false) {
 					this.invalidate();
-				}
-				if (aChangedScopes.length > 0) {
-					// scope has been removed
-					fireThemeScopingChangedEvent(this, aChangedScopes, false);
 				}
 			}
 
@@ -248,25 +235,6 @@ sap.ui.define(['./Element', "sap/ui/core/Theming", "sap/base/assert", "sap/base/
 
 	};
 
-	var Parameters;
-
-	function getScopes() {
-		if (!Parameters) {
-			Parameters = sap.ui.require("sap/ui/core/theming/Parameters");
-		}
-
-		if (Parameters) {
-			return Parameters._getScopes(/* avoidLoading= */ true);
-		}
-	}
-
-	function fireThemeScopingChangedEvent(oElement, aScopeClasses, bIsAdded) {
-		Theming.fireThemeScopingChanged({
-			scopes: aScopeClasses,
-			added: bIsAdded,
-			element: oElement
-		});
-	}
 
 	return CustomStyleClassSupport;
 

@@ -64,7 +64,7 @@ sap.ui.define([
 	 * @hideconstructor
 	 * @public
 	 * @since 1.93.0
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 */
 	var Context = BaseContext.extend("sap.ui.model.odata.v2.Context", {
 			constructor : function (oModel, sPath, sDeepPath, oCreatePromise, bInactive,
@@ -216,7 +216,7 @@ sap.ui.define([
 	 *   request. If not provided, the <code>groupId</code> defined for the type of the entity to be
 	 *   deleted is used.
 	 * @param {string} [mParameters.changeSetId]
-	 *   ID of the <code>ChangeSet</code> that this request should belong to. If not provided, the
+	 *   ID of the change set that this request should belong to. If not provided, the
 	 *   <code>changeSetId</code> defined for the type of the entity to be deleted is used.
 	 * @param {boolean} [mParameters.refreshAfterChange]
 	 *   Defines whether to update all bindings after submitting this change operation,

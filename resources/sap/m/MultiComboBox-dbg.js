@@ -145,7 +145,7 @@ function(
 	 * </ul>
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @extends sap.m.ComboBoxBase
@@ -943,8 +943,9 @@ function(
 		}
 
 		// Clear error state when user types valid input
-		if (sValueState === ValueState.Error && this._sPreviousValueState && this.isValueValid(sValue)) {
-			oInputField.setValueState(this._sPreviousValueState);
+		if (sValueState === ValueState.Error && this.isValueValid(sValue)) {
+			this._bIsValueInvalid = false;
+			oInputField.setValueState(this._sInitialValueState);
 			oInputField.setValueStateText(this._sInitialValueStateText || "");
 		}
 
@@ -1247,10 +1248,9 @@ function(
 		this._synchronizeSelectedItemAndKey();
 		this.setProperty("hasSelection", !!this.getSelectedItems().length);
 
-		if (!this._bAlreadySelected && this.getValueState() !== ValueState.Error) {
+		if (!this._bAlreadySelected && !this._bIsValueInvalid) {
 			this._sInitialValueState = this.getValueState();
 			this._sInitialValueStateText = this.getValueStateText();
-			this._sPreviousValueState = this.getValueState();
 		}
 
 		if (this.getShowClearIcon()) {
@@ -1611,9 +1611,11 @@ function(
 
 		this.setValue('');
 
-		if (this.getValueState() === ValueState.Error) {
-			this.setValueState(this._sPreviousValueState);
-			this.setValueStateText(this._sPreviousValueState !== ValueState.None ? this._sInitialValueStateText : '');
+		if (this.getValueState() === ValueState.Error && this._bIsValueInvalid) {
+			this._bIsValueInvalid = false;
+
+			this.setValueState(this._sInitialValueState);
+			this.setValueStateText(this._sInitialValueState !== ValueState.None ? this._sInitialValueStateText : '');
 		}
 
 		if (mOptions.fireFinishEvent) {
@@ -2168,8 +2170,10 @@ function(
 		this._removeSelection(aTokens);
 
 		if (aItemsBeforeRemoval.length !== ListHelpers.getSelectableItems(this.getItems())) {
-			!this.isPickerDialog() && !this.isFocusInTokenizer() && this.focus();
 			this.fireChangeEvent("");
+			if (!this.isPickerDialog() && !this.isFocusInTokenizer()){
+				setTimeout(() => this.focus(), 0);
+			}
 		}
 	};
 
@@ -2180,8 +2184,6 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype._removeSelection = function (aTokens) {
-		var oTokenizer = this.getAggregation("tokenizer");
-
 		aTokens.forEach(function (oToken) {
 			var oItem = (oToken && this._getItemByToken(oToken));
 
@@ -2202,14 +2204,15 @@ function(
 			});
 
 			oToken.destroy();
+		}, this);
 
-			if (this.getSelectedItems().length > 0) {
-				var aTokens = oTokenizer.getTokens();
-				aTokens[aTokens.length - 1].focus();
-			} else {
+		setTimeout(() => {
+			// If all tokens are removed, focus should go to the input with a little delay in order for DOM to update and proper ARIA announcement to be made
+			const oTokenizer = this.getAggregation("tokenizer");
+			if (!oTokenizer || !oTokenizer.getTokens().length) {
 				this.focus();
 			}
-		}, this);
+		}, 0);
 	};
 
 	/**
@@ -2302,9 +2305,15 @@ function(
 		var oPicker = this.getPicker(),
 			oFocusTarget = oEvent.relatedTarget;
 
-		// If focus target is outside of picker and the picker is fully opened
+		// If focus target is outside of picker and the control, fire change event if value has changed
 		if (!containsOrEquals(oPicker?.getDomRef(), oFocusTarget) && !containsOrEquals(this.getDomRef(), oFocusTarget)) {
-				this.fireChangeEvent("", { value: this.getValue() });
+			var sCurrentValue = this.getValue();
+			var sLastValue = this.getLastValue();
+
+			if (sCurrentValue !== sLastValue) {
+				this.fireChangeEvent(sCurrentValue, { value: sCurrentValue });
+				this.setLastValue(sCurrentValue);
+			}
 		}
 	};
 
@@ -3279,7 +3288,7 @@ function(
 		 */
 		this._bCheckBoxClicked = true;
 
-		this._sPreviousValueState = this.getValueState();
+		this._sInitialValueState = this.getValueState();
 		this._sInitialValueStateText = "";
 
 		// ToDo: Remove. Just for backwards compatibility with the runtime layer. When this change merges, we'd need to adjust the code in the runtime
@@ -3808,8 +3817,8 @@ function(
 			this.setValue("");
 			this._sOldInput = "";
 
-			if (this._sPreviousValueState) {
-				this.setValueState(this._sPreviousValueState);
+			if (this._sInitialValueState !== this.getValueState()) {
+				this.setValueState(this._sInitialValueState);
 				this.setValueStateText(this._sInitialValueStateText || "");
 			}
 
@@ -3825,10 +3834,7 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype._handleFieldValidationState = function (oInput) {
-		if (this._sPreviousValueState !== ValueState.None) {
-			this._sPreviousValueState = this.getValueState();
-		}
-
+		this._bIsValueInvalid = true;
 		this._showWrongValueVisualEffect();
 	};
 

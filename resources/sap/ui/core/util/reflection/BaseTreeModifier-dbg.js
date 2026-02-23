@@ -404,14 +404,12 @@ sap.ui.define([
 			return typeof vPropertyValue === "string" ? vPropertyValue.replace(/([\\\{\}])/g, "\\$1") : vPropertyValue;
 		},
 
-		_templateFragment: function(sFragmentName, mPreprocessorSettings) {
-			return Promise.resolve(
-				// process might be sync, therefore stay async and wrap result in a promise
-				XMLPreprocessor.process(
-					XMLTemplateProcessor.loadTemplate(sFragmentName, "fragment"),
-					{ name: sFragmentName },
-					mPreprocessorSettings
-				)
+		_templateFragment: async function(sFragmentName, mPreprocessorSettings) {
+			const oRootElement = await XMLTemplateProcessor.loadTemplatePromise(sFragmentName, "fragment");
+			return XMLPreprocessor.process(
+				oRootElement,
+				{ name: sFragmentName },
+				mPreprocessorSettings
 			);
 		},
 		/**
@@ -978,7 +976,6 @@ sap.ui.define([
 		 * @param {string} sExtensionPointName - Name of the extension point
 		 * @param {sap.ui.core.mvc.View|Element} oView - View control or XML node of the view
 		 * @returns {Promise<{parent: object, aggregation: string, index: number, defaultContent: array}>} - Object containing parent control, aggregation name, index and the defaultContent of the extension point if exists. It is wrapped in a Promise
-		 * @experimental
 		 */
 		getExtensionPointInfo: function(sExtensionPointName, oView) {}
 	};

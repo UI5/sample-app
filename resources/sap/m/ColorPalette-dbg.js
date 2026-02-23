@@ -108,7 +108,7 @@ sap.ui.define([
 		 * To prevent this, apps using the <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library in advance.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @constructor
 		 * @public
@@ -146,7 +146,6 @@ sap.ui.define([
 					/**
 					 * The last selected color in the ColorPalette.
 					 * @since 1.122
-					 * @experimental Since 1.122, this property is in a beta state.
 					 */
 					selectedColor: { type: "sap.ui.core.CSSColor", defaultValue: null },
 

@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -641,9 +641,11 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Binding#resume
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Binding#resume
 	ODataPropertyBinding.prototype.resume = function () {
@@ -845,9 +847,11 @@ sap.ui.define([
 	 *
 	 * @throws {Error}
 	 *
+	 * @deprecated As of version 1.37.0, calling this method is not supported
 	 * @public
 	 * @see sap.ui.model.Binding#suspend
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 	// @override sap.ui.model.Binding#suspend
 	ODataPropertyBinding.prototype.suspend = function () {

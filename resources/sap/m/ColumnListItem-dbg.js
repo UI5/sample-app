@@ -8,6 +8,8 @@
 sap.ui.define([
 	"sap/ui/core/Element",
 	"sap/ui/core/library",
+	"sap/ui/core/Lib",
+	"sap/ui/dom/detectTextSelection",
 	"./library",
 	"./ListItemBase",
 	"./ColumnListItemRenderer",
@@ -15,7 +17,7 @@ sap.ui.define([
 	// jQuery custom selectors ":sapFocusable", ":sapTabbable"
 	"sap/ui/dom/jquery/Selectors"
 ],
-	function(Element, coreLibrary, library, ListItemBase, ColumnListItemRenderer, jQuery) {
+	function(Element, coreLibrary, Lib, detectTextSelection, library, ListItemBase, ColumnListItemRenderer) {
 	"use strict";
 
 
@@ -43,7 +45,7 @@ sap.ui.define([
 	 * @implements sap.m.ITableItem
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -88,7 +90,7 @@ sap.ui.define([
 	var TablePopin = Element.extend("sap.m.TablePopin", {
 		ontap: function(oEvent) {
 			// prevent the tap event if selection is done within the popin control
-			if (oEvent.isMarked() || ListItemBase.detectTextSelection(this.getDomRef())) {
+			if (oEvent.isMarked() || detectTextSelection(this.getDomRef())) {
 				return oEvent.stopImmediatePropagation(true);
 			}
 		},
@@ -264,11 +266,13 @@ sap.ui.define([
 		let sOutput = ListItemBase.getAccessibilityText(oCell, true);
 
 		if (bIncludeHeader) {
-			const oHeader = oColumn.getHeader();
-			if (oHeader && oHeader.getVisible()) {
-				sOutput = ListItemBase.getAccessibilityText(oHeader) + " " + sOutput;
-			}
+			const bPopinFocused = document.activeElement.classList.contains("sapMListTblSubCnt");
+			const sColumnDescription = oColumn.getAccessibilityDescription(!bPopinFocused);
+			sOutput = sColumnDescription + " " + sOutput;
+		} else if (oCell.$().parent().find(":sapTabbable").length > 0) {
+			sOutput = Lib.getResourceBundleFor("sap.m").getText("TABLE_CELL_INCLUDES", [sOutput]);
 		}
+
 		return sOutput;
 	}
 
@@ -278,7 +282,12 @@ sap.ui.define([
 			return getAnnouncementForColumn(oColumn, aCells, true);
 		});
 
-		return aOutput.filter(Boolean).join(" . ").trim();
+		let sOutput = aOutput.filter(Boolean).join(" . ").trim();
+		if (this.$Popin().find(":sapTabbable").length > 0) {
+			sOutput = Lib.getResourceBundleFor("sap.m").getText("TABLE_CELL_INCLUDES", [sOutput]);
+		}
+
+		return sOutput;
 	};
 
 	ColumnListItem.prototype.getContentAnnouncementOfRowAction = function() {

@@ -97,6 +97,7 @@ sap.ui.define([
         "alt", // sap.m.Image
         "href", // sap.m.Link
         "intro", // sap.m.ObjectListItem
+       /** @deprecated As of 1.20 */
         "navButtonText", // sap.m.Page
         "editable",
         "active",

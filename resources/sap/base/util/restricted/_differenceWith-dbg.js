@@ -10,7 +10,7 @@
  * @alias module:sap/base/util/restricted/_differenceWith
  * @author SAP SE
  * @since 1.80
- * @version 1.144.0
+ * @version 1.145.0
  * @private
  * @ui5-restricted
 */

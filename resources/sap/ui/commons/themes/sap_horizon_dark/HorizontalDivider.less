@@ -3,17 +3,17 @@
 /* Evening Horizon theme                             */
 /* ================================================= */
 
-.sapUiCommonsHoriDiv{
-	font-family: @sapUiDesktopFontFamily;
+.sapUiCommonsHoriDiv {
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
-.sapUiCommonsHoriDivTypePage{
-	border-width: 1px 0px 1px 0px;
-	border-top-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	border-bottom-color: @sapUiContentForegroundBorderColor; // lighten(@sapUiMediumLine, 15%) = #bfbfbf
+.sapUiCommonsHoriDivTypePage {
+	border-width: 1px 0 1px 0;
+	border-top-color: darken(@sapUiContentForegroundBorderColor, 15);
+	border-bottom-color: var(--sapContent_ForegroundBorderColor);
 }
 
-.sapUiCommonsHoriDivTypeArea{
-	border-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
+.sapUiCommonsHoriDivTypeArea {
+	border-color: darken(@sapUiContentForegroundBorderColor, 15);
 }

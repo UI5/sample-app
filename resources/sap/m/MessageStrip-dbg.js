@@ -92,7 +92,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -421,7 +421,7 @@ sap.ui.define([
 			sColorSet = MessageStripColorSet.Default;
 		}
 
-		return `${sRootClass} ${mColorSetClasses[sColorSet]}`;
+		return `${sRootClass} ${mColorSetClasses[sColorSet]}`.split(" ");
 	};
 
 	MessageStrip.prototype.exit = function () {

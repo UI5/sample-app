@@ -97,7 +97,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.144.0
+		 * @version 1.145.0
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -228,7 +228,7 @@ function(
 					/**
 					 * The (optional) custom header of this page.
 					 * Use this aggregation only when a custom header is constructed where the default header consisting of title text + nav button is not sufficient.
-					 * If this aggregation is set, the simple properties "title", "showNavButton", "NavButtonText" and "icon" are not used.
+					 * If this aggregation is set, the simple properties "title", "showNavButton", "navButtonText" and "icon" are not used.
 					 */
 					customHeader: {type: "sap.m.IBar", multiple: false},
 

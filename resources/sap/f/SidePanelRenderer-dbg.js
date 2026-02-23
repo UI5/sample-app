@@ -143,7 +143,7 @@ sap.ui.define([
 
 				oRm.openStart("div");
 				oRm.class("sapFSPSideContentInner");
-				oRm.attr("aria-labelledby", oControl.getId() + "-header");
+				oRm.attr("aria-labelledby", oControl._getSideContentHeaderTitle().getId());
 				oRm.openEnd();
 
 				for (i = 0; i < aSide.length; i++) {

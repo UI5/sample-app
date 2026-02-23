@@ -7,6 +7,7 @@
 // Provides control sap.m.ListItemBase.
 sap.ui.define([
 	"sap/ui/base/DataType",
+	"sap/ui/dom/detectTextSelection",
 	"sap/ui/model/BindingMode",
 	"sap/ui/Device",
 	"sap/ui/core/Control",
@@ -29,6 +30,7 @@ sap.ui.define([
 ],
 function(
 	DataType,
+	detectTextSelection,
 	BindingMode,
 	Device,
 	Control,
@@ -66,7 +68,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.144.0
+	 * @version 1.145.0
 	 *
 	 * @constructor
 	 * @public
@@ -191,14 +193,14 @@ function(
 		renderer: ListItemBaseRenderer
 	});
 
-	ListItemBase.getAccessibilityText = function(oControl, bDetectEmpty, bHeaderAnnouncement) {
-		var oBundle = Library.getResourceBundleFor("sap.m");
+	ListItemBase.getAccessibilityText = function(oControl, bDetectEmpty, bLessDetails) {
+		const oBundle = Library.getResourceBundleFor("sap.m");
 
 		if (!oControl || !oControl.getVisible || !oControl.getVisible()) {
 			return bDetectEmpty ? oBundle.getText("CONTROL_EMPTY") : "";
 		}
 
-		var oAccInfo;
+		let oAccInfo;
 		if (oControl.getAccessibilityInfo) {
 			oAccInfo = oControl.getAccessibilityInfo();
 		}
@@ -206,30 +208,42 @@ function(
 			oAccInfo = this.getDefaultAccessibilityInfo(oControl.getDomRef());
 		}
 
-		oAccInfo = jQuery.extend({
+		oAccInfo = {
 			type: "",
 			description: "",
-			children: []
-		}, oAccInfo);
+			children: [],
+			...oAccInfo
+		};
 
-		var sText = oAccInfo.type + " " + oAccInfo.description + " ",
-			sTooltip = oControl.getTooltip_AsString();
+		let sText = "";
+		if (oAccInfo.type) {
+			sText += oAccInfo.type + " ";
+		}
+		if (oAccInfo.description) {
+			sText += oAccInfo.description + " ";
+		}
 
-		if (oAccInfo.required === true) {
-			sText += oBundle.getText(bHeaderAnnouncement ? "CONTROL_IN_COLUMN_REQUIRED" : "ELEMENT_REQUIRED") + " ";
-		}
-		if (oAccInfo.enabled === false) {
-			sText += oBundle.getText("CONTROL_DISABLED") + " ";
-		}
-		if (oAccInfo.editable === false) {
-			sText += oBundle.getText("CONTROL_READONLY") + " ";
-		}
-		if (!oAccInfo.type && sTooltip && sText.indexOf(sTooltip) == -1) {
-			sText = sTooltip + " " + sText;
+		if (!bLessDetails) {
+			if (oAccInfo.type) {
+				if (oAccInfo.required === true) {
+					sText += oBundle.getText("ELEMENT_REQUIRED") + " ";
+				}
+				if (oAccInfo.enabled === false) {
+					sText += oBundle.getText("CONTROL_DISABLED") + " ";
+				}
+				if (oAccInfo.editable === false) {
+					sText += oBundle.getText("CONTROL_READONLY") + " ";
+				}
+			} else {
+				const sTooltip = oControl.getTooltip_AsString();
+				if (sTooltip && !sText.includes(sTooltip)) {
+					sText += sTooltip + " ";
+				}
+			}
 		}
 
 		oAccInfo.children.forEach(function(oChild) {
-			sText += ListItemBase.getAccessibilityText(oChild) + " ";
+			sText += ListItemBase.getAccessibilityText(oChild, false, bLessDetails) + " ";
 		});
 
 		sText = sText.trim();
@@ -965,20 +979,6 @@ function(
 		this.informList("ActiveChange", bActive);
 	};
 
-	/**
-	 * Detect text selection.
-	 *
-	 * @param {HTMLElement} oDomRef DOM element of the control
-	 * @returns {boolean} true if text selection is done within the control else false
-	 * @private
-	 */
-	ListItemBase.detectTextSelection = function(oDomRef) {
-		var oSelection = window.getSelection(),
-			sTextSelection = oSelection.toString().replace("\n", "");
-
-		return sTextSelection && (oDomRef !== oSelection.focusNode && oDomRef.contains(oSelection.focusNode));
-	};
-
 	ListItemBase.prototype.ontap = function(oEvent) {
 
 		// do not handle already handled events
@@ -987,7 +987,7 @@ function(
 		}
 
 		// do not handle in case of text selection within the list item
-		if (ListItemBase.detectTextSelection(this.getDomRef())) {
+		if (detectTextSelection(this.getDomRef())) {
 			return;
 		}
 

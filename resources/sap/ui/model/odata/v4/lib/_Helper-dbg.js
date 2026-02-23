@@ -518,16 +518,22 @@ sap.ui.define([
 		 *   namespace "@$ui5._")
 		 * @param {object} oTarget
 		 *   Any object
+		 * @param {boolean} [bAllowSame]
+		 *   Whether overwriting is allowed as long as the value is the same
 		 * @throws {Error}
 		 *   If the annotation to be copied is already present at the target, no matter if the value
-		 *   is the same or not
+		 *   is the same or not (unless <code>bAllowSame</code> is given)
 		 *
 		 * @public
 		 */
-		copyPrivateAnnotation : function (oSource, sAnnotation, oTarget) {
+		copyPrivateAnnotation : function (oSource, sAnnotation, oTarget, bAllowSame) {
 			if (_Helper.hasPrivateAnnotation(oSource, sAnnotation)) {
 				if (_Helper.hasPrivateAnnotation(oTarget, sAnnotation)) {
-					throw new Error("Must not overwrite: " + sAnnotation);
+					if (!bAllowSame
+						|| _Helper.getPrivateAnnotation(oSource, sAnnotation)
+							!== _Helper.getPrivateAnnotation(oTarget, sAnnotation)) {
+						throw new Error("Must not overwrite: " + sAnnotation);
+					}
 				}
 				_Helper.setPrivateAnnotation(oTarget, sAnnotation,
 					_Helper.getPrivateAnnotation(oSource, sAnnotation));
@@ -1169,8 +1175,8 @@ sap.ui.define([
 		 */
 		fireChange : function (mChangeListeners, sPropertyPath, vValue, bForceUpdate, bInArray) {
 			function inform(aChangeListeners, vValue0) {
-				for (let i = 0; i < aChangeListeners.length; i += 1) {
-					aChangeListeners[i].onChange(vValue0, bForceUpdate);
+				for (const oChangeListener of aChangeListeners) {
+					oChangeListener.onChange(vValue0, bForceUpdate);
 				}
 			}
 
@@ -1827,13 +1833,13 @@ sap.ui.define([
 		 * @returns {object} - A map of URL parameters
 		 */
 		getUrlParameters : function (sQuery) {
-			const mUrlParameters = {};
-			const oUrlParams = new URLSearchParams(sQuery);
-			for (const sKey of oUrlParams.keys()) {
-				const aValues = oUrlParams.getAll(sKey);
-				mUrlParameters[sKey] = aValues.length > 1 ? aValues : aValues[0];
+			const mURLParameters = {};
+			const oURLSearchParams = new URLSearchParams(sQuery);
+			for (const sKey of oURLSearchParams.keys()) {
+				const aValues = oURLSearchParams.getAll(sKey);
+				mURLParameters[sKey] = aValues.length > 1 ? aValues : aValues[0];
 			}
-			return mUrlParameters;
+			return mURLParameters;
 		},
 
 		/**
@@ -2291,13 +2297,33 @@ sap.ui.define([
 		 * @public
 		 */
 		makeAbsolute : function (sUrl, sBase, bServiceUrl) {
-			const oUrl = new URL(sUrl, new URL(sBase, document.baseURI));
+			const oURL = new URL(sUrl, new URL(sBase, document.baseURI));
 			if (bServiceUrl) {
-				oUrl.pathname = oUrl.pathname.slice(0, oUrl.pathname.lastIndexOf("/") + 1);
+				oURL.pathname = oURL.pathname.slice(0, oURL.pathname.lastIndexOf("/") + 1);
 			}
-			return oUrl.origin === new URL(document.baseURI).origin
-				? oUrl.toString().slice(oUrl.origin.length)
-				: oUrl.toString();
+			return oURL.origin === new URL(document.baseURI).origin
+				? oURL.toString().slice(oURL.origin.length)
+				: oURL.toString();
+		},
+
+		/**
+		 * Makes the given message's longtext URL absolute. Clones and keeps the original message
+		 * only if needed.
+		 *
+		 * @param {object} oMessage - An object potentially containing a longtext URL
+		 * @param {string} [oMessage.longtextUrl] - The longtext URL
+		 * @param {string} sBase - The absolute or root-relative base URL
+		 *
+		 * @public
+		 */
+		makeAbsoluteLongtextUrl : function (oMessage, sBase) {
+			if (oMessage.longtextUrl) {
+				const sAbsoluteLongtextURL = _Helper.makeAbsolute(oMessage.longtextUrl, sBase);
+				if (oMessage.longtextUrl !== sAbsoluteLongtextURL) {
+					oMessage["@$ui5.originalMessage"] ??= _Helper.clone(oMessage);
+					oMessage.longtextUrl = sAbsoluteLongtextURL;
+				}
+			}
 		},
 
 		/**
@@ -2827,11 +2853,13 @@ sap.ui.define([
 
 		/**
 		 * Updates the target object with the source object. All properties of the source object are
-		 * taken into account. Fires change events for all changed properties. The function
+		 * taken into account (*). Fires change events for all changed properties. The function
 		 * recursively handles modified, added or removed structural properties (or single-valued
 		 * navigation properties) and fires change events for all modified/added/removed primitive
 		 * properties therein. It also fires for each collection encountered, no matter if changed
 		 * or not.
+		 *
+		 * (*) The key predicate is also copied over, but w/o change event.
 		 *
 		 * Restrictions:
 		 * - oTarget and oSource are expected to have the same structure: when there is an
@@ -2856,8 +2884,7 @@ sap.ui.define([
 					vTargetProperty = oTarget[sProperty];
 
 				if (sProperty === "@$ui5._") {
-					_Helper.setPrivateAnnotation(oTarget, "predicate",
-						_Helper.getPrivateAnnotation(oSource, "predicate"));
+					_Helper.copyPrivateAnnotation(oSource, "predicate", oTarget, true);
 				} else if (Array.isArray(vSourceProperty)) {
 					// copy complete collection
 					oTarget[sProperty] = vSourceProperty;
@@ -2883,11 +2910,12 @@ sap.ui.define([
 
 		/**
 		 * Updates the old object with the new object. Only existing properties of the old object
-		 * are updated. Fires change events for all changed properties. The function recursively
-		 * handles modified, added or removed structural properties and fires change events for all
-		 * modified/added/removed primitive properties therein. Also fires change events for new
-		 * advertised actions. It also fires for each collection encountered, no matter if changed
-		 * or not.
+		 * are updated. Properties with pending user input are not updated (see
+		 * <code>bUpdating</code> property of {@link _Helper.makeUpdateData}). Fires change events
+		 * for all changed properties. The function recursively handles modified, added or removed
+		 * structural properties and fires change events for all modified/added/removed primitive
+		 * properties therein. Also fires change events for new advertised actions. It also fires
+		 * for each collection encountered, no matter if changed or not.
 		 *
 		 * Restrictions:
 		 * - oOldObject and oNewObject are expected to have the same structure: when there is an
@@ -2933,7 +2961,8 @@ sap.ui.define([
 							_Helper.fireChanges(mChangeListeners, sPropertyPath, vNewProperty,
 								false);
 						}
-					} else if (vOldProperty !== vNewProperty) {
+					} else if (vOldProperty !== vNewProperty
+							&& !oOldObject[sProperty + "@$ui5.updating"]) {
 						oOldObject[sProperty] = vNewProperty;
 						if (vOldProperty && typeof vOldProperty === "object") {
 							// a structural property was removed
@@ -3180,6 +3209,9 @@ sap.ui.define([
 					}
 					if (sProperty === "@$ui5._") {
 						sSourcePredicate = _Helper.getPrivateAnnotation(oSource, "predicate");
+						if (!sSourcePredicate) {
+							return;
+						}
 						if (fnCheckKeyPredicate && fnCheckKeyPredicate(sPath)) {
 							sTargetPredicate = _Helper.getPrivateAnnotation(oTarget, "predicate");
 							if (sSourcePredicate !== sTargetPredicate) {

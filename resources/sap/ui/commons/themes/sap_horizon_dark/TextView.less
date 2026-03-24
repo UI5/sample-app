@@ -4,7 +4,7 @@
 /* ======================================== */
 
 .sapUiTv {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -39,13 +39,13 @@
 /* success state */
 .sapUiTvSucc,
 .sapUiInverted-CTX .sapUiTvSucc {
-	color: @sapUiPositiveText;
+	color: var(--sapPositiveTextColor);
 	background-color: transparent;
 }
 
 /* Designs */
 .sapUiTvH6 {
-	color: @sapUiContentForegroundTextColor; // @sapUiBaseText = #000000
+	color: var(--sapContent_ForegroundTextColor);
 }
 
 .sapUiTvMono {
@@ -55,25 +55,23 @@
 /* invalid state */
 .sapUiTvErr {
 	transition: color .25s linear;
-	-webkit-transition: color .25s linear;
 	background-color: transparent;
-	color: @sapUiNegativeText;
+	color: var(--sapNegativeTextColor);
 }
 
 .sapUiInverted-CTX .sapUiTvErr {
-	color: @sapUiNegativeText;
+	color: var(--sapNegativeTextColor);
 }
 
 /* warning state */
 .sapUiTvWarn {
 	transition: color 1s linear;
-	-webkit-transition: color 1s linear;
-	color: @sapUiCriticalText; /*looks more like yellow: darken(@sapUiFieldWarningColor, 17);*/
+	color: var(--sapCriticalTextColor); /*looks more like yellow: darken(@sapUiFieldWarningColor, 17);*/
 	background-color: transparent;
 }
 
 .sapUiInverted-CTX .sapUiTvWarn {
-	color: @sapUiCriticalText; /*looks more like yellow: darken(@sapUiFieldWarningColor, 17);*/
+	color: var(--sapCriticalTextColor); /*looks more like yellow: darken(@sapUiFieldWarningColor, 17);*/
 }
 
 /* ================= */

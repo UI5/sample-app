@@ -489,6 +489,7 @@ sap.ui.define([
 			oEntityData, bAtEndOfCreated, fnErrorCallback, fnSubmitCallback, fnCancelCallback) {
 		var aCollection = this.getValue(sPath),
 			sGroupId = oGroupLock.getGroupId(),
+			sOriginalGroupId = sGroupId, // const :-)
 			oPostBody,
 			fnResolve,
 			that = this;
@@ -516,7 +517,7 @@ sap.ui.define([
 			}
 
 			_Helper.cancelNestedCreates(oEntityData, "Deep create of "
-				+ oPostPathPromise.getResult() + " canceled; group: " + oGroupLock.getGroupId());
+				+ oPostPathPromise.getResult() + " canceled; group: " + sOriginalGroupId);
 			_Helper.removeByPath(that.mPostRequests, sPath, oEntityData);
 			aCollection.splice(iIndex, 1);
 			aCollection.$created -= 1;

@@ -1,12 +1,12 @@
 /* ===================================== */
 /* CSS for control sap.ui.commons/Label  */
-/* Horizon theme                         */
+/* Morning Horizon theme                 */
 /* ===================================== */
 
 .sapUiLbl {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	color: @sapUiContentLabelColor;
+	color: var(--sapContent_LabelColor);
 }
 
 .sapUiLbLReqInd { /* to allow reuse */
@@ -16,8 +16,8 @@
 	color: darken(@sapUiHighlight, 5%);
 }
 
-.sapUiInverted-CTX .sapUiLbl.sapUiLblReqEnd:after,
-.sapUiInverted-CTX .sapUiLbl.sapUiLblRegBeg:before {
+.sapUiInverted-CTX .sapUiLbl.sapUiLblReqEnd::after,
+.sapUiInverted-CTX .sapUiLbl.sapUiLblRegBeg::before {
 	color: lighten(@sapUiHighlight, 18%);
 }
 
@@ -30,29 +30,29 @@ span.sapUiLblIco { /* icon font */
 /* ============================ */
 
 /* GridLayout */
-.sapUiGrid td > .sapUiLbl{
+.sapUiGrid td > .sapUiLbl {
 	margin-top: 2px;
 }
 
-html[data-sap-ui-browser^="cr"] .sapUiGrid td > .sapUiLbl.sapUiLblReq {
+html[data-sap-ui-browser^='cr'] .sapUiGrid td > .sapUiLbl.sapUiLblReq {
 	margin-top: 1px;
 }
 
 /* required symbol is now left - if indicator is already at begin, don't change it */
-.sapUiInverted-CTX .sapUiLbl.sapUiLblReqEnd:before {
+.sapUiInverted-CTX .sapUiLbl.sapUiLblReqEnd::before {
 	color: lighten(@sapUiHighlight, 18%);
 }
 
 /* ResponsiveLayout */
 /* If label is above the fields it's left aligned, if it's left of the fields it's right aligned */
-.sapUiFormResLayout .sapUiRFLRow:first-child > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent > .sapUiLbl{
+.sapUiFormResLayout .sapUiRFLRow:first-child > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent > .sapUiLbl {
 	text-align: end !important; /* to overwrite setting on label */
 	width: 100%; /* to react on touch/click on whole label cell */
 	padding-right: 4px;
 	box-sizing: border-box;
 }
 
-.sapUiFormResLayout .sapUiRFLRow:first-child > .sapUiRFLContainer.sapUiRFLFullLength > .sapUiRFLContainerContent > .sapUiLbl{
+.sapUiFormResLayout .sapUiRFLRow:first-child > .sapUiRFLContainer.sapUiRFLFullLength > .sapUiRFLContainerContent > .sapUiLbl {
 	text-align: start !important; /* to overwrite setting on label */
 	padding-bottom: 2px;
 }

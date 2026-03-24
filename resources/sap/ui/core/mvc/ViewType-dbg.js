@@ -45,14 +45,16 @@ sap.ui.define([], function () {
 
 		/**
 		 * JS View
-		 * @deprecated Since 1.90
+		 * @deprecated Since 1.90. Consider using {@link sap.ui.core.mvx.XMLView XMLViews} or "typed views" (view classes
+		 *             written in JavaScript) instead.
 		 * @public
 		 */
 		JS: "JS",
 
 		/**
 		 * Template View
-		 * @deprecated Since 1.56
+		 * @deprecated Since 1.56. Consider using {@link sap.ui.core.mvx.XMLView XMLViews} or "typed views" (view classes
+		 *             written in JavaScript) instead.
 		 * @public
 		 */
 		Template: "Template"

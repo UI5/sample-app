@@ -1,1 +1,1 @@
-{"version":3,"file":"FilterType.js","names":["sap","ui","define","FilterType","Application","Control"],"sources":["FilterType-dbg.js"],"mappings":";;;;;AAOAA,IAAIC,GAAGC,OAAO,WACb,aAmBA,IAAIC,EAAa,CAKhBC,YAAa,cAabC,QAAS,WAGV,OAAOF,CAER,EAAkB","ignoreList":[]}
+{"version":3,"file":"FilterType.js","names":["sap","ui","define","FilterType","Application","ApplicationBound","Control"],"sources":["FilterType-dbg.js"],"mappings":";;;;;AAOAA,IAAIC,GAAGC,OAAO,WACb,aAmBA,IAAIC,EAAa,CAQhBC,YAAa,cAWbC,iBAAkB,mBAalBC,QAAS,WAGV,OAAOH,CAER,EAAkB","ignoreList":[]}

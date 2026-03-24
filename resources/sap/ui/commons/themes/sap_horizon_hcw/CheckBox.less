@@ -12,16 +12,11 @@
 }
 
 .sapUiInverted-CTX .sapUiCb {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
-.sapUiCb:focus{
+.sapUiCb:focus {
 	outline-width: 2px;
 	outline-style: solid;
 	outline-offset: -2px;
-}
-
-html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
-	border-width: 2px;
-	border-style: solid;
 }

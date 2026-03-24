@@ -1,31 +1,31 @@
 /* =================================== */
 /* CSS for control sap.ui.ux3/Overlay  */
-/* Horizon theme                       */
+/* Morning Horizon theme               */
 /* =================================== */
 
 .sapUiUx3OverlayOverlay {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: @sapUiContentFocusColor; // @sapUiDarkestBG = #000000
+	background-color: var(--sapContent_FocusColor);
 }
 
 .sapUiUx3OverlayCloseButton:hover,
 .sapUiUx3OverlayCloseButton:focus {
-	background: url("img/close_hover.png");
+	background: url('img/close_hover.png');
 }
 
 .sapUiUx3OverlayOpenButton {
-	background: url("img/open_in_new_window.png");
+	background: url('img/open_in_new_window.png');
 	background-repeat: no-repeat;
 	background-position: right center;
 }
 
 .sapUiUx3OverlayOpenButton:focus {
 	background-color: transparent;
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiTextInverted = #ffffff
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 	outline-offset: -1px;
 }
 
 .sapUiUx3OverlayOpenButton:focus:hover {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 }

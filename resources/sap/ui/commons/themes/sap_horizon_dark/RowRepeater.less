@@ -5,7 +5,7 @@
 
 /* Row Container */
 .sapUiRrBody {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -14,19 +14,19 @@
 /** Standard Design **/
 
 .sapUiRrDesignStandard {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
 .sapUiRrDesignStandard > .sapUiRrPtb {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	border-style: none none solid none;
 	border-width: 2px;
-	border-color: lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
+	border-color: lighten(@sapUiContentForegroundBorderColor, 11.6);
 }
 
 .sapUiRrDesignStandard > .sapUiRrStb {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	border: none;
 }
 
@@ -35,10 +35,6 @@
 }
 
 .sapUiRrDesignStandard > .sapUiRrFtr {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	border: none;
 }
-
-/** Transparent Design **/
-
-/** BareShell Design **/

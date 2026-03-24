@@ -50,7 +50,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -93,6 +93,11 @@ sap.ui.define([
 				 * Indicates the editable status of the token's parent (Tokenizer). If it is set to <code>true</code>, the ARIA attributes of the token are updated accordingly.
 				 */
 				editableParent : {type : "boolean", group : "Behavior", defaultValue : true, visibility: "hidden"},
+
+				/**
+				 * Indicates if token's parent (Tokenizer) is enabled or disabled. If it is set to <code>true</code>, the ARIA attributes of the token are updated accordingly.
+				 */
+				enabledParent : {type : "boolean", group : "Behavior", defaultValue : true, visibility: "hidden"},
 
 				/**
 				 * Indicates if the token's text should be truncated.
@@ -248,7 +253,7 @@ sap.ui.define([
 	};
 
 	Token.prototype._fireDeleteToken = function (oEvent, bKey, bBackspace) {
-		if (this.getEditable() && this.getProperty("editableParent")) {
+		if (this.getEditable() && this.getProperty("editableParent") && this.getProperty("enabledParent")) {
 			this.fireDelete({
 				token: this,
 				byKeyboard: bKey,

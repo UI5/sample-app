@@ -78,7 +78,7 @@ sap.ui.define([
 	 * @class
 	 * Calendar with granularity of time items displayed in one line.
 	 * @extends sap.ui.core.Control
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -305,7 +305,7 @@ sap.ui.define([
 	};
 
 	CalendarTimeInterval.prototype._initializeWeeksRow = function() {
-		const oWeeksRow = new WeeksRow(this.getId() + "-WeeksRow", {
+		const oWeeksRow = new WeeksRow(this.getId() + "-WeekNumbersRow", {
 			visible: false
 		});
 		this.setAggregation("weeksRow", oWeeksRow);

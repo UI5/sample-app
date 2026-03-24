@@ -74,7 +74,7 @@ sap.ui.define([
 	 * @implements sap.m.IBreadcrumbs, sap.m.IOverflowToolbarContent, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -295,6 +295,7 @@ sap.ui.define([
 				change: this._selectChangeHandler.bind(this),
 				forceSelection: false,
 				autoAdjustWidth: true,
+				wrapItemsText: true,
 				icon: IconPool.getIconURI("slim-arrow-down"),
 				type: SelectType.IconOnly,
 				tooltip: Breadcrumbs._getResourceBundleText("BREADCRUMB_SELECT_TOOLTIP")
@@ -412,6 +413,7 @@ sap.ui.define([
 
 	Breadcrumbs.prototype._decorateSelect = function (oSelect) {
 		oSelect.getPicker()
+			.addStyleClass("sapMBreadcrumbsPicker")
 			.attachAfterOpen(this._removeItemNavigation, this)
 			.attachBeforeClose(this._restoreItemNavigation, this);
 

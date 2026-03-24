@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @param {string} [oData] URL where to load the data from
 	 * @public
@@ -157,8 +157,17 @@ sap.ui.define([
 	ClientModel.prototype.destroyBindingContext = function(oContext) {
 	};
 
-	/*
-	 * @see sap.ui.model.Model.prototype.bindContext
+
+
+	/**
+	 * Creates a <code>sap.ui.model.ClientContextBinding</code>.
+	 *
+	 * @param {string} sPath The path pointing to the property that should be bound
+	 * @param {sap.ui.model.Context} [oContext] The context object for this databinding
+	 * @param {object} [mParameters] Additional model-specific parameters
+	 *
+	 * @return {sap.ui.model.ClientContextBinding} The newly created <code>ClientContextBinding</code>
+	 * @public
 	 */
 	ClientModel.prototype.bindContext = function(sPath, oContext, mParameters) {
 		var oBinding = new ClientContextBinding(this, sPath, oContext, mParameters);
@@ -176,14 +185,14 @@ sap.ui.define([
 	 * @param {Object<string,any>} [mParameters]
 	 *   Map of optional parameters for the binding
 	 * @param {boolean} [mParameters.ignoreMessages]
-	 *   Whether this binding does not propagate model messages to the control; supported since
+	 *   Whether this binding ignores model messages instead of propagating them to the control. Supported since
 	 *   1.119.0. Some composite types like {@link sap.ui.model.type.Currency} automatically ignore
-	 *   model messages for some of their parts depending on their format options; setting this
+	 *   model messages for some of their parts, depending on their format options. Setting this
 	 *   parameter to <code>true</code> or <code>false</code> overrules the automatism of the type.
 	 *
-	 *   For example, a binding for a currency code is used in a composite binding for rendering the
-	 *   proper number of decimals, but the currency code is not displayed in the attached control.
-	 *   In that case, messages for the currency code shall not be displayed at that control, only
+	 *   <b>Example:</b> A binding for a currency code is used in a composite binding for rendering the
+	 *   proper number of decimals, but the currency code itself is not displayed in the attached control.
+	 *   In this case, messages for the currency code aren't displayed at that control, only
 	 *   messages for the amount.
 	 * @returns {sap.ui.model.PropertyBinding}
 	 *   The new property binding

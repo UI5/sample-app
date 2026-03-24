@@ -62,7 +62,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.145.0
+		 * @version 1.146.0
 		 *
 		 * @constructor
 		 * @public
@@ -747,7 +747,7 @@ sap.ui.define([
 
 			// create anchor according to menuPosition
 			var sDock = this.getMenuPosition();
-			if (sDock && oPopover) {
+			if (sDock && oPopover && !Device.system.phone) {
 				this._createMenuPositionAnchor(sDock, oPopover);
 			}
 

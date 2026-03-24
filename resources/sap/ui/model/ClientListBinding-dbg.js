@@ -330,7 +330,8 @@ sap.ui.define([
 	 * @param {sap.ui.model.FilterType} [sFilterType]
 	 *   The type of the filter to replace; if no type is given, all filters previously configured with type
 	 *   {@link sap.ui.model.FilterType.Application} are cleared, and the given filters are used as filters of type
-	 *   {@link sap.ui.model.FilterType.Control}
+	 *   {@link sap.ui.model.FilterType.Control}. Since 1.146.0, you may use
+	 *   {@link sap.ui.model.FilterType.ApplicationBound} to set bound application filters.
 	 * @returns {this} returns <code>this</code> to facilitate method chaining
 	 * @throws {Error} If one of the filters uses an operator that is not supported by the underlying model
 	 *   implementation or if the {@link sap.ui.model.Filter.NONE} filter instance is contained in
@@ -348,9 +349,10 @@ sap.ui.define([
 		if (aFilters instanceof Filter) {
 			aFilters = [aFilters];
 		}
-		if (sFilterType == FilterType.Application) {
-			this.aApplicationFilters = aFilters || [];
-		} else if (sFilterType == FilterType.Control) {
+		const bAppFilter = sFilterType === FilterType.Application || sFilterType === FilterType.ApplicationBound;
+		if (bAppFilter) {
+			this.aApplicationFilters = this.computeApplicationFilters(aFilters, sFilterType) || [];
+		} else if (sFilterType === FilterType.Control) {
 			this.aFilters = aFilters || [];
 		} else {
 			//Previous behaviour
@@ -371,7 +373,7 @@ sap.ui.define([
 
 		this._fireChange({reason: ChangeReason.Filter});
 		/** @deprecated As of version 1.11.0 */
-		if (sFilterType == FilterType.Application) {
+		if (bAppFilter) {
 			this._fireFilter({filters: this.aApplicationFilters});
 		} else {
 			this._fireFilter({filters: this.aFilters});

@@ -141,7 +141,7 @@ sap.ui.define(["sap/base/Log", "sap/ui/core/Element"], function(Log, Element) {
 
 			// adapt the container before placing the view into it to make the rendering occur together with the next
 			// aggregation modification.
-			this._beforePlacingViewIntoContainer({
+			this.beforePlacingViewIntoContainer({
 				container: oControl,
 				view: oView,
 				data: vData

@@ -4,16 +4,16 @@
 /* ============================================ */
 
 .sapUiBtnS{
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
 /* normal button */
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn:hover,
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn:focus {
-	color: @sapUiButtonHoverTextColor;
-	background-color: @sapUiButtonHoverBackground;
-	border-color: @sapUiButtonHoverBorderColor;
+	color: var(--sapButton_Hover_TextColor);
+	background-color: var(--sapButton_Hover_Background);
+	border-color: var(--sapButton_Hover_BorderColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed,
@@ -33,38 +33,17 @@
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed:active,
 .sapUiBtn.sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
 	color: @sapUiToggleButtonPressedTextColor;
-	background-color: @sapUiButtonActiveBackground;
-	border-color: @sapUiButtonActiveBorderColor;
+	background-color: var(--sapButton_Active_Background);
+	border-color: var(--sapButton_Active_BorderColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
-}
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiFocus;
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiToggleBtn.sapUiToggleBtnPressed > span.sapUiBtnIco {
 	color: @sapUiToggleButtonPressedTextColor;
 }
-
-/*.sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiToggleBtn {
-	color: @sapUiContentDisabledTextColor;
-	background-color: @sapUiButtonBackground;
-	border-color: @sapUiButtonDisabledBorderColor;
-}
-
-.sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed {
-	color: @sapUiToggleButtonPressedDisabledTextColor;
-	background-color: @sapUiToggleButtonPressedDisabledBackground;
-	border-color: @sapUiToggleButtonPressedDisabledBorderColor;
-}
-
-.sapUiBtnS.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiToggleButtonPressedDisabledBackground;
-}*/
 
 /* lite button */
 
@@ -89,16 +68,9 @@ html[data-sap-ui-browser^="cr"] .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn > .sapUiB
 	margin-top: 1px;
 }
 
-html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnTxt,
-html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnIcoL,
-html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active > .sapUiBtnIcoR,
-html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiToggleBtn:active > .sapUiBtnIco {
-	margin-top: -3px;
-}
-
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:hover,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:focus {
-	background-color: @sapUiButtonHoverBackground;
+	background-color: var(--sapButton_Hover_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn.sapUiToggleBtnPressed {
@@ -114,28 +86,13 @@ html[data-sap-ui-browser^="ie"]  .sapUiBtnS.sapUiBtnLite.sapUiBtnIconOnly.sapUiT
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn:active,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn.sapUiToggleBtnPressed:active {
-/*	color: @sapUiButtonTextColor;*/
 	background-color: darken(@sapUiToggleButtonPressedHoverBackground, 7);
 	border: 1px solid darken(@sapUiToggleButtonPressedHoverBackground, 7);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted darken(@sapUiHighlight, 12); // @sapUiFocus = #005483
-}
-
-/*.sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiToggleBtn,
-.sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiToggleBtn:focus,
-.sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiToggleBtn:hover {
-	color: @sapUiContentDisabledTextColor;
-	background-color: @sapUiButtonLiteBackground;
-	border:none;
-	margin: 0px;
-}*/
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed {
 	background-color: @sapUiToggleButtonPressedDisabledBackground;
@@ -147,19 +104,14 @@ html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiToggleBtn.
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn:hover,
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:hover {
-	background-color: @sapUiButtonEmphasizedHoverBackground;
+	background-color: var(--sapButton_Emphasized_Hover_Background);
 	background-image: none;
-	border-color: @sapUiButtonEmphasizedHoverBackground;
-	color: @sapUiButtonEmphasizedTextColor;
+	border-color: var(--sapButton_Emphasized_Hover_Background);
+	color: var(--sapButton_Emphasized_TextColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
-}
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted darken(@sapUiHighlight, 12); // @sapUiFocus = #005483
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
 
 .sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiBtnStd.sapUiToggleBtn:focus,
@@ -168,71 +120,62 @@ html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggle
 .sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:hover,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:hover {
-	background-color: @sapUiButtonEmphasizedHoverBackground;
+	background-color: var(--sapButton_Emphasized_Hover_Background);
 	background-image: none;
-	border-color: @sapUiButtonEmphasizedHoverBackground;
-	color: @sapUiButtonEmphasizedTextColor;
+	border-color: var(--sapButton_Emphasized_Hover_Background);
+	color: var(--sapButton_Emphasized_TextColor);
 }
 
 .sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
-}
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
-html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted darken(@sapUiHighlight, 12); // @sapUiFocus = #005483
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonEmphasizedHoverBackground;
-	border-color: @sapUiButtonEmphasizedBorderColor;
-	color: @sapUiButtonEmphasizedTextColor;
+	background-color: var(--sapButton_Emphasized_Hover_Background);
+	border-color: var(--sapButton_Emphasized_BorderColor);
+	color: var(--sapButton_Emphasized_TextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn {
-	color: @sapUiButtonEmphasizedBackground;
+	color: var(--sapButton_Emphasized_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonEmphasizedBackground;
-	color: @sapUiButtonEmphasizedTextColor;
+	background-color: var(--sapButton_Emphasized_Background);
+	color: var(--sapButton_Emphasized_TextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn:active,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiToggleBtn.sapUiToggleBtnPressed:active {
-	background-color: @sapUiButtonEmphasizedHoverBackground;
-	border-color: @sapUiButtonEmphasizedHoverBackground;
+	background-color: var(--sapButton_Emphasized_Hover_Background);
+	border-color: var(--sapButton_Emphasized_Hover_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn:active {
 	opacity: 0.25;
-/*	color: @sapUiContentDisabledTextColor;*/
-	background-color: @sapUiButtonLiteBackground;
+	background-color: var(--sapButton_Lite_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed:active {
 	opacity: 0.25;
-/*	color: @sapUiContentDisabledTextColor;*/
-	background-color: @sapUiButtonEmphasizedBackground;
+	background-color: var(--sapButton_Emphasized_Background);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn {
-	background-color: @sapUiButtonEmphasizedBackground;
-	border-color: @sapUiButtonEmphasizedBorderColor;
-	color: @sapUiButtonEmphasizedTextColor;
+	background-color: var(--sapButton_Emphasized_Background);
+	border-color: var(--sapButton_Emphasized_BorderColor);
+	color: var(--sapButton_Emphasized_TextColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed,
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnEmph.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed:hover {
-	background-color: @sapUiButtonEmphasizedBackground;
-	border-color: @sapUiButtonEmphasizedBorderColor;
-	color: @sapUiButtonEmphasizedTextColor;
+	background-color: var(--sapButton_Emphasized_Background);
+	border-color: var(--sapButton_Emphasized_BorderColor);
+	color: var(--sapButton_Emphasized_TextColor);
 }
-
 
 /* accept button */
 
@@ -242,37 +185,31 @@ html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnEmph.sa
 .sapUiBtnS.sapUiBtnAccept.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:hover,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed:hover {
-	background-color: @sapUiButtonAcceptHoverBackground;
+	background-color: var(--sapButton_Accept_Hover_Background);
 	background-image: none;
-	border-color: @sapUiButtonAcceptHoverBackground;
-	color: @sapUiButtonAcceptTextColor; // @sapUiTextSelection = #ffffff
+	border-color: var(--sapButton_Accept_Hover_Background);
+	color: var(--sapButton_Accept_TextColor);
 }
 
 .sapUiBtnS.sapUiBtnAccept.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
-}
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnAccept.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
-html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted darken(@sapUiHighlight, 12); // @sapUiFocus = #005483
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonAcceptActiveBackground; // @sapUiButtonAcceptHoverBackground = #005f28
-	border-color: @sapUiButtonAcceptBorderColor;
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Accept_Active_Background);
+	border-color: var(--sapButton_Accept_BorderColor);
+	color: var(--sapHighlightTextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonAcceptBackground;
-	border-color: @sapUiButtonAcceptBackground;
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Accept_Background);
+	border-color: var(--sapButton_Accept_Background);
+	color: var(--sapHighlightTextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiToggleBtn.sapUiToggleBtnPressed:active {
-	background-color: @sapUiButtonAcceptHoverBackground;
+	background-color: var(--sapButton_Accept_Hover_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiBtnDsbl.sapUiToggleBtn {
@@ -282,20 +219,20 @@ html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed:active {
 	opacity: 0.25;
-	color: @sapUiContentDisabledTextColor;
-	background-color: @sapUiButtonAcceptHoverBackground;
+	color: var(--sapContent_DisabledTextColor);
+	background-color: var(--sapButton_Accept_Hover_Background);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnAccept.sapUiBtnDsbl.sapUiToggleBtn {
-	background-color: @sapUiButtonAcceptBackground;
-	border-color: @sapUiButtonAcceptBorderColor;
-	color: @sapUiTextDisabled; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Accept_Background);
+	border-color: var(--sapButton_Accept_BorderColor);
+	color: @sapUiTextDisabled;
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnAccept.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonAcceptBackground;
-	border-color: @sapUiButtonAcceptBorderColor;
-	color: @sapUiTextDisabled; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Accept_Background);
+	border-color: var(--sapButton_Accept_BorderColor);
+	color: @sapUiTextDisabled;
 }
 
 /* reject button */
@@ -306,37 +243,31 @@ html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnAccept.
 .sapUiBtnS.sapUiBtnReject.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:hover,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed:hover {
-	background-color: @sapUiButtonRejectHoverBackground;
+	background-color: var(--sapButton_Reject_Hover_Background);
 	background-image: none;
-	border-color: @sapUiButtonRejectHoverBackground;
-	color: @sapUiButtonRejectTextColor; // @sapUiTextSelection = #ffffff
+	border-color: var(--sapButton_Reject_Hover_Background);
+	color: var(--sapButton_Reject_TextColor);
 }
 
 .sapUiBtnS.sapUiBtnReject.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted @sapUiContentContrastFocusColor; // @sapUiInvertedFocus = #ffffff
-}
-
-/* override the custom button's outline in IE for the press state */
-html[data-sap-ui-browser^="ie"] .sapUiBtnS.sapUiBtnReject.sapUiBtnStd.sapUiToggleBtn.sapUiToggleBtnPressed:focus,
-html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed:focus {
-	outline: 1px dotted darken(@sapUiHighlight, 12); // @sapUiFocus = #005483
+	outline: 1px dotted var(--sapContent_ContrastFocusColor);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonRejectActiveBackground; // @sapUiButtonRejectHoverBackground = #b51616
-	border-color: @sapUiButtonRejectBorderColor;
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Reject_Active_Background);
+	border-color: var(--sapButton_Reject_BorderColor);
+	color: var(--sapHighlightTextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonRejectBackground;
-	border-color: @sapUiButtonRejectBackground;
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Reject_Background);
+	border-color: var(--sapButton_Reject_Background);
+	color: var(--sapHighlightTextColor);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiToggleBtn.sapUiToggleBtnPressed:active {
-	background-color: @sapUiButtonRejectHoverBackground;
+	background-color: var(--sapButton_Reject_Hover_Background);
 }
 
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiBtnDsbl.sapUiToggleBtn {
@@ -346,18 +277,18 @@ html[data-sap-ui-browser^="ie"] .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed,
 .sapUiBtn.sapUiBtnS.sapUiBtnLite.sapUiBtnReject.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed:active {
 	opacity: 0.25;
-	color: @sapUiContentDisabledTextColor;
-	background-color: @sapUiButtonRejectHoverBackground;
+	color: var(--sapContent_DisabledTextColor);
+	background-color: var(--sapButton_Reject_Hover_Background);
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnReject.sapUiBtnDsbl.sapUiToggleBtn {
-	background-color: @sapUiButtonRejectBackground;
-	border-color: @sapUiButtonRejectBorderColor;
-	color: @sapUiTextDisabled; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Reject_Background);
+	border-color: var(--sapButton_Reject_BorderColor);
+	color: @sapUiTextDisabled;
 }
 
 .sapUiBtnS.sapUiBtnNorm.sapUiBtnReject.sapUiBtnDsbl.sapUiToggleBtn.sapUiToggleBtnPressed {
-	background-color: @sapUiButtonRejectBackground;
-	border-color: @sapUiButtonRejectBorderColor;
-	color: @sapUiTextDisabled; // @sapUiTextSelection = #ffffff
+	background-color: var(--sapButton_Reject_Background);
+	border-color: var(--sapButton_Reject_BorderColor);
+	color: @sapUiTextDisabled;
 }

@@ -30,7 +30,7 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
 	 * @param {sap.m.Token} oControl an object representation of the control that should be rendered
 	 */
 	TokenRenderer.render = function(oRm, oControl){
-		var sTooltip = oControl._getTooltip(oControl, oControl.getEditable() && oControl.getProperty("editableParent"));
+		var sTooltip = oControl._getTooltip(oControl, oControl.getEditable() && oControl.getProperty("editableParent") && oControl.getProperty("enabledParent"));
 		var oDeleteIcon = oControl.getAggregation("deleteIcon");
 		var aAccDescribebyValues = []; // additional accessibility attributes
 		var oAccAttributes = {
@@ -56,7 +56,7 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
 			oRm.attr("aria-setsize", oControl.getProperty("setsize"));
 		}
 
-		if (!oControl.getEditable()) {
+		if (!oControl.getEditable() || !oControl.getProperty("editableParent")) {
 			oRm.class("sapMTokenReadOnly");
 			oAccAttributes.readonly = null;
 		}
@@ -73,7 +73,7 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
 		// ARIA attributes
 		aAccDescribebyValues.push(InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_LABEL"));
 
-		if (oControl.getEditable() && oControl.getProperty("editableParent")) {
+		if (oControl.getEditable() && oControl.getProperty("editableParent") && oControl.getProperty("enabledParent")) {
 			aAccDescribebyValues.push(InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_DELETABLE"));
 		}
 

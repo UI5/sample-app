@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.145.0
+		 * @version 1.146.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -325,7 +325,8 @@ sap.ui.define([
 							|| that.sPath[that.sPath.lastIndexOf("/") + 1] === "#"))) {
 					if (bIsMeta) {
 						return vValue0;
-					} else if (that.bRelative) {
+					}
+					if (that.bRelative) {
 						return _Helper.publicClone(vValue0);
 					}
 				}

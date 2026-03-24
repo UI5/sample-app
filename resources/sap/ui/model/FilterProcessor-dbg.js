@@ -82,12 +82,17 @@ sap.ui.define(['./Filter', 'sap/base/Log'],
 	 *   <code>undefined</code> if no filters are given
 	 * @throws {Error} If the {@link sap.ui.model.Filter.NONE} is contained in <code>aFilters</code> or
 	 *   <code>aApplicationFilters</code> together with other filters
-	 * @private
-	 * @since 1.58
+	 *
+	 * @public
+	 * @since 1.146.0
 	 * @static
 	 */
 	FilterProcessor.combineFilters = function(aFilters, aApplicationFilters) {
 		var oGroupedFilter, oGroupedApplicationFilter, oFilter, aCombinedFilters = [];
+
+		aApplicationFilters = aApplicationFilters
+			?.map((oFilter) => oFilter.removeAllNeutrals())
+			.filter(Boolean);
 
 		oGroupedFilter = FilterProcessor.groupFilters(aFilters);
 		oGroupedApplicationFilter = FilterProcessor.groupFilters(aApplicationFilters);
@@ -367,6 +372,7 @@ sap.ui.define(['./Filter', 'sap/base/Log'],
 				Log.error("The filter operator \"" + oFilter.sOperator + "\" is unknown, filter will be ignored.");
 				oFilter.fnTest = function(value) { return true; };
 		}
+		oFilter.fnTest[Filter.generated] = true;
 		return oFilter.fnTest;
 	};
 

@@ -41,7 +41,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -73,7 +73,7 @@ sap.ui.define([
 				 * **Note:** When the control is placed inside a <code>sap.f.GridContainer</code>,
 				 * its accessibility role is overridden by the accessibility role specified by the <code>sap.f.GridContainer</code>.
 				 *
-				 * @experimental since 1.131
+				 * @ui5-experimental-since 1.131
 				 */
 				semanticRole: { type: "sap.f.cards.SemanticRole", defaultValue: SemanticRole.Region}
 			},
@@ -103,7 +103,7 @@ sap.ui.define([
 				 *
 				 * **Note**: Can be used only if <code>semanticRole</code> is <code>sap.f.cards.SemanticRole.ListItem</code>
 				 * or the control is placed inside a <code>sap.f.GridContainer</code>.
-				 * @experimental since 1.131
+				 * @ui5-experimental-since 1.131
 				 */
 				press: {}
 			}

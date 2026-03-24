@@ -133,7 +133,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -347,6 +347,10 @@ sap.ui.define([
 		const oFocusLostCtrl = oEvent.srcControl;
 		const oOverflowButton = this._getOverflowButton();
 		const oDomRef = this.getDomRef();
+
+		if (!oDomRef) {
+			return;
+		}
 
 		if (!oDomRef.contains(oFocusLostCtrl.getDomRef())) {
 			oOverflowButton?.focus();

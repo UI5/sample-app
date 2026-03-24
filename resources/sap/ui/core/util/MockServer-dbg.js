@@ -46,7 +46,7 @@ sap.ui
 			 * @class Class to mock http requests made to a remote server supporting the OData V2 REST protocol.
 			 * @extends sap.ui.base.ManagedObject
 			 * @author SAP SE
-			 * @version 1.145.0
+			 * @version 1.146.0
 			 * @public
 			 * @alias sap.ui.core.util.MockServer
 			 */
@@ -3799,26 +3799,32 @@ sap.ui
 			 */
 			MockServer.HTTPMETHOD = {
 				/**
+				 * HTTP GET method.
 				 * @public
 				 */
 				GET: "GET",
 				/**
+				 * HTTP POST method.
 				 * @public
 				 */
 				POST: "POST",
 				/**
+				 * HTTP DELETE method.
 				 * @public
 				 */
 				DELETE: "DELETE",
 				/**
+				 * HTTP PUT method.
 				 * @public
 				 */
 				PUT: "PUT",
 				/**
+				 * HTTP MERGE method.
 				 * @public
 				 */
 				MERGE: "MERGE",
 				/**
+				 * HTTP PATCH method.
 				 * @public
 				 */
 				PATCH: "PATCH"

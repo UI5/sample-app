@@ -187,7 +187,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -672,17 +672,33 @@ sap.ui.define([
 	 * @private
 	 */
 	DatePicker.prototype.onsapescape = function(oEvent) {
-		var sLastValue = this.getLastValue(),
-			oDate = this._parseValue(this._getInputValue(), true),
-			sValueFormatInputDate = this._formatValue(oDate, true);
+		const sLastValue = this.getLastValue();
+		const sInputValue = this._getInputValue();
 
-		if (sValueFormatInputDate !== sLastValue) {
-			oEvent.setMarked();
-			oEvent.preventDefault();
-
-			this.updateDomValue(sLastValue);
-			this.onValueRevertedByEscape(sLastValue, sValueFormatInputDate);
+		if (!sInputValue) {
+			return;
 		}
+
+		const oDate = this._parseValue(sInputValue, true);
+		const sValueFormatInputDate = this._formatValue(oDate, true);
+
+		// Normalize last value into the same format for a reliable comparison.
+		let sLastValueNormalized = sLastValue;
+		const oLastDate = this._parseValue(sLastValue, true);
+		if (oLastDate) {
+			sLastValueNormalized = this._formatValue(oLastDate, true);
+		}
+
+		// If normalized values match, nothing to revert.
+		if (sValueFormatInputDate === sLastValueNormalized) {
+			return;
+		}
+
+		oEvent.setMarked();
+		oEvent.preventDefault();
+
+		this.updateDomValue(sLastValue);
+		this.onValueRevertedByEscape(sLastValue, sValueFormatInputDate);
 	};
 
 	DatePicker.prototype.onsappageup = function(oEvent){
@@ -1311,17 +1327,24 @@ sap.ui.define([
 
 	// to be overwritten by DateTimePicker
 	DatePicker.prototype._createPopup = function(){
+		const bPhone = Device.system.phone;
+
 		if (!this._oPopup) {
 			this._oPopup = new ResponsivePopover(this.getId() + "-RP", {
 				showCloseButton: false,
 				showArrow: false,
-				showHeader: false,
+				showHeader: bPhone,
 				placement: library.PlacementType.VerticalPreferredBottom,
 				beginButton: new Button({
 					type: library.ButtonType.Emphasized,
 					text: oResourceBundle.getText("DATEPICKER_SELECTION_CONFIRM"),
 					press: this._handleOKButton.bind(this)
 				}),
+				endButton: new Button(this.getId() + "-Cancel", {
+					text: oResourceBundle.getText("DATEPICKER_SELECTION_CANCEL"),
+					press: this._handleCancelButton.bind(this)
+				}),
+				beforeOpen: _handleBeforeOpen.bind(this),
 				afterOpen: _handleOpen.bind(this),
 				afterClose: _handleClose.bind(this),
 				ariaLabelledBy: this._getInvisibleLabelText().getId()
@@ -1333,20 +1356,13 @@ sap.ui.define([
 
 			this._oPopup._getPopup().setAutoClose(true);
 
-			if (Device.system.phone) {
+			if (bPhone) {
 				this._oPopup.setTitle(this._getLabelledText());
-				this._oPopup.setShowHeader(true);
-				this._oPopup.setShowCloseButton(true);
 			} else {
 				// sap.m.Dialog used instead of the sap.m.ResponsivePopover doesen't display
 				// correctly without an animation on mobile devices so we remove the animation
 				// only for desktop when sap.m.Popover is used instead of sap.m.Dialog
 				this._oPopup._getPopup().setDurations(0, 0);
-				this._oPopup.setEndButton(new Button({
-						text: oResourceBundle.getText("DATEPICKER_SELECTION_CANCEL"),
-						press: this._handleCancelButton.bind(this)
-					})
-				);
 			}
 
 			// define a parent-child relationship between the control's and the _picker pop-up
@@ -1402,7 +1418,13 @@ sap.ui.define([
 	 */
 	DatePicker.prototype._getLabelledText = function() {
 		const aExternalLabelRefs = LabelEnablement.getReferencingLabels(this);
-		const aLabels = aExternalLabelRefs.length ? aExternalLabelRefs : this.getAriaLabelledBy();
+		const aAriaLabelledBy = this.getAriaLabelledBy();
+
+		if (!aExternalLabelRefs.length && !aAriaLabelledBy.length) {
+			return oResourceBundle.getText("DATEPICKER_DEFAULT_TITLE");
+		}
+
+		const aLabels = aExternalLabelRefs.length ? aExternalLabelRefs : aAriaLabelledBy;
 
 		return aLabels
 			.reduce(function(sAccumulator, sCurrent) {
@@ -1514,7 +1536,7 @@ sap.ui.define([
 				this._getCalendar().attachSelect(this._handleCalendarSelect, this);
 				this._getCalendar().attachEvent("_renderMonth", _resizeCalendar, this);
 
-				this._oPopup._getButtonFooter().setVisible(this.getShowFooter());
+				this._oPopup._getButtonFooter().setVisible(Device.system.phone || this.getShowFooter());
 				this._getCalendar()._bSkipCancelButtonRendering = true;
 				if (!this._oPopup.getContent().length) {
 					var oHeader = this._getValueStateHeader();
@@ -1804,6 +1826,12 @@ sap.ui.define([
 		}
 
 	};
+
+	function _handleBeforeOpen() {
+		if (Device.system.phone) {
+			this._oPopup.setTitle(this._getLabelledText());
+		}
+	}
 
 	function _handleOpen() {
 		this.addStyleClass(InputBase.ICON_PRESSED_CSS_CLASS);

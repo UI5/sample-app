@@ -6,8 +6,8 @@
  */
 /*eslint-disable max-len */
 // Provides an abstraction for list bindings
-sap.ui.define(['./Binding', './Filter', './FilterType', './Sorter', 'sap/base/util/array/diff'],
-	function(Binding, Filter, FilterType, Sorter, diff) {
+sap.ui.define(['./AggregationBinding', './Binding', './Filter', './FilterType', './Sorter', 'sap/base/util/array/diff'],
+	function(asAggregationBinding, Binding, Filter, FilterType, Sorter, diff) {
 	"use strict";
 
 
@@ -40,11 +40,14 @@ sap.ui.define(['./Binding', './Filter', './FilterType', './Sorter', 'sap/base/ut
 	 * @public
 	 * @alias sap.ui.model.ListBinding
 	 * @extends sap.ui.model.Binding
+	 * @mixes sap.ui.model.AggregationBinding
+	 * @borrows sap.ui.model.AggregationBinding#computeApplicationFilters as #computeApplicationFilters
 	 */
 	var ListBinding = Binding.extend("sap.ui.model.ListBinding", /** @lends sap.ui.model.ListBinding.prototype */ {
 
 		constructor : function(oModel, sPath, oContext, aSorters, aFilters, mParameters){
 			Binding.call(this, oModel, sPath, oContext, mParameters);
+			asAggregationBinding.call(this); // initialize mixin members
 
 			// the binding's sorters
 			this.aSorters = makeArray(aSorters, Sorter);
@@ -73,6 +76,8 @@ sap.ui.define(['./Binding', './Filter', './FilterType', './Sorter', 'sap/base/ut
 		}
 
 	});
+
+	asAggregationBinding(ListBinding.prototype); // add mixin methods
 
 	function makeArray(a, FNClass) {
 		if ( Array.isArray(a) ) {
@@ -162,7 +167,9 @@ sap.ui.define(['./Binding', './Filter', './FilterType', './Sorter', 'sap/base/ut
 	 *   in {@link sap.ui.model.Model#bindList}; a falsy value is treated as an empty array and thus removes all filters
 	 *   of the specified type
 	 * @param {sap.ui.model.FilterType} [sFilterType]
-	 *   The type of the filter to replace; if no type is given, the behavior depends on the model implementation
+	 *   The type of filter to replace. If no type is specified, the behavior depends on the model implementation.
+	 *   Since 1.146.0, you can use <code>sap.ui.model.FilterType.ApplicationBound</code> to replace bound application
+	 *   filters if the model implementation supports it.
 	 * @return {this}
 	 *   Returns <code>this</code> to facilitate method chaining
 	 *

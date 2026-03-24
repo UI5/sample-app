@@ -1,10 +1,10 @@
 /* =========================================== */
 /* CSS for control sap.ui.commons/RadioButton  */
-/* Horizon theme                               */
+/* Morning Horizon theme                       */
 /* =========================================== */
 
 .sapUiRb {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	line-height: 20px;
 	height: 21px;
@@ -12,8 +12,8 @@
 	position: relative;
 }
 
-.sapUiRb:focus{
-	outline-color: @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+.sapUiRb:focus {
+	outline-color: var(--sapContent_FocusColor);
 }
 
 .sapUiRb > input { /* make the real radiobutton vanish from the screen */
@@ -22,9 +22,8 @@
 	left: 0;
 }
 
-
 .sapUiRb > label { /* render an image as radiobutton replacement */
-	background-image: url(img/radiobutton.png);
+	background-image: url('img/radiobutton.png');
 	background-repeat: no-repeat;
 	background-position: left 1px;
 	padding: 1px 0 2px 22px;
@@ -33,7 +32,6 @@
 .sapUiRb .sapUiRbNoText {
 	padding-left: 15px;
 }
-
 
 .sapUiRbSel > label {
 	background-position: left -29px;
@@ -47,8 +45,6 @@
 .sapUiRbStd:hover.sapUiRbSel > label {
 	background-position: left -89px;
 }
-
-
 
 /* readonly */
 .sapUiRbRo > label {
@@ -117,7 +113,7 @@
 .sapUiRbDis > label,
 .sapUiRbDis.sapUiRbWarn.sapUiRbRo > label,
 .sapUiRbDis.sapUiRbErr.sapUiRbRo > label {
-	text-color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	background-position: left -119px;
 }
 

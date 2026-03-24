@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -104,6 +104,10 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 		"sap.ui.core.mvc.TemplateView",
 		"sap.ui.core.mvc.View",
 		"sap.ui.core.mvc.XMLView",
+		/**
+		 * @deprecated since 1.120
+		 */
+		"sap.ui.core.mvc.XMLAfterRenderingNotifier",
 		/**
 		 * @deprecated since 1.56
 		 */
@@ -184,6 +188,10 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 		"sap.ui.core.mvc.TemplateView",
 		"sap.ui.core.mvc.View",
 		"sap.ui.core.mvc.XMLView",
+		/**
+		 * @deprecated since 1.120
+		 */
+		"sap.ui.core.mvc.XMLAfterRenderingNotifier",
 		/**
 		 * @deprecated since 1.56
 		 */

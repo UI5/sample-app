@@ -3,45 +3,45 @@
 /* Horizon High Contrast Black theme      */
 /* ====================================== */
 
-.sapUiSli{
+.sapUiSli {
 	border: none;
 	font-size: @sapUiDesktopFontSize;
 }
 
-.sapUiSliHori.sapUiSli{
+.sapUiSliHori.sapUiSli {
 	padding: 16px 0 0 0;
 	height: 16px;
 }
 
-.sapUiSliVert.sapUiSli{
+.sapUiSliVert.sapUiSli {
 	padding: 0 0 0 30px;
 	width: 16px;
 }
 
 .sapUiSliR,
-.sapUiSliL{
+.sapUiSliL {
 	border-style: solid;
-	border-color:  @sapUiContentForegroundBorderColor;
+	border-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliHori > .sapUiSliR,
-.sapUiSliHori .sapUiSliL{
+.sapUiSliHori .sapUiSliL {
 	height: 2px;
 }
 
 .sapUiSliVert > .sapUiSliR,
-.sapUiSliVert .sapUiSliL{
+.sapUiSliVert .sapUiSliL {
 	width: 2px;
 }
 
 .sapUiSliHori > .sapUiSliR {
-	border-width: 1px 0px 1px 0;
+	border-width: 1px 0 1px 0;
 	margin-right: 6px;
 	margin-left: 6px;
 }
 
 .sapUiSliVert > .sapUiSliR {
-	border-width: 0px 1px 0px 1px;
+	border-width: 0 1px 0 1px;
 	margin-top: 6px;
 	margin-bottom: 6px;
 }
@@ -73,10 +73,10 @@
 }
 
 .sapUiSliHori .sapUiSliBar {
-	border-top-color: @sapUiContentForegroundBorderColor;
-	border-bottom-color: @sapUiContentForegroundBorderColor;
-	border-left-color: @sapUiContentForegroundBorderColor;
-	background-color: @sapUiGroupContentBackground;
+	border-top-color: var(--sapContent_ForegroundBorderColor);
+	border-bottom-color: var(--sapContent_ForegroundBorderColor);
+	border-left-color: var(--sapContent_ForegroundBorderColor);
+	background-color: var(--sapGroup_ContentBackground);
 }
 
 .sapUiSliHori.sapUiSliDsbl .sapUiSliBar {
@@ -87,10 +87,10 @@
 }
 
 .sapUiSliVert .sapUiSliBar {
-	border-left-color: @sapUiContentForegroundBorderColor;
-	border-right-color: @sapUiContentForegroundBorderColor;
-	border-bottom-color: @sapUiContentForegroundBorderColor;
-	background-color: @sapUiGroupContentBackground;
+	border-left-color: var(--sapContent_ForegroundBorderColor);
+	border-right-color: var(--sapContent_ForegroundBorderColor);
+	border-bottom-color: var(--sapContent_ForegroundBorderColor);
+	background-color: var(--sapGroup_ContentBackground);
 }
 
 .sapUiSliVert.sapUiSliDsbl .sapUiSliBar {
@@ -100,31 +100,31 @@
 	background-color: lighten(@sapUiContentForegroundBorderColor, 50);
 }
 
-.sapUiSliHori .sapUiSliHiLi{
+.sapUiSliHori .sapUiSliHiLi {
 	left: -1px;
 }
 
-.sapUiSliVert .sapUiSliHiLi{
+.sapUiSliVert .sapUiSliHiLi {
 	bottom: -1px;
 }
 
 .sapUiSliStd .sapUiSliHiLi,
 .sapUiSliRo .sapUiSliHiLi {
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }
 
-.sapUiSliStd.sapUiSliHori  .sapUiSliHiLi,
+.sapUiSliStd.sapUiSliHori .sapUiSliHiLi,
 .sapUiSliHori.sapUiSliRo .sapUiSliHiLi {
-	border-top-color: @sapUiContentForegroundBorderColor;
-	border-bottom-color: @sapUiContentForegroundBorderColor;
-	border-left-color: @sapUiContentForegroundBorderColor;
+	border-top-color: var(--sapContent_ForegroundBorderColor);
+	border-bottom-color: var(--sapContent_ForegroundBorderColor);
+	border-left-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliStd.sapUiSliVert .sapUiSliHiLi,
 .sapUiSliVert.sapUiSliRo .sapUiSliHiLi {
-	border-left-color: @sapUiContentForegroundBorderColor;
-	border-right-color: @sapUiContentForegroundBorderColor;
-	border-bottom-color: @sapUiContentForegroundBorderColor;
+	border-left-color: var(--sapContent_ForegroundBorderColor);
+	border-right-color: var(--sapContent_ForegroundBorderColor);
+	border-bottom-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliHori.sapUiSliDsbl .sapUiSliHiLi {
@@ -159,38 +159,38 @@
 }
 
 .sapUiSliHori.sapUiSliRo .sapUiSliGrip {
-	width: 0px;
+	width: 0;
 }
 
 .sapUiSliVert.sapUiSliRo .sapUiSliGrip {
-	height: 0px;
+	height: 0;
 }
 
 .sapUiSliStd .sapUiSliGrip,
 .sapUiSliRo .sapUiSliGrip {
-	background-color: @sapUiGroupContentBackground;
-	border-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapGroup_ContentBackground);
+	border-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliStd .sapUiSliGrip:hover {
-	background-color: @sapUiHighlight;
-	border-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapHighlightColor);
+	border-color: var(--sapContent_ForegroundBorderColor);
 	border-width: 1px;
 	padding: 1px;
 }
 
 .sapUiSliStd .sapUiSliGrip:focus,
 .sapUiSliStd .sapUiSliGrip:active {
-	border-color: @sapUiContentForegroundBorderColor;
-	background-color: @sapUiHighlight;
+	border-color: var(--sapContent_ForegroundBorderColor);
+	background-color: var(--sapHighlightColor);
 	border-width: 1px;
 	padding: 1px;
 	outline: none;
 }
 
 .sapUiSliDsbl .sapUiSliGrip {
-	border-color: @sapUiContentDisabledTextColor;
-	background-color: @sapUiGroupContentBackground;
+	border-color: var(--sapContent_DisabledTextColor);
+	background-color: var(--sapGroup_ContentBackground);
 }
 
 .sapUiSliRo .sapUiSliGrip:focus {
@@ -201,30 +201,30 @@
 	height: 4px;
 	width: 0;
 	top: -5px;
-	border-left: 1px solid @sapUiContentForegroundBorderColor;
+	border-left: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliHori.sapUiSliDsbl .sapUiSliTick {
-	border-left: 1px solid @sapUiContentForegroundBorderColor;
+	border-left: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliVert .sapUiSliTick {
 	height: 0;
 	width: 4px;
 	left: -5px;
-	border-top: 1px solid @sapUiContentForegroundBorderColor;
+	border-top: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliVert.sapUiSliDsbl .sapUiSliTick {
-	border-top: 1px solid @sapUiContentForegroundBorderColor;
+	border-top: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiSliRo .sapUiSliText {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
 .sapUiSliDsbl .sapUiSliText {
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 }
 
 .sapUiSliHori .sapUiSliText {

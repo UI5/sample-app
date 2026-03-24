@@ -18,28 +18,28 @@
 			displayValue="{path : '/lines/coverage', type : 'sap.ui.model.odata.type.Double',
 				formatOptions : {minFractionDigits : 1, maxFractionDigits : 1,
 					preserveDecimals : false}} %"
-			state="{= %{/lines/coverage} &lt; %{/threshold} ? 'Error' : 'Success'}"/>
-		<core:Title text="{= %{/branchTracking} ? 'Branch Coverage' : ''}"/>
-		<Label text="Branches" visible="{= %{/branchTracking}}"/>
+			state="{= %{/lines/coverage} &lt; %{/threshold} ? 'Error' : 'Success' }"/>
+		<core:Title text="{= %{/branchTracking} ? 'Branch Coverage' : '' }"/>
+		<Label text="Branches" visible="{= %{/branchTracking} }"/>
 		<Text text="{path : '/branches/total', type : 'sap.ui.model.odata.type.Int32'}"
-			visible="{= %{/branchTracking}}"/>
-		<Label text="Missed" visible="{= %{/branchTracking}}"/>
+			visible="{= %{/branchTracking} }"/>
+		<Label text="Missed" visible="{= %{/branchTracking} }"/>
 		<Text text="{path : '/branches/missed', type : 'sap.ui.model.odata.type.Int32'}"
-			visible="{= %{/branchTracking}}"/>
-		<Label visible="{= %{/branchTracking}}"/>
+			visible="{= %{/branchTracking} }"/>
+		<Label visible="{= %{/branchTracking} }"/>
 		<ProgressIndicator width="10em" percentValue="{/branches/coverage}"
 			displayValue="{path : '/branches/coverage', type : 'sap.ui.model.odata.type.Double',
 				formatOptions : {minFractionDigits : 1, maxFractionDigits : 1,
 					preserveDecimals : false}} %"
-			state="{= %{/branches/coverage} &lt; %{/threshold} ? 'Error' : 'Success'}"
-			visible="{= %{/branchTracking}}"/>
+			state="{= %{/branches/coverage} &lt; %{/threshold} ? 'Error' : 'Success' }"
+			visible="{= %{/branchTracking} }"/>
 	</form:SimpleForm>
 	<table:Table id="Files" selectionMode="Single" selectionBehavior="RowOnly" rows="{/files}"
 			rowSelectionChange="onRowSelection">
 		<table:extension>
 			<HBox>
 				<CheckBox selected="{/filterThreshold}" text="Below Threshold ({/threshold} %)"
-					select="onFilterThreshold" visible="{= %{/threshold} &gt; 0}"/>
+					select="onFilterThreshold" visible="{= %{/threshold} &gt; 0 }"/>
 				<CheckBox select="onRowSelection" selected="{/showHits}" text="Show Hits"/>
 			</HBox>
 		</table:extension>
@@ -73,7 +73,7 @@
 							preserveDecimals : false}}"/>
 				</table:template>
 			</table:Column>
-			<table:Column width="5em" hAlign="Right" visible="{= %{/branchTracking}}">
+			<table:Column width="5em" hAlign="Right" visible="{= %{/branchTracking} }">
 				<table:label>
 					<Text text="Branches"/>
 				</table:label>
@@ -82,7 +82,7 @@
 				</table:template>
 			</table:Column>
 			<table:Column width="5em" hAlign="Right" sortProperty="branches/missed"
-					visible="{= %{/branchTracking}}">
+					visible="{= %{/branchTracking} }">
 				<table:label>
 					<Text text="Missed"/>
 				</table:label>
@@ -92,8 +92,8 @@
 				</table:template>
 			</table:Column>
 			<table:Column width="5em" hAlign="Right" sortProperty="branches/coverage"
-					class="{= %{/branches/coverage} &lt; %{/threshold} ? 'blanket_miss' : ''}"
-					visible="{= %{/branchTracking}}">
+					class="{= %{/branches/coverage} &lt; %{/threshold} ? 'blanket_miss' : '' }"
+					visible="{= %{/branchTracking} }">
 				<table:label>
 					<Text text="%"/>
 				</table:label>

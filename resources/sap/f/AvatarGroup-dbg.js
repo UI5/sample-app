@@ -100,7 +100,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -233,6 +233,8 @@ sap.ui.define([
 					"meta"
 				]
 			});
+			// Focus should not loop when navigating with arrow keys (per spec)
+			this._oItemNavigation.setCycling(false);
 			this.addEventDelegate(this._oItemNavigation);
 		}
 
@@ -588,6 +590,9 @@ sap.ui.define([
 
 		this._iAvatarsToShow = this._getAvatarsToShow(iWidth, iAvatarWidth, iAvatarNetWidth);
 
+		// Set CSS variable for button inner height (avatar size)
+		this.getDomRef().style.setProperty("--sapUiAvatarGroupButtonInnerHeight", iAvatarWidth + "rem");
+
 		if (sAvatarDisplaySize === AvatarSize.Custom) {
 			this.getDomRef().style.setProperty("--sapUiAvatarGroupCustomMarginRight", (iAvatarWidth * -0.4) + "rem");
 		}
@@ -603,13 +608,14 @@ sap.ui.define([
 			}
 		} else {
 			this._bAutoWidth = true;
-			this.getDomRef().style.width = "auto";
 
 			if (this._bShowMoreButton) {
 				this._bShowMoreButton = false;
 				this.invalidate();
 			}
 		}
+
+		this.getDomRef().style.width = "auto";
 	};
 
 	/**

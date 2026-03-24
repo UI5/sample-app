@@ -153,7 +153,7 @@ sap.ui.define([
  	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -1082,6 +1082,10 @@ sap.ui.define([
 
 	SidePanel.prototype._getSideContentHeaderTitle = function() {
 		var oSelectedItem = this._getSelectedItem();
+
+		if (oSelectedItem.getTitle()) {
+			return oSelectedItem.getTitle();
+		}
 
 		if (!this._contentHeaderTitle) {
 			this._contentHeaderTitle = new Title();

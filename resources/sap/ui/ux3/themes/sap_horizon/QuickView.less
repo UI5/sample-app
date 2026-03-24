@@ -1,21 +1,21 @@
 /* ===================================== */
 /* CSS for control sap.ui.ux3/QuickView  */
-/* Horizon theme                         */
+/* Morning Horizon theme                 */
 /* ===================================== */
 
 .sapUiUx3QV {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background: lighten(@sapUiContentForegroundColor, 10);
 	border: none;
 }
 
-.sapUiUx3QVHeader{
-	color: @sapUiPageHeaderTextColor; // @sapUiLightText = #666666
+.sapUiUx3QVHeader {
+	color: var(--sapPageHeader_TextColor);
 }
 
 .sapUiUx3QVTitle1 {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
 .sapUiUx3QV a,
@@ -23,15 +23,14 @@
 .sapUiUx3QV a:visited,
 .sapUiUx3QV a:active {
 	text-decoration: none;
-	color: @sapUiLink;
+	color: var(--sapLinkColor);
 }
 
 .sapUiUx3QV a:hover {
 	text-decoration: underline;
-	color: @sapUiLink;
+	color: var(--sapLinkColor);
 }
 
 .sapUiUx3QVTitle2 {
-	color: darken(@sapUiTextTitle, 6.5); // @sapUiExtraDarkText = #222222
+	color: darken(@sapUiTextTitle, 6.5);
 }
-

@@ -47,12 +47,11 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 		var sAriaRole = oControl.getGridItemRole() || oControl.getAriaRole();
 		var isHalfFrame = frameType === frameTypes.OneByHalf || frameType === frameTypes.TwoByHalf;
 		var sBGColor = oControl._oBadgeColors["backgroundColor"];
-		var bIsIconModeOneByOne = oControl._isIconMode() && frameType === frameTypes.OneByOne;
 		var aLinkTileContent = oControl.getLinkTileContents();
 		var oBadge = oControl.getBadge();
 
 		// Render a link when URL is provided, not in action scope and the state is enabled
-		var bRenderLink = oControl.getUrl() && (!oControl._isInActionScope() || oControl.getMode() === GenericTileMode.IconMode) && sState !== LoadState.Disabled && !oControl._isNavigateActionEnabled();
+		var bRenderLink = oControl._shouldRenderLink();
 
 		if (oControl._isInActionScope()) {
 			sScopeClass = encodeCSS("sapMGTScopeActions");
@@ -311,17 +310,21 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 
 			oRm.openStart("div",oControl.getId() + "-hdrContent");
 			oRm.class("sapMGTHdrContent");
-			if (oControl._isIconMode() ){
+
+			if (oControl._isIconMode()) {
 				if (frameType === frameTypes.OneByOne) {
-					var sClass = "sapMGTOneByOne";
+					oRm.class("sapMGTOneByOne");
+
 					if (!oControl.getIconLoaded()) {
-						sClass = sClass.concat(" sapMGTOneByOneIconLoaded");
+						oRm.class("sapMGTOneByOneIconLoaded");
 					}
 				} else if (frameType === frameTypes.TwoByHalf) {
-					var sClass = "TwoByHalf";
+					oRm.class("TwoByHalf");
 				}
+			} else {
+				oRm.class(frameType);
 			}
-			oRm.class(oControl._isIconMode()	? sClass : frameType);
+
 			if (sTooltipText) {
 				oRm.attr("title", sTooltipText);
 			}
@@ -359,10 +362,12 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 			}
 
 			this._renderHeader(oRm, oControl);
-			if (bIsIconModeOneByOne) {
+
+			if (oControl._isIconMode() && oControl.getIconLoaded() && frameType === frameTypes.OneByOne) {
 				oRm.close("div");
 				oRm.close("div");
 			}
+
 			for (var i = 0; i < iLength; i++) {
 				isFooterPresent = oControl._checkFooter(aTileContent[i], oControl) && (aTileContent[i].getFooter() ||  aTileContent[i].getUnit());
 				var oAggregationContent = aTileContent[i].getContent();

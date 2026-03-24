@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @public
 	 * @alias sap.ui.model.json.JSONModel
 	 */
@@ -321,34 +321,93 @@ sap.ui.define([
 		return this.pSequentialImportCompleted;
 	};
 
-	/*
-	 * @see sap.ui.model.ClientModel#bindProperty
+	/**
+	 * Creates a new {@link sap.ui.model.json.JSONPropertyBinding}.
+	 *
+	 * @param {string} sPath
+	 *   The path to the property to bind
+	 * @param {sap.ui.model.Context} [oContext]
+	 *   The context for the binding. This is mandatory when a relative binding path is provided.
+	 * @param {Object<string, any>} [mParameters]
+	 *   Additional model-specific parameters
+	 * @param {boolean} [mParameters.ignoreMessages]
+	 *   Whether this binding ignores model messages instead of propagating them to the control. Supported since
+	 *   1.119.0. Some composite types like {@link sap.ui.model.type.Currency} automatically ignore
+	 *   model messages for some of their parts, depending on their format options. Setting this
+	 *   parameter to <code>true</code> or <code>false</code> overrules the automatism of the type.
+	 *
+	 *   <b>Example:</b> A binding for a currency code is used in a composite binding for rendering the
+	 *   proper number of decimals, but the currency code itself is not displayed in the attached control.
+	 *   In this case, messages for the currency code aren't displayed at that control, only
+	 *   messages for the amount.
+	 * @returns {sap.ui.model.json.JSONPropertyBinding}
+	 *   The newly created JSONPropertyBinding
+	 *
+	 * @public
 	 */
 	JSONModel.prototype.bindProperty = function(sPath, oContext, mParameters) {
 		var oBinding = new JSONPropertyBinding(this, sPath, oContext, mParameters);
 		return oBinding;
 	};
 
-	/*
-	 * @see sap.ui.model.Model.prototype.bindList
+	/**
+	 * Creates a new {@link sap.ui.model.json.JSONListBinding}.
 	 *
+	 * @param {string} sPath
+	 *   The path to the list or array to bind
+	 * @param {sap.ui.model.Context} [oContext]
+	 *   The context for the binding. This is mandatory when a relative binding path is provided.
+	 * @param {sap.ui.model.Sorter[]|sap.ui.model.Sorter} [aSorters=[]]
+	 *   The sorters used initially. To replace them, call {@link sap.ui.model.ListBinding#sort}.
+	 * @param {sap.ui.model.Filter[]|sap.ui.model.Filter} [aFilters=[]]
+	 *   The filters initially used with type {@link sap.ui.model.FilterType.Application}.
+	 *   To replace them, call {@link sap.ui.model.ListBinding#filter}.
+	 * @param {Object<string, any>} [mParameters]
+	 *   Map of optional parameters as defined by subclasses. This class does not introduce any own parameters.
+	 * @returns {sap.ui.model.json.JSONListBinding}
+	 *   The newly created JSONListBinding
+	 * @throws {Error}
+	 *   If the {@link sap.ui.model.Filter.NONE} filter instance is contained in <code>aFilters</code> together with
+	 *   other filters
+	 *
+	 * @public
 	 */
 	JSONModel.prototype.bindList = function(sPath, oContext, aSorters, aFilters, mParameters) {
 		var oBinding = new JSONListBinding(this, sPath, oContext, aSorters, aFilters, mParameters);
 		return oBinding;
 	};
 
-	/*
-	 * @see sap.ui.model.Model.prototype.bindTree
+	/**
+	 * Creates a new {@link sap.ui.model.json.JSONTreeBinding}.
+	 * The bound data can contain JSON objects and arrays.
+	 * Both are used to build the tree structure.
 	 *
-	 * @param {object} [mParameters]
-	 *   Additional model specific parameters; if the mParameter <code>arrayNames</code> is
-	 *   specified with an array of string names these names will be checked against the tree data
-	 *   structure and the found data in this array is included in the tree, but only if the parent
-	 *   array is also included; if this parameter is not specified then all found arrays in the
-	 *   data structure are bound; if the tree data structure doesn't contain an array, this
-	 *   parameter doesn't need to be specified
+	 * @param {string} sPath
+	 *   The path pointing to the tree or array that is bound
+	 * @param {sap.ui.model.Context} [oContext]
+	 *   The context for the binding. This is mandatory when a relative binding path is provided.
+	 * @param {sap.ui.model.Filter[]|sap.ui.model.Filter} [aFilters=[]]
+	 *   The filters initially used with type {@link sap.ui.model.FilterType.Application}.
+	 *   To replace them, call {@link sap.ui.model.TreeBinding#filter}.
+	 * @param {Object<string, any>} [mParameters]
+	 *   Additional model-specific parameters
+	 * @param {string[]} [mParameters.arrayNames]
+	 *   Keys of arrays to be used for building the tree structure. If not specified, all arrays and objects in the
+	 *   bound data are used.
+	 *   Note: For arrays nested within other arrays with different names, add both array names to
+	 *   <code>arrayNames</code>. To include a nested array in the hierarchy, you must list the names of all containing
+	 *   arrays. If an array name is missing from the list, its child arrays are also excluded from the hierarchy, even
+	 *   if you add them to <code>arrayNames</code>.
+	 *   If this parameter is set, all other objects and arrays in the bound data are ignored.
+	 * @param {sap.ui.model.Sorter[]|sap.ui.model.Sorter} [aSorters=[]]
+	 *   The sorters used initially. To replace them, call {@link sap.ui.model.TreeBinding#sort}.
+	 * @returns {sap.ui.model.json.JSONTreeBinding}
+	 *   The newly created JSONTreeBinding
+	 * @throws {Error}
+	 *   If the <code>aFilters</code> array contains the {@link sap.ui.model.Filter.NONE} filter instance together with
+	 *   other filters
 	 *
+	 * @public
 	 */
 	JSONModel.prototype.bindTree = function(sPath, oContext, aFilters, mParameters, aSorters) {
 		var oBinding = new JSONTreeBinding(this, sPath, oContext, aFilters, mParameters, aSorters);

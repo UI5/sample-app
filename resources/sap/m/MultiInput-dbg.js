@@ -112,7 +112,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.145.0
+	* @version 1.146.0
 	*
 	* @constructor
 	* @public
@@ -919,28 +919,9 @@ function(
 		if (!this.getEnabled()) {
 			return;
 		}
+
 		if (oEvent.which === KeyCodes.TAB) {
 			oTokenizer.selectAllTokens(false);
-		}
-
-		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.A && oTokenizer.getTokens().length > 0) {
-			oTokenizer.focus();
-			oTokenizer.selectAllTokens(true);
-			oEvent.preventDefault();
-		}
-
-		// ctrl/meta + c OR ctrl/meta + Insert - Copy all selected Tokens
-		if ((oEvent.ctrlKey || oEvent.metaKey) && (oEvent.which === KeyCodes.C || oEvent.which === KeyCodes.INSERT)) {
-			oTokenizer._copy();
-		}
-
-		// ctr/meta + x OR Shift + Delete - Cut all selected Tokens if editable
-		if (((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.X) || (oEvent.shiftKey && oEvent.which === KeyCodes.DELETE)) {
-			if (this.getEditable()) {
-				oTokenizer._cut();
-			} else {
-				oTokenizer._copy();
-			}
 		}
 
 		// ctrl/meta + I -> Open suggestions
@@ -1275,6 +1256,7 @@ function(
 			!(this._getIsSuggestionPopupOpen())
 		) {
 			oTokenizer.setRenderMode(TokenizerRenderMode.Loose);
+			oTokenizer.scrollToEnd();
 			this._setValueVisible(true);
 		}
 

@@ -64,7 +64,7 @@ sap.ui.define([
 	 * @class
 	 * <code>CalendarDateInterval</code> only visualizes the dates in a one-line interval and allows the selection of a single day.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -118,7 +118,7 @@ sap.ui.define([
 	CalendarDateInterval.prototype.init = function(){
 
 		Calendar.prototype.init.apply(this, arguments);
-		this.setAggregation("_weeksRow", this._createWeekRow(`${this.getId()}-weeks`));
+		this.setAggregation("_weeksRow", this._createWeekRow(`${this.getId()}-WeekNumbersRow`), true);
 
 		this._iDaysMonthHead = 35; // if more than this number of days, month names are displayed on top of days
 

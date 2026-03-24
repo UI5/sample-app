@@ -41,7 +41,7 @@ sap.ui.define([
 	* @extends sap.m.GenericTile
 	*
 	* @author SAP SE
-	* @version 1.145.0
+	* @version 1.146.0
 	*
 	* @public
 	* @since 1.122
@@ -130,6 +130,13 @@ sap.ui.define([
 			this._removeStyleClasses();
 		}
 		GenericTile.prototype.onAfterRendering.apply(this, arguments);
+	};
+
+	ActionTile.prototype.ontap = function(event) {
+		if (this._shouldRenderLink()) {
+			event.preventDefault();
+		}
+		GenericTile.prototype.ontap.apply(this, arguments);
 	};
 
 	/**

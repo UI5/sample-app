@@ -162,7 +162,7 @@ function(
 	 * @extends sap.m.InputBase
 	 * @implements sap.ui.core.IAccessKeySupport
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -1656,7 +1656,7 @@ function(
 	 * @private
 	 */
 	Input.prototype.updateSelectionFromList = function (oSelectedItem) {
-		if (this._hasTabularSuggestions() && (this.getSelectedRow() !== oSelectedItem)) {
+		if (this._hasTabularSuggestions() && (this.getSelectedRow() !== oSelectedItem?.getId())) {
 			this.setSelectionRow(oSelectedItem, true);
 		} else {
 			var oNewItem = ListHelpers.getItemByListItem(this.getSuggestionItems(), oSelectedItem);
@@ -1995,7 +1995,11 @@ function(
 	 */
 	Input.prototype._applySuggestionAcc = function(iNumItems) {
 		var sAriaText = "",
-			oRb = this._oRb;
+			oRb = this._oRb,
+			bIpadSafari = Device.system.tablet && Device.os.macintosh && Device.browser.safari;
+
+		// timeout should not be used on Ipad Safari due to rendering issues
+		const iTimeoutDuration = bIpadSafari ? 0 : 100;
 
 		// Timeout is used because sometimes when we have suggestions
 		// that are fetched from the backend and filtered with a delay this function
@@ -2014,7 +2018,7 @@ function(
 
 			// update Accessibility text for suggestion
 			this._oInvisibleMessage?.announce(sAriaText, CoreLibrary.InvisibleMessageMode.Polite);
-		}.bind(this), 100);
+		}.bind(this), iTimeoutDuration);
 	};
 
 	/**
@@ -3114,6 +3118,7 @@ function(
 
 			oItemToBeSelected = this._hasTabularSuggestions() ? mTypeAheadInfo.selectedItem : ListHelpers.getListItem(mTypeAheadInfo.selectedItem);
 			oItemToBeSelected.setSelected(true);
+			this.setAssociation("selectedRow", oItemToBeSelected, true);
 		}, this);
 
 		if (this.isMobileDevice()) {

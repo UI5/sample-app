@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.145.0",
+		version: "1.146.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -437,7 +437,8 @@ sap.ui.define([
 			"sap.m.p13n.SelectionPanel",
 			"sap.m.p13n.SortPanel",
 			"sap.m.p13n.Popup",
-			"sap.m.table.columnmenu.Menu"
+			"sap.m.table.columnmenu.Menu",
+			"sap.m.table.Title"
 		],
 		elements: [
 			"sap.m.BadgeCustomData",
@@ -502,6 +503,7 @@ sap.ui.define([
 			"sap.m.plugins.DataStateIndicator",
 			"sap.m.plugins.PasteProvider",
 			"sap.m.plugins.PluginBase",
+			"sap.m.plugins.TitleProvider",
 			"sap.m.p13n.AbstractContainerItem",
 			"sap.m.semantic.AddAction",
 			"sap.m.semantic.CancelAction",
@@ -2820,7 +2822,6 @@ sap.ui.define([
 		* <b>Note:</b> Please, be aware that this feature works under the Browser's Cross-Origin Resource Sharing (CORS) policy.
 		* This means that a web application using those APIs can only request resources from the same origin the application was loaded from unless the response from other origins includes the right CORS headers.
 		* @public
-		* @experimental since 1.106
 		*/
 		InlineSvg: "InlineSvg"
 

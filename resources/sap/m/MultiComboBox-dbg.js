@@ -145,7 +145,7 @@ function(
 	 * </ul>
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @extends sap.m.ComboBoxBase
@@ -1421,7 +1421,7 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype.onAfterClose = function() {
-		var bUseNarrow = !jQuery.contains(this.getDomRef(), document.activeElement) || this.isPickerDialog(),
+		var bUseNarrow = (this.getDomRef() && !jQuery.contains(this.getDomRef(), document.activeElement)) || this.isPickerDialog(),
 			oDomRef = this.getFocusDomRef();
 
 		oDomRef && this.getFocusDomRef().setAttribute("aria-expanded", "false");

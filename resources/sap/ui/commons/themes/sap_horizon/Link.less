@@ -1,10 +1,10 @@
 /* ==================================== */
 /* CSS for control sap.ui.commons/Link  */
-/* Horizon theme                        */
+/* Morning Horizon theme                */
 /* ==================================== */
 
 .sapUiLnk {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	text-decoration: none;
 }
@@ -14,11 +14,11 @@
 }
 
 .sapUiLnk:focus {
-	outline: 1px dashed @sapUiHighlight;
+	outline: 1px dashed var(--sapHighlightColor);
 }
 
 .sapUiLnkDsbl {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -27,7 +27,7 @@
 /* ================= */
 
 /* GridLayout */
-.sapUiGrid td > .sapUiLnk{
+.sapUiGrid td > .sapUiLnk {
 	margin-top: 2px;
 }
 

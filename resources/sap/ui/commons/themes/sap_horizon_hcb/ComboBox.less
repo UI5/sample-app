@@ -11,7 +11,7 @@
 	font-size: @sapUiDesktopFontSize;
 }
 
-.sapUiTfComboIcon{
+.sapUiTfComboIcon {
 	width: 16px;
 	height: 16px;
 	text-align: center;
@@ -19,19 +19,19 @@
 	line-height: 16px;
 }
 
-.sapUiTfStd > .sapUiTfComboIcon{
+.sapUiTfStd > .sapUiTfComboIcon {
 	font-size: 12px;
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
-.sapUiTfDsbl > .sapUiTfComboIcon{
+.sapUiTfDsbl > .sapUiTfComboIcon {
 	font-size: 12px;
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	cursor: default;
 }
 
 .sapUiTfStd > .sapUiTfComboIcon:hover,
 .sapUiTfStd.sapUiTfFoc > .sapUiTfComboIcon {
-	border-left: 1px solid @sapUiFieldHoverBorderColor;
-	background-color: @sapUiButtonLiteHoverBackground;
+	border-left: 1px solid var(--sapField_Hover_BorderColor);
+	background-color: var(--sapButton_Lite_Hover_Background);
 }

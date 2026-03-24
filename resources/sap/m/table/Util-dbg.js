@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m.table.Util
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @since 1.96.0
 	 * @private
 	 * @ui5-restricted sap.fe, sap.ui.mdc, sap.ui.comp
@@ -323,7 +323,7 @@ sap.ui.define([
 		var oResourceBundle = Library.getResourceBundleFor("sap.m");
 
 		var oIllustratedMessage = new IllustratedMessage({
-			illustrationType: MLibrary.IllustratedMessageType.AddingColumns,
+			illustrationType: MLibrary.IllustratedMessageType.NoColumnsSet,
 			title: oResourceBundle.getText("TABLE_NO_COLUMNS_TITLE"),
 			description: oResourceBundle.getText("TABLE_NO_COLUMNS_DESCRIPTION")
 		});

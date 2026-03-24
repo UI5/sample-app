@@ -211,7 +211,7 @@ sap.ui.define([
 		 *   >"4 Resource Path"</a> in specification "OData Version 4.01. Part 2: URL Conventions"
 		 *   is a valid data binding path within this model if a leading slash is added; for example
 		 *   "/" + "SalesOrderList('A%2FB%26C')" to access an entity instance with key "A/B&C". Note
-		 *   that appropriate URI encoding is necessary, see the example of
+		 *   that appropriate URL encoding is necessary, see the example of
 		 *   {@link sap.ui.model.odata.v4.ODataUtils.formatLiteral}. "4.5.1 Addressing Actions"
 		 *   needs an operation binding, see {@link sap.ui.model.odata.v4.ODataContextBinding}.
 		 *
@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.145.0
+		 * @version 1.146.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -562,9 +562,11 @@ sap.ui.define([
 	/**
 	 * The 'parseError' event is not supported by this model.
 	 *
+	 * @deprecated As of version 1.37.0, this event is not supported
 	 * @event sap.ui.model.odata.v4.ODataModel#parseError
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 
 	/**
@@ -603,25 +605,31 @@ sap.ui.define([
 	/**
 	 * The 'requestCompleted' event is not supported by this model.
 	 *
+	 * @deprecated As of version 1.37.0, this event is not supported
 	 * @event sap.ui.model.odata.v4.ODataModel#requestCompleted
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 
 	/**
 	 * The 'requestFailed' event is not supported by this model.
 	 *
+	 * @deprecated As of version 1.37.0, this event is not supported
 	 * @event sap.ui.model.odata.v4.ODataModel#requestFailed
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 
 	/**
 	 * The 'requestSent' event is not supported by this model.
 	 *
+	 * @deprecated As of version 1.37.0, this event is not supported
 	 * @event sap.ui.model.odata.v4.ODataModel#requestSent
 	 * @public
 	 * @since 1.37.0
+	 * @ui5-not-supported
 	 */
 
 	/**
@@ -1730,7 +1738,7 @@ sap.ui.define([
 	 * @param {object} oEntity
 	 *   The entity instance with the key property values
 	 * @returns {sap.ui.base.SyncPromise<string|undefined>}
-	 *   A promise that gets resolved with the proper URI encoded key predicate, for example
+	 *   A promise that gets resolved with the proper URL encoded key predicate, for example
 	 *   "(Sector='A%2FB%26C',ID='42')" or "('42')", or <code>undefined</code>, if at least one key
 	 *   property is undefined. It gets rejected if the metadata cannot be fetched or in case the
 	 *   entity has no key properties according to metadata.
@@ -2021,7 +2029,7 @@ sap.ui.define([
 	 * @param {object} oEntity
 	 *   The entity instance with the key property values
 	 * @returns {string|undefined}
-	 *   The proper URI-encoded key predicate, for example "(Sector='A%2FB%26C',ID='42')" or
+	 *   The proper URL-encoded key predicate, for example "(Sector='A%2FB%26C',ID='42')" or
 	 *   "('42')", or <code>undefined</code> if at least one key property is undefined.
 	 * @throws {Error}
 	 *   If the key predicate cannot be determined synchronously
@@ -2385,7 +2393,7 @@ sap.ui.define([
 
 	/**
 	 * Normalizes the key predicates of a message's target using the sort order from the metadata,
-	 * including proper URI encoding, e.g. "(Sector='A%2FB%26C',ID='42')" or "('42')".
+	 * including proper URL encoding, e.g. "(Sector='A%2FB%26C',ID='42')" or "('42')".
 	 *
 	 * @param {string} sTarget
 	 *   The message target
@@ -2730,7 +2738,7 @@ sap.ui.define([
 	 * @param {object} oEntity
 	 *   The entity instance with the key property values
 	 * @returns {Promise<string|undefined>}
-	 *   A promise that gets resolved with the proper URI-encoded key predicate, for example
+	 *   A promise that gets resolved with the proper URL-encoded key predicate, for example
 	 *   "(Sector='A%2FB%26C',ID='42')" or "('42')", or <code>undefined</code> if at least one key
 	 *   property is undefined. It gets rejected if the metadata cannot be fetched, or in case the
 	 *   entity has no key properties according to the metadata.
@@ -2743,31 +2751,38 @@ sap.ui.define([
 	ODataModel.prototype.requestKeyPredicate = _Helper.createRequestMethod("fetchKeyPredicate");
 
 	/**
-	 * Requests side effects for the given paths on all affected root bindings.
+	 * Loads side effects for the given absolute paths on all affected bindings. For more
+	 * information about side effects in general, see
+	 * {@link sap.ui.model.odata.v4.Context#requestSideEffects}.
 	 *
-	 * @param {string} sGroupId
-	 *   The effective group ID
 	 * @param {string[]} aAbsolutePaths
-	 *   The absolute paths to request side effects for; each path must not start with the fully
-	 *   qualified container name.
-	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
-	 *   A promise which is resolved without a defined result, or rejected with an error if loading
-	 *   of side effects fails, or <code>undefined</code> if there is nothing to do
+	 *   The absolute paths for which to request side effects, for example
+	 *   "/SalesOrderList/SO_2_SOITEM/Note".
+	 * @param {string} [sGroupId]
+	 *   The group ID to be used. If not specified, the {@link #getUpdateGroupId update group ID} is
+	 *   used.
+	 * @returns {Promise<void>}
+	 *   A promise which is resolved without a defined result, or rejected with an error if the side
+	 *   effects fail to load.
+	 * @throws {Error}
+	 *   If the given group ID is invalid
 	 *
-	 * @private
+	 * @public
+	 * @since 1.146.0
 	 */
-	ODataModel.prototype.requestSideEffects = function (sGroupId, aAbsolutePaths) {
-		if (!aAbsolutePaths.length) {
-			return undefined; // nothing to do
-		}
+	ODataModel.prototype.requestSideEffects = function (aAbsolutePaths,
+			sGroupId = this.getUpdateGroupId()) {
+		_Helper.checkGroupId(sGroupId);
 
-		return SyncPromise.all(
+		return Promise.all(
 			this.aAllBindings.filter(function (oBinding) {
 				return oBinding.isRoot();
 			}).map(function (oRootBinding) {
 				return oRootBinding.requestAbsoluteSideEffects(sGroupId, aAbsolutePaths);
 			})
-		);
+		).then(function () {
+			// return undefined;
+		});
 	};
 
 	/**

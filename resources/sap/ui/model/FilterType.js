@@ -3,5 +3,5 @@
  * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(function(){"use strict";var t={Application:"Application",Control:"Control"};return t},true);
+sap.ui.define(function(){"use strict";var i={Application:"Application",ApplicationBound:"ApplicationBound",Control:"Control"};return i},true);
 //# sourceMappingURL=FilterType.js.map

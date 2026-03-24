@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -2201,6 +2201,10 @@ GenericTile.prototype._isNavigateActionEnabled = function() {
 	 */
 	GenericTile.prototype.getGridItemRole = function () {
 		return this._sGridItemRole;
+	};
+
+	GenericTile.prototype._shouldRenderLink = function() {
+		return this.getUrl() && (!this._isInActionScope() || this.getMode() === GenericTileMode.IconMode) && this.getState() !== LoadState.Disabled && !this._isNavigateActionEnabled();
 	};
 
 	/**

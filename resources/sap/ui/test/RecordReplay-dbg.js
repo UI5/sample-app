@@ -53,7 +53,15 @@ sap.ui.define([
 	 * @public
 	 */
 	RecordReplay.InteractionType = {
+		/**
+		 * "Press" Interaction type.
+		 * @public
+		 */
 		Press: "PRESS",
+		/**
+		 * "EnterText" interaction type.
+		 * @public
+		 */
 		EnterText: "ENTER_TEXT"
 	};
 
@@ -84,6 +92,10 @@ sap.ui.define([
 					oSelector.interaction = {
 						idSuffix: sIDSuffix
 					};
+				}
+				if (typeof oControl.getEnabled === "function" && oControl.getEnabled() === false) {
+					oSelector.enabled = false; // make the disabled control discoverable, as defined in <code>sap.ui.test.Opa5.BaseParameters</code>
+					oLogger.debug("Control " + oControl.getId() + " is disabled, adding enabled=false to the selector");
 				}
 				resolve(oSelector);
 			}).catch(function (oError) {

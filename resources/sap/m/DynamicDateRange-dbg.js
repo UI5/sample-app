@@ -288,7 +288,7 @@ sap.ui.define([
 		 * is opened. The dialog is closed via a date time period value selection or by pressing the "Cancel" button.
 		 *
 		 * @author SAP SE
-		 * @version 1.145.0
+		 * @version 1.146.0
 		 *
 		 * @constructor
 		 * @public
@@ -1496,6 +1496,7 @@ sap.ui.define([
 
 				oSecondPage.setFooter(oToolbar);
 				oSecondPage.setTitle(oOption.getText(this));
+				this._oPopup.setContentHeight(POPUP_MAX_HEIGHT + "px");
 
 				this._setFooterVisibility(true);
 				this._updateInternalControls(oOption);
@@ -1813,6 +1814,8 @@ sap.ui.define([
 					}
 				}, this);
 			} else if (oToPage === oOptionsListPage) {
+				// set height to available options list height
+				this._oPopup.setContentHeight(this._getPopupHeight());
 				// Remove the invisible label from popover when navigating back to options list
 				this._removeInvisibleLabelFromPopover();
 			}

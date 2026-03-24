@@ -4,13 +4,13 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
- * See {@link https://lodash.com/docs/4.17.21#zipObject}
+ * See {@link https://lodash.com/docs/4.17.23#zipObject}
  *
  * @function
  * @alias module:sap/base/util/restricted/_zipObject
  * @author SAP SE
  * @since 1.81
- * @version 1.145.0
+ * @version 1.146.0
  * @private
  * @ui5-restricted
 */

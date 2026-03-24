@@ -3,57 +3,57 @@
 /* Evening Horizon theme                  */
 /* ====================================== */
 
-.sapUiSli{
-	font-family: @sapUiDesktopFontFamily;
+.sapUiSli {
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	border: none;
 }
 
-.sapUiSliHori.sapUiSli{
+.sapUiSliHori.sapUiSli {
 	padding: 20px 0 0 0;
 	height: 16px;
 }
 
-.sapUiSliVert.sapUiSli{
+.sapUiSliVert.sapUiSli {
 	padding: 0 0 0 30px;
 	width: 16px;
 }
 
 .sapUiSliR,
-.sapUiSliL{
+.sapUiSliL {
 	border-style: solid;
-	border-color:  lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
+	border-color: lighten(@sapUiContentForegroundBorderColor, 5);
 }
 
 .sapUiSliHori > .sapUiSliR,
-.sapUiSliHori .sapUiSliL{
+.sapUiSliHori .sapUiSliL {
 	height: 2px;
 }
 
 .sapUiSliVert > .sapUiSliR,
-.sapUiSliVert .sapUiSliL{
+.sapUiSliVert .sapUiSliL {
 	width: 2px;
 }
 
 .sapUiSliHori > .sapUiSliR {
-	border-width: 1px 0px 1px 0;
+	border-width: 1px 0 1px 0;
 	margin-right: 6px;
 	margin-left: 6px;
 }
 
 .sapUiSliVert > .sapUiSliR {
-	border-width: 0px 1px 0px 1px;
+	border-width: 0 1px 0 1px;
 	margin-top: 6px;
 	margin-bottom: 6px;
 }
 
 .sapUiSliHori .sapUiSliL {
-	border-width: 1px 0 1px 0px;
+	border-width: 1px 0 1px 0;
 	top: -1px;
 }
 
 .sapUiSliVert .sapUiSliL {
-	border-width: 0px 1px 0px 1px;
+	border-width: 0 1px 0 1px;
 	left: -1px;
 }
 
@@ -74,59 +74,58 @@
 }
 
 .sapUiSliHori .sapUiSliBar {
-	border-top-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	border-bottom-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	border-left-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	background-color: darken(@sapUiContentForegroundColor, 10); // @sapUiMediumBorder = #cccccc
+	border-top-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	border-bottom-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	border-left-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	background-color: darken(@sapUiContentForegroundColor, 10);
 }
 
 .sapUiSliVert .sapUiSliBar {
-	border-left-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	border-right-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	border-bottom-color: lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	background-color: darken(@sapUiContentForegroundColor, 10); // @sapUiMediumBorder = #cccccc
+	border-left-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	border-right-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	border-bottom-color: lighten(@sapUiContentForegroundBorderColor, 5);
+	background-color: darken(@sapUiContentForegroundColor, 10);
 }
 
-.sapUiSliHori .sapUiSliHiLi{
+.sapUiSliHori .sapUiSliHiLi {
 	left: -1px;
 }
 
-.sapUiSliVert .sapUiSliHiLi{
+.sapUiSliVert .sapUiSliHiLi {
 	bottom: -1px;
 }
 
 .sapUiSliStd .sapUiSliHiLi {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 }
 
-.sapUiSliStd.sapUiSliHori  .sapUiSliHiLi {
-	border-top-color: @sapUiHighlight;
-	border-bottom-color: @sapUiHighlight;
-	border-left-color: @sapUiHighlight;
+.sapUiSliStd.sapUiSliHori .sapUiSliHiLi {
+	border-top-color: var(--sapHighlightColor);
+	border-bottom-color: var(--sapHighlightColor);
+	border-left-color: var(--sapHighlightColor);
 }
 
 .sapUiSliStd.sapUiSliVert .sapUiSliHiLi {
-	border-left-color: @sapUiHighlight;
-	border-right-color: @sapUiHighlight;
-	border-bottom-color: @sapUiHighlight;
+	border-left-color: var(--sapHighlightColor);
+	border-right-color: var(--sapHighlightColor);
+	border-bottom-color: var(--sapHighlightColor);
 }
 
 .sapUiSliHori.sapUiSliRo .sapUiSliHiLi,
 .sapUiSliHori.sapUiSliDsbl .sapUiSliHiLi {
-	border-top-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	border-bottom-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	border-left-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	background-color: darken(@sapUiContentForegroundColor, 30); // @sapUiMediumLine = #999999
+	border-top-color: darken(@sapUiContentForegroundBorderColor, 15);
+	border-bottom-color: darken(@sapUiContentForegroundBorderColor, 15);
+	border-left-color: darken(@sapUiContentForegroundBorderColor, 15);
+	background-color: darken(@sapUiContentForegroundColor, 30);
 }
 
 .sapUiSliVert.sapUiSliRo .sapUiSliHiLi,
 .sapUiSliVert.sapUiSliDsbl .sapUiSliHiLi {
-	border-left-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	border-right-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	border-bottom-color: darken(@sapUiContentForegroundBorderColor, 15); // @sapUiMediumLine = #999999
-	background-color: darken(@sapUiContentForegroundColor, 30); // @sapUiMediumLine = #999999
+	border-left-color: darken(@sapUiContentForegroundBorderColor, 15);
+	border-right-color: darken(@sapUiContentForegroundBorderColor, 15);
+	border-bottom-color: darken(@sapUiContentForegroundBorderColor, 15);
+	background-color: darken(@sapUiContentForegroundColor, 30);
 }
-
 
 .sapUiSliGrip {
 	border-style: solid;
@@ -146,52 +145,52 @@
 }
 
 .sapUiSliHori.sapUiSliRo .sapUiSliGrip {
-	width: 0px;
+	width: 0;
 }
 
 .sapUiSliVert.sapUiSliRo .sapUiSliGrip {
-	height: 0px;
+	height: 0;
 }
 
 .sapUiSliStd .sapUiSliGrip {
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
-	border-color: darken(@sapUiContentForegroundBorderColor, 31); // @sapUiExtraLightText = #707070
+	background-color: lighten(@sapUiContentForegroundColor, 5);
+	border-color: darken(@sapUiContentForegroundBorderColor, 31);
 }
 
 .sapUiSliStd .sapUiSliGrip:hover {
-	background-color: darken(@sapUiContentForegroundColor, 43); // @sapUiDarkBG = #777777
-	border-color: darken(@sapUiContentForegroundBorderColor, 28.1); // @sapUiDarkBG = #777777
+	background-color: darken(@sapUiContentForegroundColor, 43);
+	border-color: darken(@sapUiContentForegroundBorderColor, 28.1);
 }
 
 .sapUiSliStd .sapUiSliGrip:focus,
 .sapUiSliStd .sapUiSliGrip:active {
-	border-color: @sapUiHighlight;
-	background-color: @sapUiHighlight;
-	outline: 1px dotted @sapUiContentFocusColor; // @sapUiDarkestBorder = #000000
+	border-color: var(--sapHighlightColor);
+	background-color: var(--sapHighlightColor);
+	outline: 1px dotted var(--sapContent_FocusColor);
 }
 
 .sapUiSliRo .sapUiSliGrip,
 .sapUiSliDsbl .sapUiSliGrip {
-	border-color: @sapUiContentDisabledTextColor;
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
+	border-color: var(--sapContent_DisabledTextColor);
+	background-color: lighten(@sapUiContentForegroundColor, 5);
 }
 
 .sapUiSliRo .sapUiSliGrip:focus {
-	outline: 1px dotted @sapUiContentFocusColor; // @sapUiDarkestBorder = #000000
+	outline: 1px dotted var(--sapContent_FocusColor);
 }
 
 .sapUiSliHori .sapUiSliTick {
 	height: 4px;
 	width: 0;
 	top: -5px;
-	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
+	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 5);
 }
 
 .sapUiSliVert .sapUiSliTick {
 	height: 0;
 	width: 4px;
 	left: -5px;
-	border-top: 1px solid lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
+	border-top: 1px solid lighten(@sapUiContentForegroundBorderColor, 5);
 }
 
 .sapUiSliHori .sapUiSliText {

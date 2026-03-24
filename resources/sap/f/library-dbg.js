@@ -39,14 +39,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @since 1.44
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.f",
-		version: "1.145.0",
+		version: "1.146.0",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
 		...{
@@ -642,9 +642,8 @@ sap.ui.define([
 	 * Different options for the semantic role in controls that implement the {@link sap.f.ICard} interface.
 	 *
 	 * @enum {string}
-	 * @experimental
+	 * @ui5-experimental-since 1.131
 	 * @public
-	 * @since 1.131
 	 */
 	 thisLib.cards.SemanticRole = {
 		/**

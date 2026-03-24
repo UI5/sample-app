@@ -37,12 +37,12 @@
 
 /* as in HCW inverted popups are white too - no inverted text color */
 .sapUiInverted-CTX .sapUiTv {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
 /* invalid state */
 .sapUiTvErr {
-	color: @sapUiNegativeText;
+	color: var(--sapNegativeTextColor);
 	border-color: transparent;
 	background-color: transparent;
 }
@@ -50,13 +50,13 @@
 /* warning state */
 .sapUiTvWarn,
 .sapUiInverted-CTX .sapUiTvWarn {
-	color: @sapUiCriticalText;
+	color: var(--sapCriticalTextColor);
 	background-color: transparent;
 }
 
 /* success state */
 .sapUiTvSucc {
-	color: @sapUiPositiveText;
+	color: var(--sapPositiveTextColor);
 	background-color: transparent;
 }
 

@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.145.0"
+      "version": "1.146.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -34,17 +34,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.145",
+      "minUI5Version": "1.146",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.145.0"
+          "minVersion": "1.146.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.145.0",
+          "minVersion": "1.146.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.145.0",
+          "minVersion": "1.146.0",
           "lazy": true
         }
       }
@@ -305,7 +305,8 @@
           "sap.m.p13n.SelectionPanel",
           "sap.m.p13n.SortPanel",
           "sap.m.p13n.Popup",
-          "sap.m.table.columnmenu.Menu"
+          "sap.m.table.columnmenu.Menu",
+          "sap.m.table.Title"
         ],
         "elements": [
           "sap.m.BadgeCustomData",
@@ -370,6 +371,7 @@
           "sap.m.plugins.DataStateIndicator",
           "sap.m.plugins.PasteProvider",
           "sap.m.plugins.PluginBase",
+          "sap.m.plugins.TitleProvider",
           "sap.m.p13n.AbstractContainerItem",
           "sap.m.semantic.AddAction",
           "sap.m.semantic.CancelAction",

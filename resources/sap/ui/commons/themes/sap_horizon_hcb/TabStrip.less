@@ -8,7 +8,7 @@
 }
 
 .sapUiTabBar {
-	background-image: url(img/tabstrip/tab-bar.png);
+	background-image: url('img/tabstrip/tab-bar.png');
 	background-repeat: repeat-x;
 	background-position: left bottom;
 	padding: 4px 0 2px 0;
@@ -24,7 +24,7 @@
 	-webkit-background-size: auto auto, auto auto, 100% 28px;
 	background-size: auto auto, auto auto, 100% 28px;
 	background-repeat: no-repeat, no-repeat, no-repeat;
-	background-position:top left, top right, left top;
+	background-position: top left, top right, left top;
 	padding-right: 13px;
 	padding-left: 16px;
 	height: 18px;
@@ -33,11 +33,11 @@
 
 .sapUiTab,
 .sapUiTabDsbl {
-	background-image:url(img/tabstrip/tab-left.png), url(img/tabstrip/tab-right.png),url(img/tabstrip/tab.png);
+	background-image: url('img/tabstrip/tab-left.png'), url('img/tabstrip/tab-right.png'), url('img/tabstrip/tab.png');
 }
 
 .sapUiTabSel {
-	background-image:url(img/tabstrip/tab-left-first-sel.png), url(img/tabstrip/tab-right-sel.png),url(img/tabstrip/tab-sel.png);
+	background-image: url('img/tabstrip/tab-left-first-sel.png'), url('img/tabstrip/tab-right-sel.png'), url('img/tabstrip/tab-sel.png');
 	font-weight: bold;
 	margin-left: -9px;
 	padding-left: 25px;
@@ -45,7 +45,7 @@
 
 .sapUiTab:first-child,
 .sapUiTabDsbl:first-child {
-	background-image:url(img/tabstrip/tab-left-first.png), url(img/tabstrip/tab-right.png),url(img/tabstrip/tab.png);
+	background-image: url('img/tabstrip/tab-left-first.png'), url('img/tabstrip/tab-right.png'), url('img/tabstrip/tab.png');
 	padding-left: 25px;
 }
 
@@ -54,9 +54,9 @@
 }
 
 .sapUiTabClose {
-	background-image:url(img/tabstrip/tab-close.gif);
-	background-repeat:no-repeat;
-	background-positon:top right;
+	background-image: url('img/tabstrip/tab-close.gif');
+	background-repeat: no-repeat;
+	background-position: top right;
 	width: 13px;
 	height: 13px;
 	margin-top: 3px;
@@ -65,11 +65,11 @@
 }
 
 .sapUiTabSel .sapUiTabClose {
-	background-image:url(img/tabstrip/tab-close.gif);
+	background-image: url('img/tabstrip/tab-close.gif');
 }
 
 .sapUiTabClose:hover {
-	background-image:url(img/tabstrip/tab-close-hov.gif);
+	background-image: url('img/tabstrip/tab-close-hov.gif');
 }
 
 .sapUiTabIco {
@@ -78,7 +78,7 @@
 }
 
 .sapUiTabBar .sapUiTabMenu {
-	background-image: url(img/tabstrip/tab-menu.png);
+	background-image: url('img/tabstrip/tab-menu.png');
 	width: 16px;
 	height: 16px;
 	margin-right: 1px;
@@ -91,23 +91,24 @@
 .sapUiTabSel:focus,
 .sapUiTab:focus,
 .sapUiTabDsbl:focus {
-  outline: none;
+	outline: none;
 }
 
 .sapUiTabSel,
 .sapUiTab,
 .sapUiTabDsbl {
-  &:focus::before {
-	border: 0.1875rem solid @sapUiContentFocusColor;
-	position: absolute;
-	content: "";
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 1;
-	pointer-events: none;
-  }
+
+	&:focus::before {
+		border: 0.1875rem solid var(--sapContent_FocusColor);
+		position: absolute;
+		content: '';
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		pointer-events: none;
+	}
 }
 
 .sapUiTabBar .sapUiTabStripScrollIcon {
@@ -117,17 +118,17 @@
 }
 
 .sapUiTabDsbl:focus::before {
-  border-color: @sapUiContentDisabledTextColor;
+	border-color: var(--sapContent_DisabledTextColor);
 }
 
 .sapUiTabStripScrollIcon {
-	color: @sapUiContentIconColor;
-	background: @sapUiGroupContentBackground;
-	border: 1px solid @sapUiGroupContentBorderColor;
+	color: var(--sapContent_IconColor);
+	background: var(--sapGroup_ContentBackground);
+	border: 1px solid var(--sapGroup_ContentBorderColor);
 }
 
 .sapUiTabStripScrollIcon:hover {
-	background: @sapUiHighlight;
+	background: var(--sapHighlightColor);
 }
 
 .sapUiTabStripScrollIcon:active {

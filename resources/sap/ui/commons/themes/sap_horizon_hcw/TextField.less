@@ -18,12 +18,12 @@
 
 .sapUiTfBrd.sapUiTfDsbl,
 .sapUiTfBrd.sapUiTfRo {
-	border-color: @sapUiFieldReadOnlyBorderColor;
+	border-color: var(--sapField_ReadOnly_BorderColor);
 }
 
 .sapUiTfBrd.sapUiTfFoc {
-	outline:1px solid @sapUiContentFocusColor;
-	border-color: @sapUiContentFocusColor;
+	outline: 1px solid var(--sapContent_FocusColor);
+	border-color: var(--sapContent_FocusColor);
 }
 
 .sapUiTfErr {
@@ -33,12 +33,12 @@
 }
 
 .sapUiTfErr.sapUiTfStd {
-	border-color: @sapUiFieldBorderColor;
-	background-color: @sapUiHighlight;
+	border-color: var(--sapField_BorderColor);
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiTfErr.sapUiTfFoc {
-	border-color: @sapUiContentFocusColor;
+	border-color: var(--sapContent_FocusColor);
 }
 
 .sapUiTfWarn {
@@ -47,5 +47,5 @@
 }
 
 .sapUiTfWarn.sapUiTfStd {
-	background-color: @sapUiFieldBackground;
+	background-color: var(--sapField_Background);
 }

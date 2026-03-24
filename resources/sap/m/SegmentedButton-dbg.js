@@ -60,7 +60,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -1141,7 +1141,7 @@ function(
 			aButtons = this.removeAllAggregation("buttons"),
 			oClone = Control.prototype.clone.apply(this, arguments);
 
-		const iSelectedItemIndex = aItems.findIndex(function(item) {
+		const iSelectedItemIndex = aItems?.findIndex(function(item) {
 				return item.getId() === sSelectedItemId;
 			});
 

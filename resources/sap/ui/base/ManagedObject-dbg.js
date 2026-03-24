@@ -112,7 +112,7 @@ sap.ui.define([
 	 * });
 	 * </pre>
 	 *
-	 * Note that when setting string values, any curly braces in those values need to be escaped, so they are not
+	 * Note that when setting string values, any curly braces and backslashes in those values need to be escaped, so they are not
 	 * interpreted as binding expressions. Use {@link #escapeSettingsValue} to do so.
 	 *
 	 * <b>Note:</b>
@@ -266,7 +266,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @public
 	 * @alias sap.ui.base.ManagedObject
 	 */
@@ -1399,11 +1399,42 @@ sap.ui.define([
 
 	/**
 	 * Escapes the given value so it can be used in the constructor's settings object.
-	 * Should be used when property values are initialized with static string values which could contain binding characters (curly braces).
+	 *
+	 * Use this method when passing static string values that might contain binding syntax characters.
+	 * Without escaping, curly braces in strings would be misinterpreted as data binding expressions.
+	 *
+	 * <b>Characters that are escaped:</b>
+	 * <ul>
+	 * <li><code>{</code> (opening curly brace) - binding expression start</li>
+	 * <li><code>}</code> (closing curly brace) - binding expression end</li>
+	 * <li><code>\</code> (backslash) - escape character itself</li>
+	 * </ul>
+	 *
+	 * Each of the above characters is prefixed with a backslash, e.g. <code>{foo}</code> becomes <code>\{foo\}</code>.
+	 *
+	 * <b>When to use:</b>
+	 * <ul>
+	 * <li>Static string values containing curly braces that should be displayed literally</li>
+	 * <li>Rendering escaped backslashes (e.g. expecting <code>\\\\</code> to result in <code>\\</code>)</li>
+	 * <li>User input or external data used as property values in constructors</li>
+	 * <li>JSON content that should not be parsed as bindings</li>
+	 * </ul>
+	 *
+	 * Example usage:
+	 * <pre>
+	 * new MyControl({
+	 *    // Without escaping: "{info}" would be interpreted as a binding to the path "info"
+	 *    // With escaping: displays the literal text "{info}"
+	 *    text: ManagedObject.escapeSettingsValue("{info}")
+	 * });
+	 * </pre>
+	 *
+	 * <b>Note:</b> This is only needed when setting values via the constructor or {@link #applySettings}.
+	 * Setter method calls, e.g. <code>setText("{info}")</code> do not interpret binding syntax and thus do not require escaping.
 	 *
 	 * @since 1.52
-	 * @param {any} vValue Value to escape; only needs to be done for string values, but the call will work for all types
-	 * @return {any} The given value, escaped for usage as static property value in the constructor's settings object (or unchanged, if not of type string)
+	 * @param {any} vValue Value to escape; only strings are escaped, other types (e.g. objects) are returned through unchanged. Strings nested in objects must be escaped individually.
+	 * @return {any} The escaped string value, or the original value if not a string
 	 * @static
 	 * @public
 	 */
@@ -2501,9 +2532,19 @@ sap.ui.define([
 	 * Destroys (all) the managed object(s) in the aggregation named <code>sAggregationName</code> and empties the
 	 * aggregation. If the aggregation did contain any object, this ManagedObject is marked as changed.
 	 *
+	 * <b>Note:</b> Destroying an aggregation by calling this method (or indirectly via <code>destroy<i>XYZ</i></code>)
+	 * does not call the named aggregation mutators (<code>set<i>XYZ</i></code> for a 0..1 aggregation,
+	 * <code>remove<i>XYZ</i></code> for a 0..n aggregation) for the aggregated children.
+	 * Controls that implement side effects in those methods therefore must also implement similar
+	 * side effects in their <code>destroy<i>XYZ</i></code> method.
+	 *
+	 * While this is understood as inconvenient, it was decided (February 2026, after a thorough investigation),
+	 * not to change it. Too many existing controls depend on the current behavior, and, even worse, would have
+	 * severe problems with a changed behavior.
+	 *
 	 * <b>Note:</b> This method is a low-level API as described in <a href="#lowlevelapi">the class documentation</a>.
 	 * Applications or frameworks must not use this method to generically destroy all objects in an aggregation.
-	 * Use the concrete method destroy<i>XYZ</i> for aggregation 'XYZ' instead.
+	 * Use the concrete method <code>destroy<i>XYZ</i></code> for aggregation 'XYZ' instead.
 	 *
 	 * @param {string}
 	 *            sAggregationName the name of the aggregation
@@ -2525,20 +2566,17 @@ sap.ui.define([
 			return this;
 		}
 
-		// Deleting the aggregation here before destroying the children is a BUG:
+		// Deleting the aggregation here before destroying the children has implications:
 		//
 		// The destroy() method on the children calls _removeChild() on this instance
 		// to properly remove each child from the bookkeeping by executing the named
-		// removeXYZ() method. But as the aggregation is deleted here already,
+		// setXYZ() or removeXYZ() method. But as the aggregation is deleted here already,
 		// _removeChild() doesn't find the child in the bookkeeping and therefore
-		// refuses to work. As a result, side effects from removeXYZ() are missing.
+		// refuses to work. As a result, side effects from setXYZ()/removeXYZ() are missing.
 		//
-		// The lines below marked with 'FIXME DESTROY' sketch a potential fix, but
-		// that fix has proven to be incompatible for several controls that don't
-		// properly implement removeXYZ(). As this might affect custom controls
-		// as well, the fix has been abandoned.
-		//
-		delete this.mAggregations[sAggregationName]; //FIXME DESTROY: should be removed here
+		// See I7a0202de5c3c3b660c22ba2d4cd1a61f61ac0f49 for a comprehensive, but abandoned
+		// try to change the implementation accordingly.
+		delete this.mAggregations[sAggregationName];
 
 		// maybe there is no aggregation to destroy
 		if (Array.isArray(aChildren) && !aChildren.length) {
@@ -2551,11 +2589,9 @@ sap.ui.define([
 		}
 
 		if (aChildren instanceof ManagedObject) {
-			// FIXME DESTROY: this._removeChild(aChildren, sAggregationName, bSuppressInvalidate); // (optional, done by destroy())
 			aChildren.destroy(bSuppressInvalidate);
 
 			//fire aggregation lifecycle event on current parent as the control is removed, but not inserted to a new parent
-			// FIXME DESTROY: no more need to fire event here when destroy ever should be fixed
 			if (this._observer) {
 				this._observer.aggregationChange(this, sAggregationName, "remove", aChildren);
 			}
@@ -2563,7 +2599,6 @@ sap.ui.define([
 			for (i = aChildren.length - 1; i >= 0; i--) {
 				aChild = aChildren[i];
 				if (aChild) {
-					// FIXME DESTROY: this._removeChild(aChild, sAggregationName, bSuppressInvalidate); // (optional, done by destroy())
 					aChild.destroy(bSuppressInvalidate);
 
 					//fire aggregation lifecycle event on current parent as the control is removed, but not inserted to a new parent
@@ -2573,9 +2608,6 @@ sap.ui.define([
 				}
 			}
 		}
-
-		// FIXME DESTROY: // 'delete' aggregation only now so that _removeChild() can still do its cleanup
-		// FIXME DESTROY: delete this.mAggregations[sAggregationName];
 
 		if (!this.isInvalidateSuppressed()) {
 			this.invalidate();
@@ -3674,9 +3706,14 @@ sap.ui.define([
 	 * @property {int} [length]
 	 *   The amount of entries to be created (may exceed the size limit of the model)
 	 * @property {sap.ui.model.Sorter|sap.ui.model.Sorter[]} [sorter]
-	 *   The initial sort order (optional)
+	 *   The initial sort order
 	 * @property {sap.ui.model.Filter|sap.ui.model.Filter[]} [filters]
-	 *   The predefined filters for this aggregation (optional)
+	 *   The predefined {@link sap.ui.model.FilterType.Application application filters} for this aggregation where
+	 *   filter values are constants.
+	 * @property {sap.ui.model.Filter|sap.ui.model.Filter[]} [boundFilters]
+	 *   The predefined {@link sap.ui.model.FilterType.ApplicationBound bound application filters} for this aggregation.
+	 *   Filter values support binding expressions. The aggregation updates its filters whenever a filter value changes
+	 *   through data binding. Supported since 1.146.0.
 	 * @property {string|function(sap.ui.model.Context):string} [key]
 	 *   Name of the key property or a function getting the context as only parameter to calculate a key
 	 *   for entries. This can be used to improve update behaviour in models, where a key is not already

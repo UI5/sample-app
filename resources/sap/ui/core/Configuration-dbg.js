@@ -41,7 +41,7 @@ sap.ui.define([
 ) {
 	"use strict";
 
-	var oVersion = new Version("1.145.0");
+	var oVersion = new Version("1.146.0");
 	var oFormatSettings;
 
 	// Lazy dependency to core
@@ -666,7 +666,7 @@ sap.ui.define([
 		 * @since 1.13.2
 		 * @private
 		 * @ui5-restricted sap.ui.core.Core, sap.watt, com.sap.webide, sap.ui.fl, sap.ui.rta, sap.ui.comp, SAP Business Application Studio
-		 * @deprecated As of Version 1.120
+		 * @deprecated As of Version 1.120, use {@link module:sap/ui/base/DesignTime.isDesignModeEnabled} instead
 		 */
 		getDesignMode : DesignTime.isDesignModeEnabled,
 
@@ -677,7 +677,7 @@ sap.ui.define([
 		 * @since 1.13.2
 		 * @private
 		 * @ui5-restricted sap.watt, com.sap.webide
-		 * @deprecated As of Version 1.120
+		 * @deprecated As of Version 1.120, use {@link module:sap/ui/base/DesignTime.isControllerCodeDeactivationSuppressed} instead
 		 */
 		getSuppressDeactivationOfControllerCode : DesignTime.isControllerCodeDeactivationSuppressed,
 
@@ -688,7 +688,7 @@ sap.ui.define([
 		 * @since 1.26.4
 		 * @private
 		 * @ui5-restricted sap.watt, com.sap.webide
-		 * @deprecated As of Version 1.120
+		 * @deprecated As of Version 1.120, use {@link module:sap/ui/base/DesignTime.isControllerCodeDeactivated} instead
 		 */
 		getControllerCodeDeactivated : DesignTime.isControllerCodeDeactivated,
 
@@ -743,7 +743,7 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} true if customizing is disabled
 		 * @private
-		 * @ui5-restricted
+		 * @ui5-restricted sap.ca.scfld
 		 * @deprecated As of version 1.120, without a replacement.
 		 */
 		getDisableCustomizing : function() {

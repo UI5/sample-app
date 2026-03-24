@@ -34,7 +34,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -180,8 +180,10 @@ function(
 		switch (this.getInitialFocus()) {
 			case SelectDialogInitialFocus.SearchField:
 				return this._oSearchField;
-			default:
-				return this._oDialog.getContent()[1];
+			default: {
+				const oList = this._oDialog.getContent()[1];
+				return oList?.getSelectedItem?.() || oList?.getItems?.()[0] || oList;
+			}
 		}
 	};
 

@@ -108,7 +108,8 @@ sap.ui.define([], function() {
 			 * Test ControlRenderer
 			 * @private
 			 * @ui5-restricted SAPUI5 Distribution Layer Libraries
-			 * @deprecated As of version 1.120
+			 * @deprecated As of version 1.120, sap.ui.requireSync is deprecated,
+			 *             therefore it's not needed to test that no sync request is sent when control renderer is retrieved.
 			 */
 			ControlRenderer: "ControlRenderer",
 

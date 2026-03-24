@@ -1,17 +1,17 @@
 /* ============================================= */
 /* CSS for control sap.ui.commons/SegmentButton  */
-/* Horizon theme                                 */
+/* Morning Horizon theme                         */
 /* ============================================= */
 
-.sapUiSegmentedButton{
-	font-family: @sapUiDesktopFontFamily;
+.sapUiSegmentedButton {
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
 /*std button styling */
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnStd:hover,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnStd:focus {
-	border-color: darken(@sapUiSegmentedButtonBorderColor, 12); // @sapUiDarkBorder = #bfbfbf
+	border-color: darken(@sapUiSegmentedButtonBorderColor, 12);
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnStd:not(.sapUiSegButtonSelected) {
@@ -40,9 +40,9 @@
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiSegButtonSelected > span.sapUiBtnIco {
 	box-shadow:  none;
 	cursor: default;
-	background-color: @sapUiHighlight;
-	color: @sapUiContentContrastTextColor; // @sapUiTextInverted = #ffffff
-	border-color: darken(@sapUiSegmentedButtonBorderColor, 12); // @sapUiDarkBorder = #bfbfbf
+	background-color: var(--sapHighlightColor);
+	color: var(--sapContent_ContrastTextColor);
+	border-color: darken(@sapUiSegmentedButtonBorderColor, 12);
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnStd.sapUiSegButtonSelected:hover,
@@ -57,23 +57,23 @@
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiSegButtonSelected,
-.sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiSegButtonSelected > span.sapUiBtnIco{
+.sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnDsbl.sapUiSegButtonSelected > span.sapUiBtnIco {
 	background-color: fade(@sapUiHighlight, 25);
-	color: fade(@sapUiContentContrastTextColor, 75); // @sapUiTextInverted = #ffffff
+	color: fade(@sapUiContentContrastTextColor, 75);
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnNorm.sapUiBtnAct:focus {
-	border-color: darken(@sapUiSegmentedButtonBorderColor, 12); // @sapUiDarkBorder = #bfbfbf
+	border-color: darken(@sapUiSegmentedButtonBorderColor, 12);
 }
 
 /* lite button styling */
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnStd {
-	background-color: @sapUiSegmentedButtonBackground; // @sapUiLightestBG = #ffffff
+	background-color: @sapUiSegmentedButtonBackground;
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnStd:hover,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnStd:focus {
-	background-color: @sapUiButtonHoverBackground;
+	background-color: var(--sapButton_Hover_Background);
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnStd.sapUiSegButtonSelected,
@@ -82,8 +82,8 @@
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnStd.sapUiSegButtonSelected > span.sapUiBtnIco,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnAct.sapUiSegButtonSelected > span.sapUiBtnIco,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiSegButtonSelected > span.sapUiBtnIco {
-	background-color: @sapUiHighlight;
-	color: @sapUiContentContrastTextColor; // @sapUiTextInverted = #ffffff
+	background-color: var(--sapHighlightColor);
+	color: var(--sapContent_ContrastTextColor);
 	cursor: default;
 }
 
@@ -101,11 +101,11 @@
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiSegButtonSelected,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnLite.sapUiBtnDsbl.sapUiSegButtonSelected > span.sapUiBtnIco {
 	background-color: fade(@sapUiHighlight, 25);
-	color: fade(@sapUiContentContrastTextColor, 75); // @sapUiTextInverted = #ffffff
+	color: fade(@sapUiContentContrastTextColor, 75);
 }
 
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnStd:focus,
 .sapUiSegmentedButton > span > .sapUiBtnS.sapUiBtnStd.sapUiBtnStdFocus {
-	outline: 1px dotted @sapUiHighlight;
+	outline: 1px dotted var(--sapHighlightColor);
 	outline-offset: -1px;
 }

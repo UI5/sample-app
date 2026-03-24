@@ -1,10 +1,10 @@
 /* ======================================== */
 /* CSS for control sap.ui.commons/CheckBox  */
-/* Horizon theme                            */
+/* Morning Horizon theme                    */
 /* ======================================== */
 
 .sapUiCb {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	line-height: 20px;
 	height: 21px;
@@ -12,13 +12,8 @@
 	position: relative;
 }
 
-.sapUiCb:focus{
-	outline-color: @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
-}
-
-/* TODO remove after the end of support for Internet Explorer */
-html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
-	border-color: @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+.sapUiCb:focus {
+	outline-color: var(--sapContent_FocusColor);
 }
 
 .sapUiCb > input { /* make the real checkbox vanish from the screen */
@@ -29,7 +24,7 @@ html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
 }
 
 .sapUiCb > label { /* render an image as checkbox replacement */
-	background-image: url(img/checkbox.png);
+	background-image: url('img/checkbox.png');
 	background-repeat: no-repeat;
 	background-position: left 1px;
 	padding: 1px 0 2px 22px;
@@ -38,7 +33,6 @@ html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
 .sapUiCb .sapUiCbNoText {
 	padding-left: 15px;
 }
-
 
 .sapUiCbChk > label {
 	background-position: left -29px;
@@ -120,7 +114,7 @@ html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
 .sapUiCbDis > label,
 .sapUiCbDis.sapUiCbWarn.sapUiCbRo > label,
 .sapUiCbDis.sapUiCbErr.sapUiCbRo > label {
-	text-color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	background-position: left -119px;
 }
 
@@ -135,6 +129,6 @@ html[data-sap-ui-browser^="ie"] .sapUiCb:focus:after {
 /* ============================ */
 
 /* GridLayout */
-html[data-sap-ui-browser^="cr"] .sapUiGrid td > .sapUiCb{
+html[data-sap-ui-browser^='cr'] .sapUiGrid td > .sapUiCb {
 	padding-top: 0;
 }

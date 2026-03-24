@@ -32,10 +32,18 @@ sap.ui.define([
 		metadata : {
 			publicMethods : [ "executeOn" ],
 			properties: {
+				/**
+				 * The x scroll position.
+				 * @public
+				 */
 				x: {
 					type: "int",
 					defaultValue: 0
 				},
+				/**
+				 * The y scroll position.
+				 * @public
+				 */
 				y: {
 					type: "int",
 					defaultValue: 0

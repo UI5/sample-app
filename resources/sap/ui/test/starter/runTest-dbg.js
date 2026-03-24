@@ -2694,7 +2694,7 @@
 	/**
 	 * Root namespace for JavaScript functionality provided by SAP SE.
 	 *
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 * @namespace
 	 * @public
 	 * @name sap
@@ -3649,6 +3649,9 @@
 				var sLowerCaseAlias = vMatch ? vMatch[1] + vMatch[2][0] + vMatch[2].slice(1).toLowerCase() : undefined;
 				if (sLowerCaseAlias) {
 					vValue = oWriteableConfig[sLowerCaseAlias] || oConfig[sLowerCaseAlias];
+					if (vValue) {
+						ui5loader._.logger.warning(`Deprecated configuration option '${sLowerCaseAlias.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' given in global configuration. Please use '${sKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' instead.`);
+					}
 				}
 			}
 			if (bFreeze) {
@@ -3724,6 +3727,10 @@
 				var sLowerCaseAlias = vMatch ? vMatch[1] + vMatch[2][0] + vMatch[2].slice(1).toLowerCase() : undefined;
 				if (sLowerCaseAlias) {
 					vValue = oConfig[sLowerCaseAlias];
+					if (vValue) {
+						ui5loader._.logger.warning(`Deprecated configuration option '${sLowerCaseAlias.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase()}' given in bootstrap configuration. Please use '${sKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase()}' instead.`);
+					}
+
 				}
 			}
 			return vValue;
@@ -3864,7 +3871,7 @@
 			 * defaultValue: undefined
 			 * @private
 			 * @ui5-restricted sap.ui.core, sap.ui.fl, sap.ui.integration, sap.ui.export
-			 * @deprecated As of Version 1.120
+			 * @deprecated As of Version 1.120, without replacement as code execution with eval() is not supported anymore due to CSP compliance
 			 */
 			"Code": "code",
 			/**

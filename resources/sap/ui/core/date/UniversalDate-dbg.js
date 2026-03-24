@@ -44,11 +44,11 @@ sap.ui.define([
 	});
 
 	/**
-	 * Delegates this method to the calender specific implementation.
+	 * Delegates this method to the calendar-specific implementation.
 	 *
 	 * @returns {int}
 	 *   The number of milliseconds since January 1, 1970, 00:00:00 UTC based on the Gregorian
-	 *   calendar, for the given calendar specific arguments
+	 *   calendar, for the given calendar-specific arguments
 	 *
 	 * @private
 	 * @ui5-restricted SAPUI5 Distribution Layer Libraries
@@ -140,7 +140,7 @@ sap.ui.define([
 	 * @param {module:sap/base/i18n/date/CalendarType} sCalendarType the type of the used calendar
 	 *
 	 * @returns {function}
-	 *   The class of the given <code>sCalenderType</code>. If <code>sCalenderType</code> is not
+	 *   The class of the given <code>sCalendarType</code>. If <code>sCalendarType</code> is not
 	 *   provided, the class of the configured calendar type is returned.
 	 *
 	 * @private
@@ -155,11 +155,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the day of the month of the embedded date instance according to the configured time
-	 * zone and selected calender.
+	 * zone and selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number representing the day of the month of the embedded date instance according
-	 *   to the configured time zone and selected calender
+	 *   to the configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getDate
@@ -169,11 +169,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the day of the week of the embedded date instance according to the configured time zone and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number representing the day of the week of the embedded date instance according to the configured
-	 *   time zone and selected calender
+	 *   time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getDay
@@ -182,10 +182,10 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Returns the year of the embedded date instance according to the configured time zone and selected calender.
+	 * Returns the year of the embedded date instance according to the configured time zone and selected calendar.
 	 *
 	 * @returns {int}
-	 *   The year of the embedded date instance according to the configured time zone and selected calender
+	 *   The year of the embedded date instance according to the configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getFullYear
@@ -195,11 +195,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the hours of the embedded date instance according to the configured time zone and selected
-	 * calender.
+	 * calendar.
 	 *
 	 * @returns {int}
 	 *   A number representing the hours of the embedded date instance according to the configured time zone
-	 *   and selected calender
+	 *   and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getHours
@@ -209,11 +209,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the milliseconds of the embedded date instance according to the configured time zone
-	 * and selected calender.
+	 * and selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number between 0 and 999 representing the milliseconds of the embedded date instance according to
-	 *   the configured time zone and selected calender
+	 *   the configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getMilliseconds
@@ -222,11 +222,11 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Returns the minutes of the embedded date instance according to the configured time zone and selected calender.
+	 * Returns the minutes of the embedded date instance according to the configured time zone and selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number between 0 and 59 representing the minutes of the embedded date instance according to the
-	 *   configured time zone and selected calender
+	 *   configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getMinutes
@@ -236,10 +236,10 @@ sap.ui.define([
 
 	/**
 	 * Returns the month index of the embedded date instance according to the configured time zone
-	 * and selected calender.
+	 * and selected calendar.
 	 *
 	 * @returns {int}
-	 *   The month index of the embedded date instance according to the configured time zone and selected calender
+	 *   The month index of the embedded date instance according to the configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getMonth
@@ -248,11 +248,11 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Returns the seconds of the embedded date instance according to the configured time zone and selected calender.
+	 * Returns the seconds of the embedded date instance according to the configured time zone and selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number between 0 and 59 representing the seconds of the embedded date instance according to the
-	 *   configured time zone and selected calender
+	 *   configured time zone and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getSeconds
@@ -274,15 +274,15 @@ sap.ui.define([
 
 	/**
 	 * Returns the year of the embedded date instance minus 1900 according to the configured time zone and
-	 * selected calender. In case of the Gregorian calendar the 1900 is subtracted from the year value.
+	 * selected calendar. In case of the Gregorian calendar the 1900 is subtracted from the year value.
 	 *
 	 * @returns {int}
 	 *   The year of the embedded date instance (minus 1900 if the Gregorian calendar is selected)
-	 *   according to the configured time zone and selected calender
+	 *   according to the configured time zone and selected calendar
 	 *
-	 * @deprecated for the Gregorian calendar since version 1.111.0 as it is deprecated in
-	 *   JavaScript Date, it can be used with other calendars. It still is recommended to use
-	 *   {@link #getFullYear} instead, independent on the selected calender
+	 * @deprecated as of version 1.111.0 as it is deprecated in the base JavaScript <code>Date</code> class.
+	 *   Although it can be used with calendars other than the Gregorian calendar, use {@link #getFullYear} instead,
+	 *   regardless of the selected calendar.
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getYear
@@ -305,11 +305,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the day of the month of the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number representing the day of the month of the embedded date instance according
-	 *   to universal time and selected calender
+	 *   to universal time and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getUTCDate
@@ -320,11 +320,11 @@ sap.ui.define([
 	/**
 	 *
 	 * Returns the day of the week of the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @returns {int}
 	 *   A number representing the day of the week of the embedded date instance according to universal
-	 *   time and selected calender
+	 *   time and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getUTCDay
@@ -333,10 +333,10 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Returns the year of the embedded date instance according to universal time and selected calender.
+	 * Returns the year of the embedded date instance according to universal time and selected calendar.
 	 *
 	 * @returns {int}
-	 *   The year of the embedded date instance according to universal time and selected calender
+	 *   The year of the embedded date instance according to universal time and selected calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getUTCFullYear
@@ -384,11 +384,11 @@ sap.ui.define([
 
 	/**
 	 * Returns the month index of the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @returns {int}
 	 *   The month index of the embedded date instance according to universal time and selected
-	 *   calender
+	 *   calendar
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.getUTCMonth
@@ -411,7 +411,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the day of the month for the embedded date instance considering the configured time zone
-	 * and selected calender.
+	 * and selected calendar.
 	 *
 	 * @param {int} iDay
 	 *   An integer representing the new day value
@@ -427,7 +427,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the year, month and day for the embedded date instance considering the configured time
-	 * zone and selected calender.
+	 * zone and selected calendar.
 	 *
 	 * @param {int} yearValue An integer representing the new year value
 	 * @param {int} [monthValue] An integer representing the new month index
@@ -493,7 +493,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the month and day for the embedded date instance considering the configured time zone and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @param {int} monthValue An integer representing the new month index
 	 * @param {int} [dayValue] An integer representing the new day value
@@ -524,7 +524,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the day of the month for the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @param {int} dayValue
 	 *   An integer representing the new day value
@@ -540,7 +540,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the year, month and day for the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @param {int} yearValue An integer representing the new year value
 	 * @param {int} [monthValue] An integer representing the new month index
@@ -606,7 +606,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the month and day for the embedded date instance according to universal time and
-	 * selected calender.
+	 * selected calendar.
 	 *
 	 * @param {int} monthValue An integer representing the new month index
 	 * @param {int} [dateValue] An integer representing the new day value
@@ -637,7 +637,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the year for the embedded date instance considering the configured time zone and the
-	 * selected calender. In case of the Gregorian calendar, 1900 is added to the year value
+	 * selected calendar. In case of the Gregorian calendar, 1900 is added to the year value
 	 *
 	 * @param {int} yearValue
 	 *   An integer representing the new year value (plus 1900 for the Gregorian calendar)
@@ -645,9 +645,9 @@ sap.ui.define([
 	 *   The milliseconds of the new timestamp based on the UNIX epoch, or <code>NaN</code> if the
 	 *   timestamp could not be updated. The new timestamp is a Gregorian timestamp.
 	 *
-	 * @deprecated for the Gregorian calendar since version 1.111.0 as it is deprecated in
-	 *   JavaScript Date, it can be used with other calendars. It still is recommended to use
-	 *   {@link #getFullYear} instead, independent on the selected calender
+	 * @deprecated as of version 1.111.0 as it is deprecated in the base JavaScript <code>Date</code> class.
+	 *   Although it can be used with calendars other than the Gregorian calendar, use {@link #setFullYear} instead,
+	 *   regardless of the selected calendar.
 	 *
 	 * @function
 	 * @name sap.ui.core.date.UniversalDate.prototype.setYear
@@ -1193,16 +1193,16 @@ sap.ui.define([
 	var mEras = {};
 
 	/**
-	 * Returns an index of the era for the given date values in the given calender. For
+	 * Returns an index of the era for the given date values in the given calendar. For
 	 * an index to be returned the date value has to be within the era time period, i.e. the
 	 * timestamp value of the date has to be bigger or equal than the start timestamp of the era
 	 * or smaller than the end of the end period.
 	 *
-	 * @param {string} sCalendarType The given calender type which the eras available for selection
+	 * @param {string} sCalendarType The given calendar type which the eras available for selection
 	 * @param {int} iYear The year value for which the era is looked for
 	 * @param {int} iMonth The month value for which the era is looked for
 	 * @param {int} iDay The date value for which the era is looked for
-	 * @returns {int} The index of the found era for the given date values in the given calender
+	 * @returns {int} The index of the found era for the given date values in the given calendar
 	 *
 	 * @private
 	 * @ui5-restricted SAPUI5 Distribution Layer Libraries
@@ -1229,7 +1229,7 @@ sap.ui.define([
 	/**
 	 * Returns an index of the current era for the embedded date instance.
 	 *
-	 * @param {string} sCalendarType The calender type which defines the available eras to select from
+	 * @param {string} sCalendarType The calendar type which defines the available eras to select from
 	 * @returns {int} The index of the current era of the embedded date instance
 	 *
 	 * @private
@@ -1241,13 +1241,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the start date of the selected era from the given era index, in the given calender type.
+	 * Returns the start date of the selected era from the given era index, in the given calendar type.
 	 *
-	 * @param {string} sCalendarType The calender type from which the era is to be picked
+	 * @param {string} sCalendarType The calendar type from which the era is to be picked
 	 * @param {int} iEra The given era index of the to be selected era
 	 * @returns {object|null}
 	 *   The start date object of the selected era. If no era can be found for the given index the first
-	 *   era of the selected calender is chosen. If the chosen era does not have a start date defined
+	 *   era of the selected calendar is chosen. If the chosen era does not have a start date defined
 	 *   <code>null</code>
 	 *
 	 * @private
@@ -1262,12 +1262,12 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns an array of era for the given calender.
+	 * Returns an array of era for the given calendar.
 	 *
 	 * @param {string} sCalendarType
-	 *   The calender type from which the the locale era data is taken from and the era array is
+	 *   The calendar type from which the the locale era data is taken from and the era array is
 	 *   generated
-	 * @returns {array} An array of all available era in the given calender
+	 * @returns {array} An array of all available era in the given calendar
 	 */
 	function getEras(sCalendarType) {
 		var oLocale = new Locale(Formatting.getLanguageTag()),

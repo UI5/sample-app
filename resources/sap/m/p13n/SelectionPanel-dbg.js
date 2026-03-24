@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -600,6 +600,7 @@ sap.ui.define([
 		//remove the reorder buttons from their current location and hence reset the hover logic
 		this._removeMoveButtons();
 		this._oSelectedItem = null;
+		this._oHoveredItem = null;
 
 		// this is needed for updating the header toolbar of the table
 		this.setShowHeader(this.getShowHeader());

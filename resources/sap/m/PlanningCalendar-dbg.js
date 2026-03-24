@@ -210,7 +210,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.145.0
+	 * @version 1.146.0
 	 *
 	 * @constructor
 	 * @public
@@ -907,6 +907,19 @@ sap.ui.define([
 			}
 		}, false, this);
 		oTable.getStickyFocusOffset = getStickyFocusOffset.bind(this);
+
+		// Override setNavigationItems to exclude the popin column header (.sapMTblItemNav) from keyboard navigation
+		// In PlanningCalendar context, this element serves no interactive purpose and creates a confusing "ghost" tab stop
+		var fnOriginalSetNavigationItems = oTable.setNavigationItems.bind(oTable);
+		oTable.setNavigationItems = function(oItemNavigation) {
+			fnOriginalSetNavigationItems(oItemNavigation);
+			// Remove .sapMTblItemNav elements from item navigation as they are not meaningful in PlanningCalendar
+			var aItemDomRefs = oItemNavigation.getItemDomRefs().filter(function(oDomRef) {
+				return !oDomRef.classList.contains("sapMTblItemNav");
+			});
+			oItemNavigation.setItemDomRefs(aItemDomRefs);
+		};
+
 		this.setAggregation("table", oTable, true);
 
 		this.setStartDate(UI5Date.getInstance());
@@ -1001,7 +1014,6 @@ sap.ui.define([
 	};
 
 	PlanningCalendar.prototype._setProperties = function() {
-		//overriden setters
 		const bMultiSelect = this.getMultipleAppointmentsSelection(),
 			sIconShape = this.getIconShape(),
 			oStartDate = this.getStartDate(),
@@ -1011,6 +1023,9 @@ sap.ui.define([
 			bShowEmptyIntervalHeaders = this.getShowEmptyIntervalHeaders(),
 			sAppointmentsVisualization = this.getAppointmentsVisualization(),
 			oGroupAppointmentsMode = this.getGroupAppointmentsMode(),
+			/**
+			 * @deprecated Since version 1.119.
+			 */
 			bAppointmentsReducedHeight = this.getAppointmentsReducedHeight(),
 			vLegend = this.getLegend();
 		this.getRows().forEach(function (oRow) {
@@ -1027,6 +1042,9 @@ sap.ui.define([
 			oRowTimeline.setShowEmptyIntervalHeaders(bShowEmptyIntervalHeaders);
 			oRowTimeline.setAppointmentsVisualization(sAppointmentsVisualization);
 			oRowTimeline.setGroupAppointmentsMode(oGroupAppointmentsMode);
+			/**
+			 * @deprecated Since version 1.119.
+			 */
 			oRowTimeline.setAppointmentsReducedHeight(bAppointmentsReducedHeight);
 			oRowTimeline.setLegend(vLegend);
 		});
@@ -2078,7 +2096,7 @@ sap.ui.define([
 						oAssociation.addDelegate(MONTH_DELEGATE, oAssociation);
 					}
 					if (!this._oCalendarWeeks) {
-							this._oCalendarWeeks = new WeeksRow(this.getId() + "-CalendarWeeksRow", {
+							this._oCalendarWeeks = new WeeksRow(this.getId() + "-WeekNumbersRow", {
 							startDate: this.getStartDate(),
 							primaryCalendarType: this.getPrimaryCalendarType(),
 							interval: iIntervals,
@@ -2129,7 +2147,7 @@ sap.ui.define([
 					oAssociation.addDelegate(YEAR_PICKER_DELEGATE, oAssociation);
 
 					if (!this._oCalendarWeeks) {
-						this._oCalendarWeeks = new WeeksRow(this.getId() + "-CalendarWeeksRow", {
+						this._oCalendarWeeks = new WeeksRow(this.getId() + "-WeekNumbersRow", {
 							startDate: this.getStartDate(),
 							primaryCalendarType: this.getPrimaryCalendarType(),
 							interval: iIntervals,

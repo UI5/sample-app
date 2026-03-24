@@ -169,7 +169,7 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/unified/calendar/CalendarDate", 'sap/u
 
 			oRm.close("div");
 
-			if (iColumns > 0 && ((i + 1) % iColumns === 0)) {
+			if (iColumns > 0 && (((i + 1) % iColumns === 0) || (i + 1)  === iMonths)) {
 				// end of row
 				oRm.close("div");
 			}

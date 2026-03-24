@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.145.0
+		 * @version 1.146.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -131,6 +131,7 @@ sap.ui.define([
 		this.sChangeReason = oModel.bAutoExpandSelect && !_Helper.isDataAggregation(mParameters)
 			? "AddVirtualContext"
 			: undefined;
+		// Note: this.aContexts[i].iIndex + this.iCreatedContexts === i
 		// BEWARE: #doReplaceWith can insert a context w/ negative index, but w/o #created promise
 		// into aContexts' area of "created contexts"! And via "keep alive" or selection, we may
 		// end up w/ #created promise outside that area!
@@ -217,6 +218,28 @@ sap.ui.define([
 			const bKeptAlive = oContext.isEffectivelyKeptAlive();
 			return bNoCreated ? bKeptAlive && !oContext.isOutOfPlace() : bKeptAlive;
 		}));
+	};
+
+	/**
+	 * Converts the view index of a context to the model index in case there are contexts created at
+	 * the end.
+	 *
+	 * @param {number} iViewIndex - The view index (see {@link #getContexts})
+	 * @returns {number} The corresponding model index inside <code>this.aContexts</code>
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype._getModelIndex = function (iViewIndex) {
+		if (!this.bFirstCreateAtEnd) {
+			return iViewIndex;
+		}
+		if (!this.bLengthFinal) { // created at end, but the read is pending and $count unknown yet
+			return this.aContexts.length - iViewIndex - 1;
+		}
+		return iViewIndex < this.getLength() - this.iCreatedContexts
+			? iViewIndex + this.iCreatedContexts
+			// Note: the created rows are mirrored at the end
+			: this.getLength() - iViewIndex - 1;
 	};
 
 	/**
@@ -745,7 +768,7 @@ sap.ui.define([
 		}
 		// fail when really resetting keep-alive on a non-deleted context which is not in the
 		// collection and there are pending changes
-		if (!bKeepAlive && oContext && oContext.getIndex() === undefined && oContext.isKeepAlive()
+		if (!bKeepAlive && oContext && oContext.iIndex === undefined && oContext.isKeepAlive()
 				&& !oContext.isDeleted() && oContext.hasPendingChanges()) {
 			throw new Error("Not allowed due to pending changes: " + oContext);
 		}
@@ -785,7 +808,7 @@ sap.ui.define([
 
 		if (iCount > 0) {
 			const aContexts = this.aContexts;
-			const iModelIndex = oContext.getModelIndex();
+			const iModelIndex = this.getModelIndex(oContext);
 			aContexts.splice(iModelIndex + 1, iCount).forEach((oContext0) => {
 				if (!oContext0.created()) {
 					this.mPreviousContextsByPath[oContext0.getPath()] = oContext0;
@@ -908,6 +931,11 @@ sap.ui.define([
 	 *     {@link #getKeepAliveContext}.
 	 * </ul>
 	 *
+	 * When using data aggregation without <code>groupLevels</code> and without
+	 * <code>"grandTotal like 1.84"</code> (see {@link #setAggregation}), single entities can be
+	 * created (@experimental as of version 1.146.0, see
+	 * {@link sap.ui.model.odata.v4.Context#isAggregated}).
+	 *
 	 * @param {Object<any>} [oInitialData={}]
 	 *   The initial data for the created entity
 	 * @param {boolean} [bSkipRefresh]
@@ -940,7 +968,9 @@ sap.ui.define([
 	 *   <ul>
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> a relative binding is unresolved,
-	 *     <li> data aggregation is used (see {@link #setAggregation}),
+	 *     <li> data aggregation is used with <code>groupLevels</code> or with
+	 *       <code>"grandTotal like 1.84"</code>,
+	 *     <li> aggregated data instead of a single entity instance is about to be created,
 	 *     <li> entities are created first at the end and then at the start,
 	 *     <li> <code>bAtEnd</code> is <code>true</code> and the binding does not know the final
 	 *       length,
@@ -987,8 +1017,14 @@ sap.ui.define([
 			throw new Error("Binding is unresolved: " + this);
 		}
 		this.checkSuspended();
-		if (_Helper.isDataAggregation(this.mParameters)) {
-			throw new Error("Cannot create in " + this + " when using data aggregation");
+		if (oAggregation?.["grandTotal like 1.84"]) {
+			throw new Error('"grandTotal like 1.84" not supported: ' + this);
+		}
+		if (oAggregation?.groupLevels?.length) {
+			throw new Error("Unsupported for data aggregation with groupLevels: " + this);
+		}
+		if (oAggregation?.$leafLevelAggregated) {
+			throw new Error("Unsupported on aggregated data: " + this);
 		}
 		if (this.isTransient()) {
 			this.checkDeepCreate();
@@ -1010,7 +1046,7 @@ sap.ui.define([
 				throw new Error("Missing $$ownRequest at " + this);
 			}
 			sGroupId = "$inactive." + sGroupId;
-		} else if (!oAggregation) {
+		} else if (!oAggregation?.hierarchyQualifier) {
 			this.iActiveContexts += 1;
 		}
 
@@ -1021,7 +1057,7 @@ sap.ui.define([
 		// clone data to avoid modifications outside the cache
 		// remove any property starting with "@$ui5."
 		oEntityData = _Helper.publicClone(oInitialData, true) || {};
-		if (oAggregation) {
+		if (oAggregation?.hierarchyQualifier) {
 			if (!bSkipRefresh) {
 				throw new Error("Missing bSkipRefresh");
 			}
@@ -1312,7 +1348,7 @@ sap.ui.define([
 		const sPath = oContext.iIndex === undefined
 			// context is not in aContexts -> use the predicate
 			? _Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath())
-			: String(oContext.getModelIndex());
+			: String(this.getModelIndex(oContext));
 
 		this.iDeletedContexts += 1;
 
@@ -1684,7 +1720,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataListBinding.prototype.doReplaceWith = function (oOldContext, oElement, sPredicate) {
-		var iModelIndex = oOldContext.getModelIndex(),
+		var iModelIndex = this.getModelIndex(oOldContext),
 			bNew,
 			fnOnBeforeDestroy = oOldContext.fnOnBeforeDestroy,
 			fnOnBeforeDestroyClone,
@@ -1789,7 +1825,7 @@ sap.ui.define([
 				return this.requestSideEffects(this.getGroupId(), [""]);
 			}
 			if (iCount) {
-				this.insertGap(oContext.getModelIndex(), iCount);
+				this.insertGap(this.getModelIndex(oContext), iCount);
 				if (!bSilent) {
 					this._fireChange({reason : ChangeReason.Change});
 				}
@@ -2418,7 +2454,8 @@ sap.ui.define([
 	 *   </ul>
 	 *
 	 * @param {sap.ui.model.FilterType} [sFilterType=sap.ui.model.FilterType.Application]
-	 *   The filter type to be used
+	 *   The filter type to be used. Since 1.146.0, you may use
+	 *   {@link sap.ui.model.FilterType.ApplicationBound} to replace bound application filters.
 	 * @returns {this}
 	 *   <code>this</code> to facilitate method chaining
 	 * @throws {Error} If
@@ -2459,6 +2496,9 @@ sap.ui.define([
 			throw new Error("Operation mode has to be sap.ui.model.odata.OperationMode.Server");
 		}
 
+		if (sFilterType !== FilterType.Control) {
+			aFilters = this.computeApplicationFilters(aFilters, sFilterType);
+		}
 		if (sFilterType === FilterType.Control
 				? _Helper.deepEqual(aFilters, this.aFilters)
 				: _Helper.deepEqual(aFilters, this.aApplicationFilters)) {
@@ -2923,7 +2963,7 @@ sap.ui.define([
 			aContexts = [];
 			iCount = Math.min(iLength, this.getLength() - iStart);
 			for (i = 0; i < iCount; i += 1) {
-				aContexts[i] = this.aContexts[this.getModelIndex(iStart + i)];
+				aContexts[i] = this.aContexts[this._getModelIndex(iStart + i)];
 			}
 		} else {
 			aContexts = this.aContexts.slice(iStart, iStart + iLength);
@@ -3316,25 +3356,23 @@ sap.ui.define([
 	};
 
 	/**
-	 * Converts the view index of a context to the model index in case there are contexts created at
-	 * the end.
+	 * Returns the model index, which is the context's index in this binding's collection. This
+	 * differs from the view index if entities have been created at the end. Internally such
+	 * contexts still are kept at the start of the collection. For this reason the return value
+	 * changes if a new entity is added via {@link #create} or deleted again.
 	 *
-	 * @param {number} iViewIndex The view index
-	 * @returns {number} The model index
+	 * @param {sap.ui.model.odata.v4.Context} oContext - A context
+	 * @returns {number|undefined}
+	 *   The context's index within <code>this.aContexts</code>. The index is <code>undefined</code>
+	 *   if the context is {@link sap.ui.model.odata.v4.Context#isEffectivelyKeptAlive effectively
+	 *   kept alive}, but not in the collection currently.
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.getModelIndex = function (iViewIndex) {
-		if (!this.bFirstCreateAtEnd) {
-			return iViewIndex;
-		}
-		if (!this.bLengthFinal) { // created at end, but the read is pending and $count unknown yet
-			return this.aContexts.length - iViewIndex - 1;
-		}
-		return iViewIndex < this.getLength() - this.iCreatedContexts
-			? iViewIndex + this.iCreatedContexts
-			// Note: the created rows are mirrored at the end
-			: this.getLength() - iViewIndex - 1;
+	ODataListBinding.prototype.getModelIndex = function (oContext) {
+		return oContext.iIndex === undefined
+			? undefined
+			: oContext.iIndex + this.iCreatedContexts;
 	};
 
 	/**
@@ -3430,6 +3468,29 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.getSelectionCount = function () {
 		return this.getHeaderContext()?.getProperty("$selectionCount");
+	};
+
+	/**
+	 * Returns the view index, which is the context's index as visible through {@link #getContexts}
+	 * or {@link #requestContexts}. This differs from the {@link #getModelIndex model index} if
+	 * entities have been created at the end (internally such contexts still are kept at the start
+	 * of the collection). For this reason the return value changes if a new entity is created or
+	 * deleted again.
+	 *
+	 * @param {sap.ui.model.odata.v4.Context} oContext
+	 *   A context with an index that is not <code>undefined</code>
+	 * @returns {number}
+	 *   The context's view index as observed from the outside
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.getViewIndex = function (oContext) {
+		if (this.bFirstCreateAtEnd) {
+			return oContext.iIndex < 0
+				? (this.bLengthFinal ? this.iMaxLength : 0) - oContext.iIndex - 1
+				: oContext.iIndex;
+		}
+		return oContext.iIndex + this.iCreatedContexts;
 	};
 
 	/**
@@ -3849,12 +3910,12 @@ sap.ui.define([
 
 		return oPromise.then(([iCount, iNewIndex, iCollapseCount]) => {
 			if (iCount > 1) { // Note: skip oChildContext which is treated below
-				this.insertGap(oParentContext.getModelIndex(), iCount - 1);
+				this.insertGap(this.getModelIndex(oParentContext), iCount - 1);
 			}
 			if (iCollapseCount) { // Note: _AC#collapse already done!
 				this.collapse(oChildContext, /*bAll*/false, /*bSilent*/true, iCollapseCount);
 			}
-			const iOldIndex = oChildContext.getModelIndex();
+			const iOldIndex = this.getModelIndex(oChildContext);
 			this.aContexts.splice(iOldIndex, 1);
 			// Note: no need to adjust iMaxLength
 			_Helper.insert(this.aContexts, iNewIndex, oChildContext);
@@ -4196,7 +4257,7 @@ sap.ui.define([
 		return this.withCache(function (oCache, sPath, oBinding) {
 			var bDataRequested = false,
 				bDestroyed = false,
-				iModelIndex = oContext.getModelIndex(),
+				iModelIndex = that.getModelIndex(oContext),
 				sPredicate = _Helper.getRelativePath(sContextPath, that.oHeaderContext.getPath()),
 				aPromises = [];
 
@@ -4225,7 +4286,7 @@ sap.ui.define([
 			 *   exists. In this case the context must not be destroyed.
 			 */
 			function onRemove(bStillAlive) {
-				var iIndex = oContext.getModelIndex(),
+				var iIndex = that.getModelIndex(oContext),
 					i;
 
 				if (oContext.iIndex < 0) {
@@ -4335,7 +4396,7 @@ sap.ui.define([
 				}
 			}
 		} else {
-			iIndex = oContext.getModelIndex(); // Note: MUST not be undefined, or we fail utterly!
+			iIndex = this.getModelIndex(oContext); // MUST not be undefined, or we fail utterly!
 			this.iCreatedContexts -= 1; // Note: affects #getModelIndex!
 			if (!this.iCreatedContexts) {
 				this.bFirstCreateAtEnd = undefined;
@@ -4612,7 +4673,15 @@ sap.ui.define([
 
 		if (_Helper.isDataAggregation(this.mParameters)) {
 			if (bSingle) {
-				throw new Error("Must not request side effects when using data aggregation");
+				if (this.mParameters.$$aggregation.groupLevels.length) {
+					throw new Error("Unsupported for data aggregation with groupLevels: " + this);
+				}
+				if (oContext.isAggregated()) {
+					throw new Error("Unsupported on aggregated data: " + oContext);
+				}
+
+				return this.refreshSingle(oContext, sGroupId, /*bLocked*/false,
+					/*bAllowRemoval*/false, /*bKeepCacheOnError*/true, /*bWithMessages*/false);
 			}
 
 			if (_AggregationHelper.isAffected(this.mParameters.$$aggregation,
@@ -4881,10 +4950,10 @@ sap.ui.define([
 	 *   </ul>
 	 * @param {boolean} [oAggregation.createInPlace]
 	 *   Whether created nodes are shown in place at the position specified by the service
-	 *   (since 1.130.0); only the value <code>true</code> is allowed.
-	 *   Otherwise, created nodes are displayed out of place as the first children of their parent
-	 *   or as the first roots, but not in their usual position as defined by the service and the
-	 *   current sort order.
+	 *   (since 1.130.0), supported only if a <code>hierarchyQualifier</code> is given; only the
+	 *   value <code>true</code> is allowed. Otherwise, created nodes are displayed out of place as
+	 *   the first children of their parent or as the first roots, but not in their usual position
+	 *   as defined by the service and the current sort order.
 	 * @param {number} [oAggregation.expandTo=1]
 	 *   The number (as a positive integer) of different levels initially available without calling
 	 *   {@link sap.ui.model.odata.v4.Context#expand} (since 1.117.0), supported only if a

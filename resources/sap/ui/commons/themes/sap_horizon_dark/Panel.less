@@ -4,22 +4,22 @@
 /* ===================================== */
 
 .sapUiPanel {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	border: none;
 }
 
 .sapUiPanelHdr {
-	color: lighten(@sapUiTextTitle, 6.5); // @sapUiMediumText = #444444
-	background-color: fade(lighten(@sapUiContentForegroundColor, 10), 80); // @sapUiLightestBG = #ffffff
+	color: lighten(@sapUiTextTitle, 6.5);
+	background-color: fade(lighten(@sapUiContentForegroundColor, 10), 80);
 	min-height: 27px;
 	border: none;
-	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
+	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 11.6);
 }
 
 .sapUiPanelHdrEmph {
 	background-color: fade(lighten(@sapUiContentForegroundColor, 10), 80);
-	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
+	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 11.6);
 }
 
 .sapUiPanelTitle {
@@ -32,37 +32,27 @@
 	margin-right: 4px;
 }
 
-.sapUiPanelCollArrow,
-html[data-sap-ui-browser*="ie"] .sapUiPanelCollArrow {
+.sapUiPanelCollArrow {
 	display: none; /* not this one in Platinum */
 }
 
-.sapUiPanelCollIco,
-html[data-sap-ui-browser*="ie"] .sapUiPanelCollIco {
+.sapUiPanelCollIco {
 	/* the 'collapse' button on the right-hand side of the panel header - in open state */
 	display: block;
-	background-image: url(img/panel_container/Minimize.png);
+	background-image: url('img/panel_container/Minimize.png');
 }
 
-.sapUiPanelCollIco:hover,
-html[data-sap-ui-browser*="ie"] .sapUiPanelCollIco:hover {
-	background-color: @sapUiButtonHoverBackground;
-/*	background-image: url(img/panel_container/Minimize_hover.png); hover background now lighter for BlueCrystal */
+.sapUiPanelCollIco:hover {
+	background-color: var(--sapButton_Hover_Background);
 }
 
 .sapUiPanelCollIco:focus {
-	outline: 1px dashed @sapUiHighlight;
+	outline: 1px dashed var(--sapHighlightColor);
 }
 
-.sapUiPanelColl .sapUiPanelCollIco,
-html[data-sap-ui-browser*="ie"] .sapUiPanelColl .sapUiPanelCollIco {
+.sapUiPanelColl .sapUiPanelCollIco {
 	/* the 'collapse' button on the right-hand side of the panel header - in collapsed state */
-	background-image: url(img/panel_container/Maximize.png);
-}
-
-.sapUiPanelColl .sapUiPanelCollIco:hover,
-html[data-sap-ui-browser*="ie"] .sapUiPanelColl .sapUiPanelCollIco:hover {
-/*	background-image: url(img/panel_container/Maximize_hover.png); hover background now lighter for BlueCrystal */
+	background-image: url('img/panel_container/Maximize.png');
 }
 
 .sapUiPanelCont {
@@ -70,20 +60,9 @@ html[data-sap-ui-browser*="ie"] .sapUiPanelColl .sapUiPanelCollIco:hover {
 }
 
 .sapUiPanelAreaDesignFill > .sapUiPanelCont {
-	background-color: fade(lighten(@sapUiContentForegroundColor, 10), 80); // @sapUiLightestBG = #ffffff
+	background-color: fade(lighten(@sapUiContentForegroundColor, 10), 80);
 }
 
 .sapUiPanelHeightSet > .sapUiPanelCont {
 	top: 27px;
-}
-
-html[data-sap-ui-browser*="ie"] {
-	.sapUiPanelTitle {
-		height: 26px;
-		line-height: 26px;
-	}
-
-	.sapUiPanelHeightSet > .sapUiPanelCont {
-		top: 28px;
-	}
 }

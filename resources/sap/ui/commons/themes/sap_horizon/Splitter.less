@@ -1,47 +1,47 @@
 /* ======================================== */
 /* CSS for control sap.ui.commons/Splitter  */
-/* Horizon theme                            */
+/* Morning Horizon theme                    */
 /* ======================================== */
 
 .sapUiVerticalSplitterBar {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
-	background-image: url(img/splitter/splitter_vert_grip.gif);
+	background-color: lighten(@sapUiContentForegroundColor, 5);
+	background-image: url('img/splitter/splitter_vert_grip.gif');
 }
 
 .sapUiHorizontalSplitterBar {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
-	background-image: url(img/splitter/splitter_horiz_grip.gif);
+	background-color: lighten(@sapUiContentForegroundColor, 5);
+	background-image: url('img/splitter/splitter_horiz_grip.gif');
 }
 
 .sapUiVSplitterSecondPane:focus,
 .sapUiHSplitterSecondPane:focus,
 .sapUiVSplitterFirstPane:focus,
 .sapUiHSplitterFirstPane:focus {
-	outline: @sapUiHighlight dashed 1px;
+	outline: var(--sapHighlightColor) dashed 1px;
 }
 
-.sapUiVerticalSplitterBar:hover{
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
+.sapUiVerticalSplitterBar:hover {
+	background-color: lighten(@sapUiContentForegroundColor, 5);
 	cursor: e-resize;
 }
 
-.sapUiHorizontalSplitterBar:hover{
-	background-color: lighten(@sapUiContentForegroundColor, 5); // @sapUiExtraLightBG = #f2f2f2
+.sapUiHorizontalSplitterBar:hover {
+	background-color: lighten(@sapUiContentForegroundColor, 5);
 	cursor: n-resize;
 }
 
-.sapUiVSBGhost{
+.sapUiVSBGhost {
 	background-image: none;
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 	cursor: e-resize;
 }
 
-.sapUiHSBGhost{
+.sapUiHSBGhost {
 	background-image: none;
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 	cursor: n-resize;
 }

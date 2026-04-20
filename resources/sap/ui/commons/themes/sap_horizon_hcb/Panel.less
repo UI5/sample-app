@@ -23,7 +23,7 @@
 }
 
 .sapUiPanelHdr > a:focus {
-	outline-color: @sapUiBaseText;
+	outline-color: var(--sapTextColor);
 }
 
 .sapUiPanelTitle.sapUiTvH4,
@@ -33,8 +33,9 @@
 
 .sapUiPanelCollArrow {
 	/* the 'collapse' icon on the left-hand side of the panel header */
-	background-image: url(img/panel/expanded.gif);
+	background-image: url('img/panel/expanded.gif');
 }
+
 .sapUiPanelColl .sapUiPanelCollArrow {
-	background-image: url(img/panel/collapsed.gif);
+	background-image: url('img/panel/collapsed.gif');
 }

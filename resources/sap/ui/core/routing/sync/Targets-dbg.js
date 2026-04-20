@@ -9,9 +9,8 @@ sap.ui.define(["sap/base/Log"], function(Log) {
 	/**
 	 * Provide methods for sap.ui.core.routing.Targets in sync mode
 	 * @private
-	 * @experimental
-	 * @since 1.33
-	 * @deprecated Since 1.90
+	 * @ui5-experimental-since 1.33
+	 * @deprecated as of 1.90
 	 */
 	return {
 

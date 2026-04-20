@@ -41,7 +41,7 @@ sap.ui.define([
 	 * The WeeksRow works with UI5Date or JavaScript Date objects for its API, but internally uses CalendarDate objects for calculations.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @private
@@ -76,6 +76,12 @@ sap.ui.define([
 				 * views should be used instead.
 				 */
 				viewKey : {type : "string", group : "Appearance", defaultValue : CalendarIntervalType.Hour},
+
+				/**
+				 * Defines the interval type that is used to choose the week number rendering mode.
+				 * If not set, the <code>viewKey</code> is used for backward compatibility.
+				 */
+				intervalType : {type : "sap.ui.unified.CalendarIntervalType", group : "Appearance", defaultValue : null},
 
 				/**
 				 * Determines if the week numbers are displayed.

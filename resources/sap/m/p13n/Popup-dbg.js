@@ -60,7 +60,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @public
 	 * @since 1.97
@@ -441,12 +441,9 @@ sap.ui.define([
 				}
 			});
 
-			const sMessage = Device.os.macintosh ?
-				this.oResourceBundle.getText("p13n.SHORTCUT_OK_MAC") :
-				this.oResourceBundle.getText("p13n.SHORTCUT_OK");
 			ShortcutHintsMixin.addConfig(this._oConfirmButton, {
 				addAccessibilityLabel: true,
-				message: sMessage
+				shortcut: "Ctrl+Enter" // ShortcutHintMixin takes care of normalizing and localizing
 			});
 		}
 		return this._oConfirmButton;
@@ -463,7 +460,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oCancelButton, {
 				addAccessibilityLabel: true,
-				message: this.oResourceBundle.getText("p13n.SHORTCUT_CANCEL")
+				shortcut: "Escape" // Keyboard.Shortcut.Escape, see sap/ui/core/messagebundle.properties
 			});
 		}
 		return this._oCancelButton;

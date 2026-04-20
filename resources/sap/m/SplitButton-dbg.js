@@ -48,7 +48,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 *
 		 * @constructor
 		 * @private

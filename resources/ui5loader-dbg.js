@@ -768,6 +768,10 @@
 
 	function getMappedName(sResourceName, sRequestingResourceName) {
 
+		if (decodeURI(sResourceName) !== sResourceName) {
+			throw new TypeError(`URL encoded module IDs are not supported: '${sResourceName}'`);
+		}
+
 		const mMap = findMapForContext(sRequestingResourceName);
 
 		// resolve relative names
@@ -2692,7 +2696,7 @@
 	/**
 	 * Root namespace for JavaScript functionality provided by SAP SE.
 	 *
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @namespace
 	 * @public
 	 * @name sap

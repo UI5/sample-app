@@ -14,50 +14,50 @@
 
 .sapUiRoadMapStepAdd1,
 .sapUiRoadMapStepAdd2 {
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiRoadMapStepBox{
-	background-color: @sapUiGroupContentBackground;
-	border: 1px solid @sapUiContentForegroundBorderColor;
+	background-color: var(--sapGroup_ContentBackground);
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiRoadMapStepBox:focus {
-	outline: 1px solid @sapUiContentFocusColor;
+	outline: 1px solid var(--sapContent_FocusColor);
 }
 
 .sapUiRoadMapSelected > .sapUiRoadMapStepBox {
-	background-color: @sapUiHighlight;
-	border: 1px solid @sapUiContentForegroundBorderColor;
+	background-color: var(--sapHighlightColor);
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiRoadMapDisabled > .sapUiRoadMapStepBox {
-	background-color: @sapUiFieldReadOnlyBackground;
+	background-color: var(--sapField_ReadOnly_Background);
 	border: 1px solid @sapUiButtonDisabledBorderColor;
 }
 
 .sapUiRoadMapDisabled > .sapUiRoadMapStepBox:focus {
-	border: 1px solid @sapUiContentFocusColor;
+	border: 1px solid var(--sapContent_FocusColor);
 }
 
 .sapUiRoadMapTitle {
 	height: 28px; /*double line-height*/
 	font-size: 11px;
-	font-family: @sapUiFontFamily;
+	font-family: var(--sapFontFamily);
 }
 
 .sapUiRoadMapStepIco {
 	display: inline;
 	position: absolute;
-	bottom: 0px;
+	bottom: 0;
 	left: 3px;
 	height: 16px;
 	width: 16px;
-	background-image: url("img/roadmap/roundtrip.gif");
+	background-image: url('img/roadmap/roundtrip.gif');
 }
 
 .sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
-	background-image: url("img/roadmap/roundtrip_dsbl.gif");
+	background-image: url('img/roadmap/roundtrip_dsbl.gif');
 }
 
 .sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
@@ -65,42 +65,42 @@
 	left: auto;
 	height: 12px;
 	width: 12px;
-	background-image: url("img/roadmap/roundtrip_start.gif");
+	background-image: url('img/roadmap/roundtrip_start.gif');
 }
 
 .sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
-	background-image: url("img/roadmap/roundtrip_start_dsbl.gif");
+	background-image: url('img/roadmap/roundtrip_start_dsbl.gif');
 }
 
 .sapUiRoadMapStepEnd.sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
 	left: 2px;
-	background-image: url("img/roadmap/roundtrip_end.gif");
+	background-image: url('img/roadmap/roundtrip_end.gif');
 }
 
 .sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
-	background-image: url("img/roadmap/roundtrip_end_dsbl.gif");
+	background-image: url('img/roadmap/roundtrip_end_dsbl.gif');
 }
 
 /* Delimiter Styles */
 .sapUiRoadMapStartScroll {
-	background-image: url("img/roadmap/morebefore.gif");
+	background-image: url('img/roadmap/morebefore.gif');
 }
 
 .sapUiRoadMapStartFixed {
-	background-image: url("img/roadmap/startpoint.gif");
+	background-image: url('img/roadmap/startpoint.gif');
 }
 
 .sapUiRoadMapEndScroll {
-	background-image: url("img/roadmap/moreafter.gif");
+	background-image: url('img/roadmap/moreafter.gif');
 }
 
 .sapUiRoadMapEndFixed {
-	background-image: url("img/roadmap/endpoint.gif");
+	background-image: url('img/roadmap/endpoint.gif');
 }
 
-.sapUiRoadMapStartScroll:after,
-.sapUiRoadMapStartFixed:after,
-.sapUiRoadMapEndScroll:after,
-.sapUiRoadMapEndFixed:after {
-	content: "";
+.sapUiRoadMapStartScroll::after,
+.sapUiRoadMapStartFixed::after,
+.sapUiRoadMapEndScroll::after,
+.sapUiRoadMapEndFixed::after {
+	content: '';
 }

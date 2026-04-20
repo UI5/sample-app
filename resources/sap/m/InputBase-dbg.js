@@ -80,7 +80,7 @@ function(
 	 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -555,7 +555,10 @@ function(
 	 * @private
 	 */
 	InputBase.prototype.onfocusout = function(oEvent) {
-		this.removeStyleClass("sapMFocus");
+		// Keep the focus class if focus moves to an element within the control (e.g., clear icon, value help icon)
+		if (!containsOrEquals(this.getDomRef(), oEvent.relatedTarget)) {
+			this.removeStyleClass("sapMFocus");
+		}
 		// Don't close the ValueStateMessage on focusout if it contains sap.m.FormattedText, it can contain links
 		if (!this._bClickOnValueStateLink(oEvent)) {
 			this.closeValueStateMessage();

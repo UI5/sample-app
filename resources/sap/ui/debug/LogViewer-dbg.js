@@ -50,7 +50,7 @@ sap.ui.define('sap/ui/debug/LogViewer', function() {
 	};
 
 	LogViewer.prototype.clear = function() {
-		this.oDomNode.innerHTML = "";
+		this.oDomNode.replaceChildren();
 	};
 
 	/**

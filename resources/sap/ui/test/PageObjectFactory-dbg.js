@@ -172,7 +172,7 @@ sap.ui.define([
 
 		function _getViewData(mPageObject) {
 			var mView = {};
-			["viewName", "viewId"].forEach(function (sProp) {
+			["viewName", "viewId", "viewNamespace"].forEach(function (sProp) {
 				if (mPageObject[sProp]) {
 					mView[sProp] = mPageObject[sProp];
 				}

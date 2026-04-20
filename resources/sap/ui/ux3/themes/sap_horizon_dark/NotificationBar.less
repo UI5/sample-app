@@ -4,21 +4,21 @@
 /* =========================================== */
 
 .sapUiNotificationBar {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	border-radius: 0;
 	border-top: 1px solid @sapUiNotificationBarBorder;
 }
 
 .sapUiNotifierCallout {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	padding: 0 4px;
 	border-radius: 2px;
 }
 
 .sapUiNotifierTitle {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	padding-left: 4px;
 }
@@ -30,15 +30,13 @@
 }
 
 .sapUiNotifierMessageCount.sapUiMessage.sapUiMessageSuccess {
-  background-color: @sapUiPositiveElement;
+	background-color: var(--sapPositiveElementColor);
 }
 
 /* Workaround: border of callout should be "border: 1px solid @sapUiNotificationBarBorder;" but arrow positioning wrong */
-
 .sapUiNotifierCallout {
 	padding: 0;
 }
-
 
 .sapUiNotifierCallout > .sapUiCltBaseCont.sapUiCltCont {
 	min-height: 30px;
@@ -47,7 +45,6 @@
 }
 
 .sapUiNotifier .sapUiIcon {
-	color: darken(@sapUiContentContrastIconColor, 5); // @sapUiExtraLightBG = #f2f2f2
+	color: darken(@sapUiContentContrastIconColor, 5);
 }
-
 /* Workaround end */

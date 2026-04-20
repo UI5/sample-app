@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -454,8 +454,10 @@ sap.ui.define([
 			const oSelectedFilter = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
 			aFilter.push(oSelectedFilter);
 		} else if (bHideRedundant) {
+			const oSelectedFilter = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
 			const oRedundantFilter = new Filter(this.REDUNDANT_ITEMS_ATTRIBUTE, "NE", true);
-			aFilter.push(oRedundantFilter);
+			const oFilters = new Filter({filters: [oSelectedFilter, oRedundantFilter], and: false});
+			aFilter.push(oFilters);
 		}
 
 		if (sSearch) {

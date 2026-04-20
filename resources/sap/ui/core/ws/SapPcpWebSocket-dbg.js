@@ -21,7 +21,7 @@ sap.ui.define(['./WebSocket', "sap/base/Log"],
 	 * @class WebSocket class implementing the pcp-protocol.
 	 * @extends sap.ui.core.ws.WebSocket
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @alias sap.ui.core.ws.SapPcpWebSocket
 	 */
 	var SapPcpWebSocket = WebSocket.extend("sap.ui.core.ws.SapPcpWebSocket", /** @lends sap.ui.core.ws.SapPcpWebSocket.prototype */ {
@@ -71,9 +71,7 @@ sap.ui.define(['./WebSocket', "sap/base/Log"],
 
 		/**
 		 * Protocol v10.pcp.sap.com
-		 * What's wrong here?
 		 * @public
-		 * @name sap.ui.core.ws.SapPcpWebSocket.SUPPORTED_PROTOCOLS.v10
 		 */
 		v10 : "v10.pcp.sap.com"
 

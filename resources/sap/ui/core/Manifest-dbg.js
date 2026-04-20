@@ -167,7 +167,7 @@ sap.ui.define([
 	 * @class The Manifest class.
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @alias sap.ui.core.Manifest
 	 * @since 1.33.0
 	 */
@@ -237,6 +237,8 @@ sap.ui.define([
 		 * @param {boolean} bAsync true, if the ResourceBundle will be loaded async
 		 * @param {string[]} [aI18nProperties] The array of manifest temnplate strings to replace (if processed already processed from outside this function)
 		 * @return {Promise|undefined} when using the API async it will return a Promise which resolves when the texts have been replaced
+		 * @private
+		 * @ui5-restricted sap.ui.core, sap.ushell
 		 */
 		_processI18n: function(bAsync, aI18nProperties) {
 

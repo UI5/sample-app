@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -969,8 +969,9 @@ sap.ui.define([
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> a relative binding is unresolved,
 	 *     <li> data aggregation is used with <code>groupLevels</code> or with
-	 *       <code>"grandTotal like 1.84"</code>,
+	 *       <code>"grandTotal like 1.84"</code> or without a grand total,
 	 *     <li> aggregated data instead of a single entity instance is about to be created,
+	 *     <li> "@$ui5.node.parent" is given without a recursive hierarchy,
 	 *     <li> entities are created first at the end and then at the start,
 	 *     <li> <code>bAtEnd</code> is <code>true</code> and the binding does not know the final
 	 *       length,
@@ -1026,6 +1027,14 @@ sap.ui.define([
 		if (oAggregation?.$leafLevelAggregated) {
 			throw new Error("Unsupported on aggregated data: " + this);
 		}
+		if (_Helper.isDataAggregation(this.mParameters)) {
+			if (!_AggregationHelper.hasGrandTotal(oAggregation.aggregate)) {
+				throw new Error("No use for data aggregation: " + this);
+			}
+			if (oInitialData && "@$ui5.node.parent" in oInitialData) {
+				throw new Error('"@$ui5.node.parent" not supported: ' + this);
+			}
+		}
 		if (this.isTransient()) {
 			this.checkDeepCreate();
 			if (bInactive) {
@@ -1048,6 +1057,7 @@ sap.ui.define([
 			sGroupId = "$inactive." + sGroupId;
 		} else if (!oAggregation?.hierarchyQualifier) {
 			this.iActiveContexts += 1;
+			this.setOutdated();
 		}
 
 		if (this.bFirstCreateAtEnd === undefined) {
@@ -1275,7 +1285,10 @@ sap.ui.define([
 		this.destroyPreviousContextsLater(Object.keys(this.mPreviousContextsByPath));
 		if (iCount !== undefined) { // server count is available or "non-empty short read"
 			this.bLengthFinal = true;
-			this.iMaxLength = iCount - this.iActiveContexts;
+			const iClientCount = this.oCache instanceof _AggregationCache
+				? this.iCreatedContexts // Note: _AC's $count includes inactive ones
+				: this.iActiveContexts;
+			this.iMaxLength = iCount - iClientCount;
 			shrinkContexts();
 		} else {
 			if (!aResults.length) { // "empty short read"
@@ -1374,6 +1387,7 @@ sap.ui.define([
 					if (bCreated) {
 						that.iCreatedContexts += iOffset;
 						that.iActiveContexts += iOffset;
+						// don't set outdated flags in case of a cancelled deletion
 					} else {
 						// iMaxLength is the number of server rows w/o the created entities
 						that.iMaxLength += iOffset; // this doesn't change Infinity
@@ -1770,7 +1784,13 @@ sap.ui.define([
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#doSetProperty
 	 */
-	ODataListBinding.prototype.doSetProperty = function () {};
+	ODataListBinding.prototype.doSetProperty = function (sPath/*, ...*/) {
+		// entities with transient predicates are either inactive, in that case the outdated flags
+		// must not be set, or the outdated flags have been set already while creating the entity
+		if (!sPath.startsWith("($uid=")) {
+			this.setOutdated();
+		}
+	};
 
 	/**
 	 * @override
@@ -1901,6 +1921,20 @@ sap.ui.define([
 
 			if (oResult) {
 				oResult.$checkStillValid?.();
+				// Reset the outdated flag after the first read after #reset has been called;
+				// after #reset the length is not final and aContexts contains only created contexts
+				if (!that.bLengthFinal && that.aContexts.length === that.iCreatedContexts
+						&& that.oHeaderContext.isOutdated() !== undefined) {
+					if (that.iActiveContexts > 0) {
+						// some persisted entries are still in the creation area, so the grand total
+						// may still be outdated
+						that.setOutdated();
+					} else {
+						// entries and grand total are in sync again
+						that.oHeaderContext.setOutdated(false);
+					}
+				}
+
 				return that.createContexts(iStart, oResult.value);
 			}
 			// return undefined;
@@ -2573,7 +2607,7 @@ sap.ui.define([
 	ODataListBinding.prototype.fireCreateActivate = function (oContext) {
 		if (this.fireEvent("createActivate", {context : oContext}, true)) {
 			this.iActiveContexts += 1;
-
+			this.setOutdated();
 			return true;
 		}
 
@@ -2732,6 +2766,7 @@ sap.ui.define([
 		// createAndSetCache copies them to the cache later
 		this.mLateQueryOptions = _Helper.clone(mQueryOptions);
 		_Helper.aggregateExpandSelect(this.mLateQueryOptions, oBinding.mLateQueryOptions);
+		this.mCanUseCachePromiseByChildPath = {};
 		this.mPreviousContextsByPath = oBinding.mPreviousContextsByPath;
 		Object.values(this.mPreviousContextsByPath).forEach(function (oContext) {
 			oContext.oBinding = that;
@@ -2867,7 +2902,10 @@ sap.ui.define([
 		}
 
 		if (sChangeReason === "RemoveVirtualContext"
-				|| (this.oContext && this.oContext.iIndex === Context.VIRTUAL)) {
+				|| (this.oContext && this.oContext.iIndex === Context.VIRTUAL)
+				// ignore fixed bottom row w/ grand total temporarily
+				|| !this.bLengthFinal && iStart > 0 && iLength === 1 && !iMaximumPrefetchSize
+					&& iStart === this.getLength() - 1) {
 			return [];
 		}
 
@@ -3007,6 +3045,7 @@ sap.ui.define([
 	 * @returns {number|undefined}
 	 *   The count of elements (leaves, nodes) or <code>undefined</code> if the count or the header
 	 *   context is not available.
+	 * @throws {Error} If the binding's root binding is suspended
 	 *
 	 * @public
 	 * @since 1.91.0
@@ -3219,14 +3258,16 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the header context which allows binding to <code>$count</code> or
-	 * <code>@$ui5.context.isSelected</code>.
+	 * Returns the header context which allows binding to <code>$count</code>,
+	 * <code>@$ui5.context.isOutdated</code>, or <code>@$ui5.context.isSelected</code>.
 	 *
 	 * @returns {sap.ui.model.odata.v4.Context|null}
 	 *   The header context or <code>null</code> if the binding is relative and has no context
 	 *
 	 * @public
 	 * @see #getCount
+	 * @see sap.ui.model.odata.v4.Context#isOutdated
+	 * @see sap.ui.model.odata.v4.Context#isSelected
 	 * @since 1.45.0
 	 */
 	ODataListBinding.prototype.getHeaderContext = function () {
@@ -3744,7 +3785,16 @@ sap.ui.define([
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#isUnchangedParameter
 	 */
-	ODataListBinding.prototype.isUnchangedParameter = function (sName, vOtherValue) {
+	// * @param {string[]} [aExceptions=[]]
+	// *   Properties of $$aggregation to be ignored
+	ODataListBinding.prototype.isUnchangedParameter = function (sName, vOtherValue, aExceptions) {
+		function ignoreExceptions(oClone) {
+			if (aExceptions) {
+				aExceptions.forEach((sProperty) => delete oClone[sProperty]);
+			}
+			return oClone;
+		}
+
 		if (sName === "$$aggregation") {
 			if (!vOtherValue) {
 				return this.mParameters.$$aggregation === vOtherValue;
@@ -3756,8 +3806,8 @@ sap.ui.define([
 			_AggregationHelper.buildApply(vOtherValue);
 
 			return _Helper.deepEqual(
-				_Helper.cloneNo$(this.mParameters.$$aggregation),
-				_Helper.cloneNo$(vOtherValue)
+				ignoreExceptions(_Helper.cloneNo$(this.mParameters.$$aggregation)),
+				ignoreExceptions(_Helper.cloneNo$(vOtherValue))
 			);
 		}
 
@@ -4328,6 +4378,7 @@ sap.ui.define([
 				throw new Error("Cannot refresh. Hint: Side-effects refresh in parallel? "
 					+ oContext);
 			}
+			that.setOutdated();
 			const oGroupLock = that.lockGroup(sGroupId, bLocked);
 			aPromises.push(
 				(bAllowRemoval
@@ -4387,7 +4438,7 @@ sap.ui.define([
 	ODataListBinding.prototype.removeCreated = function (oContext) {
 		var iIndex, i;
 
-		if (this.mParameters.$$aggregation) {
+		if (this.mParameters.$$aggregation?.hierarchyQualifier) {
 			this.iMaxLength -= 1;
 			iIndex = this.aContexts.indexOf(oContext);
 			for (i = this.aContexts.length - 1; i > iIndex; i -= 1) {
@@ -4672,24 +4723,20 @@ sap.ui.define([
 		}
 
 		if (_Helper.isDataAggregation(this.mParameters)) {
-			if (bSingle) {
-				if (this.mParameters.$$aggregation.groupLevels.length) {
-					throw new Error("Unsupported for data aggregation with groupLevels: " + this);
-				}
-				if (oContext.isAggregated()) {
-					throw new Error("Unsupported on aggregated data: " + oContext);
-				}
-
-				return this.refreshSingle(oContext, sGroupId, /*bLocked*/false,
-					/*bAllowRemoval*/false, /*bKeepCacheOnError*/true, /*bWithMessages*/false);
+			if (!bSingle) {
+				return _AggregationHelper.isAffected(this.mParameters.$$aggregation,
+						this.aFilters.concat(this.aApplicationFilters), aPaths)
+					? this.refreshInternal("", sGroupId, false, true)
+					: SyncPromise.resolve();
 			}
 
-			if (_AggregationHelper.isAffected(this.mParameters.$$aggregation,
-					this.aFilters.concat(this.aApplicationFilters), aPaths)) {
-				return this.refreshInternal("", sGroupId, false, true);
+			if (this.mParameters.$$aggregation.groupLevels.length) {
+				throw new Error("Unsupported for data aggregation with groupLevels: " + this);
 			}
-
-			return SyncPromise.resolve();
+			if (oContext.isAggregated()) {
+				throw new Error("Unsupported on aggregated data: " + oContext);
+			}
+			// fall through
 		}
 
 		if (!bSingle && this.oCache && this.oCache.isDeletingInOtherGroup(sGroupId)) {
@@ -4709,6 +4756,7 @@ sap.ui.define([
 			aPredicates
 				= _Helper.getPredicates(bSingle ? [oContext] : this.keepOnlyVisibleContexts());
 			if (aPredicates) {
+				that.setOutdated();
 				aPromises = this.oCache
 					? [this.oCache.requestSideEffects(this.lockGroup(sGroupId), aPaths, aPredicates,
 						bSingle, /*bWithMessages*/bSingle)]
@@ -4721,8 +4769,7 @@ sap.ui.define([
 			}
 		}
 		if (bSingle) {
-			oModel.withUnresolvedBindings("removeCachesAndMessages",
-				oContext.getPath().slice(1));
+			oModel.withUnresolvedBindings("removeCachesAndMessages", oContext.getPath().slice(1));
 
 			return this.refreshSingle(oContext, sGroupId, /*bLocked*/false, /*bAllowRemoval*/false,
 				/*bKeepCacheOnError*/true, /*bWithMessages*/true);
@@ -4759,6 +4806,7 @@ sap.ui.define([
 			that = this;
 
 		if (bDrop === true) { // drop 'em all
+			// the outdated flags are reset/set after the first read, see #fetchContexts
 			this.iActiveContexts = 0;
 			this.iCreatedContexts = 0;
 		}
@@ -4843,6 +4891,8 @@ sap.ui.define([
 				that.iCreatedContexts += 1;
 				if (!oElement["@$ui5.context.isInactive"]) {
 					that.iActiveContexts += 1;
+					// this function is called after #reset, the outdated flags are reset/set after
+					// the first read, see #fetchContexts
 				}
 			});
 		}).catch(this.oModel.getReporter());
@@ -5032,7 +5082,8 @@ sap.ui.define([
 	 *     <li> the binding has a {@link sap.ui.model.odata.v4.Context#isKeepAlive kept-alive}
 	 *       context when switching the use case of data aggregation (recursive hierarchy, pure data
 	 *       aggregation, or none at all),
-	 *     <li> there are pending changes (unless the aggregation is unchanged),
+	 *     <li> there are pending changes (unless the aggregation is unchanged), including created
+	 *       contexts (since 1.147.0) unless only <code>search</code> is changed,
 	 *     <li> a recursive hierarchy is requested, but the model does not use the
 	 *       <code>autoExpandSelect</code> parameter,
 	 *     <li> the binding is part of a {@link #create deep create} because it is relative to a
@@ -5087,7 +5138,9 @@ sap.ui.define([
 		if (this.hasFilterNone()) {
 			throw new Error("Cannot combine Filter.NONE with $$aggregation");
 		}
-		if (this.hasPendingChanges()) {
+		if (this.iCreatedContexts
+				&& !this.isUnchangedParameter("$$aggregation", oAggregation, ["search"])
+			|| this.hasPendingChanges()) {
 			throw new Error("Cannot set $$aggregation due to pending changes");
 		}
 		const bOldUseCase = useCase(this.mParameters.$$aggregation);
@@ -5176,6 +5229,18 @@ sap.ui.define([
 				// remember context even if no "change" fired
 				this.oContext = oContext;
 			}
+		}
+	};
+
+	/**
+	 * Sets the outdated flags at the grand total and the header contexts.
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.setOutdated = function () {
+		if (_Helper.isDataAggregation(this.mParameters)) {
+			this.oCache.setGrandTotalOutdated?.(true);
+			this.oHeaderContext.setOutdated(true);
 		}
 	};
 

@@ -770,6 +770,10 @@
 
 	function getMappedName(sResourceName, sRequestingResourceName) {
 
+		if (decodeURI(sResourceName) !== sResourceName) {
+			throw new TypeError(`URL encoded module IDs are not supported: '${sResourceName}'`);
+		}
+
 		const mMap = findMapForContext(sRequestingResourceName);
 
 		// resolve relative names
@@ -2694,7 +2698,7 @@
 	/**
 	 * Root namespace for JavaScript functionality provided by SAP SE.
 	 *
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @namespace
 	 * @public
 	 * @name sap
@@ -3650,7 +3654,7 @@
 				if (sLowerCaseAlias) {
 					vValue = oWriteableConfig[sLowerCaseAlias] || oConfig[sLowerCaseAlias];
 					if (vValue) {
-						ui5loader._.logger.warning(`Deprecated configuration option '${sLowerCaseAlias.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' given in global configuration. Please use '${sKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' instead.`);
+						ui5loader._.logger.warning(`[DEPRECATED] configuration option '${sLowerCaseAlias.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' given in global configuration. Please use '${sKey.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()}' instead.`);
 					}
 				}
 			}
@@ -3964,15 +3968,37 @@
 
 		/** Register a new Configuration provider
 		 *
+		 * Provider registration maintains priority groups:
+		 * - Non-external providers are inserted before the first external provider
+		 * - External providers (oProvider.external === true) are added to the end (highest priority)
+		 * This ensures external providers always have priority over non-external providers.
+		 *
 		 * @name module:sap/base/config.registerProvider
 		 * @function
 		 * @param {object} oProvider The provider instance
 		 * @private
-		 * @ui5-restricted sap.ui.core
+		 * @ui5-restricted sap.ui.core, sap.ushell
 		 */
 		function registerProvider(oProvider) {
 			if (aProvider.indexOf(oProvider) === -1) {
-				aProvider.push(oProvider);
+				if (oProvider.external) {
+					// External provider: add to end (highest priority within external group)
+					aProvider.push(oProvider);
+				} else {
+					// Non-external provider: insert before first external provider
+					var iFirstExternalIndex = aProvider.findIndex(function(provider) {
+						return provider.external === true;
+					});
+
+					if (iFirstExternalIndex !== -1) {
+						// Insert before first external provider
+						aProvider.splice(iFirstExternalIndex, 0, oProvider);
+					} else {
+						// No external provider yet, add to end
+						aProvider.push(oProvider);
+					}
+				}
+
 				Configuration._.invalidate();
 				bGlobalIgnoreExternal = get(mUrlParamOptions);
 			}

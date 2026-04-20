@@ -51,12 +51,11 @@ sap.ui.define([
 	 * @implements sap.m.IOverflowToolbarFlexibleContent
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
-	 * @experimental since 1.139
-	 * @since 1.139
+	 * @ui5-experimental-since 1.139
 	 * @alias sap.m.OverflowToolbarTokenizer
 	 */
 	const OverflowToolbarTokenizer = Tokenizer.extend("sap.m.OverflowToolbarTokenizer", /** @lends sap.m.OverflowToolbarTokenizer.prototype */ {

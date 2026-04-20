@@ -37,7 +37,7 @@ sap.ui.define('sap/ui/debug/DebugEnv', [
 	 * @class Central Class for the Debug Environment
 	 *
 	 * @author Martin Schaus, Frank Weigel
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @private
 	 * @alias sap.ui.debug.DebugEnv
 	 * @deprecated As of Version 1.120
@@ -149,7 +149,7 @@ sap.ui.define('sap/ui/debug/DebugEnv', [
 			oControlTreeRoot.style.width = "200px";
 			this.oControlTreeWindow.document.body.appendChild(oControlTreeRoot);
 		} else {
-			oControlTreeRoot.innerHTML = "";
+			oControlTreeRoot.replaceChildren();
 		}
 		this.oControlTreeRoot = oControlTreeRoot;
 
@@ -175,7 +175,7 @@ sap.ui.define('sap/ui/debug/DebugEnv', [
 			oPropertyWindowRoot.style.bottom = "1px";
 			this.oPropertyListWindow.document.body.appendChild(oPropertyWindowRoot);
 		} else {
-			oPropertyWindowRoot.innerHTML = "";
+			oPropertyWindowRoot.replaceChildren();
 		}
 		this.oPropertyWindowRoot = oPropertyWindowRoot;
 

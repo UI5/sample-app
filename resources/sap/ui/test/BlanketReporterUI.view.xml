@@ -35,12 +35,12 @@
 			visible="{= %{/branchTracking} }"/>
 	</form:SimpleForm>
 	<table:Table id="Files" selectionMode="Single" selectionBehavior="RowOnly" rows="{/files}"
-			rowSelectionChange="onRowSelection">
+			rowSelectionChange=".onRowSelection">
 		<table:extension>
 			<HBox>
 				<CheckBox selected="{/filterThreshold}" text="Below Threshold ({/threshold} %)"
-					select="onFilterThreshold" visible="{= %{/threshold} &gt; 0 }"/>
-				<CheckBox select="onRowSelection" selected="{/showHits}" text="Show Hits"/>
+					select=".onFilterThreshold" visible="{= %{/threshold} &gt; 0 }"/>
+				<CheckBox select=".onRowSelection" selected="{/showHits}" text="Show Hits"/>
 			</HBox>
 		</table:extension>
 		<table:rowMode>

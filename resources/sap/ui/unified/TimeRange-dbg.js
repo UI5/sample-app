@@ -23,12 +23,11 @@ sap.ui.define([
 	 * @class
 	 * Time range for use in <code>NonWorkingPeriod</code>
 	 * @extends sap.ui.core.Element
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
-	 * @since 1.127.0
-	 * @experimental Since version 1.127.0.
+	 * @ui5-experimental-since 1.127
 	 * @alias sap.ui.unified.TimeRange
 	 */
 	var TimeRange = Element.extend("sap.ui.unified.TimeRange", /** @lends sap.ui.unified.TimeRange.prototype */ { metadata : {

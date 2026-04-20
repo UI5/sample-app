@@ -4,7 +4,7 @@
 /* ========================================== */
 
 .sapUiMsgBar {
-	background-color: @sapUiGroupContentBackground;
+	background-color: var(--sapGroup_ContentBackground);
 	font-size: @sapUiDesktopFontSize;
 	padding: 2px;
 }
@@ -15,34 +15,34 @@
 }
 
 .sapUiMsgBarToggle {
-	background-image: url("img/messagebar/collapsed.gif");
+	background-image: url('img/messagebar/collapsed.gif');
 }
 .sapUiRtl .sapUiMsgBarToggle {
-	background-image: url("img/messagebar/collapsedRTL.gif");
+	background-image: url('img/messagebar/collapsedRTL.gif');
 }
 
 .sapUiMsgBarOpen .sapUiMsgBarToggle,
 .sapUiRtl .sapUiMsgBarOpen .sapUiMsgBarToggle {
-	background-image: url("img/messagebar/expanded.gif");
+	background-image: url('img/messagebar/expanded.gif');
 }
 
 /* Styling the Icons-Counters container: */
 .sapUiMsgBarSums {
 	background-image: none;
-	background-color: @sapUiGroupContentBackground;
+	background-color: var(--sapGroup_ContentBackground);
 	border: 1px solid transparent;
-	padding: 0px;
+	padding: 0;
 }
 
 .sapUiMsgBarOpen .sapUiMsgBarSums,
 .sapUiMsgBarSums:hover {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 }
 
 /* Styling the re-dock container: */
 .sapUiMsgBarHome {
-	background-color: @sapUiGroupContentBackground;
-	border: 0px solid transparent;
+	background-color: var(--sapGroup_ContentBackground);
+	border: 0 solid transparent;
 	height: 21px;
 	margin: 0 0 0 3px;
 }
@@ -52,6 +52,6 @@
 }
 
 .sapUiMsgBarHome:hover {
-	background-color: @sapUiHighlight;
-	border: 0px solid transparent;
+	background-color: var(--sapHighlightColor);
+	border: 0 solid transparent;
 }

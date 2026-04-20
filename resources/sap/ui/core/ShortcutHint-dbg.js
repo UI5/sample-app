@@ -7,9 +7,10 @@
 sap.ui.define([
 	"sap/base/Log",
 	"sap/ui/core/CommandExecution",
-	"sap/ui/core/Lib"
+	"sap/ui/core/Lib",
+	"sap/ui/core/util/ShortcutHelper"
 ],
-	function(Log, CommandExecution, Library) {
+	function(Log, CommandExecution, Library, ShortcutHelper) {
 		"use strict";
 
 		/**
@@ -17,7 +18,9 @@ sap.ui.define([
 		 * @param {sap.ui.core.Control} oControl The control registered to display the shortcut
 		 * @param {object} oConfig Settings object - it contains the hint provider method at least
 		 * @param {string} oConfig.commandName The command name for which a shortcut is displayed
-		 * @param {string} oConfig.messageBundleKey The messagebundle key that will be translated and used as a shortcut hint
+		 * @param {string} oConfig.message The message to be displayed as a shortcut hint. The message is used as-is; no additional localization or normalization is applied.
+		 * @param {string} oConfig.messageBundleKey The key used to retrieve the message from the control library's message bundle. The returned text is used as-is; no additional localization or normalization is applied.
+		 * @param {string} oConfig.shortcut The raw shortcut text, that will be normalized and localized and used as a shortcut hint
 		 * @private
 		 */
 		var ShortcutHint = function(oControl, oConfig) {
@@ -33,6 +36,9 @@ sap.ui.define([
 				sText = this.oConfig.message;
 			} else if (this.oConfig.messageBundleKey) {
 				sText = this._getShortcutHintFromMessageBundle(this.oControl, this.oConfig.messageBundleKey);
+			} else if (this.oConfig.shortcut) {
+				sText = this.oConfig.shortcut;
+				sText = ShortcutHelper.localizeKeys(ShortcutHelper.normalizeShortcutText(sText));
 			}
 
 			return sText;
@@ -40,8 +46,8 @@ sap.ui.define([
 
 		ShortcutHint.prototype._getShortcutHintFromCommandExecution = function(oControl, sCommandName) {
 			try {
-				return CommandExecution.find(oControl, sCommandName)
-					._getCommandInfo().shortcut;
+				const sShortcut = CommandExecution.find(oControl, sCommandName)._getCommandInfo().shortcut;
+				return ShortcutHelper.localizeKeys(ShortcutHelper.normalizeShortcutText(sShortcut));
 			} catch (e) {
 				Log.error("Error on retrieving command shortcut. Command "
 					+ sCommandName + " was not found!");

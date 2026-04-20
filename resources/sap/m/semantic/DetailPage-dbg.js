@@ -46,7 +46,7 @@ sap.ui.define(["sap/m/semantic/ShareMenuPage", "sap/m/semantic/SemanticConfigura
 	 * @extends sap.m.semantic.ShareMenuPage
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -246,13 +246,17 @@ sap.ui.define(["sap/m/semantic/ShareMenuPage", "sap/m/semantic/SemanticConfigura
 		return ShareMenuPage.prototype.setAggregation.call(this, sAggregationName, oObject, bSuppressInvalidate);
 	};
 
+	/**
+	 * @override
+	 * @returns {sap.ui.base.ManagedObject|sap.ui.base.ManagedObject[]|null} the aggregation of the respective name if it exists, null otherwise
+	*/
 	DetailPage.prototype.getAggregation = function(sAggregationName, oObject, bSuppressInvalidate) {
 
 		if ((sAggregationName === "saveAsTileAction")
 				|| (sAggregationName === "pagingAction")
 				|| (sAggregationName === "draftIndicator")) {
 
-				return this['_' + sAggregationName];
+				return this['_' + sAggregationName] || null;
 		}
 
 		return ShareMenuPage.prototype.getAggregation.call(this, sAggregationName, oObject, bSuppressInvalidate);

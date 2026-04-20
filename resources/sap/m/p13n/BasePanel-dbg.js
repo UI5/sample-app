@@ -23,7 +23,6 @@ sap.ui.define([
 	'sap/ui/core/ShortcutHintsMixin',
 	"sap/ui/events/KeyCodes",
 	"sap/base/Log",
-	"sap/ui/Device",
 	"sap/m/library",
 	"sap/ui/core/library",
 	"sap/m/p13n/MessageStrip",
@@ -48,7 +47,6 @@ sap.ui.define([
 	ShortcutHintsMixin,
 	KeyCodes,
 	Log,
-	Device,
 	library,
 	coreLibrary,
 	MessageStrip,
@@ -82,7 +80,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @public
 	 * @abstract
@@ -238,7 +236,8 @@ sap.ui.define([
 		// if RangeSelect is performed using Shift+ArrowKeys
 		// and the focus is outside the table,
 		// resetting the _bShiftKeyPressed flag could not work correctly
-		document.addEventListener("keyup", this._keyupHandler.bind(this));
+		this._fnKeyupHandler = this._keyupHandler.bind(this);
+		document.addEventListener("keyup", this._fnKeyupHandler);
 	};
 
 	BasePanel.prototype.onAfterRendering = function() {
@@ -413,7 +412,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oMoveTopButton, {
 					addAccessibilityLabel: true,
-					message: this._getResourceText(Device.os.macintosh ? "p13n.SHORTCUT_MOVE_TO_TOP_MAC" : "p13n.SHORTCUT_MOVE_TO_TOP") // Cmd+Home or Ctrl+Home
+					shortcut: "Ctrl+Home" // ShortcutHintMixin takes care of normalizing and localizing
 				}, this
 			);
 		}
@@ -434,7 +433,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oMoveUpButton, {
 					addAccessibilityLabel: true,
-					message: this._getResourceText(Device.os.macintosh ? "p13n.SHORTCUT_MOVE_UP_MAC" : "p13n.SHORTCUT_MOVE_UP") // Cmd+CursorUp or Ctrl+CursorUp
+					shortcut: "Ctrl+ArrowUp" // ShortcutHintMixin takes care of normalizing and localizing
 				}, this
 			);
 
@@ -456,7 +455,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oMoveDownButton, {
 					addAccessibilityLabel: true,
-					message: this._getResourceText(Device.os.macintosh ? "p13n.SHORTCUT_MOVE_DOWN_MAC" : "p13n.SHORTCUT_MOVE_DOWN") // Cmd+CursorDown or Ctrl+CursorDown
+					shortcut: "Ctrl+ArrowDown" // ShortcutHintMixin takes care of normalizing and localizing
 				}, this
 			);
 		}
@@ -477,7 +476,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oMoveBottomButton, {
 					addAccessibilityLabel: true,
-					message: this._getResourceText(Device.os.macintosh ? "p13n.SHORTCUT_MOVE_TO_BOTTOM_MAC" : "p13n.SHORTCUT_MOVE_TO_BOTTOM") // Cmd+End or Ctrl+End
+					shortcut: "Ctrl+End" // ShortcutHintMixin takes care of normalizing and localizing
 				}, this
 			);
 
@@ -1018,7 +1017,8 @@ sap.ui.define([
 		this._oMoveBottomButton = null;
 		this._oSearchField = null;
 
-		document.removeEventListener("keyup", this._keyupHandler.bind(this));
+		document.removeEventListener("keyup", this._fnKeyupHandler);
+		this._fnKeyupHandler = null;
 	};
 
 	return BasePanel;

@@ -32,7 +32,7 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author Martin Schaus
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @param {sap.ui.core.Core}
 	 *            oCore Core instance of the app; version might differ!
@@ -86,7 +86,7 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 	 */
 	PropertyList.prototype.update = function(oParams) {
 		var sControlId = this.sControlId = oParams.getParameter("controlId");
-		this.oParentDomRef.innerHTML = "";
+		this.oParentDomRef.replaceChildren();
 
 		var oControl = Element.getElementById(sControlId);
 		if (!oControl) {

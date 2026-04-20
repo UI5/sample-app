@@ -4,37 +4,37 @@
 /* ========================================= */
 
 .sapUiUx3NavBar {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	border-bottom: 0px solid @sapUiLink;
+	border-bottom: 0px solid var(--sapLinkColor);
 	text-transform: none;
 }
 
 .sapUiUx3NavBarItem:focus {
-	outline: 1px dashed @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+	outline: 1px dashed var(--sapContent_FocusColor);
 }
 
 .sapUiUx3NavBarItem {
-	color: lighten(@sapUiListTextColor, 20); // @sapUiLightText = #666666
-	font-family: @sapUiDesktopFontFamily;
+	color: lighten(@sapUiListTextColor, 20);
+	font-family: var(--sapFontFamily);
 	font-size: (@sapUiDesktopFontSize + 2px);
 	font-weight: normal;
 }
 
 .sapUiUx3NavBarItem:hover {
-	color: @sapUiHighlight;
+	color: var(--sapHighlightColor);
 	font-weight: normal;
 	font-size: 14px;
 }
 
 .sapUiUx3NavBarItemSel > a {
-	color: @sapUiListTextColor; // @sapUiDarkText = #333333
+	color: var(--sapList_TextColor);
 	font-weight: bold;
 	font-size: 14px;
 }
 
 .sapUiUx3NavBarItemSel > a:hover {
-	color: @sapUiLink;
+	color: var(--sapLinkColor);
 	font-weight: bold;
 	font-size: 14px;
 }
@@ -47,44 +47,43 @@
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItem:focus {
-	outline: 0px dashed @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+	outline: 0px dashed var(--sapContent_FocusColor);
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarList > li,
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItem {
-	color: lighten(@sapUiListTextColor, 20); // @sapUiLightText = #666666
+	color: lighten(@sapUiListTextColor, 20);
 	font-size: 15px;
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarList > li:hover,
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItem:hover {
-	color: @sapUiHighlight;
+	color: var(--sapHighlightColor);
 	font-size: 15px;
 }
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItemSel > a {
-	color: @sapUiListTextColor; // @sapUiDarkText = #333333
+	color: var(--sapList_TextColor);
 	font-size: 15px;
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItemSel > a:hover {
-	color: @sapUiHighlight;
+	color: var(--sapHighlightColor);
 	font-size: 15px;
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarItem:focus {
-	outline: 1px dashed @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+	outline: 1px dashed var(--sapContent_FocusColor);
 }
 
 .sapUiUx3NavBarArrow {
 	display: none;
-	border-color: @sapUiBaseText transparent @sapUiHighlight;
+	border-color: var(--sapTextColor) transparent var(--sapHighlightColor);
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarArrow {
 	display: none;
-	border-color: @sapUiBaseText transparent @sapUiUx3ShellBackgroundColor;
+	border-color: var(--sapTextColor) transparent @sapUiUx3ShellBackgroundColor;
 }
-
 
 /* standard design arrows */
 
@@ -98,32 +97,29 @@
 }
 
 .sapUiUx3NavBarBack {
-	background-image: url(img/navigationbar/facetPrev.png);
+	background-image: url('img/navigationbar/facetPrev.png');
 }
 
 .sapUiUx3NavBarForward {
-	background-image: url(img/navigationbar/facetNext.png);
+	background-image: url('img/navigationbar/facetNext.png');
 }
 
 .sapUiUx3NavBarBack:focus,
 .sapUiUx3NavBarForward:focus {
-	outline: 1px dashed @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+	outline: 1px dashed var(--sapContent_FocusColor);
 }
 
 .sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:hover,
 .sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:hover {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 	background-position: -13px 3px;
 }
 
 .sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:active,
 .sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:active {
-	background-color: @sapUiUx3ShellHoverColor; // @sapUiDarkBG = #777777
+	background-color: @sapUiUx3ShellHoverColor;
 	background-position: -13px 3px;
 }
-
-
-
 
 /* toplevel design arrows */
 
@@ -136,14 +132,15 @@
 }
 
 .sapUiUx3NavBarToplevel > .sapUiUx3NavBarBack {
-	background-image: url(img/navigationbar/WS_scroll_prev.png);
+	background-image: url('img/navigationbar/WS_scroll_prev.png');
 }
 
 .sapUiUx3NavBarToplevel > .sapUiUx3NavBarForward {
-	background-image: url(img/navigationbar/WS_scroll_next.png);
+	background-image: url('img/navigationbar/WS_scroll_next.png');
 }
+
 .sapUiUx3NavBar {
-	border-bottom: 0px solid @sapUiHighlight;
+	border-bottom: 0px solid var(--sapHighlightColor);
 	text-transform: none;
 }
 
@@ -153,13 +150,12 @@
 }
 
 .sapUiUx3NavBarArrow {
-	border-color: @sapUiBaseText transparent @sapUiHighlight;
+	border-color: var(--sapTextColor) transparent var(--sapHighlightColor);
 }
 
 .sapUiUx3NavBarToplevel .sapUiUx3NavBarArrow {
-	border-color: @sapUiBaseText transparent @sapUiUx3ShellBackgroundColor;
+	border-color: var(--sapTextColor) transparent @sapUiUx3ShellBackgroundColor;
 }
-
 
 /* standard design arrows */
 .sapUiUx3NavBarBack,
@@ -172,30 +168,29 @@
 }
 
 .sapUiUx3NavBarBack {
-	background-image: url(img/navigationbar/facetPrev.png);
+	background-image: url('img/navigationbar/facetPrev.png');
 }
 
 .sapUiUx3NavBarForward {
-	background-image: url(img/navigationbar/facetNext.png);
+	background-image: url('img/navigationbar/facetNext.png');
 }
 
 .sapUiUx3NavBarBack:focus,
 .sapUiUx3NavBarForward:focus {
-	outline: 1px dashed @sapUiContentFocusColor; // @sapUiKeyboardFocus = #005483
+	outline: 1px dashed var(--sapContent_FocusColor);
 }
 
 .sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:hover,
 .sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:hover {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 	background-position: -13px 3px;
 }
 
 .sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:active,
 .sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:active {
-	background-color: @sapUiUx3ShellHoverColor; // @sapUiDarkBG = #777777
+	background-color: @sapUiUx3ShellHoverColor;
 	background-position: -13px 3px;
 }
-
 
 /* toplevel design arrows */
 .sapUiUx3NavBarToplevel > .sapUiUx3NavBarBack,
@@ -207,24 +202,23 @@
 }
 
 .sapUiUx3NavBarToplevel > .sapUiUx3NavBarBack {
-	background-image: url(img/navigationbar/WS_scroll_prev.png);
+	background-image: url('img/navigationbar/WS_scroll_prev.png');
 }
 
 .sapUiUx3NavBarToplevel > .sapUiUx3NavBarForward {
-	background-image: url(img/navigationbar/WS_scroll_next.png);
+	background-image: url('img/navigationbar/WS_scroll_next.png');
 }
-
 
 /* rtl mode arrow corrections */
 
-html[dir="rtl"] .sapUiUx3NavBarToplevel > .sapUiUx3NavBarBack,
-html[dir="rtl"] .sapUiUx3NavBarToplevel > .sapUiUx3NavBarForward {
+html[dir='rtl'] .sapUiUx3NavBarToplevel > .sapUiUx3NavBarBack,
+html[dir='rtl'] .sapUiUx3NavBarToplevel > .sapUiUx3NavBarForward {
 	background-position: -13px 3px;
 }
 
-html[dir="rtl"] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:hover,
-html[dir="rtl"] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:hover,
-html[dir="rtl"] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:active,
-html[dir="rtl"] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:active {
+html[dir='rtl'] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:hover,
+html[dir='rtl'] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:hover,
+html[dir='rtl'] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollBack > .sapUiUx3NavBarBack:active,
+html[dir='rtl'] .sapUiUx3NavBarToplevel.sapUiUx3NavBarScrollForward > .sapUiUx3NavBarForward:active {
 	background-position: 3px 3px;
 }

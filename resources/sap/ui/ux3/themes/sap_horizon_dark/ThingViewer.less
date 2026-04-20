@@ -4,45 +4,49 @@
 /* ======================================= */
 
 .sapUiUx3TV {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
 .sapUiUx3TVContent {
-	background-color: darken(@sapUiContentForegroundColor, 43); // @sapUiDarkBG = #777777
-	border: 0px;
+	background-color: darken(@sapUiContentForegroundColor, 43);
+	border: 0;
 }
 
 .sapUiUx3TVContentScrollContainer {
-	background-color: @sapUiContentForegroundColor; // @sapUiLightBG = #e5e5e5
+	background-color: var(--sapContent_ForegroundColor);
 }
 
 .sapUiUx3TVHeader {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 }
 
 .sapUiUx3TVFacets {
-	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6);
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 }
+
 .sapUiUx3TVFacetBar {
-	left: 0px;
-	right: 0px;
+	left: 0;
+	right: 0;
 }
+
 .sapUiUx3TVIcon {
-	border: 0px;
-	padding: 0px;
+	border: 0;
+	padding: 0;
 }
+
 .sapUiUx3TVTitleSecond {
-	color: lighten(@sapUiTextTitle, 20); // @sapUiLightText = #666666
+	color: lighten(@sapUiTextTitle, 20);
 }
+
 .sapUiUx3TVFacetBar .sapUiUx3NavBarDummyItem {
 	padding: 0 5px 0 0;
 }
 
 .sapUiUx3TVToolbar {
-	background-color: @sapUiToolbarBackground;
-	padding: 0px;
+	background-color: var(--sapToolbar_Background);
+	padding: 0;
 	height: 40px;
 }
 
@@ -50,38 +54,34 @@
 	bottom: 40px;
 }
 
-/*.sapUiUx3TVToolbar > .sapUiUx3ActionBar {
-	background-color: transparent;
-}*/
-
 .sapUiUx3TVHeaderContent {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 }
 
 .sapUiUx3TVIdentifier {
-	color: lighten(@sapUiContentForegroundTextColor, 26.5); // @sapUiMediumText = #444444
+	color: lighten(@sapUiContentForegroundTextColor, 26.5);
 }
 
 .sapUiUx3TVTitle {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
 .sapUiUx3TVHRGrey {
-	background-color: darken(@sapUiContentForegroundColor, 43); // @sapUiDarkBG = #777777
+	background-color: darken(@sapUiContentForegroundColor, 43);
 }
 
 .sapUiUx3TVHRWhite {
-	background-color: lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
-	height:1px;
+	background-color: lighten(@sapUiContentForegroundBorderColor, 11.6);
+	height: 1px;
 }
 
 .sapUiUx3TVHeaderGroupTitle {
-	color: darken(@sapUiGroupTitleTextColor, 6.5); // @sapUiExtraDarkText = #222222
+	color: darken(@sapUiGroupTitleTextColor, 6.5);
 }
 
 .sapUiUx3TVFacetThingGroupContentTitle {
-	color: lighten(@sapUiGroupTitleTextColor, 6.5); // @sapUiMediumText = #444444
-	border-bottom: 1px solid @sapUiGroupTitleBorderColor; // @sapUiMediumBorder = #cccccc
+	color: lighten(@sapUiGroupTitleTextColor, 6.5);
+	border-bottom: 1px solid var(--sapGroup_TitleBorderColor);
 }
 
 .sapUiUx3TV.sapUiUx3TVNoFrame {
@@ -93,9 +93,9 @@
 }
 
 .sapUiUx3TV.sapUiUx3TVNoFrame > .sapUiUx3TVContent > .sapUiUx3TVToolbar {
-	border-color: lighten(@sapUiContentForegroundBorderColor, 25); // @sapUiLightestBorder = #ffffff
+	border-color: lighten(@sapUiContentForegroundBorderColor, 25);
 }
 
 .sapUiUx3TV.sapUiUx3TVNoFrame > .sapUiUx3TVContent > .sapUiUx3TVFacets {
-	border-color: lighten(@sapUiContentForegroundBorderColor, 25); // @sapUiLightestBorder = #ffffff
+	border-color: lighten(@sapUiContentForegroundBorderColor, 25);
 }

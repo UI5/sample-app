@@ -4,13 +4,13 @@
 /* =========================================== */
 
 .sapUiRtt {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	border: 1px solid @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 }
 
 .sapUiRttSep {
 	height: 1px;
-	background-color: darken(@sapUiContentForegroundColor, 3); // @sapUiMediumBG = #dddddd
+	background-color: darken(@sapUiContentForegroundColor, 3);
 }

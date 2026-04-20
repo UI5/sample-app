@@ -176,14 +176,15 @@ sap.ui.define([
 		// marker to log only once per instance
 		var bParamWarning = false;
 
-		/*
+		/**
 		 * As many consumers of the old API used this internal property, we make it available but log a warning.
 		 * Using this property prevents a later migration to the URLSearchParams API.
+		 * @deprecated
 		 */
 		Object.defineProperty(this, "mParams", {
 			get: function() {
 				if ( !bParamWarning ) {
-					Log.warning("[Deprecated] UriParameters.mParams must not be accessed.");
+					Log.warning("[DEPRECATED] UriParameters.mParams must not be accessed.");
 					bParamWarning = true;
 				}
 				return Object.assign({}, mParams);
@@ -215,12 +216,13 @@ sap.ui.define([
 	 * @return {string|null} First value of the query parameter with the given name or <code>null</code>
 	 * @SecSource {return|XSS} Return value contains URL parameters
 	 * @public
+	 * @ui5-transform-hint replace-param bAll false
 	 */
 	UriParameters.prototype.get = function(sName, bAll) {
 		// Note: this method is still implemented on the prototype to keep existing mocks working
 		if ( bAll ) {
 			// LOG
-			Log.warning("[Deprecated] UriParameters.get(..., true) must not be used, use getAll() instead.");
+			Log.warning("[DEPRECATED] UriParameters.get(..., true) must not be used, use getAll() instead.");
 			return this.getAll(sName);
 		}
 		return this._get(sName);

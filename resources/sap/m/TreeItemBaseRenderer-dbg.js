@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./ListItemBaseRenderer", "sap/base/i18n/Localization", "sap/ui/core/Renderer"],
-	function(ListItemBaseRenderer, Localization, Renderer) {
+sap.ui.define(["./ListItemBaseRenderer", "sap/ui/core/Renderer"],
+	function(ListItemBaseRenderer, Renderer) {
 	"use strict";
 
 	/**
@@ -27,13 +27,8 @@ sap.ui.define(["./ListItemBaseRenderer", "sap/base/i18n/Localization", "sap/ui/c
 			rm.attr("aria-expanded", oLI.getExpanded());
 		}
 
-		var iIndentation = oLI._getPadding();
-		if (Localization.getRTL()){
-			rm.style("padding-right", iIndentation + "rem");
-		} else {
-			rm.style("padding-left", iIndentation + "rem");
-		}
-
+		const fPadding = oLI._getPadding();
+		rm.style("padding-inline-start", fPadding + "rem");
 	};
 
 	TreeItemBaseRenderer.renderContentFormer = function(rm, oLI) {

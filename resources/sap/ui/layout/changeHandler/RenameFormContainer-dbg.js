@@ -14,7 +14,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameFormContainer
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @since 1.48
 	 * @private
 	 */
@@ -73,16 +73,16 @@ sap.ui.define([
 	 * @private
 	 */
 	RenameFormContainer.completeChangeContent = function(oChange, oSpecificChangeInfo, mPropertyBag) {
-		if (!(oSpecificChangeInfo.renamedElement && oSpecificChangeInfo.renamedElement.id)) {
-			throw new Error("Rename of the group cannot be executed: oSpecificChangeInfo.renamedElement attribute required");
+		if (!(oSpecificChangeInfo?.content?.renamedElement?.id)) {
+			throw new Error("Rename of the group cannot be executed: oSpecificChangeInfo.content.renamedElement attribute required");
 		}
 
-		if (!this._isProvided(oSpecificChangeInfo.value)) {
-			throw new Error("Rename of the group cannot be executed: oSpecificChangeInfo.value attribute required");
+		if (!this._isProvided(oSpecificChangeInfo.content.value)) {
+			throw new Error("Rename of the group cannot be executed: oSpecificChangeInfo.content.value attribute required");
 		}
 
-		oChange.addDependentControl(oSpecificChangeInfo.renamedElement.id, _CONSTANTS.TARGET_ALIAS, mPropertyBag);
-		oChange.setText("formText", oSpecificChangeInfo.value, "XGRP");
+		oChange.addDependentControl(oSpecificChangeInfo.content.renamedElement.id, _CONSTANTS.TARGET_ALIAS, mPropertyBag);
+		oChange.setText("formText", oSpecificChangeInfo.content.value, "XGRP");
 	};
 
 	/**

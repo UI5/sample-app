@@ -3,8 +3,6 @@
 /* Horizon High Contrast White theme              */
 /* ============================================== */
 
-/* High Contrast Black */
-
 .sapUiTfCombo {
 	font-size: @sapUiDesktopFontSize;
 }
@@ -25,9 +23,9 @@
 /* textField icon */
 .sapUiTfCombo > .sapUiTfValueHelpRegularIcon:hover,
 .sapUiTfCombo > span.sapUiTfValueHelpIcon:hover {
-	border-left: 1px solid @sapUiFieldHoverBorderColor;
-	color: @sapUiBaseText;
-	background-color: @sapUiButtonLiteHoverBackground;
+	border-left: 1px solid var(--sapField_Hover_BorderColor);
+	color: var(--sapTextColor);
+	background-color: var(--sapButton_Lite_Hover_Background);
 }
 
 .sapUiTfCombo.sapUiTfDsbl > span.sapUiTfValueHelpIcon:hover,
@@ -38,7 +36,7 @@
 
 .sapUiTfCombo.sapUiTfDsbl > span.sapUiTfValueHelpIcon,
 .sapUiTfCombo.sapUiTfDsbl > span.sapUiTfValueHelpIcon:hover {
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 }
 
 .sapUiTfCombo.sapUiTfRo > span.sapUiTfValueHelpIcon,

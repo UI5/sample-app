@@ -32,6 +32,7 @@ sap.ui.define([], function () {
 		oRm.accessibilityState({
 			role: "region"
 		});
+		oRm.attr("tabindex", "-1");
 		oRm.class("sapContrastPlus");
 		oRm.class(sSapFDynamicPageHeader);
 		if (oDynamicPageHeaderState.headerHasContent) {

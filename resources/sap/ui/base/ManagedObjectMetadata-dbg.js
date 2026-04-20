@@ -79,7 +79,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -110,7 +110,7 @@ function(
 
 	function deprecation(fn, name) {
 		return function() {
-			Log.warning("Usage of deprecated feature: " + name);
+			Log.warning("[DEPRECATED] Usage of deprecated feature: " + name);
 			return fn.apply(this, arguments);
 		};
 	}
@@ -737,7 +737,7 @@ function(
 			add(that._sRemoveAllMutator, function() { return this.removeAllAssociation(n); });
 			if ( n !== that.singularName ) {
 				add('removeAll' + capitalize(that.singularName), function() {
-					Log.warning("Usage of deprecated method " +
+					Log.warning("[DEPRECATED] Usage of deprecated method " +
 						that._oParent.getName() + ".prototype." + 'removeAll' + capitalize(that.singularName) + "," +
 						" use method " + that._sRemoveAllMutator  + " (plural) instead.");
 					return this[that._sRemoveAllMutator]();

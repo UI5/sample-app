@@ -162,7 +162,7 @@ function(
 	 * @extends sap.m.InputBase
 	 * @implements sap.ui.core.IAccessKeySupport
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -2463,7 +2463,16 @@ function(
 	 */
 	Input.prototype.onfocusout = function (oEvent) {
 		InputBase.prototype.onfocusout.apply(this, arguments);
-		this.removeStyleClass("sapMInputFocused");
+
+		var oRelatedTarget = oEvent.relatedTarget,
+			oTokenizer = this.getAggregation && this.getAggregation("tokenizer"),
+			bFocusMovesToTokenizer = oTokenizer && oRelatedTarget && containsOrEquals(oTokenizer.getDomRef(), oRelatedTarget);
+
+		// Keep the focused classес if focus moves to an element within the Input but not to a token within the tokenizer (e.g., clear icon, value help icon)
+		if (!containsOrEquals(this.getDomRef(), oRelatedTarget) || bFocusMovesToTokenizer) {
+			this.removeStyleClass("sapMInputFocused");
+			this.removeStyleClass("sapMFocus");
+		}
 	};
 
 	/**

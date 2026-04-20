@@ -16,7 +16,7 @@ sap.ui.define([
 		 *
 		 * @alias sap.f.changeHandler.MoveDynamicPageTitleActions
 		 * @author SAP SE
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 */
 		var MoveActions = { };
 		var ACTION_AGGREGATION_NAME = "actions";
@@ -109,18 +109,18 @@ sap.ui.define([
 		 * @public
 		 */
 		MoveActions.completeChangeContent = function(oChange, oSpecificChangeInfo, mPropertyBag) {
-			var oModifier = mPropertyBag.modifier,
+			const oModifier = mPropertyBag.modifier,
 				oAppComponent = mPropertyBag.appComponent;
 
 			// We need to add the information about the movedElements together with the source and target index
-			var oContent = {
+			const oContent = {
 				movedElements: [],
-				targetAggregation: oSpecificChangeInfo.target.aggregation,
+				targetAggregation: oSpecificChangeInfo.content.target.aggregation,
 				targetContainer: oSpecificChangeInfo.selector
 			};
 
-			oSpecificChangeInfo.movedElements.forEach(function (mElement) {
-				var oElement = mElement.element || oModifier.bySelector(mElement.id, oAppComponent);
+			oSpecificChangeInfo.content.movedElements.forEach(function (mElement) {
+				const oElement = mElement.element || oModifier.bySelector(mElement.id, oAppComponent);
 				oContent.movedElements.push({
 					selector: oModifier.getSelector(oElement, oAppComponent),
 					sourceIndex: mElement.sourceIndex,

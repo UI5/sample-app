@@ -3,27 +3,27 @@
 /* Horizon High Contrast Black theme                 */
 /* ================================================= */
 
-.sapUiProgInd{
+.sapUiProgInd {
 	display: inline-block;
 	font-size: @sapUiDesktopFontSize;
 }
 
-.sapUiProgIndBorder{
+.sapUiProgIndBorder {
 	display: inline-block;
 	background-color: lighten(@sapUiGroupContentBackground, 70);
-	border: 1px solid @sapUiContentForegroundBorderColor;
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
 	border-radius: 3px;
 	box-sizing: border-box;
 }
 
-.sapUiProgIndBar{
+.sapUiProgIndBar {
 	position: relative;
 	background-color: #BAD2E9;
 	color: @sapUiTextInverted;
 	border-radius: 3px;
 	box-sizing: border-box;
 	height: 14px;
-	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -34,7 +34,7 @@
 	border-radius: 3px;
 	box-sizing: border-box;
 	height: 14px;
-	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -45,7 +45,7 @@
 	border-radius: 3px;
 	box-sizing: border-box;
 	height: 14px;
-	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -56,7 +56,7 @@
 	border-radius: 3px;
 	box-sizing: border-box;
 	height: 14px;
-	-moz-user-select: none;
+	-webkit-user-select: none;
 	user-select: none;
 }
 
@@ -83,7 +83,7 @@
 	width: 1px;
 	height: 14px;
 	visibility: visible;
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiProgIndPosEnd {
@@ -91,7 +91,7 @@
 	width: 1px;
 	height: 14px;
 	visibility: visible;
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiProgIndNegEnd {
@@ -99,7 +99,7 @@
 	width: 1px;
 	height: 14px;
 	visibility: visible;
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiProgIndCritEnd {
@@ -107,5 +107,5 @@
 	width: 1px;
 	height: 14px;
 	visibility: visible;
-	background-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapContent_ForegroundBorderColor);
 }

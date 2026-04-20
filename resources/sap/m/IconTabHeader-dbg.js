@@ -85,7 +85,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -636,8 +636,6 @@ sap.ui.define([
 			oParent.setProperty("selectedKey", sSelectedKey, true);
 		}
 
-		this._initItemNavigation();
-
 		if (bIsParentIconTabBar) {
 			bAPIChange = bAPIChange && !oParent._bFireSelectEvent;
 		} else {
@@ -675,6 +673,8 @@ sap.ui.define([
 			this.getTabsOverflowMode() === TabsOverflowMode.End) {
 			this._setItemsForStrip();
 		}
+
+		this._initItemNavigation();
 
 		return this;
 	};

@@ -52,7 +52,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 *
 		 * @constructor
 		 * @public
@@ -103,7 +103,15 @@ function(
 					/**
 					 * Type of a Switch. Possibles values "Default", "AcceptReject".
 					 */
-					type: { type : "sap.m.SwitchType", group: "Appearance", defaultValue: SwitchType.Default }
+					type: { type : "sap.m.SwitchType", group: "Appearance", defaultValue: SwitchType.Default },
+
+					/**
+					 * Specifies whether the user shall be allowed to change the state of the switch.
+					 * When set to <code>false</code>, the switch is in read-only mode and can still be focused
+					 * and the user can copy the text from it.
+					 * @since 1.147.0
+					 */
+					editable: { type: "boolean", group: "Behavior", defaultValue: true }
 				},
 				associations: {
 
@@ -256,6 +264,7 @@ function(
 			// only process single touches (only the first active touch point)
 			if (touch.countContained(oEvent.touches, this.getId()) > 1 ||
 				!this.getEnabled() ||
+				!this.getEditable() ||
 
 				// detect which mouse button caused the event and only process the standard click
 				// (this is usually the left button, oEvent.button === 0 for standard click)
@@ -304,6 +313,7 @@ function(
 				fnTouch = touch;
 
 			if (!this.getEnabled() ||
+				!this.getEditable() ||
 
 				// detect which mouse button caused the event and only process the standard click
 				// (this is usually the left button, oEvent.button === 0 for standard click)
@@ -359,6 +369,7 @@ function(
 				fnTouch = touch;
 
 			if (!this.getEnabled() ||
+				!this.getEditable() ||
 
 				// detect which mouse button caused the event and only process the standard click
 				// (this is usually the left button, oEvent.button === 0 for standard click)
@@ -402,7 +413,7 @@ function(
 		 * @private
 		 */
 		Switch.prototype._handleSpaceOrEnter = function(oEvent) {
-			if (this.getEnabled()) {
+			if (this.getEnabled() && this.getEditable()) {
 
 				// mark the event for components that needs to know if the event was handled by the Switch
 				oEvent.setMarked();
@@ -492,7 +503,8 @@ function(
 				type: oBundle.getText("ACC_CTR_TYPE_SWITCH"),
 				description: sDesc,
 				focusable: this.getEnabled(),
-				enabled: this.getEnabled()
+				enabled: this.getEnabled(),
+				editable: this.getEditable()
 			};
 		};
 

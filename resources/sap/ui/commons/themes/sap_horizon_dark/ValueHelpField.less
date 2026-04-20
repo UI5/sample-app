@@ -4,7 +4,7 @@
 /* ============================================== */
 
 .sapUiTfCombo {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -18,13 +18,13 @@
 /* textField icon */
 .sapUiTfCombo > .sapUiTfValueHelpRegularIcon:hover,
 .sapUiTfCombo > span.sapUiTfValueHelpIcon:hover {
-	background-color: @sapUiFieldHoverHelpBackground;
-	color: @sapUiContentContrastTextColor; // @sapUiTextInverted = #ffffff
+	background-color: var(--sapField_Hover_HelpBackground);
+	color: var(--sapContent_ContrastTextColor);
 }
 
 .sapUiTfCombo.sapUiTfDsbl > span.sapUiTfValueHelpIcon:hover {
 	background-color: transparent;
-	color: @sapUiButtonHoverTextColor; // @sapUiDarkText = #333333
+	color: var(--sapButton_Hover_TextColor);
 }
 
 .sapUiTfRo.sapUiTfCombo > .sapUiTfValueHelpIcon {

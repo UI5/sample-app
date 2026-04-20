@@ -1,32 +1,32 @@
 /* ======================================= */
 /* CSS for control sap.ui.commons/RoadMap  */
-/* Horizon theme                           */
+/* Morning Horizon theme                   */
 /* ======================================= */
 
 .sapUiRoadMap {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
 /* Step Styles */
-.sapUiRoadMapDisabled{
-	color: @sapUiContentDisabledTextColor;
+.sapUiRoadMapDisabled {
+	color: var(--sapContent_DisabledTextColor);
 }
 
 .sapUiRoadMapStepAdd1,
-.sapUiRoadMapStepAdd2{
-	background-color: darken(@sapUiContentForegroundColor, 10); // @sapUiLightLine = #cccccc
+.sapUiRoadMapStepAdd2 {
+	background-color: darken(@sapUiContentForegroundColor, 10);
 }
 
-.sapUiRoadMapStepBox{
-	background-color: @sapUiButtonBackground;
-	color: @sapUiButtonTextColor;
+.sapUiRoadMapStepBox {
+	background-color: var(--sapButton_Background);
+	color: var(--sapButton_TextColor);
 	box-shadow: none;
-	border: 1px solid @sapUiButtonBorderColor;
+	border: 1px solid var(--sapButton_BorderColor);
 }
 
-.sapUiRoadMapStepBox:focus{
-	outline: 1px dotted @sapUiHighlight;
+.sapUiRoadMapStepBox:focus {
+	outline: 1px dotted var(--sapHighlightColor);
 }
 
 .sapUiRoadMapSelected > .sapUiRoadMapStepBox {
@@ -39,7 +39,7 @@
 
 .sapUiRoadMapDisabled > .sapUiRoadMapStepBox {
 	background-color: @sapUiButtonDisabledBackground;
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	border: 1px solid  @sapUiButtonDisabledBorderColor;
 	box-shadow: none;
 }
@@ -47,124 +47,124 @@
 .sapUiRoadMapTitle {
 	height: 30px;/*double line-height*/
 	font-size: 12px;
-	font-family: @sapUiFontFamily;
+	font-family: var(--sapFontFamily);
 }
 
-.sapUiRoadMapStepIco{
+.sapUiRoadMapStepIco {
 	display: inline;
 	position: absolute;
-	bottom: 0px;
+	bottom: 0;
 	left: 3px;
 	height: 16px;
 	width: 16px;
-	background-image: url("img/roadmap/roundtrip.gif");
+	background-image: url('img/roadmap/roundtrip.gif');
 }
 
 .sapUiRoadMapStep:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco,
-.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_hov.gif");
+.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_hov.gif');
 }
 
-.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_dsbl.gif");
+.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_dsbl.gif');
 }
 
-.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_hov.gif");
+.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_hov.gif');
 }
 
-.sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
+.sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
 	right: 2px;
 	left: auto;
 	height: 12px;
 	width: 12px;
-	background-image: url("img/roadmap/roundtrip_start.gif");
+	background-image: url('img/roadmap/roundtrip_start.gif');
 }
 
 .sapUiRoadMapExpanded:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco,
-.sapUiRoadMapExpanded.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_start_hov.gif");
+.sapUiRoadMapExpanded.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_start_hov.gif');
 }
 
-.sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_start_dsbl.gif");
+.sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_start_dsbl.gif');
 }
 
-.sapUiRoadMapExpanded.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_start_hov.gif");
+.sapUiRoadMapExpanded.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_start_hov.gif');
 }
 
-.sapUiRoadMapStepEnd.sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
+.sapUiRoadMapStepEnd.sapUiRoadMapExpanded > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
 	left: 2px;
-	background-image: url("img/roadmap/roundtrip_end.gif");
+	background-image: url('img/roadmap/roundtrip_end.gif');
 }
 
 .sapUiRoadMapStepEnd.sapUiRoadMapExpanded:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco,
-.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_end_hov.gif");
+.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_end_hov.gif');
 }
 
-.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_end_dsbl.gif");
+.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapDisabled > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_end_dsbl.gif');
 }
 
-.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco{
-	background-image: url("img/roadmap/roundtrip_end_hov.gif");
+.sapUiRoadMapStepEnd.sapUiRoadMapExpanded.sapUiRoadMapSelected > .sapUiRoadMapStepBox > .sapUiRoadMapStepIco {
+	background-image: url('img/roadmap/roundtrip_end_hov.gif');
 }
 
-.sapUiRoadMapStep:hover > .sapUiRoadMapTitle{
+.sapUiRoadMapStep:hover > .sapUiRoadMapTitle {
 	color: @sapUiLinkHover;
 }
 
-.sapUiRoadMapStep.sapUiRoadMapDisabled:hover > .sapUiRoadMapTitle{
-	color: @sapUiContentDisabledTextColor;
+.sapUiRoadMapStep.sapUiRoadMapDisabled:hover > .sapUiRoadMapTitle {
+	color: var(--sapContent_DisabledTextColor);
 }
 
-.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapTitle{
-	color: @sapUiContentForegroundTextColor; // @sapUiBaseText = #000000
+.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapTitle {
+	color: var(--sapContent_ForegroundTextColor);
 }
 
-.sapUiRoadMapStep:hover > .sapUiRoadMapStepBox{
-	background-color: @sapUiHighlight;
+.sapUiRoadMapStep:hover > .sapUiRoadMapStepBox {
+	background-color: var(--sapHighlightColor);
 	background-image: none;
 	box-shadow: none;
-	border: 1px solid @sapUiButtonHoverBorderColor;
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
+	border: 1px solid var(--sapButton_Hover_BorderColor);
+	color: var(--sapHighlightTextColor);
 }
 
-.sapUiRoadMapStep.sapUiRoadMapDisabled:hover > .sapUiRoadMapStepBox{
+.sapUiRoadMapStep.sapUiRoadMapDisabled:hover > .sapUiRoadMapStepBox {
 	background-color: @sapUiButtonDisabledBackground;
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	border: 1px solid  @sapUiButtonDisabledBorderColor;
 	box-shadow: none;
 }
 
-.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox{
-	color: @sapUiHighlightTextColor; // @sapUiTextSelection = #ffffff
-	background-color: @sapUiHighlight;
-	border-color: @sapUiButtonHoverBorderColor;
+.sapUiRoadMapStep.sapUiRoadMapSelected:hover > .sapUiRoadMapStepBox {
+	color: var(--sapHighlightTextColor);
+	background-color: var(--sapHighlightColor);
+	border-color: var(--sapButton_Hover_BorderColor);
 	box-shadow: none;
 }
 
 /* Delimiter Styles */
 
-.sapUiRoadMapDelim{
-	background-color: @sapUiContentForegroundColor; // @sapUiLightBG = #e5e5e5
+.sapUiRoadMapDelim {
+	background-color: var(--sapContent_ForegroundColor);
 	height: 22px;
 	width: 7px;
 }
 
-.sapUiRoadMapStartScroll{
-	background-color: @sapUiHighlight;
+.sapUiRoadMapStartScroll {
+	background-color: var(--sapHighlightColor);
 }
 
-.sapUiRoadMapEndScroll{
-	background-color: @sapUiHighlight;
+.sapUiRoadMapEndScroll {
+	background-color: var(--sapHighlightColor);
 }
 
-.sapUiRoadMapStartScroll:after,
-.sapUiRoadMapStartFixed:after,
-.sapUiRoadMapEndScroll:after,
-.sapUiRoadMapEndFixed:after{
-	content: "";
+.sapUiRoadMapStartScroll::after,
+.sapUiRoadMapStartFixed::after,
+.sapUiRoadMapEndScroll::after,
+.sapUiRoadMapEndFixed::after {
+	content: '';
 }

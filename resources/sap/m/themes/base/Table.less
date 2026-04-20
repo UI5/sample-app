@@ -35,12 +35,28 @@
 	height: 0;
 }
 
-.sapMTableScreenReaderOnly,
-.sapMListTblCellDup > .sapMListTblCellDupCnt {
+.sapMTableScreenReaderOnly {
 	/* hide content visually but have it available for screen readers */
 	position: absolute;
 	clip: rect(0, 0, 0, 0);
 	height: 0;
+}
+
+.sapMListTblCellDup > .sapMListTblCellDupCnt {
+	/* hide content visually but have it available for screen readers */
+	opacity: 0;
+	transition: opacity 300ms ease;
+}
+
+.sapMListTblRow:active > .sapMListTblCellDup > .sapMListTblCellDupCnt,
+.sapMListTblRow:focus-within > .sapMListTblCellDup > .sapMListTblCellDupCnt {
+	opacity: 1;
+}
+
+@media (hover: hover) {
+	.sapMListTblRow:hover > .sapMListTblCellDup > .sapMListTblCellDupCnt {
+		opacity: 1;
+	}
 }
 
 tr.sapMListTblHeaderNone > .sapMTableTH {
@@ -153,7 +169,7 @@ tr.sapMListTblHeaderNone > .sapMTableTH {
 	font-size: @sapUiListTableTextSize;
 }
 
-.sapMListTbl .sapUiIcon:not(.sapMLIBImgNav):not(.sapMBtnIcon):not(.sapFAvatarTypeIcon) {
+.sapMListTbl .sapUiIcon:not(.sapMBtnIcon):not(.sapFAvatarTypeIcon) {
 	font-size: @sapUiListTableIconSize;
 }
 
@@ -185,6 +201,11 @@ tr.sapMListTblHeaderNone > .sapMTableTH {
 
 .sapMListTblActionsCol {
 	padding: 0;
+
+	& > .sapMLIBActions {
+		margin-inline: 0.25rem;
+		justify-content: flex-end;
+	}
 }
 
 .sapMTable1ActionsCol {
@@ -195,11 +216,16 @@ tr.sapMListTblHeaderNone > .sapMTableTH {
 	width: 5.125rem;
 }
 
+.sapMTable3ActionsCol {
+	width: 7.5rem;
+}
+
 .sapMLIB.sapMListTblRow {
 	border-bottom: 0;
 }
 
-.sapMListTblCell.sapMListTblCellDup {
+.sapMListTblCell.sapMListTblCellDup,
+.sapMListTblSelCol:has( + .sapMListTblCellDup) {
 	border-color: transparent;
 }
 
@@ -326,6 +352,10 @@ tr.sapMListTblHeaderNone > .sapMTableTH {
 
 	.sapMTable2ActionsCol {
 		width: 4.625rem;
+	}
+
+	.sapMTable3ActionsCol {
+		width: 6.75rem;
 	}
 
 	& .sapMSticky12 .sapMGHLI {
@@ -593,11 +623,6 @@ html[data-sap-ui-browser^='ff'] .sapMTableRowCustomFocus:focus > :not(.sapMListT
 .sapUiSizeCompact .sapMListTblSelCol {
 	line-height: 2rem;
 	text-align: center;
-}
-
-/* decrease the navigation icon size */
-.sapUiSizeCompact .sapMListTblNavCol > .sapMLIBImgNav {
-	width: auto;
 }
 
 .sapUiSizeCompact .sapMListTbl:not(.sapMListModeDelete) {

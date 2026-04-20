@@ -258,22 +258,21 @@ sap.ui.define(["sap/base/i18n/Localization", "sap/ui/core/Renderer", "sap/ui/cor
 
 		const iActionCount = oTable._getItemActionCount();
 		if (iActionCount > 0) {
+			const iEffectiveActionCount = oTable.doItemsNeedTypeColumn() ? iActionCount + 1 : iActionCount;
 			openStartCell("Actions", "ActionsCol", "TABLE_ROW_ACTIONS");
-			rm.class(`sapMTable${iActionCount}ActionsCol`);
+			rm.class(`sapMTable${iEffectiveActionCount}ActionsCol`);
 			rm.openEnd();
 			this.hideFromScreenReader(rm, "TABLE_ROW_ACTIONS");
 			rm.close(sCellTag);
 			iIndex++;
-		}
-
-		if (oTable.doItemsNeedTypeColumn()) {
+		} else if (oTable.doItemsNeedTypeColumn()) {
 			openStartCell("Nav", "NavCol").openEnd();
 			this.hideFromScreenReader(rm, "TABLE_ROW_ACTIONS");
 			rm.close(sCellTag);
 			iIndex++;
 		}
 
-		if (iActionCount === -1 && iModeOrder == 1) {
+		if (iActionCount < 0 && iModeOrder === 1) {
 			openStartCell("ModeCol", "SelCol").openEnd();
 			this.hideFromScreenReader(rm, sMode == "Delete" ? "TABLE_ROW_ACTIONS" : "TABLE_SELECTION_COLUMNHEADER");
 			rm.close(sCellTag);

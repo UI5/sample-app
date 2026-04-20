@@ -20,12 +20,15 @@ sap.ui.define([
 	"sap/m/VBox",
 	"sap/m/Bar",
 	"sap/m/Title",
-	"sap/ui/core/Control"
-], function(Core, Element, HTML, Button, Image, PDFViewer, Dialog, IllustratedMessage, IllustratedMessageType, Carousel, Log, Library, VBox, Bar, Title, Control) {
+	"sap/ui/core/Control",
+	"sap/ui/core/InvisibleMessage",
+	"sap/ui/core/library"
+], function(Core, Element, HTML, Button, Image, PDFViewer, Dialog, IllustratedMessage, IllustratedMessageType, Carousel, Log, Library, VBox, Bar, Title, Control, InvisibleMessage, coreLibrary) {
 	"use strict";
 
 	// get resource translation bundle;
 	const oLibraryResourceBundle = Library.getResourceBundleFor("sap.m");
+	const InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
 	/**
 	 * Media types that can be previewed.
@@ -71,7 +74,7 @@ sap.ui.define([
 	 * @constructor
 	 * @public
 	 * @since 1.120
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @extends sap.ui.core.Element
 	 * @name sap.m.upload.FilePreviewDialog
 	 */
@@ -374,6 +377,7 @@ sap.ui.define([
 					// oCarousel.setActivePage(oTargetPage);
 
 					const sNewDialogTitle = aItems[iIndex].getFileName();
+					InvisibleMessage.getInstance().announce(sNewDialogTitle, InvisibleMessageMode.Polite);
 
 					var oTitle = this._oDialog?.getCustomHeader()?.getContentLeft()[0];
 					oTitle?.setText(sNewDialogTitle);

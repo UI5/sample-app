@@ -91,7 +91,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -313,6 +313,17 @@ sap.ui.define([
 		"sap-icon://edit": Library.getResourceBundleFor("sap.m").getText("AVATAR_TOOLTIP_EDIT")
 	};
 
+	/**
+	 * The predefined ARIA role values for the Avatar control.
+	 *
+	 * @type {object}
+	 */
+	Avatar.ACCESSIBILITY_ROLE = {
+		BUTTON: "button",
+		PRESENTATION: "presentation",
+		IMAGE: "img"
+	};
+
 	Avatar.prototype.init = function () {
 		// Property holding the actual display type of the avatar
 		this._sActualType = null;
@@ -380,7 +391,20 @@ sap.ui.define([
 	 * @protected
 	 */
 	Avatar.prototype.getAccessibilityInfo = function () {
-		return this.getDecorative() ? { description: "" } : null; // SNOW DINC0365871
+		var sRole = this._getRole();
+
+		// Decorative avatars should return empty object
+		if (this.getDecorative() && !this.hasListeners("press")) {
+			return {};
+		}
+
+		return {
+			role: sRole,
+			type: Library.getResourceBundleFor("sap.m").getText(sRole === Avatar.ACCESSIBILITY_ROLE.BUTTON ? "ACC_CTR_TYPE_BUTTON" : "ACC_CTR_TYPE_IMAGE"),
+			description: this._getAriaLabel(),
+			focusable: sRole === Avatar.ACCESSIBILITY_ROLE.BUTTON,
+			enabled: this.getEnabled()
+		};
 	};
 
 	Avatar.prototype.exit = function () {
@@ -519,7 +543,7 @@ sap.ui.define([
 
 		if (this.hasListeners("press")) {
 			this.$().attr("tabindex", "0");
-			this.$().attr("role", "button");
+			this.$().attr("role", Avatar.ACCESSIBILITY_ROLE.BUTTON);
 		}
 
 		return this;
@@ -531,7 +555,7 @@ sap.ui.define([
 
 		if (!this.hasListeners("press")) {
 			this.$().removeAttr("tabindex");
-			this.$().attr("role", "img");
+			this.$().attr("role", Avatar.ACCESSIBILITY_ROLE.IMAGE);
 		}
 
 		return this;
@@ -628,7 +652,11 @@ sap.ui.define([
 	 Avatar.prototype._areInitialsValid = function (sInitials) {
 		var validInitials = /^[a-zA-Z\xc0-\xd6\xd8-\xdc\xe0-\xf6\xf8-\xfc]{1,3}$/;
 		if (!validInitials.test(sInitials)) {
-			Log.warning("Initials should consist of only 1,2 or 3 latin letters", this);
+			// Only log a warning when initials are explicitly provided but invalid
+			// Don't warn when initials are empty/null (valid use case for fallback to icon)
+			if (sInitials) {
+				Log.warning("Initials should consist of only 1,2 or 3 latin letters", this);
+			}
 			// if there is no actual type or the actual type is initials but they are not valid, set the actual type to icon
 			return false;
 		}
@@ -701,7 +729,8 @@ sap.ui.define([
 		} else if (sInitials && this._getInitialsValid()) {
 			this._sActualType = AvatarType.Initials;
 		} else {
-			Log.warning("No src and initials were provided or initials are provided, but are not valid", this);
+			// Fallback to Icon when no src and no valid initials
+			// Warning is logged in _areInitialsValid when initials are explicitly provided but invalid
 			this._sActualType = AvatarType.Icon;
 		}
 
@@ -827,6 +856,73 @@ sap.ui.define([
 
 	Avatar.prototype._getDefaultTooltip = function() {
 		return Library.getResourceBundleFor("sap.m").getText("AVATAR_TOOLTIP");
+	};
+
+	/**
+	 * Returns the aria-label value for the Avatar control.
+	 * This method contains the logic that determines what should be set on the aria-label attribute.
+	 *
+	 * @returns {string} The aria-label value
+	 * @private
+	 */
+	Avatar.prototype._getAriaLabel = function() {
+		var bHasListener = this.hasListeners("press"),
+			bDecorative = this.getDecorative(),
+			sTooltip = this.getTooltip_AsString(),
+			sInitials = this.getInitials(),
+			sDefaultTooltip = this._getDefaultTooltip(),
+			sCustomBadgeTooltip = this._getBadgeTooltip(),
+			sBadgeTooltip = (sCustomBadgeTooltip && sCustomBadgeTooltip !== sDefaultTooltip) ? sDefaultTooltip + " " + sCustomBadgeTooltip : sDefaultTooltip;
+
+		// If decorative and no press listener, return empty string
+		if (bDecorative && !bHasListener) {
+			return "";
+		}
+
+		// If tooltip property is set, use it
+		if (sTooltip) {
+			return sTooltip;
+		}
+
+		// If badge tooltip exists and differs from default
+		if (sBadgeTooltip) {
+			// If both initials and badgeTooltip are available, incorporate initials
+			if (sInitials) {
+				return sBadgeTooltip + " " + sInitials;
+			}
+			// If only badgeTooltip is available
+			return sBadgeTooltip;
+		}
+
+		// If only initials are available
+		if (sInitials) {
+			return sDefaultTooltip + " " + sInitials;
+		}
+
+		// No tooltip set nor initials - set only the default text
+		return sDefaultTooltip;
+	};
+
+	/**
+	 * Returns the ARIA role for the Avatar control.
+	 * This method contains the logic that determines what role should be set on the control.
+	 *
+	 * @returns {string} The ARIA role value
+	 * @private
+	 */
+	Avatar.prototype._getRole = function() {
+		var bHasListener = this.hasListeners("press"),
+			bDecorative = this.getDecorative(),
+			bHasSrc = (!this._getUseDefaultIcon() && this.getDetailBox()) || (!this.getDetailBox()),
+			bShouldBeClickable = bHasListener && bHasSrc;
+
+		if (bShouldBeClickable) {
+			return Avatar.ACCESSIBILITY_ROLE.BUTTON;
+		} else if (bDecorative) {
+			return Avatar.ACCESSIBILITY_ROLE.PRESENTATION;
+		} else {
+			return Avatar.ACCESSIBILITY_ROLE.IMAGE;
+		}
 	};
 
 	Avatar.prototype._getBadgeIconSource = function() {

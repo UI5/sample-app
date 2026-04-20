@@ -24,12 +24,11 @@ sap.ui.define([
 	 *
 	 * Applications can inherit from this element to add own fields.
 	 * @extends sap.ui.unified.NonWorkingPeriod
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
-	 * @since 1.127.0
-	 * @experimental Since version 1.127.0.
+	 * @ui5-experimental-since 1.127.0
 	 * @alias sap.ui.unified.RecurringNonWorkingPeriod
 	 */
 	var RecurringNonWorkingPeriod = NonWorkingPeriod.extend("sap.ui.unified.RecurringNonWorkingPeriod", /** @lends sap.ui.unified.RecurringNonWorkingPeriod.prototype */ { metadata : {

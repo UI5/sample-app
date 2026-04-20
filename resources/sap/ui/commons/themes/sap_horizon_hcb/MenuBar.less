@@ -4,14 +4,14 @@
 /* ======================================= */
 
 .sapUiMnuBar {
-	background-color: @sapUiGroupContentBackground;
-	border-color: @sapUiContentForegroundBorderColor;
+	background-color: var(--sapGroup_ContentBackground);
+	border-color: var(--sapContent_ForegroundBorderColor);
 	font-size: @sapUiDesktopFontSize;
 	font-weight: bold;
 }
 
 .sapUiMnuBarDsbl {
-	border-color: @sapUiContentForegroundBorderColor;
+	border-color: var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiMnuBarArea {
@@ -29,45 +29,37 @@
 }
 
 .sapUiMnuBarItmDsbl {
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 }
 
 .sapUiMnuBarItm > span {
-	background-image: url("img/menu/trg.png");
+	background-image: url('img/menu/trg.png');
 	background-position: right bottom;
 	background-repeat: no-repeat;
 	padding-right: 13px;
 	padding-bottom: 2px;
 }
 
-html[dir=rtl][data-sap-ui-browser*="ie"] .sapUiMnuBarItm > span {
-	display: inline-block;
-}
-
 .sapUiMnuBarItm.sapUiMnuBarItmDsbl > span {
-	background-image: url("img/menu/trg-dis.png");
+	background-image: url('img/menu/trg-dis.png');
 }
 
 .sapUiMnuBarItm:focus {
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiMnuBarItm.sapUiMnuBarItmDsbl:focus {
 	background-color: lighten(@sapUiGroupContentBackground, 75.3);
 }
 
-.sapUiMnuBarOvrFlw:after{
-	content: "";
+.sapUiMnuBarOvrFlw::after {
+	content: '';
 }
 
-.sapUiMnuBarOvrFlw > span{
-	background-image: url("img/menu/bar-overflow.gif");
+.sapUiMnuBarOvrFlw > span {
+	background-image: url('img/menu/bar-overflow.gif');
 	background-position: center center;
 	padding-left: 9px;
-}
-
-html[dir=rtl][data-sap-ui-browser*="ie"] .sapUiMnuBarItm.sapUiMnuBarOvrFlw > span {
-	display: inline;
 }
 
 .sapUiMnuBarItm.sapUiMnuBarOvrFlw {

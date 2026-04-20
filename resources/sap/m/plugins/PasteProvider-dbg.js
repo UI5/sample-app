@@ -28,7 +28,7 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @public
 	 * @since 1.91
@@ -217,7 +217,7 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui
 					}
 					sap.ui.require(["sap/ui/core/ShortcutHintsMixin"], function(ShortcutHintsMixin) {
 						ShortcutHintsMixin.addConfig(oButton, {
-							message: oBundle.getText(Device.os.macintosh ? "PASTEPROVIDER_SHORTCUT_MAC" : "PASTEPROVIDER_SHORTCUT_WIN")
+							shortcut: "Ctrl+V" // ShortcutHintMixin takes care of normalizing and localizing
 						}, Element.getElementById(oPlugin.getPasteFor()) || oButton);
 					});
 				}

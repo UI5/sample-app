@@ -444,7 +444,7 @@ function(jQuery,
 			return;
 		}
 		if (this._oRenderParent && oDomRef) {
-			this._oRenderParent.innerHTML = "";
+			this._oRenderParent.replaceChildren();
 		}
 		this._oRenderParent = oDomRef || this._oRenderParent;
 		if (this._oRootObject) {

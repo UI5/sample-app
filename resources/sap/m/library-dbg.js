@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.146.0",
+		version: "1.147.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -1808,7 +1808,6 @@ sap.ui.define([
 		/**
 		 * The Stretch frame type adjusts the size of the control to the parent.
 		 * @since 1.96
-		 * @experimental
 		 */
 		 Stretch: "Stretch"
 
@@ -1986,8 +1985,8 @@ sap.ui.define([
 		 * Action Mode (Two lines for the header).
 		 *
 		 * Generic Tile renders buttons that are specified under 'actionButtons' aggregation
+		 * @since 1.96.0
 		 * @public
-		 * @experimental since 1.96
 		 */
 		ActionMode: "ActionMode",
 
@@ -1995,8 +1994,8 @@ sap.ui.define([
 		 * Article Mode (Two lines for the header and one line for the subtitle).
 		 *
 		 * Enables Article Mode.
+		 * @since 1.96.0
 		 * @public
-		 * @experimental since 1.96
 		 */
 		ArticleMode: "ArticleMode",
 
@@ -2019,7 +2018,6 @@ sap.ui.define([
 		 * It is applicable only for the OneByOne FrameType and TwoByHalf FrameType.
 		 * @public
 		 * @since 1.96
-		 * @experimental Since 1.96
 		 */
 		IconMode : "IconMode"
 	};
@@ -2239,7 +2237,6 @@ sap.ui.define([
 	 *
 	 * @enum {string}
 	 * @since 1.122
-	 * @experimental since 1.122
 	 * @public
 	 */
 	thisLib.ContentConfigType = {
@@ -2771,7 +2768,7 @@ sap.ui.define([
 	 *
 	 * @enum {string}
 	 * @public
-	 * @experimental Since 1.121. Behavior might change.
+	 * @ui5-experimental-since 1.121
 	 */
 	thisLib.IconTabFilterInteractionMode = {
 
@@ -3285,14 +3282,14 @@ sap.ui.define([
 		Inactive : "Inactive",
 
 		/**
-		 * Enables detail button of the list item that fires <code>detailPress</code> event.
-		 * Also see {@link sap.m.ListItemBase#attachDetailPress}.
+		 * Enables the detail button of the list item that fires the {@link sap.m.ListItemBase#event:detailPress detailPress} event.
 		 * @public
 		 */
 		Detail : "Detail",
 
 		/**
-		 * Indicates the list item is navigable to show extra information about the item.
+		 * Enables the navigation button of the list item to navigate and display additional information about the item.
+		 * Fires the {@link sap.m.ListBase#event:itemPress} event when pressed.
 		 * @public
 		 */
 		Navigation : "Navigation",

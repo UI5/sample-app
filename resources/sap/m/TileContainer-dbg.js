@@ -48,7 +48,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -1246,7 +1246,7 @@ function(
 		oScrollRight = this.$("rightscroller")[0];
 
 		if (this._oPagesInfo.getCount() == undefined || this._oPagesInfo.getCount() <= 1) { //reset pager if there is no need of it
-			oPager.innerHTML = "";
+			oPager.replaceChildren();
 			oScrollRight.style.right = "-100px";
 			oScrollLeft.style.left = "-100px";
 			oScrollLeft.style.display = "none";

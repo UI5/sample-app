@@ -4,39 +4,41 @@
 /* ============================================ */
 
 .sapUiMsgToastMsg {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
-	border-color: @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
+	background-color: lighten(@sapUiContentForegroundColor, 10);
+	border-color: var(--sapContent_ForegroundBorderColor);
 }
 
 /* Priorities affect the coloring of the Toast */
 .sapUiMsgTError .sapUiMsgToastMsg {
-	background-color: @sapUiFieldInvalidBackground;
-	border-color: @sapUiFieldInvalidColor;
+	background-color: var(--sapField_InvalidBackground);
+	border-color: var(--sapField_InvalidColor);
 }
+
 .sapUiMsgTWarning .sapUiMsgToastMsg {
-	background-color: @sapUiFieldWarningBackground;
-	border-color: @sapUiFieldWarningColor;
+	background-color: var(--sapField_WarningBackground);
+	border-color: var(--sapField_WarningColor);
 }
+
 .sapUiMsgTSuccess .sapUiMsgToastMsg {
-	background-color: @sapUiFieldSuccessBackground;
-	border-color: @sapUiFieldSuccessColor;
+	background-color: var(--sapField_SuccessBackground);
+	border-color: var(--sapField_SuccessColor);
 }
 
 /* Styling of the down-arrow is Type/Priority dependent */
 .sapUiMsgToastArrow {
-	background-image: url("img/messagebar/toastarrow_multi.gif");
+	background-image: url('img/messagebar/toastarrow_multi.gif');
 }
 
 .sapUiMsgTError .sapUiMsgToastArrow {
-	background-image: url("img/messagebar/toastarrow_Error.gif");
+	background-image: url('img/messagebar/toastarrow_Error.gif');
 }
 
 .sapUiMsgTWarning .sapUiMsgToastArrow {
-	background-image: url("img/messagebar/toastarrow_Warning.gif");
+	background-image: url('img/messagebar/toastarrow_Warning.gif');
 }
 
 .sapUiMsgTSuccess .sapUiMsgToastArrow {
-	background-image: url("img/messagebar/toastarrow_Success.gif");
+	background-image: url('img/messagebar/toastarrow_Success.gif');
 }

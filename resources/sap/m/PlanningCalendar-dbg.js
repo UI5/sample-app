@@ -210,7 +210,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -2101,6 +2101,7 @@ sap.ui.define([
 							primaryCalendarType: this.getPrimaryCalendarType(),
 							interval: iIntervals,
 							viewKey: sKey,
+							intervalType: sIntervalType,
 							showWeekNumbers: this.getShowWeekNumbers(),
 							calendarWeekNumbering: this.getCalendarWeekNumbering()
 						});
@@ -2110,6 +2111,7 @@ sap.ui.define([
 						this._oCalendarWeeks.setPrimaryCalendarType(this.getPrimaryCalendarType());
 						this._oCalendarWeeks.setStartDate(this.getStartDate());
 						this._oCalendarWeeks.setViewKey(sKey);
+						this._oCalendarWeeks.setIntervalType(sIntervalType);
 					}
 					this._oInfoToolbar.addContent(this._oCalendarWeeks);
 				break;
@@ -2152,6 +2154,7 @@ sap.ui.define([
 							primaryCalendarType: this.getPrimaryCalendarType(),
 							interval: iIntervals,
 							viewKey: CalendarIntervalType.Month,
+							intervalType: CalendarIntervalType.Month,
 							showWeekNumbers: this.getShowWeekNumbers(),
 							calendarWeekNumbering: this.getCalendarWeekNumbering()
 						});
@@ -2161,6 +2164,7 @@ sap.ui.define([
 						this._oCalendarWeeks.setPrimaryCalendarType(this.getPrimaryCalendarType());
 						this._oCalendarWeeks.setStartDate(this.getStartDate());
 						this._oCalendarWeeks.setViewKey(CalendarIntervalType.Month);
+						this._oCalendarWeeks.setIntervalType(CalendarIntervalType.Month);
 					}
 					this._oInfoToolbar.addContent(this._oCalendarWeeks);
 					break;
@@ -2355,16 +2359,16 @@ sap.ui.define([
 			return;
 		}
 
-		if (bOtherMonth) {
-			this.fireStartDateChange();
-		}
-
 		if (oRowInstance &&
 			!(oRowInstance.getMode && oRowInstance.getMode() < 2 && !bOtherMonth)) {
 			this.setStartDate(oStart);
 			oRowInstance.setStartDate(oStart);
 			oRowInstance.setDate(oCurrent);
 			this._addMonthFocusDelegate(oRowInstance);
+		}
+
+		if (bOtherMonth) {
+			this.fireStartDateChange();
 		}
 	};
 
@@ -2581,10 +2585,12 @@ sap.ui.define([
 			oRowHeader = oListItem.getCells()[0];
 			oRowTimeline = oListItem.getCells()[1];
 
-			if (bShowRowHeaders) {
-				oRowTimeline.addAriaLabelledBy(oRowHeader.getId());
-			} else {
-				oRowTimeline.removeAriaLabelledBy(oRowHeader.getId());
+			const sRowHeaderId = oRowHeader.getId();
+
+			if (!bShowRowHeaders) {
+				oRowTimeline.removeAriaLabelledBy(sRowHeaderId);
+			} else if (!oRowTimeline.getAriaLabelledBy().includes(sRowHeaderId)) {
+				oRowTimeline.addAriaLabelledBy(sRowHeaderId);
 			}
 		});
 

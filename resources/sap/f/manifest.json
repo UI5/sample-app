@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.146.0"
+      "version": "1.147.0"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
@@ -49,16 +49,16 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.146",
+      "minUI5Version": "1.147",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.146.0"
+          "minVersion": "1.147.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.146.0"
+          "minVersion": "1.147.0"
         },
         "sap.m": {
-          "minVersion": "1.146.0"
+          "minVersion": "1.147.0"
         }
       }
     },
@@ -192,6 +192,7 @@
           "sap.f.cards.SemanticRole",
           "sap.f.cards.HeaderPosition",
           "sap.f.cards.NumericHeaderSideIndicatorsAlignment",
+          "sap.f.DynamicPageMediaRange",
           "sap.f.DynamicPageTitleArea",
           "sap.f.DynamicPageTitleShrinkRatio",
           "sap.f.IllustratedMessageSize",

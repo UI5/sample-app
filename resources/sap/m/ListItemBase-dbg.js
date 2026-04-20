@@ -12,7 +12,6 @@ sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/Control",
 	"sap/ui/core/IconPool",
-	"sap/ui/core/Icon",
 	"sap/ui/core/InvisibleText",
 	"sap/ui/core/message/MessageType",
 	"sap/ui/core/theming/Parameters",
@@ -35,7 +34,6 @@ function(
 	Device,
 	Control,
 	IconPool,
-	Icon,
 	InvisibleText,
 	MessageType,
 	ThemeParameters,
@@ -68,7 +66,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -542,19 +540,17 @@ function(
 			id: this.getId() + "-imgDel",
 			icon: this.DeleteIconURI,
 			type: ButtonType.Transparent,
-			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_DELETE")
-		}).addStyleClass("sapMLIBIconDel sapMLIBSelectD").setParent(this, null, true).attachPress(function(oEvent) {
-			this.informList("Delete");
-		}, this);
+			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_DELETE"),
+			press: () => {
+				this.informList("Delete");
+			}
+		}).addStyleClass("sapMLIBIconDel sapMLIBSelectD").setParent(this, null, true);
 
-		ShortcutHintsMixin.addConfig(
-			this._oDeleteControl, {
-				messageBundleKey: "LIST_ITEM_DELETE_SHORTCUT"
-			},
-		this._oDeleteControl);
+		ShortcutHintsMixin.addConfig(this._oDeleteControl, {
+			shortcut: "Delete" // Keyboard.Shortcut.Delete, see sap.ui.core/messagebundle.properties
+		}, this._oDeleteControl);
 
 		this._oDeleteControl.useEnabledPropagator(false);
-
 		return this._oDeleteControl;
 	};
 
@@ -582,20 +578,18 @@ function(
 			id: this.getId() + "-imgDet",
 			icon: this.DetailIconURI,
 			type: ButtonType.Transparent,
-			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_EDIT")
-		}).addStyleClass("sapMLIBType sapMLIBIconDet").setParent(this, null, true).attachPress(function() {
-			this.fireDetailTap();
-			this.fireDetailPress();
-		}, this);
+			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_EDIT"),
+			press: () => {
+				this.fireDetailTap();
+				this.fireDetailPress();
+			}
+		}).addStyleClass("sapMLIBType sapMLIBIconDet").setParent(this, null, true);
 
-		ShortcutHintsMixin.addConfig(
-			this._oDetailControl, {
-				messageBundleKey: Device.os.macintosh ? "LIST_ITEM_EDIT_SHORTCUT_MAC" : "LIST_ITEM_EDIT_SHORTCUT"
-			},
-		this._oDetailControl);
+		ShortcutHintsMixin.addConfig(this._oDetailControl, {
+			shortcut: "Ctrl+E" // ShortcutHintsMixin takes care of normalizing and localizing
+		}, this._oDetailControl);
 
 		this._oDetailControl.useEnabledPropagator(false);
-
 		return this._oDetailControl;
 	};
 
@@ -610,15 +604,23 @@ function(
 			return this._oNavigationControl;
 		}
 
-		this._oNavigationControl = new Icon({
+		this._oNavigationControl = new Button({
 			id: this.getId() + "-imgNav",
-			src: this.NavigationIconURI,
+			icon: this.NavigationIconURI,
+			type: ButtonType.Transparent,
 			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_NAVIGATION_ICON"),
-			useIconTooltip: false,
-			decorative: false,
-			noTabStop: true
+			press: () => {
+				this.fireTap();
+				this.firePress();
+				this.informList("Press", this._oNavigationControl);
+			}
 		}).setParent(this, null, true).addStyleClass("sapMLIBType sapMLIBImgNav");
 
+		ShortcutHintsMixin.addConfig(this._oNavigationControl, {
+			shortcut: "Enter" // Keyboard.Shortcut.Enter, see sap.ui.core/messagebundle.properties
+		}, this._oNavigationControl);
+
+		this._oNavigationControl.useEnabledPropagator(false);
 		return this._oNavigationControl;
 	};
 
@@ -639,16 +641,16 @@ function(
 			groupName: this.getListProperty("id") + "_selectGroup",
 			activeHandling: false,
 			selected: this.getSelected(),
-			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "LIST_ITEM_SELECTION")
-		}).addStyleClass("sapMLIBSelectS").setParent(this, null, true).attachSelect(function(oEvent) {
-			var bSelected = oEvent.getParameter("selected");
-			this.setSelected(bSelected);
-			this.informList("Select", bSelected);
-		}, this);
+			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "LIST_ITEM_SELECTION"),
+			select: (oEvent) => {
+				const bSelected = oEvent.getParameter("selected");
+				this.setSelected(bSelected);
+				this.informList("Select", bSelected);
+			}
+		}).addStyleClass("sapMLIBSelectS").setParent(this, null, true);
 
 		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
 		this._oSingleSelectControl.useEnabledPropagator(false);
-
 		return this._oSingleSelectControl;
 	};
 
@@ -668,23 +670,23 @@ function(
 			id: this.getId() + "-selectMulti",
 			activeHandling: false,
 			selected: this.getSelected(),
-			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "LIST_ITEM_SELECTION")
-		}).addStyleClass("sapMLIBSelectM").setParent(this, null, true).addEventDelegate({
+			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "LIST_ITEM_SELECTION"),
+			select: (oEvent) => {
+				const bSelected = oEvent.getParameter("selected");
+				this.setSelected(bSelected);
+				this.informList("Select", bSelected);
+			}
+		}).addEventDelegate({
 			onkeydown: function (oEvent) {
 				this.informList("KeyDown", oEvent);
 			},
 			onkeyup: function (oEvent) {
 				this.informList("KeyUp", oEvent);
 			}
-		}, this).attachSelect(function(oEvent) {
-			var bSelected = oEvent.getParameter("selected");
-			this.setSelected(bSelected);
-			this.informList("Select", bSelected);
-		}, this);
+		}, this).addStyleClass("sapMLIBSelectM").setParent(this, null, true);
 
 		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
 		this._oMultiSelectControl.useEnabledPropagator(false);
-
 		return this._oMultiSelectControl;
 	};
 

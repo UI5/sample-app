@@ -3,11 +3,11 @@
 /* Evening Horizon theme            */
 /* ================================ */
 
-@_sap_ui_ux3_Feed_ToolsIconUrl: url("img/feed/Action_Menu_regular.png");
-@_sap_ui_ux3_Feed_ToolsIconHoverUrl: url("img/feed/Action_Menu_hover.png");
+@_sap_ui_ux3_Feed_ToolsIconUrl: url('img/feed/Action_Menu_regular.png');
+@_sap_ui_ux3_Feed_ToolsIconHoverUrl: url('img/feed/Action_Menu_hover.png');
 
 .sapUiFeed{
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -35,7 +35,7 @@
 
 .sapUiFeedToolbar {
 	margin-top: 2px;
-	background-color: darken(@sapUiContentForegroundColor, 3); // @sapUiMediumBG = #dddddd
+	background-color: darken(@sapUiContentForegroundColor, 3);
 	padding: 3px;
 }
 

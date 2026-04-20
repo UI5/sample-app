@@ -34,7 +34,7 @@ sap.ui.define('sap/ui/debug/ControlTree', [
 	 * @class Control Tree used for the Debug Environment
 	 * @extends sap.ui.base.EventProvider
 	 * @author Martin Schaus, Frank Weigel
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @alias sap.ui.debug.ControlTree
 	 * @private
 	 */
@@ -103,7 +103,7 @@ sap.ui.define('sap/ui/debug/ControlTree', [
 		var oDomRef = this.oParentDomRef;
 		var oUIArea = null,
 			oUIAreas = UIAreaRegistry.all();
-		oDomRef.innerHTML = "";
+		oDomRef.replaceChildren();
 		for (var i in oUIAreas) {
 			var oUIArea = oUIAreas[i],
 				oDomNode = this.createTreeNodeDomRef(oUIArea.getId(),0,"UIArea", this.sTestResourcePath + "sap/ui/core/images/controls/sap.ui.core.UIArea.gif");

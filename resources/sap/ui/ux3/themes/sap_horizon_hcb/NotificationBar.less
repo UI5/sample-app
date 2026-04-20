@@ -4,9 +4,9 @@
 /* =========================================== */
 
 .sapUiNotificationBar {
-	border-top: 1px solid @sapUiBaseColor;
-	border-left: 1px solid @sapUiBaseColor;
-	border-right: 1px solid @sapUiBaseColor;
+	border-top: 1px solid var(--sapBaseColor);
+	border-left: 1px solid var(--sapBaseColor);
+	border-right: 1px solid var(--sapBaseColor);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -19,15 +19,15 @@
 }
 
 .sapUiBarToggle {
-	border-top: 1px solid @sapUiBaseColor;
-	border-left: 1px solid @sapUiBaseColor;
-	border-right: 1px solid @sapUiBaseColor;
+	border-top: 1px solid var(--sapBaseColor);
+	border-left: 1px solid var(--sapBaseColor);
+	border-right: 1px solid var(--sapBaseColor);
 }
 
 .sapUiNotifierMessageCount {
-	background-color: @sapUiHighlight;
-	border-color: @sapUiBaseColor;
-	color : @sapUiBaseColor;
+	background-color: var(--sapHighlightColor);
+	border-color: var(--sapBaseColor);
+	color: var(--sapBaseColor);
 }
 
 .sapUiNotifierMessageCount.sapUiMessage,
@@ -35,6 +35,6 @@
 .sapUiNotifierMessageCount.sapUiMessage.sapUiMessageSuccess,
 .sapUiNotifierMessageCount.sapUiMessage.sapUiMessageWarning,
 .sapUiNotifierMessageCount.sapUiMessage.sapUiMessageError {
-	color : @sapUiBaseColor;
-	background-color: @sapUiSelected;
+	color: var(--sapBaseColor);
+	background-color: var(--sapSelectedColor);
 }

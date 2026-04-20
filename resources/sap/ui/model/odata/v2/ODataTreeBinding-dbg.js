@@ -105,7 +105,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.TreeBinding
 	 * @hideconstructor
 	 * @public
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 */
 	var ODataTreeBinding = TreeBinding.extend("sap.ui.model.odata.v2.ODataTreeBinding", /** @lends sap.ui.model.odata.v2.ODataTreeBinding.prototype */ {
 
@@ -130,7 +130,7 @@ sap.ui.define([
 			this.aSorters = vSorters || [];
 			this.sFilterParams = "";
 
-			this.mNormalizeCache = {};
+			this.mNormalizeCache = FilterProcessor.createNormalizeCache();
 
 			// check filter integrity
 			this.oModel.checkFilter(this.aApplicationFilters);

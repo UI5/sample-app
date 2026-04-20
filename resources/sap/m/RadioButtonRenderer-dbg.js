@@ -84,9 +84,7 @@ sap.ui.define([
 
 		if (!bEnabled) {
 			oRM.class("sapMRbDis");
-		}
-
-		if (bNonEditable) {
+		} else if (bNonEditable) {
 			oRM.class("sapMRbRo");
 		}
 

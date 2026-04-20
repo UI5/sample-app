@@ -189,6 +189,7 @@ sap.ui.define([
 					oBinding.detachRefresh(oBindingInfo.modelRefreshHandler);
 				}
 				oBinding.detachEvents(oBindingInfo.events);
+				that._removeBoundFilters(oBinding);
 				oBinding.destroy();
 				// remove all binding related data from the binding info
 				delete oBindingInfo.binding;
@@ -966,9 +967,13 @@ sap.ui.define([
 		/**
 		 * Removes bound filters for the given binding from the dependents aggregation.
 		 *
-		 * @param {sap.ui.model.ListBinding|sap.ui.model.TreeBinding} oBinding The binding
+		 * @param {sap.ui.model.Binding} oBinding The binding
 		 */
 		_removeBoundFilters: function (oBinding) {
+			if (!oBinding.isA(["sap.ui.model.ListBinding", "sap.ui.model.TreeBinding"])) {
+				return;
+			}
+
 			this.getDependents?.().forEach((oDependent) => {
 				if (oDependent.isA("sap.ui.base.BoundFilter") && oDependent.getBinding() === oBinding) {
 					this.removeDependent(oDependent);

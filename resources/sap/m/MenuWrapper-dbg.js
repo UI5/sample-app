@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @private
@@ -266,7 +266,7 @@ sap.ui.define([
 				oEvent.preventDefault();
 			}
 			this.fireClosePopover();
-		} else if (oEvent.keyCode === KeyCodes.F6 && this.oFocusedEndContentItem) {
+		} else if ((oEvent.keyCode === KeyCodes.F6 || oEvent.keyCode === KeyCodes.F2) && this.oFocusedEndContentItem) {
 			this.oHoveredItem.focus();
 			this.oFocusedEndContentItem = null;
 		} else {

@@ -1,27 +1,27 @@
 /* ========================================== */
 /* CSS for control sap.ui.commons/MessageBar  */
-/* Horizon theme                              */
+/* Morning Horizon theme                      */
 /* ========================================== */
 
 .sapUiMsgBar {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	background-color: @sapUiHighlight;
+	background-color: var(--sapHighlightColor);
 }
 
 /* Styling the Icons-Counters container: */
 .sapUiMsgBarSums {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	background-image: none;
-	border: 1px solid @sapUiContentForegroundBorderColor; // @sapUiDarkBorder = #bfbfbf
+	border: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
 .sapUiMsgBarOpen .sapUiMsgBarSums {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiWhiteBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	background-image: none;
 }
 
 .sapUiMsgBarHome:hover {
-	background-color: @sapUiHighlight;
-	border: 1px solid lighten(@sapUiContentForegroundBorderColor, 25); // @sapUiLightestBorder = #ffffff
+	background-color: var(--sapHighlightColor);
+	border: 1px solid lighten(@sapUiContentForegroundBorderColor, 25);
 }

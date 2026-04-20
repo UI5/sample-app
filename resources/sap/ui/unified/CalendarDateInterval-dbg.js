@@ -64,7 +64,7 @@ sap.ui.define([
 	 * @class
 	 * <code>CalendarDateInterval</code> only visualizes the dates in a one-line interval and allows the selection of a single day.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -349,22 +349,24 @@ sap.ui.define([
 		var sDelimiter = oLocaleData.getIntervalPattern().replace("{0}", "").replace("{1}", "");
 		var sEndYear = this._oYearFormat.format(oEndDate.toUTCJSDate(), true);
 		var sMonth = oTexts.sMonth;
+		var bShownTwoMonts = sMonth.split(sDelimiter).length === 2;
 
 		if (this.getPickerPopup()) {
 			if (oLocaleData.oLocale.sLanguage.toLowerCase() === "ja" || oLocaleData.oLocale.sLanguage.toLowerCase() === "zh") {
-				if (sEndYear != oTexts.sYear) {
+				if (bShownTwoMonts && sEndYear != oTexts.sYear) {
 					sMonth = sMonth.replace(sDelimiter, sDelimiter + sEndYear + " ");
 					sAriaLabel = sAriaLabel.replace(sDelimiter, sDelimiter + sEndYear + " ");
 				}
 				sText = oTexts.sYear + " " + sMonth;
 				sAriaLabel = oTexts.sYear + " " + sAriaLabel;
 			} else {
-				if (sEndYear != oTexts.sYear) {
+				if (bShownTwoMonts && sEndYear != oTexts.sYear) {
 					sMonth = sMonth.replace(sDelimiter, " " + oTexts.sYear + sDelimiter);
 					sAriaLabel = sAriaLabel.replace(sDelimiter, " " + oTexts.sYear + sDelimiter);
 				}
-				sText = sMonth + " " + sEndYear;
-				sAriaLabel = sAriaLabel + " " + sEndYear;
+				var sYear = bShownTwoMonts ? sEndYear : oTexts.sYear;
+				sText = sMonth + " " + sYear;
+				sAriaLabel = sAriaLabel + " " + sYear;
 			}
 			oHeader.setTextButton1(sText, true);
 			oHeader.setAriaLabelButton1(sAriaLabel);
@@ -437,7 +439,8 @@ sap.ui.define([
 			showWeekNumbers: this.getShowWeekNumbers(),
 			primaryCalendarType: this.getPrimaryCalendarType(),
 			interval: this.getDays(),
-			viewKey: CalendarIntervalType.Day
+			viewKey: CalendarIntervalType.Day,
+			intervalType: CalendarIntervalType.Day
 		});
 
 		return oWeekRow;

@@ -4,7 +4,7 @@
 /* =========================================== */
 
 .sapUiSearchField {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	height: 22px;
 }
@@ -37,7 +37,7 @@
 }
 
 .sapUiSearchFieldNoExp .sapUiSearchFieldCb .sapUiSearchFieldIco {
-	right: 0px;
+	right: 0;
 }
 
 .sapUiSearchFieldIco,
@@ -47,16 +47,16 @@
 }
 
 .sapUiSearchFieldIco {
-	background-image: url("img/search/search.png");
+	background-image: url('img/search/search.png');
 }
 
 .sapUiSearchFieldIco:hover {
-	background-image: url("img/search/search_hover.png");
-	background-color: @sapUiFieldHoverHelpBackground;
+	background-image: url('img/search/search_hover.png');
+	background-color: var(--sapField_Hover_HelpBackground);
 }
 
 .sapUiSearchFieldDsbl .sapUiSearchFieldIco {
-	background-image: url("img/search/search_dsbl.png");
+	background-image: url('img/search/search_dsbl.png');
 	background-color: transparent;
 	opacity: 1;
 }
@@ -64,13 +64,13 @@
 .sapUiSearchFieldDsbl .sapUiSearchFieldIco:hover {
 	cursor: auto;
 	opacity: 1;
-	background-image: url("img/search/search_dsbl.png");
+	background-image: url('img/search/search_dsbl.png');
 	background-color: transparent;
 }
 
 .sapUiSearchFieldIco {
 	height: 20px;
-	margin-top: 0px;
+	margin-top: 0;
 	width: 20px;
 	background-position: center center;
 }
@@ -83,26 +83,26 @@
 
 .sapUiSearchFieldClear > .sapUiSearchFieldTf > .sapUiSearchFieldIco,
 .sapUiSearchFieldClear > .sapUiSearchFieldCb > .sapUiSearchFieldIco {
-	background-image: url("img/search/search_unclickable.png");
+	background-image: url('img/search/search_unclickable.png');
 	background-color: transparent;
 }
 
 .sapUiSearchFieldClear.sapUiSearchFieldVal.sapUiSearchFieldDsbl > .sapUiSearchFieldTf > .sapUiSearchFieldIco,
 .sapUiSearchFieldClear.sapUiSearchFieldVal.sapUiSearchFieldDsbl > .sapUiSearchFieldCb > .sapUiSearchFieldIco {
-	background-image: url("img/search/search_dsbl.png");
+	background-image: url('img/search/search_dsbl.png');
 }
 
 .sapUiSearchFieldClear.sapUiSearchFieldVal > .sapUiSearchFieldTf > .sapUiSearchFieldIco,
 .sapUiSearchFieldClear.sapUiSearchFieldVal > .sapUiSearchFieldCb > .sapUiSearchFieldIco{
 	font-size: 0;
 	color: transparent;
-	background-image: url("img/search/clear.png");
+	background-image: url('img/search/clear.png');
 	background-position: center center;
 }
 
 .sapUiSearchFieldClear.sapUiSearchFieldVal > .sapUiSearchFieldTf > .sapUiSearchFieldIco:hover,
 .sapUiSearchFieldClear.sapUiSearchFieldVal > .sapUiSearchFieldCb > .sapUiSearchFieldIco:hover {
-	background-image: url("img/search/clear_hover.png");
+	background-image: url('img/search/clear_hover.png');
 	background-color: transparent;
 }
 
@@ -110,6 +110,6 @@
 .sapUiSearchFieldClear.sapUiSearchFieldDsbl > .sapUiSearchFieldCb > .sapUiSearchFieldIco,
 .sapUiSearchFieldClear.sapUiSearchFieldDsbl > .sapUiSearchFieldTf > .sapUiSearchFieldIco:hover,
 .sapUiSearchFieldClear.sapUiSearchFieldDsbl > .sapUiSearchFieldCb > .sapUiSearchFieldIco:hover {
-	background-image: url("img/search/search_dsbl.png");
+	background-image: url('img/search/search_dsbl.png');
 	background-color: transparent;
 }

@@ -4,95 +4,89 @@
 /* ========================================== */
 
 .sapUiUx3TI {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 }
 
-.sapUiShd.sapUiUx3TI {
-}
-
-.sapUiUx3TIOverlay {
-}
-
 .sapUiUx3TI .sapUiUx3OverlayOverlay {
-	opacity: .60;
+	opacity: 0.6;
 }
 
 .sapUiUx3TICollection {
 	position: absolute;
-	top: 0px;
+	top: 0;
 	left: 29px;
 	bottom: 29px;
-	width:200px;
+	width: 200px;
 	opacity: 1;
 	padding: 0;
 }
 
 .sapUiUx3TICollectionHeader {
 	position: absolute;
-	background-color: @sapUiFieldInvalidColor;
-	top: 0px;
-	left: 0px;
-	height:20px;
-	right:0px;
+	background-color: var(--sapField_InvalidColor);
+	top: 0;
+	left: 0;
+	height: 20px;
+	right: 0;
 	opacity: 1;
-	padding: 8px 0px 0px 10px;
+	padding: 8px 0 0 10px;
 	font-size: 12px;
 	font-weight: bold;
-	color: @sapUiContentContrastTextColor; // @sapUiTextInverted = #ffffff
+	color: var(--sapContent_ContrastTextColor);
 	text-transform: uppercase;
 }
 
 .sapUiUx3TICollectionContent {
 	position: absolute;
 	top: 20px;
-	left: 0px;
-	bottom:40px;
-	right:0px;
+	left: 0;
+	bottom: 40px;
+	right: 0;
 	opacity: 1;
 	padding: 0;
 }
 
 .sapUiUx3TICollectionFooter {
 	position: absolute;
-	left: 0px;
-	bottom:0px;
-	right:0px;
-	height:38px;
-	padding:2px;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	height: 38px;
+	padding: 2px;
 	opacity: 1;
 }
 
 .sapUiUx3TIContentScrollContainer {
 	position: absolute;
-	background-color: @sapUiContentForegroundColor; // @sapUiLightBG = #e5e5e5
-	top: 0px;
-	left: 0px;
-	bottom: 0px;
-	right: 0px;
+	background-color: var(--sapContent_ForegroundColor);
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
 	padding: 0;
-	overflow-y:auto;
-	overflow-x:hidden;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .sapUiUx3TIHeader {
-	background-color: @sapUiContentForegroundColor; // @sapUiLightBG = #e5e5e5
+	background-color: var(--sapContent_ForegroundColor);
 	position: absolute;
-	top: 0px;
-	left: 0px;
+	top: 0;
+	left: 0;
 	width: 270px;
 }
 
 .sapUiUx3TIFacets {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	position: absolute;
-	top: 0px;
+	top: 0;
 	left: 270px;
-	right: 0px;
+	right: 0;
 }
 
 .sapUiUx3TIToolbar {
-	background-color: darken(@sapUiContentForegroundColor, 3); // @sapUiMediumBG = #dddddd
+	background-color: darken(@sapUiContentForegroundColor, 3);
 }
 
 .sapUiUx3TIToolbar > .sapUiUx3ActionBar {
@@ -100,15 +94,15 @@
 }
 
 .sapUiUx3TIHeaderContent {
-	background-color: @sapUiContentForegroundColor; // @sapUiLightBG = #e5e5e5
+	background-color: var(--sapContent_ForegroundColor);
 }
 
 .sapUiUx3TIHeaderContainer {
-	padding: 0px 10px 5px 10px;
+	padding: 0 10px 5px 10px;
 }
 
 .sapUiUx3TIHeaderContainerIdentifier {
-	padding: 10px 10px 0px 10px;
+	padding: 10px 10px 0 10px;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -119,7 +113,7 @@
 .sapUiUx3TIIdentifier {
 	font-size: 16px;
 	font-weight: bold;
-	color: lighten(@sapUiContentForegroundTextColor, 26.5); // @sapUiMediumText = #444444
+	color: lighten(@sapUiContentForegroundTextColor, 26.5);
 	height: 27px;
 	width: 100%;
 	text-transform: uppercase;
@@ -128,14 +122,14 @@
 .sapUiUx3TITitle {
 	font-weight: bold;
 	padding-left: 10px;
-	color: @sapUiBaseText;
+	color: var(--sapTextColor);
 	display: inline-block;
 	vertical-align: top;
-	position:relative;
-	width:67%; /*174px;*/
-	text-overflow:ellipsis;
-	white-space:nowrap;
-	overflow:hidden;
+	position: relative;
+	width: 67%; /*174px;*/
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .sapUiUx3TITitleFirst {
@@ -144,13 +138,12 @@
 
 .sapUiUx3TITitleSecond {
 	font-size: 14px;
-	font-weight: regular;
 	padding-top: 4px;
 }
 
 .sapUiUx3TIIconBar {
 	position: relative;
-	padding: 10px 0px 15px 0px;
+	padding: 10px 0 15px 0;
 }
 
 .sapUiUx3TIIcon {
@@ -158,20 +151,17 @@
 	display: inline-block;
 	width: 48px;
 	height: 48px;
-	border: 1px solid lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc;
+	border: 1px solid lighten(@sapUiContentForegroundBorderColor, 5);
 	border-radius: 6px;
 }
 
-.sapUiUx3TIIcon>IMG {
+.sapUiUx3TIIcon > IMG {
 	width: 100%;
 	height: 100%;
 }
 
-.sapUiUx3TIOverview {
-}
-
 .sapUiUx3TIHRGrey {
-	background-color: darken(@sapUiContentForegroundColor, 43); // @sapUiDarkBG = #777777;
+	background-color: darken(@sapUiContentForegroundColor, 43);
 	border: 0;
 	height: 2px;
 	margin: 0;
@@ -179,7 +169,7 @@
 }
 
 .sapUiUx3TIHRWhite {
-	background-color: lighten(@sapUiContentForegroundColor, 10); // @sapUiLightestBG = #ffffff
+	background-color: lighten(@sapUiContentForegroundColor, 10);
 	border: 0;
 	height: 2px;
 	margin: 0;
@@ -189,16 +179,16 @@
 .sapUiUx3TIHeaderGroupTitle {
 	font-weight: bold;
 	font-size: 12px;
-	color: darken(@sapUiGroupTitleTextColor, 6.5); // @sapUiExtraDarkText = #222222
+	color: darken(@sapUiGroupTitleTextColor, 6.5);
 	text-transform: uppercase;
-	padding-top:7px;
-	text-overflow:ellipsis;
-	white-space:nowrap;
-	overflow:hidden;
+	padding-top: 7px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .sapUiUx3TIHeaderGroupContent {
-	margin: 10px 0px 0px 0px;
+	margin: 10px 0 0 0;
 	font: 12px arial, sans-serif;
 }
 
@@ -206,17 +196,17 @@
 	position: absolute;
 	left: 20px;
 	right: 20px;
-	top: 0px;
+	top: 0;
 	height: 38px;
-	padding: 10px 0px 0px 0px;
+	padding: 10px 0 0 0;
 }
 
 .sapUiUx3TIFacetContent {
 	position: absolute;
-	left: 0px;
-	right: 0px;
+	left: 0;
+	right: 0;
 	top: 40px;
-	bottom: 0px;
+	bottom: 0;
 	overflow-y: auto;
 	overflow-x: auto;
 }
@@ -228,7 +218,6 @@
 
 .sapUiUx3TIFacetThingGroup {
 	width: 50%;
-	/*height: 300px;*/
 	min-width: 400px;
 	display: inline-block;
 	vertical-align: top;
@@ -236,32 +225,31 @@
 
 .sapUiUx3TIFacetThingGroupSpan {
 	width: 100%;
-	/*height: 300px;*/
 	min-width: 600px;
 	display: block;
 	vertical-align: top;
 }
 
 .sapUiUx3TIFacetThingGroupContent {
-	margin: 5px 20px 0px 20px;
+	margin: 5px 20px 0 20px;
 }
 
 .sapUiUx3TIFacetThingGroupContentTitle {
-	margin: 10px 20px 0px 20px;
+	margin: 10px 20px 0 20px;
 	font-weight: bold;
 	font-size: 14px;
-	color: lighten(@sapUiGroupTitleTextColor, 6.5); // @sapUiMediumText = #444444
+	color: lighten(@sapUiGroupTitleTextColor, 6.5);
 	padding-bottom: 8px;
 	text-transform: uppercase;
-	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 5); // @sapUiMediumBorder = #cccccc
-	text-overflow:ellipsis;
-	white-space:nowrap;
-	overflow:hidden;
+	border-bottom: 2px solid lighten(@sapUiContentForegroundBorderColor, 5);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
 .sapUiUx3TIFacetThingGroupContentTitle.HR {
 	margin-top: 8px;
-	padding: 0px;
+	padding: 0;
 	height: 2px;
 }
 
@@ -269,13 +257,13 @@
 	overflow-y: auto;
 	position: absolute;
 	top: 40px;
-	bottom: 0px;
+	bottom: 0;
 	width: 270px;
 }
 
 .sapUiUx3TI.sapUiUx3TINoFrame {
-	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6); // @sapUiLightBorder = #dddddd
-	border-right: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6) // @sapUiLightBorder = #dddddd
+	border-left: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6);
+	border-right: 1px solid lighten(@sapUiContentForegroundBorderColor, 11.6);
 }
 
 .sapUiUx3TI.sapUiUx3TINoFrame .sapUiUx3TV > .sapUiUx3TVContent {

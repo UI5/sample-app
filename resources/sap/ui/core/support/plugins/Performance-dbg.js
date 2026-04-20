@@ -56,7 +56,7 @@ sap.ui.define([
 		 * With this plugIn the performance measurements are displayed
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 * @private
 		 * @alias sap.ui.core.support.plugins.Performance
 		 */
@@ -192,7 +192,7 @@ sap.ui.define([
 				//show "nodata overlay" if there is data
 				sapUiSupportNoDataOverlay.style.display = 'block';
 				domSlider.classList.add('sapUiSupportHidden');
-				domTimelineOverview.innerHTML = '';
+				domTimelineOverview.replaceChildren();
 				return;
 			} else {
 				domSlider.classList.remove('sapUiSupportHidden');

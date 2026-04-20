@@ -9,8 +9,8 @@ sap.ui.define([], function() {
 	/**
 	 * Provide methods for sap.m.routing.Target in sync mode
 	 * @private
-	 * @experimental
-	 * @since 1.33
+	 * @ui5-experimental-since 1.33
+	 * @deprecated as of 1.90
 	 */
 	return {
 

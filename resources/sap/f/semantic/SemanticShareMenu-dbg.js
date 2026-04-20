@@ -301,16 +301,11 @@ sap.ui.define([
 	* @returns {sap.m.Button}
 	*/
 	SemanticShareMenu.prototype._getShareMenuButton = function() {
-		var oContainer, oResourceBundle, sShortcutKey;
+		var oContainer, oResourceBundle;
 
 		if (!this._oShareMenuBtn) {
 			oContainer = this._getContainer();
 			oResourceBundle = Library.getResourceBundleFor("sap.f");
-			sShortcutKey = "SEMANTIC_CONTROL_ACTION_SHARE_SHORTCUT"; // Ctrl+Shift+S
-
-			if (Device.os.macintosh) {
-				sShortcutKey += "_MAC"; // Cmd+Shift+S
-			}
 
 			this._oShareMenuBtn = new OverflowToolbarButton(oContainer.getId() + "-shareButton", {
 				ariaHasPopup: AriaHasPopup.Menu,
@@ -326,7 +321,7 @@ sap.ui.define([
 
 			ShortcutHintsMixin.addConfig(this._oShareMenuBtn, {
 				addAccessibilityLabel: true,
-				message: oResourceBundle.getText(sShortcutKey)
+				shortcut: "Ctrl+Shift+S" // ShortcutHintsMixin takes care of normalizing and localizing
 			});
 		}
 

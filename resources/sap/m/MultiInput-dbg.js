@@ -112,7 +112,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.146.0
+	* @version 1.147.0
 	*
 	* @constructor
 	* @public
@@ -367,6 +367,20 @@ function(
 
 		this._bShowListWithTokens = false;
 		this._bIsValidating = false;
+
+		// This prevents Tokenizer from opening the N-more popup when a Token is focused
+		oTokenizer.addDelegate({
+			onsapshow: function(oEvent) {
+				if (this.getShowValueHelp() && oEvent.srcControl && oEvent.srcControl.isA("sap.m.Token")) {
+					oEvent.setMarked();
+				}
+			},
+			onsaphide: function(oEvent) {
+				if (this.getShowValueHelp() && oEvent.srcControl && oEvent.srcControl.isA("sap.m.Token")) {
+					oEvent.setMarked();
+				}
+			}
+		}, true, this);
 
 		oTokenizer.addEventDelegate({
 			onThemeChanged: this._handleInnerVisibility.bind(this),
@@ -1274,7 +1288,11 @@ function(
 
 		//deselect everything
 		this.getAggregation("tokenizer").selectAllTokens(false);
-		this.selectText(0, 0);
+
+		// Only clear text selection if there actually is one
+		if (this.getFocusDomRef().selectionStart !== this.getFocusDomRef().selectionEnd) {
+			this.selectText(0, 0);
+		}
 
 		if (oPopup.isOpen()) {
 			oTokenizer._togglePopup();

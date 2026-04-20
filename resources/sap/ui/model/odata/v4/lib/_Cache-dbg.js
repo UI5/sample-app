@@ -478,6 +478,8 @@ sap.ui.define([
 	 *   A function which is called when the create has been canceled (after internal clean-up and
 	 *   just before {@link sap.ui.model.odata.v4.lib._GroupLock#cancel}), except if the entity is
 	 *   simply inactive
+	 * @param {function(number)} [fnAt]
+	 *   A function which is called with the insert position
 	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise which is resolved with the created entity when the POST request has been
 	 *   successfully sent and the entity has been marked as non-transient
@@ -486,7 +488,8 @@ sap.ui.define([
 	 * @public
 	 */
 	_Cache.prototype.create = function (oGroupLock, oPostPathPromise, sPath, sTransientPredicate,
-			oEntityData, bAtEndOfCreated, fnErrorCallback, fnSubmitCallback, fnCancelCallback) {
+			oEntityData, bAtEndOfCreated, fnErrorCallback, fnSubmitCallback, fnCancelCallback,
+			fnAt) {
 		var aCollection = this.getValue(sPath),
 			sGroupId = oGroupLock.getGroupId(),
 			sOriginalGroupId = sGroupId, // const :-)
@@ -657,8 +660,10 @@ sap.ui.define([
 		}
 
 		if (bAtEndOfCreated) {
+			fnAt?.(aCollection.$created);
 			aCollection.splice(aCollection.$created, 0, oEntityData);
 		} else {
+			fnAt?.(0);
 			aCollection.unshift(oEntityData);
 		}
 		aCollection.$created += 1;
@@ -3047,8 +3052,8 @@ sap.ui.define([
 	 *
 	 * @param {number} iStart
 	 *   The start index of the range
-	 * @param {number} iEnd
-	 *   The index after the last element
+	 * @param {number} iLength
+	 *   The length of the range
 	 * @param {string} [sSeparateProperty]
 	 *   If set, only expand the given property; types must already be available (see #getTypes) to
 	 *   determine the origin's key properties
@@ -3059,12 +3064,11 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	_CollectionCache.prototype.getResourcePathWithQuery = function (iStart, iEnd,
+	_CollectionCache.prototype.getResourcePathWithQuery = function (iStart, iLength,
 			sSeparateProperty) {
 		var iCreated = this.aElements.$created,
 			sQueryString = this.getQueryString(sSeparateProperty),
 			sDelimiter = sQueryString ? "&" : "?",
-			iExpectedLength = iEnd - iStart,
 			sResourcePath = this.sResourcePath + sQueryString;
 
 		if (iStart < iCreated) {
@@ -3072,11 +3076,11 @@ sap.ui.define([
 		}
 
 		iStart -= iCreated;
-		if (iStart > 0 || iExpectedLength < Infinity) {
+		if (iStart > 0 || iLength < Infinity) {
 			sResourcePath += sDelimiter + "$skip=" + iStart;
 		}
-		if (iExpectedLength < Infinity) {
-			sResourcePath += "&$top=" + iExpectedLength;
+		if (iLength < Infinity) {
+			sResourcePath += "&$top=" + iLength;
 		}
 		return sResourcePath;
 	};
@@ -3403,12 +3407,16 @@ sap.ui.define([
 	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise to be resolved with the requested range given as an OData response object (with
 	 *   "@$ui5.resetCount", "@odata.context", and the rows as an array in the property
-	 *   <code>value</code>, enhanced with a number property <code>$count</code> representing the
-	 *   element count on server-side; <code>$count</code> may be <code>undefined</code>, but not
-	 *   <code>Infinity</code>). If an HTTP request fails, the error from the _Requestor is returned
-	 *   and the requested range is reset to <code>undefined</code>. If the request has been
-	 *   obsoleted by a {@link #reset}, the promise is rejected with an error having a property
-	 *   <code>canceled = true</code>.
+	 *   <code>value</code>, enhanced with:
+	 *   - a number property <code>$count</code> representing the element count on server-side; it
+	 *     may be <code>undefined</code>, but not <code>Infinity</code>,
+	 *   - a number property <code>$created</code> representing the number of all (client-side)
+	 *     created elements (active or inactive),
+	 *   - a number property <code>$inactive</code> representing the number of all inactive
+	 *     created elements.
+	 *   If an HTTP request fails, the error from the _Requestor is returned and the requested range
+	 *   is reset to <code>undefined</code>. If the request has been obsoleted by a {@link #reset},
+	 *   the promise is rejected with an error having a property <code>canceled = true</code>.
 	 * @throws {Error} If given index or length is less than 0
 	 *
 	 * @public
@@ -3417,7 +3425,6 @@ sap.ui.define([
 	_CollectionCache.prototype.read = function (iIndex, iLength, iPrefetchLength, oGroupLock,
 			fnDataRequested, bIndexIsSkip, fnSeparateReceived) {
 		var iCreatedPersisted = 0,
-			oElement,
 			aElementsRange,
 			iEnd,
 			oPromise = this.oPendingRequestsPromise || this.aElements.$tail,
@@ -3444,7 +3451,7 @@ sap.ui.define([
 			iIndex += this.aElements.$created;
 		}
 		for (i = 0; i < this.aElements.$created; i += 1) {
-			oElement = this.aElements[i];
+			const oElement = this.aElements[i];
 			if (_Helper.getPrivateAnnotation(oElement, "transient") === oGroupLock.getGroupId()) {
 				// prepare for client-side filter for newly created persisted (see #handleResponse)
 				iTransientElements += 1;
@@ -3492,6 +3499,10 @@ sap.ui.define([
 			var aElements = that.aElements.slice(iIndex, iIndex + iLength);
 
 			aElements.$count = that.aElements.$count;
+			aElements.$created = that.aElements.$created;
+			aElements.$inactive
+				= that.aElements.slice(0, that.aElements.$created)
+					.filter((oElement) => oElement["@$ui5.context.isInactive"]).length;
 
 			return {
 				"@$ui5.resetCount" : that.iResetCount,
@@ -3690,7 +3701,7 @@ sap.ui.define([
 					value : []
 				})
 				: this.oRequestor.request("GET",
-					this.getResourcePathWithQuery(iStart, iEnd),
+					this.getResourcePathWithQuery(iStart, iEnd - iStart),
 					oGroupLock, undefined, undefined, fnDataRequested),
 			this.fetchTypes()
 		]).then(function (aResult) {
@@ -3837,7 +3848,7 @@ sap.ui.define([
 			oReadRange.promise.catch(() => { /* avoid "Uncaught (in promise)" */ });
 			try {
 				this.mSeparateProperty2ReadRequests[sProperty].push(oReadRange);
-				const sReadUrl = this.getResourcePathWithQuery(iStart, iEnd, sProperty);
+				const sReadUrl = this.getResourcePathWithQuery(iStart, iEnd - iStart, sProperty);
 				const oResult = await this.oRequestor.request("GET", sReadUrl,
 					this.oRequestor.lockGroup("$single", this));
 
@@ -4070,9 +4081,12 @@ sap.ui.define([
 					? "@$ui5.context.isInactive" in oElement
 						|| sTransientGroup && sTransientGroup !== sGroupId
 					: sTransientGroup) {
-				const sPredicate = _Helper.getPrivateAnnotation(oElement, "predicate")
-					|| _Helper.getPrivateAnnotation(oElement, "transientPredicate");
-				mKeptElementPredicates[sPredicate] = true;
+				const sPredicate = _Helper.getPrivateAnnotation(oElement, "predicate");
+				if (sPredicate) {
+					mKeptElementPredicates[sPredicate] = true;
+				}
+				mKeptElementPredicates[_Helper.getPrivateAnnotation(oElement, "transientPredicate")]
+					= true;
 				this.aElements[iCreated] = oElement;
 				iCreated += 1;
 			} else { // Note: inactive elements are always kept
@@ -4169,12 +4183,16 @@ sap.ui.define([
 	 * @param {boolean|number} bInactive
 	 *   The new value, either <code>false</code> to activate it, or <code>1</code> to mark it as
 	 *   inactive, but changed
+	 * @param {object} [mChangeListeners]
+	 *   A map of change listeners by path; used only for ""@$ui5.context.isInactive"", but not for
+	 *   "$count"!
 	 *
 	 * @public
 	 */
-	_CollectionCache.prototype.setInactive = function (sPath, bInactive) {
+	_CollectionCache.prototype.setInactive = function (sPath, bInactive,
+			mChangeListeners = this.mChangeListeners) {
 		const oElement = this.getValue(sPath);
-		_Helper.updateAll(this.mChangeListeners, sPath, oElement,
+		_Helper.updateAll(mChangeListeners, sPath, oElement,
 			{"@$ui5.context.isInactive" : bInactive});
 		if (!bInactive) { // activate
 			_Helper.deletePrivateAnnotation(oElement, "initialData");

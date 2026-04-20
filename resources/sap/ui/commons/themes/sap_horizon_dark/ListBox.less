@@ -4,7 +4,7 @@
 /* ======================================= */
 
 .sapUiLbx {
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
 	border-collapse: separate; /* to prevent inheriting "collapse" */
 }
@@ -18,7 +18,7 @@
 }
 
 .sapUiLbxI:focus {
-	outline: 1px dotted @sapUiContentFocusColor; // @sapUiFocus = #005483
+	outline: 1px dotted var(--sapContent_FocusColor);
 	outline-offset: 0; /* not beautiful because parts of the outline are invisible, but this works across browsers without writing tons of CSS */
 }
 
@@ -42,7 +42,7 @@
 
 .sapUiLbxI:hover:not(.sapUiLbxIDis),
 .sapUiLbx:not(.sapUiLbxDis) > ul > .sapUiLbxI:hover:not(.sapUiLbxISel):not(.sapUiLbxIDis) > span {  /* Fix for IE10 :hover bug - need to set the color on children as well */
-	background-color: @sapUiListHoverBackground;
+	background-color: var(--sapList_Hover_Background);
 }
 
 .sapUiLbxRo:not(.sapUiLbxIDis) > ul > .sapUiLbxI.sapUiLbxISel:hover,
@@ -51,31 +51,18 @@
 	background-color: @sapUiListSelectionHoverBackground;
 }
 
-/*
-no special style for focus!
-
-.sapUiLbxI:focus:not(.sapUiLbxIDis),
-.sapUiLbxRo:not(.sapUiLbxIDis) > ul > .sapUiLbxI.sapUiLbxISel:focus,
-.sapUiLbxStd > ul > .sapUiLbxISel > span:focus,
-.sapUiLbxStd > ul > .sapUiLbxISel:focus,
-.sapUiLbx:not(.sapUiLbxDis) > ul > .sapUiLbxI:focus:not(.sapUiLbxISel):not(.sapUiLbxIDis) > span {
-	background-color: @sapUiListHoverBackground;
-	color: @sapUiHighlightTextColor;
-}
-*/
-
 .sapUiLbxDis > ul > .sapUiLbxISel,
 .sapUiLbxDis > ul > .sapUiLbxI.sapUiLbxISel:hover,
 .sapUiLbxDis > ul > .sapUiLbxI.sapUiLbxISel:focus {
-	background-color: darken(@sapUiContentForegroundColor, 3); // @sapUiMediumBG = #dddddd
-	color: @sapUiHighlightTextColor;
+	background-color: darken(@sapUiContentForegroundColor, 3);
+	color: var(--sapHighlightTextColor);
 }
 
 .sapUiLbxDis,
 .sapUiLbxStd > ul > .sapUiLbxIDis,
 .sapUiLbxDis > ul > .sapUiLbxI:hover,
 .sapUiLbxDis > ul > .sapUiLbxI:focus {
-	color: @sapUiContentDisabledTextColor;
+	color: var(--sapContent_DisabledTextColor);
 	background-color: mix(@sapUiFieldBackground, @sapUiBaseBG, (@sapUiContentDisabledOpacity * 100));
 }
 
@@ -87,8 +74,8 @@ no special style for focus!
 
 .sapUiLbxStd > ul > .sapUiLbxISel > span, /* Fix for IE10 bug - need to set the color on children as well */
 .sapUiLbxStd > ul > .sapUiLbxISel {
-	color: @sapUiContentForegroundTextColor; // @sapUiBaseText = #000000
-	background-color: @sapUiListSelectionBackgroundColor;
+	color: var(--sapContent_ForegroundTextColor);
+	background-color: var(--sapList_SelectionBackgroundColor);
 }
 
 .sapUiLbxIIcoFont{

@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.146.0
+		 * @version 1.147.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -98,6 +98,7 @@ sap.ui.define([
 		this.iIndex = iIndex;
 		// this.iSelectionCount = 0; // on demand, for header contexts only
 		this.bKeepAlive = false;
+		// this.bOutdated = undefined; // on demand, for header contexts only; see #isOutdated
 		this.bOutOfPlace = false;
 		this.bSelected = false;
 		this.fnOnBeforeDestroy = undefined;
@@ -422,6 +423,7 @@ sap.ui.define([
 		this.oSyncCreatePromise = undefined;
 		this.bInactive = undefined;
 		this.bKeepAlive = undefined;
+		delete this.bOutdated;
 		this.bSelected = false;
 		// When removing oModel, ManagedObject#getBindingContext does not return the destroyed
 		// context although the control still refers to it
@@ -822,20 +824,24 @@ sap.ui.define([
 				return this.oBinding.fetchValue(this.sPath + "/$count", null, bCached)
 					.then((iCount) => {
 						return {
+							...(this.bOutdated !== undefined
+									&& {"@$ui5.context.isOutdated" : this.bOutdated}),
 							"@$ui5.context.isSelected" : this.bSelected,
 							$count : iCount,
 							$selectionCount : iSelectionCount
 						};
 					});
 			}
-			if (sPath === "@$ui5.context.isSelected") {
-				// @$ui5.context.isSelected is a virtual property for header contexts and not part
-				// of the cache (in contrast to row contexts, where it is saved in the cache).
-				// Therefore, change listeners are saved and fired via the header context
+			if (sPath === "@$ui5.context.isSelected" || sPath === "@$ui5.context.isOutdated") {
+				// @$ui5.context.isSelected and @$ui5.context.isOutdated are virtual properties
+				// for header contexts and not part of the cache (in contrast to row contexts,
+				// where they are saved in the cache). Therefore, change listeners are saved and
+				// fired via the header context
 				this.mChangeListeners ??= {};
 				_Helper.registerChangeListener(this, sPath, oListener);
 
-				return SyncPromise.resolve(this.bSelected);
+				return SyncPromise.resolve(sPath === "@$ui5.context.isSelected"
+					? this.bSelected : this.bOutdated);
 			}
 			if (sPath === "$selectionCount") {
 				this.mChangeListeners ??= {};
@@ -1087,8 +1093,8 @@ sap.ui.define([
 	 *   <ul>
 	 *     <li> the context's root binding is suspended,
 	 *     <li> the value is not primitive,
-	 *     <li> or the context is a header context and the path is not "$count" or
-	 *        "@ui5.context.isSelected".
+	 *     <li> or the context is a header context and the path is neither "$count",
+	 *        "@ui5.context.isOutdated", nor "@ui5.context.isSelected".
 	 *   </ul>
 	 *
 	 * @public
@@ -1385,6 +1391,29 @@ sap.ui.define([
 	};
 
 	/**
+	 * Tells whether this context is outdated:
+	 * <ul>
+	 *   <li><code>undefined</code>: The outdated state has not been determined yet
+	 *   <li><code>true</code>: The context is outdated
+	 *   <li><code>false</code>: The context is up to date
+	 * </ul>
+	 *
+	 * The outdated state can also be accessed via the instance annotation
+	 * "@$ui5.context.isOutdated".
+	 *
+	 * @returns {boolean|undefined}
+	 *   Whether this context is outdated, or <code>undefined</code> if the outdated state has not
+	 *   been determined yet
+	 * @throws {Error} If this context's root binding is suspended
+	 *
+	 * @ui5-experimental-since 1.147
+	 * @public
+	 */
+	Context.prototype.isOutdated = function () {
+		return this.getProperty("@$ui5.context.isOutdated");
+	};
+
+	/**
 	 * Tells whether the created node that this context points to is currently shown out of place.
 	 * It is even shown if it doesn't match current search or filter criteria! All out-of-place
 	 * nodes are shown as the first children of their parent or as the first roots, but not in their
@@ -1403,8 +1432,8 @@ sap.ui.define([
 	/**
 	 * Tells whether this context is currently selected, but not {@link #delete deleted} on the
 	 * client. Selection was experimental as of version 1.111.0. Since 1.122.0, the selection state
-	 * can also be accessed via instance annotation "@$ui5.context.isSelected" at the entity. Note
-	 * that the annotation does not take the deletion state into account.
+	 * can also be accessed via the instance annotation "@$ui5.context.isSelected" at the entity.
+	 * Note that the annotation does not take the deletion state into account.
 	 *
 	 * @returns {boolean} Whether this context is currently selected
 	 *
@@ -1979,9 +2008,15 @@ sap.ui.define([
 	 *   before {@link #requestSideEffects} and make them editable again when the promise resolves;
 	 *   in the error handler, you can repeat the loading of side effects.
 	 *   <br>
-	 *   The promise is rejected if the call wants to refresh a whole list binding (via header
-	 *   context or an absolute path), but the deletion of a row context (see {@link #delete}) is
-	 *   pending with a different group ID.
+	 *   The promise is rejected if
+	 *   <ul>
+	 *     <li> the call attempts to refresh an entire list binding (via header context or an
+	 *       absolute path) while the deletion of a row context (see {@link #delete}) is pending
+	 *       with a different group ID,
+	 *     <li> this is the row context of a list binding with data aggregation which has
+	 *       <code>groupLevels</code> or <code>"grandTotal like 1.84"</code>, or
+	 *     <li> this context does not represent a single entity
+	 *   </ul>
 	 * @throws {Error} If
 	 *   <ul>
 	 *     <li> metadata has not yet been loaded
@@ -2003,9 +2038,6 @@ sap.ui.define([
 	 *     <li> a <code>$PropertyPath</code> has been requested which contains a navigation
 	 *       property that was changed on the server and now targets a different entity
 	 *       (since 1.79.0)
-	 *     <li> this is the row context of a list binding with data aggregation which has
-	 *       <code>groupLevels</code> or <code>"grandTotal like 1.84"</code>
-	 *     <li> this context does not represent a single entity
 	 *   </ul>
 	 * @public
 	 * @see sap.ui.model.odata.v4.ODataContextBinding#getBoundContext
@@ -2364,9 +2396,9 @@ sap.ui.define([
 	 *     <li> the list binding uses or inherits the <code>$$sharedRequest</code> parameter
 	 *       (see {@link sap.ui.model.odata.v4.ODataModel#bindList}),
 	 *     <li> the list binding uses data aggregation but no recursive hierarchy (see
-	 *       {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}), and either the
-	 *       context's root binding is suspended or this context does not represent a single entity
-	 *       (see {@link #isAggregated}),
+	 *       {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}), and the context's root
+	 *       binding is suspended or this context does not represent a single entity (see
+	 *       {@link #isAggregated}),
 	 *     <li> messages are requested, but the model does not use the <code>autoExpandSelect</code>
 	 *       parameter.
 	 *   </ul>
@@ -2420,6 +2452,20 @@ sap.ui.define([
 	Context.prototype.setNewGeneration = function () {
 		iGenerationCounter += 1;
 		this.iGeneration = iGenerationCounter;
+	};
+
+	/**
+	 * Sets this context's outdated attribute. Fires a change event for "@$ui5.context.isOutdated"
+	 * to update bindings.
+	 *
+	 * @param {boolean} bOutdated - Whether this context is outdated
+	 *
+	 * @private
+	 * @see #isOutdated
+	 */
+	Context.prototype.setOutdated = function (bOutdated) {
+		this.bOutdated = bOutdated;
+		_Helper.fireChange(this.mChangeListeners, "@$ui5.context.isOutdated", bOutdated);
 	};
 
 	/**

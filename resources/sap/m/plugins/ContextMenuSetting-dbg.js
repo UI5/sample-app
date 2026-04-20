@@ -4,15 +4,11 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"sap/ui/core/Element",
 	"./PluginBase",
-    "../library",
-	"sap/ui/base/ManagedObjectObserver"
+	"../library"
 ], function(
-	Element,
 	PluginBase,
-    library,
-	ManagedObjectObserver
+	library
 ) {
 
 	"use strict";
@@ -24,7 +20,7 @@ sap.ui.define([
 	 * @class Provides configuration options and an extended behavior for the context menu that is applied to the related control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @public
 	 * @since 1.121
 	 * @alias sap.m.plugins.ContextMenuSetting
@@ -49,86 +45,55 @@ sap.ui.define([
 
 	ContextMenuSetting.findOn = PluginBase.findOn;
 
-	ContextMenuSetting.prototype.init = function(oControl) {
-		this._oObserver = new ManagedObjectObserver(this._observeChanges.bind(this));
-	};
-
-	ContextMenuSetting.prototype.exit = function() {
-		PluginBase.prototype.exit.call(this);
-		this._oObserver.destroy();
-		this._oObserver = null;
-	};
-
-	ContextMenuSetting.prototype._observeChanges = function(mChange) {
-		if (mChange.mutation == "insert") {
-			this._monkeypatch(mChange.child);
-		} else {
-			this._cleanupMonkeypatch(mChange.child);
-		}
-	};
-
-	/**
-	 * Overrides the original openAsContextMenu
-	 *
-	 * @param {sap.ui.core.IContextMenu} oMenu Context Menu.
-	 */
-	ContextMenuSetting.prototype._monkeypatch = function(oMenu) {
-		if (!oMenu || !oMenu.isA("sap.m.Menu")) {
+	ContextMenuSetting.prototype._onBeforeOpenContextMenu = function(oEvent) {
+		if (this.getScope() !== ContextMenuScope.Selection) {
 			return;
 		}
 
-		const that = this;
-		this._original_openAsContextMenu = oMenu.openAsContextMenu;
+		const oControl = this.getControl();
+		const oMenu = oControl.getAggregation(this.getConfig("contextMenuAggregation"));
 
-		oMenu.openAsContextMenu = function(oEvent, vActiveItem) {
-			const oRetVal = that._original_openAsContextMenu.apply(this, arguments);
+		if (!oMenu?.isA("sap.m.Menu")) {
+			return;
+		}
 
-			if (that.getScope() !== ContextMenuScope.Selection) {
-				return oRetVal;
-			}
+		// Detach handlers from the previous menu in case it was not opened
+		this._oMenuWithHandlers?.detachOpen(this._onMenuOpen, this);
+		this._oMenuWithHandlers?.detachClosed(this._onMenuClosed, this);
 
-			const oControl = that.getControl();
-			const aItems = that.getConfig("items", oControl);
-
-			if (vActiveItem instanceof HTMLElement) {
-				vActiveItem = Element.closestTo(vActiveItem, true);
-			}
-			const bActiveItemSelected = that.getConfig("isItemSelected", oControl, vActiveItem);
-
-			aItems.forEach((oItem) => {
-				const bItemSelected = that.getConfig("isItemSelected", oControl, oItem);
-				if (oItem !== vActiveItem && !(bActiveItemSelected && bItemSelected)) {
-					oItem.addStyleClass("sapMContextMenuSettingContentOpacity");
-				}
-			});
-
-			this.attachEventOnce("closed", () => {
-				aItems.forEach((oItem) => {
-					oItem.removeStyleClass("sapMContextMenuSettingContentOpacity");
-				});
-			});
-
-			return oRetVal;
-		};
+		this._vActiveItem = this.getConfig("getActiveItem", oControl, oEvent);
+		this._bActiveItemSelected = this.getConfig("isItemSelected", oControl, this._vActiveItem);
+		this._oMenuWithHandlers = oMenu;
+		oMenu.attachEventOnce("open", this._onMenuOpen, this);
+		oMenu.attachEventOnce("closed", this._onMenuClosed, this);
 	};
 
-	ContextMenuSetting.prototype._cleanupMonkeypatch = function(oMenu) {
-		if (oMenu && this._original_openAsContextMenu) {
-			oMenu.openAsContextMenu = this._original_openAsContextMenu;
-			this._original_openAsContextMenu = null;
-		}
+	ContextMenuSetting.prototype._onMenuOpen = function() {
+		const oControl = this.getControl();
+		const aItems = this.getConfig("items", oControl);
+		aItems.forEach((oItem) => {
+			if (oItem !== this._vActiveItem && !(this._bActiveItemSelected && this.getConfig("isItemSelected", oControl, oItem))) {
+				oItem.addStyleClass("sapMContextMenuSettingContentOpacity");
+			}
+		});
+	};
+
+	ContextMenuSetting.prototype._onMenuClosed = function() {
+		this._oMenuWithHandlers = null;
+		const oControl = this.getControl();
+		const aItems = this.getConfig("items", oControl);
+		aItems.forEach((oItem) => oItem.removeStyleClass("sapMContextMenuSettingContentOpacity"));
 	};
 
 	ContextMenuSetting.prototype.onActivate = function(oControl) {
-		const sAggr = this.getConfig("contextMenuAggregation");
-		this._monkeypatch(oControl.getAggregation(sAggr));
-		this._oObserver.observe(oControl, {aggregations: [sAggr]});
+		this.getConfig("attachBeforeOpenContextMenu", oControl, this._onBeforeOpenContextMenu, this);
 	};
 
 	ContextMenuSetting.prototype.onDeactivate = function(oControl) {
-		const sAggr = this.getConfig("contextMenuAggregation");
-		this._cleanupMonkeypatch(oControl.getAggregation(sAggr));
-		this._oObserver?.unobserve(oControl, {aggregations: [sAggr]});
+		this.getConfig("detachBeforeOpenContextMenu", oControl, this._onBeforeOpenContextMenu, this);
+		this._oMenuWithHandlers?.detachOpen(this._onMenuOpen, this);
+		this._oMenuWithHandlers?.detachClosed(this._onMenuClosed, this);
+		this._oMenuWithHandlers = null;
 	};
 
 	/**
@@ -142,6 +107,15 @@ sap.ui.define([
 			isItemSelected: function(oTable, oItem) {
 				return oItem.getSelected();
 			},
+			getActiveItem: function(oList, oEvent) {
+				return oEvent.getParameter("listItem");
+			},
+			attachBeforeOpenContextMenu: function(oControl, fnHandler, oContext) {
+				oControl.attachBeforeOpenContextMenu(fnHandler, oContext);
+			},
+			detachBeforeOpenContextMenu: function(oControl, fnHandler, oContext) {
+				oControl.detachBeforeOpenContextMenu(fnHandler, oContext);
+			},
 			contextMenuAggregation: "contextMenu"
 		},
 		"sap.ui.table.Table": {
@@ -150,6 +124,16 @@ sap.ui.define([
 			},
 			isItemSelected: function(oTable, oItem) {
 				return oTable._getSelectionPlugin().isSelected(oItem);
+			},
+			getActiveItem: function(oTable, oEvent) {
+				const iRowIndex = oEvent.getParameter("rowIndex");
+				return oTable.getRows().find((oRow) => oRow.getIndex() === iRowIndex);
+			},
+			attachBeforeOpenContextMenu: function(oControl, fnHandler, oContext) {
+				oControl.attachBeforeOpenContextMenu(fnHandler, oContext);
+			},
+			detachBeforeOpenContextMenu: function(oControl, fnHandler, oContext) {
+				oControl.detachBeforeOpenContextMenu(fnHandler, oContext);
 			},
 			contextMenuAggregation: "contextMenu"
 		}

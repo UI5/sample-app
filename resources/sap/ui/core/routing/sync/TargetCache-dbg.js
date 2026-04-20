@@ -9,9 +9,8 @@ sap.ui.define(["sap/ui/core/mvc/_ViewFactory"], function(_ViewFactory) {
 	/**
 	 * Provide methods for sap.ui.core.routing.Views in sync mode
 	 * @private
-	 * @experimental
-	 * @since 1.33
-	 * @deprecated Since 1.90
+	 * @ui5-experimental-since 1.33
+	 * @deprecated as of 1.90
 	 */
 	return {
 

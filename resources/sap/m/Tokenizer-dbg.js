@@ -91,7 +91,7 @@ sap.ui.define([
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormObservingProperties as #getFormObservingProperties
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 *
 	 * @constructor
 	 * @public
@@ -175,13 +175,13 @@ sap.ui.define([
 
 				/**
 				 * Defines whether tokens are displayed on multiple lines.
-				 * @experimental since 1.142
+				 * @ui5-experimental-since 1.142
 				 */
 				multiLine: {type: "boolean", group: "Misc", defaultValue: false},
 
 				/**
 				 * Defines whether "Clear All" button is present. Ensure `multiLine` is enabled, otherwise `showClearAll` will have no effect.
-				 * @experimental since 1.142
+				 * @ui5-experimental-since 1.142
 				 */
 				showClearAll: {type: "boolean", group: "Misc", defaultValue: false}
 
@@ -875,7 +875,7 @@ sap.ui.define([
 		var oListItem = new StandardListItem({
 			selected: true,
 			wrapping: true,
-			type: ListType.Active,
+			type: ListType.Inactive,
 			wrapCharLimit: 10000
 		}).data("tokenId", oToken.getId());
 
@@ -891,7 +891,11 @@ sap.ui.define([
 		oListItem.setTitle(oToken.getText());
 		oListItem.addDelegate({
 			onkeydown: function (oEvent) {
-				oEvent.preventDefault();
+				// Don't preventDefault for Tab key - let List handle it properly
+				// Resolves issue with focus going to a list dummy area item
+				if (oEvent.which !== KeyCodes.TAB) {
+					oEvent.preventDefault();
+				}
 
 				if (!((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.I) && oEvent.which !== KeyCodes.ESCAPE) {
 					return;
@@ -1450,6 +1454,10 @@ sap.ui.define([
 	};
 
 	Tokenizer.prototype.onsaphide = function(oEvent) {
+		if (oEvent.isMarked()) {
+			return;
+		}
+
 		this._togglePopup(this.getTokensPopup());
 	};
 
@@ -1728,6 +1736,9 @@ sap.ui.define([
 			bDeleteToken = oEvent.getMark("tokenDeletePress"),
 			aTokens = this._getVisibleTokens(),
 			oFocusedToken, iFocusIndex, iIndex, iMinIndex, iMaxIndex;
+
+		// Mark event to prevent propagation to parent controls
+		oEvent.setMarked();
 
 		// Close popover if it's open and user clicks on a token in tokenizer
 		if (oTargetToken && this._oPopup && this._oPopup.isOpen()) {

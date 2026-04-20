@@ -117,7 +117,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.146.0";
+	const sVersion = "1.147.0";
 
 	/**
 	 * The buildinfo.
@@ -272,7 +272,7 @@ sap.ui.define([
 					if (typeof fn === "function") {
 						fn();
 					} else {
-						Log.warning("[Deprecated] Do not use inline JavaScript code with the oninit attribute."
+						Log.warning("[DEPRECATED] Do not use inline JavaScript code with the oninit attribute."
 							+ " Use the module:... syntax or the name of a global function");
 						/*
 						 * In contrast to eval(), window.eval() executes the given string
@@ -441,7 +441,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.146.0
+	 * @version 1.147.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -1928,7 +1928,7 @@ sap.ui.define([
 			METHOD =  "sap.ui.core.Core.initLibrary()";
 
 		if ( bLegacyMode ) {
-			Log.error("[Deprecated] library " + sLibName + " uses old fashioned initLibrary() call (rebuild with newest generator)");
+			Log.error("[DEPRECATED] library " + sLibName + " uses old fashioned initLibrary() call (rebuild with newest generator)");
 		}
 
 		if (!sLibName) {

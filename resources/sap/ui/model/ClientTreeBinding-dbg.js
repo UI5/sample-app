@@ -65,7 +65,7 @@ sap.ui.define([
 				oParentContext : {}
 			};
 			this.oCombinedFilter = null;
-			this.mNormalizeCache = {};
+			this.mNormalizeCache = FilterProcessor.createNormalizeCache();
 			this.oTreeData = this.cloneData(this.oModel._getObject(this.sPath, this.oContext));
 
 			if (aApplicationFilters) {

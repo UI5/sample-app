@@ -4,14 +4,14 @@
 /* ======================================== */
 
 .sapUiVerticalSplitterBar {
-	background-image: url(img/splitter/splitter_vert_grip.png);
-	background-color: @sapUiContentForegroundBorderColor;
+	background-image: url('img/splitter/splitter_vert_grip.png');
+	background-color: var(--sapContent_ForegroundBorderColor);
 	font-size: @sapUiDesktopFontSize;
 }
 
 .sapUiHorizontalSplitterBar {
-	background-image: url(img/splitter/splitter_horiz_grip.png);
-	background-color: @sapUiContentForegroundBorderColor;
+	background-image: url('img/splitter/splitter_horiz_grip.png');
+	background-color: var(--sapContent_ForegroundBorderColor);
 	font-size: @sapUiDesktopFontSize;
 }
 
@@ -23,17 +23,7 @@
 	background-color: darken(@sapUiContentForegroundBorderColor, 20);
 }
 
-/*
-.sapUiSplitterFocus,
-.sapUiVSplitterSecondPane:focus,
-.sapUiHSplitterSecondPane:focus,
-.sapUiVSplitterFirstPane:focus,
-.sapUiHSplitterFirstPane:focus {
-	outline: @sapUiBaseBorder solid 3px;
-}
-*/
-
 .sapUiHorizontalSplitterBar:focus,
 .sapUiVerticalSplitterBar:focus {
-	outline: @sapUiContentFocusColor solid 3px;
+	outline: var(--sapContent_FocusColor) solid 3px;
 }

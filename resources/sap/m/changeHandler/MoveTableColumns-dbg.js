@@ -17,7 +17,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.m.changeHandler.MoveTableColumns
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 * @private
 	 * @since 1.48.0
 	 */

@@ -101,7 +101,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 *
 	 * @constructor
 	 * @public

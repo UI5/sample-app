@@ -91,7 +91,7 @@ sap.ui.define([
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormObservingProperties as #getFormObservingProperties
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 *
 	 * @constructor
 	 * @public

@@ -18,7 +18,7 @@ sap.ui.define([
 	 * The base Configuration.
 	 *
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.fl, sap.ui.integration, sap.ui.export, sap.ushell
 	 * @alias module:sap/base/config

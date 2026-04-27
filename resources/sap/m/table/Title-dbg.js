@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 * @since 1.147
 	 *
 	 * @constructor

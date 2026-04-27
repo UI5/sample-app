@@ -80,7 +80,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.147.0
+	 * @version 1.147.1
 	 *
 	 * @constructor
 	 * @public

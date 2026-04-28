@@ -35,7 +35,7 @@ A deployed version of the [sample-app](http://ui5.github.io/sample-app/index.htm
     ```
 * Start the [UI5 Test Runner](https://www.npmjs.com/package/ui5-test-runner) and execute the tests
     ```sh
-    npm run test-ui5
+    npm run test-runner
     ```
 * Run both ESLint and UI5 Test Runner
     ```sh

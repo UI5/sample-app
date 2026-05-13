@@ -8,12 +8,10 @@
 sap.ui.define([
 	"sap/base/i18n/Formatting",
 	"sap/ui/base/Object",
-	"sap/ui/core/Lib",
 	"sap/ui/core/Locale",
 	"sap/ui/core/LocaleData",
 	"sap/ui/core/format/NumberFormat"
-],
-	function(Formatting, BaseObject, Lib, Locale, LocaleData, NumberFormat) {
+], function(Formatting, BaseObject, Locale, LocaleData, NumberFormat) {
 	"use strict";
 
 
@@ -112,7 +110,6 @@ sap.ui.define([
 		oFormat.oLocale = oLocale;
 		oFormat.oLocaleData = LocaleData.getInstance(oLocale);
 		oFormat.oNumberFormat = NumberFormat.getFloatInstance(oFormatOptions, oLocale);
-		oFormat.oBundle = Lib.getResourceBundleFor("sap.ui.core", oLocale.toString());
 
 		oFormat.bBinary = oFormatOptions ? !!oFormatOptions.binaryFilesize : false;
 
@@ -160,7 +157,7 @@ sap.ui.define([
 			}
 		}
 
-		return this.oBundle.getText("FileSize." + oUnit.unit, [sValue]);
+		return this.oLocaleData.getFileSizePattern(oUnit.unit).replace("{0}", sValue);
 	};
 
 	/**
@@ -179,12 +176,12 @@ sap.ui.define([
 
 		for (var i = 0; i < _UNITS.length; i++) {
 			oUnit = _UNITS[i];
-			_sValue = _checkUnit(this.oBundle, oUnit.decimalUnit, sValue);
+			_sValue = _checkUnit(this.oLocaleData, oUnit.decimalUnit, sValue);
 			if (_sValue) {
 				bBinary = false;
 				break;
 			} else {
-				_sValue = _checkUnit(this.oBundle, oUnit.binaryUnit, sValue);
+				_sValue = _checkUnit(this.oLocaleData, oUnit.binaryUnit, sValue);
 				if (_sValue) {
 					bBinary = true;
 					break;
@@ -218,8 +215,8 @@ sap.ui.define([
 	}
 
 
-	function _checkUnit(oBundle, sUnit, sValue){
-		var sPattern = oBundle.getText("FileSize." + sUnit),
+	function _checkUnit(oLocaleData, sUnit, sValue){
+		var sPattern = oLocaleData.getFileSizePattern(sUnit),
 			_oPattern;
 
 		if (sPattern.startsWith("{0}")) {

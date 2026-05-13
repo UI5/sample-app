@@ -8,18 +8,17 @@ sap.ui.define([
 	"sap/base/Event",
 	"sap/base/Log",
 	"sap/base/i18n/Formatting",
-	"sap/base/i18n/Localization",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/i18n/Localization"
 ], (
 	BaseEvent,
 	Log,
 	Formatting,
-	Localization,
-	jQuery
+	Localization
 ) => {
 	'use strict';
 
 	const mRegistry = {};
+	let jQuery;
 
 	function getObjectsToUpdate() {
 		let aObjectsToUpdate = [];
@@ -37,7 +36,7 @@ sap.ui.define([
 		sEventId = "localizationChanged";
 
 		const mChanges = BaseEvent.getParameters(oEvent),
-			oBrowserEvent = jQuery.Event(sEventId, {changes : mChanges}),
+			oBrowserEvent = jQuery?.Event(sEventId, {changes : mChanges}),
 			aObjectsToUpdate = getObjectsToUpdate(),
 			bRTLChanged = mChanges.rtl !== undefined,
 			bLanguageChanged = mChanges.language !== undefined;
@@ -86,8 +85,8 @@ sap.ui.define([
 			if (bRTLChanged && oObject.isA("sap.ui.core.UIArea")) {
 				oObject.invalidate();
 			}
-			// notify Elements via a pseudo browser event (onLocalizationChanged)
-			if (oObject.isA("sap.ui.core.Element")) {
+			// notify Elements via a pseudo browser event (onLocalizationChanged). Element injects jQuery
+			if (jQuery && oObject.isA("sap.ui.core.Element")) {
 				oBrowserEvent._bNoReturnValue = true; // localizationChanged handler aren't allowed to return any value, mark for future fatal throw.
 				oObject._handleEvent(oBrowserEvent);
 			}
@@ -125,6 +124,9 @@ sap.ui.define([
 		},
 		registerForUpdate(sType, fnGetObjects) {
 			mRegistry[sType] = fnGetObjects;
+		},
+		injectJQuery(_jQuery) {
+			jQuery = _jQuery;
 		}
 	};
 

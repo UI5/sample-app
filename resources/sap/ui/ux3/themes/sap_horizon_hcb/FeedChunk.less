@@ -32,7 +32,7 @@
 	font-size: 13px;
 	line-height: 19px;
 	margin-right: 27px;
-	margin-left:58px;
+	margin-left: 58px;
 	margin-top: -2px;
 	min-height: 57px;
 	height: 57px;
@@ -41,13 +41,13 @@
 
 .sapUiFeedChunkComment > .sapUiFeedChunkText {
 	min-height: 19px;
-	margin-left:42px;
+	margin-left: 42px;
 	height: auto;
 }
 
 .sapUiFeedChunkComment > .sapUiFeedChunkText {
 	min-height: 19px;
-	margin-left:42px;
+	margin-left: 42px;
 	height: auto;
 }
 
@@ -55,7 +55,7 @@
 	padding: 0;
 	height: 19px;
 	width: 12px;
-	background-image: url(img/feed/ico12_click.png);
+	background-image: url('img/feed/ico12_click.png');
 	background-repeat: no-repeat;
 	background-position: center center;
 	margin-right: 2px;
@@ -77,7 +77,7 @@
 }
 
 .sapUiFeedChunkStatusIcons > li {
-	width:12px;
+	width: 12px;
 	height: 12px;
 	margin-bottom: 2px;
 }
@@ -86,7 +86,7 @@
 	font-family: Arial, regular;
 	font-size: 11px;
 	margin-top: 5px;
-	margin-left:58px;
+	margin-left: 58px;
 }
 
 .sapUiFeedChunkComment > .sapUiFeedChunkByline {
@@ -95,20 +95,20 @@
 }
 
 .sapUiFeedChunk button {
-	color: @sapUiBaseText;
-	-moz-user-select: none;
+	color: var(--sapTextColor);
 	-webkit-user-select: none;
+	user-select: none;
 	outline: none;
 	padding: 0;
-	background-color: @sapUiButtonBackground;
-	border: 1px solid @sapUiButtonBorderColor;
+	background-color: var(--sapButton_Background);
+	border: 1px solid var(--sapButton_BorderColor);
 	border-radius: 2px;
 }
 
 .sapUiFeedChunk button:focus,
 .sapUiFeedChunk button:hover {
-	border-color: @sapUiButtonHoverBorderColor;
-	background-color: @sapUiButtonHoverBackground;
+	border-color: var(--sapButton_Hover_BorderColor);
+	background-color: var(--sapButton_Hover_Background);
 }
 
 .sapUiFeedChunkExpand,
@@ -128,8 +128,8 @@
 .sapUiFeedChunkDel {
 	width: 16px;
 	height: 16px;
-	-moz-user-select: none;
 	-webkit-user-select: none;
+	user-select: none;
 	outline: none;
 }
 
@@ -138,7 +138,7 @@
 }
 
 .sapUiFeedChunk > section > header {
-	border-top: 1px solid  darken(@sapUiBaseColor, 10);
+	border-top: 1px solid darken(@sapUiBaseColor, 10);
 	margin-top: 7px;
 	padding-top: 0;
 	height: 8px;

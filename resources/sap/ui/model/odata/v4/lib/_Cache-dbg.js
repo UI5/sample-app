@@ -17,10 +17,6 @@ sap.ui.define([
 	/*eslint max-nested-callbacks: 0 */
 
 	var sClassName = "sap.ui.model.odata.v4.lib._Cache",
-		// Matches if ending with a transient key predicate:
-		//   EMPLOYEE($uid=id-1550828854217-16) -> aMatches[0] === "($uid=id-1550828854217-16)"
-		//   @see sap/base/util/uid
-		rEndsWithTransientPredicate = /\(\$uid=[-\w]+\)$/,
 		rInactive = /^\$inactive\./,
 		sMessagesAnnotation = "@com.sap.vocabularies.Common.v1.Messages",
 		rNumber = /^-?\d+$/,
@@ -592,6 +588,7 @@ sap.ui.define([
 					aSelect = _Helper.getQueryOptionsForPath(
 						that.mLateExpandSelect ?? that.mQueryOptions, sPath
 					).$select;
+					_Helper.setPrivateAnnotation(oEntityData, "postResponse", oCreatedEntity);
 				}
 				// update all existing properties (including the properties of the initial data)
 				// except properties with pending user input
@@ -1035,6 +1032,10 @@ sap.ui.define([
 			return false;
 		}
 
+		if (this.importFromPostResponse(oResource, sResourcePath, sRequestedPropertyPath)) {
+			return Promise.resolve(); // must be async to ensure #drillDown repeats the step
+		}
+
 		visitQueryOptions(mQueryOptions);
 		sFullResourcePath = _Helper.buildPath(this.sResourcePath, sResourcePath);
 		// include $expand/$select only; this uniquely *describes* the late property request
@@ -1435,6 +1436,37 @@ sap.ui.define([
 	 */
 	_Cache.prototype.hasSentRequest = function () {
 		return this.bSentRequest;
+	};
+
+	/**
+	 * Checks if the given property was already returned in the POST response of a create request
+	 * and, if so, imports it into the given entity.
+	 *
+	 * @param {object} oEntity
+	 *   The entity
+	 * @param {string} sResourcePath
+	 *   The path of oEntity relative to the cache
+	 * @param {string} sPropertyPath
+	 *   The path of the requested property relative to oEntity
+	 * @returns {boolean}
+	 *   <code>true</code> if the property was found in the POST response and has been imported
+	 *
+	 * @private
+	 */
+	_Cache.prototype.importFromPostResponse = function (oEntity, sResourcePath, sPropertyPath) {
+		const oPostResponse = _Helper.getPrivateAnnotation(oEntity, "postResponse");
+		if (oPostResponse?.["@odata.etag"]
+				&& oPostResponse["@odata.etag"] !== oEntity["@odata.etag"]) {
+			_Helper.deletePrivateAnnotation(oEntity, "postResponse");
+			return false;
+		}
+		if (!oPostResponse || _Helper.drillDown(oPostResponse, sPropertyPath) === undefined) {
+			return false;
+		}
+
+		_Helper.updateSelected(this.mChangeListeners, sResourcePath, oEntity, oPostResponse,
+			[sPropertyPath]);
+		return true;
 	};
 
 	/**
@@ -1859,6 +1891,8 @@ sap.ui.define([
 		}
 		if (oOldElement) {
 			_Helper.copySelected(oOldElement, oElement);
+			// PATCH serialization is using old instance; @see _Helper.resolveIfMatchHeader
+			_Helper.copyETags(oElement, oOldElement);
 		}
 		_Helper.restoreUpdatingProperties(oOldElement, oElement);
 
@@ -2520,7 +2554,9 @@ sap.ui.define([
 			that = this;
 
 		/*
-		 * Adds the messages to mPathToODataMessages after adjusting the message longtext
+		 * Clones the messages and adds them to mPathToODataMessages after adjusting the message
+		 * longtext URL. The original messages are preserved in "@$ui5.originalMessage" of each
+		 * message.
 		 * @param {object[]} aMessages The message list
 		 * @param {string} sInstancePath The path of the instance in the cache
 		 * @param {string} sContextUrl The context URL for message longtexts
@@ -2529,9 +2565,11 @@ sap.ui.define([
 			bHasMessages = true;
 			if (aMessages && aMessages.length) {
 				that.checkSharedRequest();
-				mPathToODataMessages[sInstancePath] = aMessages;
-				aMessages.forEach(function (oMessage) {
-					_Helper.makeAbsoluteLongtextUrl(oMessage, sContextUrl);
+				const aClonedMessages = _Helper.clone(aMessages);
+				mPathToODataMessages[sInstancePath] = aClonedMessages;
+				aClonedMessages.forEach(function (oClone, i) {
+					oClone["@$ui5.originalMessage"] = aMessages[i];
+					_Helper.makeAbsoluteLongtextUrl(oClone, sContextUrl);
 				});
 			}
 		}
@@ -2608,7 +2646,7 @@ sap.ui.define([
 			if (iIndex !== undefined) {
 				sInstancePath = _Helper.buildPath(sInstancePath, sPredicate || iIndex);
 			} else if (sPredicate) {
-				aMatches = rEndsWithTransientPredicate.exec(sInstancePath);
+				aMatches = _Helper.matchEndsWithTransientPredicate(sInstancePath);
 				if (aMatches) {
 					sInstancePath = sInstancePath.slice(0, -aMatches[0].length) + sPredicate;
 				}
@@ -2948,6 +2986,29 @@ sap.ui.define([
 	// eslint-disable-next-line no-unused-vars
 	_CollectionCache.prototype.fixDuplicatePredicate = function (oElement, sPredicate) {
 		// Note: overridden by _AggregationCache.fixDuplicatePredicate
+	};
+
+	/**
+	 * Returns the collection's $count: a number representing the sum of the element count on the
+	 * server-side and the number of active transient elements created on the client.
+	 *
+	 * @returns {number|undefined} - The collection's $count; initially <code>undefined</code>
+	 *
+	 * @public
+	 */
+	_CollectionCache.prototype.getCount = function () {
+		return this.aElements.$count;
+	};
+
+	/**
+	 * Returns the number of all (client-side) created elements (active or inactive).
+	 *
+	 * @returns {number} - The number of created elements
+	 *
+	 * @public
+	 */
+	_CollectionCache.prototype.getCreated = function () {
+		return this.aElements.$created;
 	};
 
 	/**
@@ -4065,7 +4126,8 @@ sap.ui.define([
 				$byPredicate : mByPredicate,
 				$count : this.aElements.$count,
 				$created : this.aElements.$created,
-				iLimit : this.iLimit
+				iLimit : this.iLimit,
+				bSentRequest : this.bSentRequest
 			};
 		}
 		this.iResetCount += 1;
@@ -4105,6 +4167,9 @@ sap.ui.define([
 		this.aElements.$count = undefined; // needed for _Helper.setCount
 		// Note: this.aElements.$deleted must remain unchanged
 		this.iLimit = Infinity;
+		this.bSentRequest = false;
+		this.bServerDrivenPaging = false;
+		this.oSyncPromiseAll = undefined;
 
 		Object.keys(mChangeListeners).forEach(function (sPath) {
 			if (sPath === "$count" || mKeptElementPredicates[sPath.split("/")[0]]) {
@@ -4155,6 +4220,7 @@ sap.ui.define([
 			this.aElements.$count = this.oBackup.$count;
 			this.aElements.$created = this.oBackup.$created;
 			this.iLimit = this.oBackup.iLimit;
+			this.bSentRequest = this.oBackup.bSentRequest;
 			this.iResetCount -= 1;
 		}
 		this.oBackup = null;

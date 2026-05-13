@@ -44,7 +44,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 *
 		 * @public
 		 * @since 1.92
@@ -364,7 +364,7 @@ sap.ui.define([
 
 		DynamicDateOption.prototype._createIntegerControl = function(oValue, iIndex, fnControlsUpdated) {
 			var oControl = new StepInput({
-				width: "120px"
+				width: "10rem"
 			});
 
 			if (oValue && this.getKey() === oValue.operator) {

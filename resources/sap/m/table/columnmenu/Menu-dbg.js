@@ -99,7 +99,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.MenuBase
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -706,6 +706,7 @@ sap.ui.define([
 					content: [new Title({text: sTitle, level: coreLibrary.TitleLevel.H3})]
 				}),
 				keyboardMode: "Edit",
+				rememberFocus: false,
 				items: []
 			});
 

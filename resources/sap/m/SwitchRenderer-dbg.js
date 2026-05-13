@@ -112,10 +112,13 @@ sap.ui.define(["sap/ui/Device", "sap/m/library", "sap/ui/core/Configuration", "s
 			this.renderCheckbox(oRm, oSwitch, sState);
 		}
 
-		if (bAccessibilityEnabled) {
+		const oInvisibleText = oSwitch.getInvisibleElementText(bState);
+		if (bAccessibilityEnabled && oInvisibleText) {
+			const sInvisibleTextId = oSwitch.getInvisibleElementId();
+
 			this.renderInvisibleElement(oRm, oSwitch, {
-				id: oSwitch.getInvisibleElementId(),
-				text: oSwitch.getInvisibleElementText(bState)
+				id: sInvisibleTextId,
+				text: oInvisibleText
 			});
 		}
 
@@ -200,9 +203,11 @@ sap.ui.define(["sap/ui/Device", "sap/m/library", "sap/ui/core/Configuration", "s
 			bEnabled = oSwitch.getEnabled(),
 			bEditable = oSwitch.getEditable(),
 			bReadOnly = bEnabled && !bEditable,
-			mAccessibilityStates;
+			mAccessibilityStates,
+			bState = oSwitch.getState(),
+			oInvisibleText = oSwitch.getInvisibleElementText(bState);
 
-		if (mAriaLabelledby) {
+		if (mAriaLabelledby && oInvisibleText) {
 			mAriaLabelledby = {
 				value: oSwitch.getInvisibleElementId(),
 				append: true
@@ -215,6 +220,13 @@ sap.ui.define(["sap/ui/Device", "sap/m/library", "sap/ui/core/Configuration", "s
 			labelledby: mAriaLabelledby,
 			readonly: bReadOnly ? true : undefined
 		};
+
+		if (bReadOnly) {
+			mAccessibilityStates.describedby = {
+				value: oSwitch._getDescribedByElementId(),
+				append: true
+			};
+		}
 
 		oRm.accessibilityState(oSwitch, mAccessibilityStates);
 	};

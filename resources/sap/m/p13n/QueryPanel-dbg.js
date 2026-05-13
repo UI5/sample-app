@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @public
 	 *
@@ -193,9 +193,10 @@ sap.ui.define([
 	QueryPanel.prototype._createInnerListControl = function() {
 		const oList = new List(this.getId() + "-innerP13nList", {
 			itemPress: [this._onItemPressed, this],
-			dragDropConfig: this._getDragDropConfig()
+			dragDropConfig: this._getDragDropConfig(),
+			rememberFocus: false,
+			keyboardMode: ListKeyboardMode.Edit
 		});
-		oList.setKeyboardMode(ListKeyboardMode.Edit);
 		return oList;
 	};
 

@@ -132,7 +132,7 @@ function(
 	 * @extends sap.m.SelectDialogBase
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -441,6 +441,8 @@ function(
 				oPromiseWrapper.resolve();
 			}
 		}).addStyleClass("sapMSelectDialog");
+
+		this._oDialog._setInitialFocus = function () {};
 
 		// for downward compatibility reasons
 		this._dialog = this._oDialog;

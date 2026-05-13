@@ -23,6 +23,10 @@ sap.ui.define([
 	var rAmpersand = /&/g,
 		rApplicationGroupID = /^\w+$/,
 		sClassName = "sap.ui.model.odata.v4.lib._Helper",
+		// Matches if ending with a transient key predicate:
+		//   EMPLOYEE($uid=id-1550828854217-16) -> aMatches[0] === "($uid=id-1550828854217-16)"
+		//   @see sap/base/util/uid
+		rEndsWithTransientPredicate = /\(\$uid=[-\w]+\)$/,
 		rEquals = /\=/g,
 		rGroupID = /^(\$auto(\.\w+)?|\$direct|\w+)$/,
 		rHash = /#/g,
@@ -507,6 +511,29 @@ sap.ui.define([
 		},
 
 		/**
+		 * Recursively copies ETags from the source object to the target object. If the source
+		 * object has an <code>"@odata.etag"</code> property, it is copied to the target object.
+		 *
+		 * @param {object} oSource - The source object containing ETags
+		 * @param {object} oTarget - The target object to receive the ETags
+		 *
+		 * @public
+		 */
+		copyETags : function (oSource, oTarget) {
+			oTarget["@odata.etag"] = oSource["@odata.etag"];
+
+			for (const sKey in oSource) {
+				const vSourceProperty = oSource[sKey];
+				const vTargetProperty = oTarget[sKey];
+
+				if (vSourceProperty && vTargetProperty && typeof vSourceProperty === "object"
+						&& !Array.isArray(vSourceProperty)) {
+					_Helper.copyETags(vSourceProperty, vTargetProperty);
+				}
+			}
+		},
+
+		/**
 		 * Copies the value of the private client-side instance annotation with the given
 		 * unqualified name from the given source to the given target object, if present at the
 		 * source.
@@ -646,6 +673,11 @@ sap.ui.define([
 						// error message in the property value
 						oResult.message = oResult.error.message.value;
 					}
+					const oClone = oResult.error["@$ui5.originalMessage"]
+						= _Helper.clone(oResult.error);
+					oResult.error.details?.forEach(function (oDetail, i) {
+						oDetail["@$ui5.originalMessage"] = oClone.details[i];
+					});
 				} catch (e) {
 					Log.warning(e.toString(), sBody, sClassName);
 				}
@@ -741,24 +773,27 @@ sap.ui.define([
 		},
 
 		/**
-		 * Creates a technical details object that contains a property <code>originalMessage</code>
-		 * and an optional property <code>httpStatus</code> with the original error's HTTP status.
-		 * <code>isConcurrentModification</code> and <code>retryAfter</code> are copied as well.
+		 * Creates a technical details object that contains optional properties
+		 * <code>httpStatus</code>, <code>isConcurrentModification</code>,
+		 * <code>originalMessage</code> and <code>retryAfter</code>.
 		 *
 		 * @param {object} oMessage
 		 *   The message for which to get technical details
-		 * @returns {object|undefined}
-		 *    An object with a property <code>originalMessage</code> that contains a clone of either
-		 *    the given message itself or if supplied, the "@$ui5.originalMessage" property.
-		 *    If one of these is an <code>Error</code> instance, then <code>{}</code> is returned.
-		 *    The clone is created lazily.
+		 * @returns {object}
+		 *    An object with following optional properties:
+		 *    - <code>httpStatus</code> with the original error's HTTP status
+		 *    - <code>isConcurrentModification</code> with the original error's
+		 *      <code>isConcurrentModification</code>
+		 *    - <code>originalMessage</code> that contains a clone of the "@$ui5.originalMessage"
+		 *      property if supplied. The clone is created lazily.
+		 *    - <code>retryAfter</code> with the original error's <code>retryAfter</code>
 		 *
 		 * @public
 		 */
 		createTechnicalDetails : function (oMessage) {
 			var oClonedMessage,
 				oError = oMessage["@$ui5.error"],
-				oOriginalMessage = oMessage["@$ui5.originalMessage"] || oMessage,
+				oOriginalMessage = oMessage["@$ui5.originalMessage"],
 				oTechnicalDetails = {};
 
 			if (oError && (oError.status || oError.cause)) {
@@ -772,9 +807,7 @@ sap.ui.define([
 					oTechnicalDetails.retryAfter = oError.retryAfter;
 				}
 			}
-			// We don't need the original message for internal errors (errors NOT returned from the
-			// back end, but raised within our framework)
-			if (!(oOriginalMessage instanceof Error)) {
+			if (oOriginalMessage) {
 				Object.defineProperty(oTechnicalDetails, "originalMessage", {
 					enumerable : true,
 					get : function () {
@@ -1070,9 +1103,13 @@ sap.ui.define([
 						technical : bTechnical || oMessage.technical,
 						// use "@$ui5." prefix to overcome name collisions with instance annotations
 						// returned from back end.
-						"@$ui5.error" : oError,
-						"@$ui5.originalMessage" : oMessage
+						"@$ui5.error" : oError
 					};
+
+				if (!(oMessage instanceof Error)) {
+					oRawMessage["@$ui5.originalMessage"]
+						= oMessage["@$ui5.originalMessage"] ?? oMessage;
+				} // else: don't add Error instances as original message
 
 				Object.keys(oMessage).forEach(function (sProperty) {
 					if (sProperty[0] === "@") {
@@ -2308,8 +2345,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Makes the given message's longtext URL absolute. Clones and keeps the original message
-		 * only if needed.
+		 * Makes the given message's longtext URL absolute.
 		 *
 		 * @param {object} oMessage - An object potentially containing a longtext URL
 		 * @param {string} [oMessage.longtextUrl] - The longtext URL
@@ -2318,13 +2354,7 @@ sap.ui.define([
 		 * @public
 		 */
 		makeAbsoluteLongtextUrl : function (oMessage, sBase) {
-			if (oMessage.longtextUrl) {
-				const sAbsoluteLongtextURL = _Helper.makeAbsolute(oMessage.longtextUrl, sBase);
-				if (oMessage.longtextUrl !== sAbsoluteLongtextURL) {
-					oMessage["@$ui5.originalMessage"] ??= _Helper.clone(oMessage);
-					oMessage.longtextUrl = sAbsoluteLongtextURL;
-				}
-			}
+			oMessage.longtextUrl &&= _Helper.makeAbsolute(oMessage.longtextUrl, sBase);
 		},
 
 		/**
@@ -2380,6 +2410,24 @@ sap.ui.define([
 				}
 				return oResult;
 			}, vValue);
+		},
+
+		/**
+		 * Returns matches for a regular expression if the given path ends with a transient key
+		 * predicate, or <code>null</code> in case it doesn't.
+		 *
+		 * "foo/bar($uid=id-1-23) -> ["($uid=id-1-23)"]
+		 * "foo/bar" -> null
+		 *
+		 * @param {string} sPath - Some path
+		 * @returns {null|string[]}
+		 *   Matches for a regular expression, just a single entry with the transient key predicate;
+		 *   <code>null</code> if the given path does not end with a transient key predicate
+		 *
+		 * @see sap/base/util/uid
+		 */
+		matchEndsWithTransientPredicate : function (sPath) {
+			return rEndsWithTransientPredicate.exec(sPath);
 		},
 
 		// Trampoline property to allow for mocking function module in unit tests.

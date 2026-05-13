@@ -28,6 +28,8 @@ sap.ui.define([
 	"sap/m/p13n/MessageStrip",
 	"sap/ui/core/InvisibleText",
 	"sap/m/table/Util"
+
+
 ], (
 	Element,
 	Library,
@@ -47,13 +49,15 @@ sap.ui.define([
 	ShortcutHintsMixin,
 	KeyCodes,
 	Log,
-	library,
+	mlibrary,
 	coreLibrary,
 	MessageStrip,
 	InvisibleText,
 	TableUtil
 ) => {
 	"use strict";
+
+	const { ListMode, ListKeyboardMode } = mlibrary;
 
 	/**
 	 * P13n <code>Item</code> object type.
@@ -80,7 +84,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @public
 	 * @abstract
@@ -603,8 +607,10 @@ sap.ui.define([
 
 	BasePanel.prototype._getListControlConfig = function() {
 		return {
-			mode: "MultiSelect",
+			mode: ListMode.MultiSelect,
 			rememberSelections: true,
+			rememberFocus: false,
+			keyboardMode: ListKeyboardMode.Edit,
 			itemPress: [this._onItemPressed, this],
 			selectionChange: [this._onSelectionChange, this],
 			sticky: ["HeaderToolbar", "ColumnHeaders", "InfoToolbar"],

@@ -82,7 +82,7 @@ sap.ui.define([
 	 * @param {Element[]} aItemDomRefs Array of DOM references representing the items for the navigation
 	 * @param {boolean} [bNotInTabChain=false] Whether the selected element should be in the tab chain or not
 	 *
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 * @alias sap.ui.core.delegate.ItemNavigation
 	 * @public
 	 */
@@ -670,6 +670,23 @@ sap.ui.define([
 	 */
 	ItemNavigation.prototype.getFocusedIndex = function() {
 		return this.iFocusedIndex;
+	};
+
+	/**
+	 * Resets the focused index.
+	 *
+	 * This sets the focused index to -1, meaning no item is focused.
+	 * Unlike {@link #setFocusedIndex}, which clamps negative values to 0,
+	 * this method allows resetting the focus state completely.
+	 *
+	 * @return {this} <code>this</code> to allow method chaining
+	 * @private
+	 * @ui5-restricted sap.m.ListBase
+	 * @since 1.148
+	 */
+	ItemNavigation.prototype.resetFocusedIndex = function() {
+		this.iFocusedIndex = -1;
+		return this;
 	};
 
 	/**

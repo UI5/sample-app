@@ -6,7 +6,7 @@
   <copyright>OpenUI5
  * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</copyright>
-  <version>1.147.1</version>
+  <version>1.148.0</version>
 
   <documentation>The SAPUI5 Core Runtime.
 
@@ -252,7 +252,7 @@
             <copyright>Google Inc.</copyright>
             <pattern>sap/ui/thirdparty/caja-html-sanitizer.js</pattern>
         </lib>
-        <lib name="cldr" displayName="Unicode Common Locale Data Repository" npmName="cldr-core" version="48.0.0" hash="33133a6e11489b754b114f95ee9dd0d5" homepage="http://cldr.unicode.org/" id="73555000106100189306">
+        <lib name="cldr" displayName="Unicode Common Locale Data Repository" npmName="cldr-core" version="48.0.0" hash="2746c684a1a80208d257b00c3bbffc3a" homepage="http://cldr.unicode.org/" id="73555000106100189306">
             <license url="http://www.unicode.org/copyright.html" type="LicenseRef-Unicode-3.0" />
             <copyright>1991-2024 Unicode, Inc.</copyright>
             <pattern>sap/ui/core/cldr/**</pattern>

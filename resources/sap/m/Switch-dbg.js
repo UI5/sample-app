@@ -15,7 +15,8 @@ sap.ui.define([
 	'sap/ui/core/theming/Parameters',
 	'sap/ui/events/KeyCodes',
 	'./SwitchRenderer',
-	"sap/base/assert"
+	"sap/base/assert",
+	"sap/ui/core/InvisibleText"
 ],
 function(
 	library,
@@ -27,7 +28,8 @@ function(
 	Parameters,
 	KeyCodes,
 	SwitchRenderer,
-	assert
+	assert,
+	InvisibleText
 ) {
 		"use strict";
 
@@ -52,7 +54,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 *
 		 * @constructor
 		 * @public
@@ -190,6 +192,10 @@ function(
 
 		Switch.prototype.getInvisibleElementId = function() {
 			return this.getId() + "-invisible";
+		};
+
+		Switch.prototype._getDescribedByElementId = function() {
+			return InvisibleText.getStaticId("sap.m", "CONTROL_READONLY");
 		};
 
 		Switch.prototype.getInvisibleElementText = function(bState) {

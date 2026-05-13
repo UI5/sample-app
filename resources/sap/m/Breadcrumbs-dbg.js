@@ -15,6 +15,7 @@ sap.ui.define([
 	"sap/m/Text",
 	"sap/m/Link",
 	"sap/m/Select",
+	"sap/m/Button",
 	"sap/ui/core/Item",
 	"sap/ui/core/delegate/ItemNavigation",
 	"sap/ui/core/ResizeHandler",
@@ -34,6 +35,7 @@ sap.ui.define([
 	Text,
 	Link,
 	Select,
+	Button,
 	Item,
 	ItemNavigation,
 	ResizeHandler,
@@ -74,7 +76,7 @@ sap.ui.define([
 	 * @implements sap.m.IBreadcrumbs, sap.m.IOverflowToolbarContent, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -412,13 +414,26 @@ sap.ui.define([
 	/*************************************** Select Handling ******************************************/
 
 	Breadcrumbs.prototype._decorateSelect = function (oSelect) {
-		oSelect.getPicker()
+		var oPicker = oSelect.getPicker();
+
+		oPicker
 			.addStyleClass("sapMBreadcrumbsPicker")
 			.attachAfterOpen(this._removeItemNavigation, this)
 			.attachBeforeClose(this._restoreItemNavigation, this);
 
-		if (!Device.system.phone) {
-			oSelect.getPicker().setOffsetY(PICKER_OFFSET_Y);
+		if (Device.system.phone) {
+			// Align mobile overflow dialog with desktop: remove header entirely,
+			// footer Cancel button instead.
+			oPicker.destroyCustomHeader();
+			oPicker.setShowHeader(false);
+			oPicker.setEndButton(new Button({
+				text: oResource.getText("SELECT_CANCEL_BUTTON"),
+				press: function () {
+					oSelect.close();
+				}
+			}));
+		} else {
+			oPicker.setOffsetY(PICKER_OFFSET_Y);
 		}
 
 		oSelect._onBeforeOpenDialog = this._onSelectBeforeOpenDialog.bind(this);

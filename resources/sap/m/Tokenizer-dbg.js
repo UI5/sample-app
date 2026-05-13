@@ -91,7 +91,7 @@ sap.ui.define([
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormObservingProperties as #getFormObservingProperties
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -183,7 +183,14 @@ sap.ui.define([
 				 * Defines whether "Clear All" button is present. Ensure `multiLine` is enabled, otherwise `showClearAll` will have no effect.
 				 * @ui5-experimental-since 1.142
 				 */
-				showClearAll: {type: "boolean", group: "Misc", defaultValue: false}
+				showClearAll: {type: "boolean", group: "Misc", defaultValue: false},
+
+				/**
+				 * Defines whether the n-more popover should display an arrow.
+				 * When the Tokenizer is used inside MultiInput, the arrow should not be shown.
+				 * @private
+				 */
+				_usePopoverArrow: {type: "boolean", group: "Misc", defaultValue: true, visibility: "hidden"}
 
 			},
 			defaultAggregation : "tokens",
@@ -568,7 +575,7 @@ sap.ui.define([
 	Tokenizer.prototype._setPopoverMode = function (sMode) {
 		var oPopover = this.getTokensPopup();
 		var oSettings = {
-			showArrow: true,
+			showArrow: this.getProperty("_usePopoverArrow"),
 			placement: PlacementType.VerticalPreferredBottom
 		};
 
@@ -730,7 +737,7 @@ sap.ui.define([
 		}
 
 		this._oPopup = new ResponsivePopover({
-			showArrow: true,
+			showArrow: this.getProperty("_usePopoverArrow"),
 			showCloseButton: false,
 			showHeader: Device.system.phone,
 			placement: PlacementType.Auto,
@@ -986,6 +993,8 @@ sap.ui.define([
 
 		if (iTokensCount === 1 && iFirstTokenToHide !== -1) {
 			this.setFirstTokenTruncated(true);
+			aTokens[0].removeStyleClass("sapMHiddenToken");
+
 			return;
 		} else if (iTokensCount === 1 && aTokens[0].getTruncated()) {
 			this.setFirstTokenTruncated(false);

@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -2685,7 +2685,6 @@ sap.ui.define([
 		}
 
 		const aUI5Messages = aMessages.map((oMessage) => {
-			oMessage["@$ui5.originalMessage"] ??= _Helper.clone(oMessage);
 			oMessage.transition = true;
 			if (oOperationMetadata) {
 				// make targets absolute, will not be adjusted again in #createUI5Message

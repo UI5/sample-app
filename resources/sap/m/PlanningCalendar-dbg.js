@@ -210,7 +210,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -2282,7 +2282,9 @@ sap.ui.define([
 		}
 
 		if (sViewKey === PlanningCalendarBuiltInView.Week || bOneMonthViewOnSmallScreen) {
-			oRow = this.getAggregation("table").getInfoToolbar().getContent()[1];
+			oRow = this._oInfoToolbar.getContent().find(function(oControl) {
+				return oControl.isA(aIntervalRepresentatives);
+			});
 
 			if (iFirstDayOfWeek === -1) { // -1 is the default value of firstDayOfWeek property. It means that the Locale information should be used.
 				oFirstUTCDateOfWeek = CalendarUtils.getFirstDateOfWeek(CalendarUtils._createUniversalUTCDate(oPCStart, undefined, true));
@@ -4029,13 +4031,18 @@ sap.ui.define([
 
 		oRowTimeline.setAssociation("row",  oRow.getId());
 
-		oListItem = oRowHeader.isA("sap.m.CustomListItem")
-			? new PlanningCalendarRowListItem(oRow.getId() + LISTITEM_SUFFIX, {
-				cells: [new List({items: [oRowHeader]}), oRowTimeline]
-			})
-			: new PlanningCalendarRowListItem(oRow.getId() + LISTITEM_SUFFIX, {
-				cells: [oRowHeader, oRowTimeline]
-			});
+		let oHeaderCell;
+		if (oRowHeader.isA("sap.m.CustomListItem")) {
+			oHeaderCell = new List({items: [oRowHeader]});
+			oHeaderCell.getAccessibilityInfo = function() { return null; };
+		} else {
+			oHeaderCell = oRowHeader;
+		}
+
+		oListItem = new PlanningCalendarRowListItem(oRow.getId() + LISTITEM_SUFFIX, {
+			cells: [oHeaderCell, oRowTimeline]
+		});
+
 
 		this._updateRowTimeline(oRow);
 

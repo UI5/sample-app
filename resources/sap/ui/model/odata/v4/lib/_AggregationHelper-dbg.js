@@ -752,8 +752,7 @@ sap.ui.define([
 		 * collapsing. If requested, adds corresponding <code>null</code> updates for expansion.
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply})
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {object} oGroupNode
 		 *   The group node which is about to be expanded
 		 * @param {object} oCollapsed
@@ -800,8 +799,7 @@ sap.ui.define([
 		 * @param {object} mQueryOptions
 		 *   A read-only map of key-value pairs representing the query string
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply})
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {number} [iLevel=0]
 		 *   The current level; use <code>0</code> to bypass group levels
 		 * @returns {object}
@@ -866,8 +864,7 @@ sap.ui.define([
 		 * Returns an unsorted list of all aggregatable or groupable properties, including units.
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply})
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @returns {Array<(string|Array<string>)>}
 		 *   An unsorted list of all aggregatable or groupable properties, including units and
 		 *   additional properties (where paths are given as arrays of segments)
@@ -924,8 +921,7 @@ sap.ui.define([
 		 * @param {string} [sOrderby]
 		 *   The original "$orderby" system query option
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply})
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {number} [iLevel=0]
 		 *   The current level; use <code>0</code> to bypass group levels
 		 * @returns {string|undefined}
@@ -1007,8 +1003,7 @@ sap.ui.define([
 		 * when collapsing the node again, if needed. Takes placement of subtotals into account.
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply})
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {object} oGroupNode
 		 *   The group node which is about to be expanded
 		 * @returns {object}
@@ -1209,6 +1204,22 @@ sap.ui.define([
 		},
 
 		/**
+		 * Tells whether grand total values are needed for at least one aggregatable property and
+		 * whether that grand total is shown (also) at the bottom.
+		 *
+		 * @param {object} oAggregation
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
+		 * @returns {boolean}
+		 *   Whether there is a grand total (also) at bottom
+		 *
+		 * @public
+		 */
+		hasGrandTotalAtBottom : function (oAggregation) {
+			return oAggregation?.grandTotalAtBottomOnly !== undefined
+				&& _AggregationHelper.hasGrandTotal(oAggregation.aggregate);
+		},
+
+		/**
 		 * Tells whether minimum or maximum values are needed for at least one aggregatable
 		 * property.
 		 *
@@ -1232,9 +1243,9 @@ sap.ui.define([
 		 * Tells whether a binding with the given aggregation data and filters is affected when
 		 * requesting side effects for the given paths.
 		 *
-		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply}).
+		 * @param {object} [oAggregation]
+		 *   An object holding the information needed for data aggregation, see {@link .buildApply};
+		 *   if omitted, aggregation related checks are skipped
 		 * @param {sap.ui.model.Filter[]} aFilters
 		 *   The binding's current filters
 		 * @param {string[]} aSideEffectPaths
@@ -1267,18 +1278,69 @@ sap.ui.define([
 
 				return sSideEffectPath === "" || sSideEffectPath === "*"
 					|| hasAffectedFilter(aFilters)
-					|| Object.keys(oAggregation.aggregate).some((sAlias) => {
+					|| oAggregation && Object.keys(oAggregation.aggregate).some((sAlias) => {
 						const oDetails = oAggregation.aggregate[sAlias];
 
 						return isAffected(oDetails.name || sAlias)
 							|| oDetails.unit && isAffected(oDetails.unit);
 					})
-					|| Object.keys(oAggregation.group).some((sGroup) => {
+					|| oAggregation && Object.keys(oAggregation.group).some((sGroup) => {
 						return isAffected(sGroup)
 							|| oAggregation.group[sGroup].additionally
 								?.some((sPath) => isAffected(sPath));
 					});
 			});
+		},
+
+		/**
+		 * Tells whether the given property path is used in the given "$orderby" system query
+		 * option.
+		 *
+		 * @param {string} sPropertyPath
+		 *   A property path
+		 * @param {string} [sOrderby]
+		 *   The "$orderby" system query option, or <code>undefined</code>
+		 * @returns {boolean}
+		 *   Whether the given property path is (possibly) used in "$orderby"
+		 *
+		 * @public
+		 */
+		isOrderedBy : function (sPropertyPath, sOrderby) {
+			if (!sOrderby) {
+				return false;
+			}
+
+			return sOrderby.split(rComma).some((sOrderbyItem) => {
+				const aMatches = rOrderbyItem.exec(sOrderbyItem);
+				// handle unparseable items as "used in $orderby"
+				return !aMatches || aMatches[1] === sPropertyPath;
+			});
+		},
+
+		/**
+		 * Tells whether the property with the given path is used to compute the grand total.
+		 *
+		 * @param {string} sPath
+		 *   A property path
+		 * @param {object} [mAggregate]
+		 *   A map from aggregatable property names/aliases to details objects
+		 * @returns {boolean}
+		 *   <code>true</code> if the property with the given path is used to compute the grand
+		 *   total
+		 *
+		 * @public
+		 */
+		isUsedForGrandTotal : function (sPath, mAggregate) {
+			if (mAggregate) {
+				sPath = _Helper.getMetaPath(sPath);
+				for (const [sAlias, oDetails] of Object.entries(mAggregate)) {
+					if (oDetails.grandTotal && (sAlias === sPath || oDetails.unit === sPath)) {
+						return true;
+					}
+				}
+			}
+
+			return false;
 		},
 
 		/**
@@ -1350,8 +1412,7 @@ sap.ui.define([
 		 *
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation; see
-		 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}.
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {string} [sPath]
 		 *   The list binding's absolute data path, <code>undefined</code> if currently unresolved
 		 *
@@ -1369,8 +1430,7 @@ sap.ui.define([
 		 * @param {sap.ui.model.Filter} oFilter
 		 *   The filter object that is split
 		 * @param {object} [oAggregation]
-		 *   An object holding the information needed for data aggregation;
-		 *   (see {@link .buildApply}).
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @returns {sap.ui.model.Filter[]}
 		 *   An array that consists of three filters where each can be <code>undefined</code>. The
 		 *   first one has to be applied after data aggregation. The second one can simply be
@@ -1387,7 +1447,7 @@ sap.ui.define([
 		 */
 		splitFilter : function (oFilter, oAggregation) {
 			var aFiltersNoAggregate = [],
-				aFiltersNoThese = [],
+				aFiltersNoThese = [], // filters for some aggregate's unit
 				aFiltersOnAggregate = [];
 
 			/*
@@ -1402,6 +1462,25 @@ sap.ui.define([
 				return oFilter0.getFilters()
 					? oFilter0.getFilters().some(isRelatedToAggregate)
 					: oFilter0.getPath() in oAggregation.aggregate;
+			}
+
+			/*
+			 * Tells whether the given filter path relates to the unit of an aggregate and one of
+			 * the given filters relates to that same aggregate.
+			 *
+			 * @param {string} sPath
+			 *   A filter's path (must not be <code>undefined</code>!)
+			 * @param {sap.ui.model.Filter[]} aFilters
+			 *   Some filters
+			 * @returns {boolean}
+			 *   Whether the path relates (via the unit) to a filter for an aggregate
+			 */
+			function isRelatedToFilter4Aggregate(sPath, aFilters) {
+				return aFilters.some((oFilter0) => {
+					return oFilter0.getFilters()
+						? isRelatedToFilter4Aggregate(sPath, oFilter0.getFilters())
+						: oAggregation.aggregate[oFilter0.getPath()]?.unit === sPath;
+				});
 			}
 
 			/*
@@ -1431,7 +1510,6 @@ sap.ui.define([
 				} else if (oFilter0.getPath() && isRelatedToUnit(oFilter0.getPath())) {
 					aFiltersNoAggregate.push(oFilter0);
 					aFiltersNoThese.push(oFilter0); // avoid "$these/..." here
-					aFiltersOnAggregate.push(oFilter0);
 				} else {
 					(isRelatedToAggregate(oFilter0) ? aFiltersOnAggregate : aFiltersNoAggregate)
 						.push(oFilter0);
@@ -1460,8 +1538,11 @@ sap.ui.define([
 			}
 
 			split(oFilter);
-			let aResult = [wrap(aFiltersOnAggregate), wrap(aFiltersNoAggregate)];
+			aFiltersOnAggregate.unshift(...aFiltersNoThese.filter((oUnitFilter) => {
+				return isRelatedToFilter4Aggregate(oUnitFilter.getPath(), aFiltersOnAggregate);
+			}));
 
+			let aResult = [wrap(aFiltersOnAggregate), wrap(aFiltersNoAggregate)];
 			if (oAggregation.groupLevels.length
 					|| !oAggregation["grandTotal like 1.84"]
 					&& _AggregationHelper.hasGrandTotal(oAggregation.aggregate)) {
@@ -1475,8 +1556,7 @@ sap.ui.define([
 		 * Validates the given data aggregation information.
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation; see
-		 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}.
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {boolean} bAutoExpandSelect
 		 *   The value of the model's parameter <code>autoExpandSelect</code>
 		 * @throws {Error}
@@ -1503,8 +1583,7 @@ sap.ui.define([
 		 * respectively.
 		 *
 		 * @param {object} oAggregation
-		 *   An object holding the information needed for data aggregation; see
-		 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation}.
+		 *   An object holding the information needed for data aggregation; see {@link .buildApply}
 		 * @param {boolean} bAutoExpandSelect
 		 *   The value of the model's parameter <code>autoExpandSelect</code>
 		 * @param {function} fnFetchMetadata

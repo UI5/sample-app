@@ -55,8 +55,8 @@ sap.ui.define([
 
 		this.aElements = [];
 		this.aElements.$byPredicate = {};
-		this.aElements.$count = undefined;
 		this.aElements.$created = 0; // required for _Cache#drillDown (see _Cache.from$skip)
+		this.iReadLength = undefined;
 		this.iResetCount = 0;
 		// Whether this cache is a unified cache, using oFirstLevel with ExpandLevels instead of
 		// separate group level caches
@@ -77,8 +77,8 @@ sap.ui.define([
 	/**
 	 * Deletes a node on the server and in the cached data.
 	 *
-	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the group ID to be used for the DELETE request
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
+	 *   A lock for the group ID to be used for the DELETE request; w/o a lock, no requests are sent
 	 * @param {string} sEditUrl
 	 *   The node's edit URL to be used for the DELETE request
 	 * @param {string} sIndexOrPredicate
@@ -119,16 +119,18 @@ sap.ui.define([
 				_Helper.getPrivateAnnotation(oElement, "transientPredicate"));
 		}
 
+		sEditUrl += this.oRequestor.buildQueryString(this.sMetaPath, this.mQueryOptions, true);
 		if (this.oCountPromise) {
 			this.createCountPromise();
 		}
 
-		return SyncPromise.all([
+		return SyncPromise.all(oGroupLock ? [
 			this.oRequestor.request("DELETE", sEditUrl, oGroupLock, {"If-Match" : oElement}),
-			this.readCount(oGroupLock)
-		]).then(() => {
+			this.readCount(oGroupLock),
+			this.readGrandTotal(oGroupLock)
+		] : []).then(() => {
 			this.oTreeState.delete(oElement);
-			if (this.aElements.$count === undefined) {
+			if (this.aElements.length === 0) {
 				return; // concurrent side-effects refresh takes care of cleanup
 			}
 
@@ -403,7 +405,6 @@ sap.ui.define([
 			aSpliced.$rank = _Helper.getPrivateAnnotation(oGroupNode, "rank");
 			_Helper.setPrivateAnnotation(oGroupNode, "spliced", aSpliced);
 		}
-		aElements.$count -= iRemaining;
 
 		if (bAll && !bNested) {
 			this.validateAndDeleteExpandInfo(oGroupLock, oGroupNode);
@@ -542,9 +543,6 @@ sap.ui.define([
 				if (this.oAggregation.createInPlace) {
 					return;
 				}
-				if (aElements.$count !== undefined) {
-					aElements.$count -= 1;
-				}
 				delete aElements.$byPredicate[sTransientPredicate];
 				aElements.splice(aElements.indexOf(oEntityData), 1);
 			}, /*fnAt*/(iIndex0) => {
@@ -576,9 +574,6 @@ sap.ui.define([
 				iLevel); // do not send via POST!
 			aElements.splice(iIndex0, 0, null); // create a gap
 			this.addElements(oEntityData, iIndex0, oCache, iRank);
-			if (aElements.$count !== undefined) {
-				aElements.$count += 1;
-			}
 		};
 
 		const completeCreation = (iIndex0, iRank) => {
@@ -618,7 +613,7 @@ sap.ui.define([
 
 		addElement(iIndex, /*iRank*/undefined);
 
-		return oPromise.then(async () => {
+		return oPromise.then(() => {
 			_Helper.removeByPath(this.mPostRequests, sTransientPredicate, oEntityData);
 			aElements.$byPredicate[_Helper.getPrivateAnnotation(oEntityData, "predicate")]
 				= oEntityData;
@@ -631,16 +626,13 @@ sap.ui.define([
 			// Note: key predicate required
 			this.oTreeState.setOutOfPlace(oEntityData, oParentNode);
 
-			if (oCache === this.oFirstLevel && this.oAggregation.expandTo > 1) {
-				const [iRank] = await Promise.all([
+			_Helper.setPrivateAnnotation(oEntityData, "additionalPromise",
+				oCache === this.oFirstLevel && this.oAggregation.expandTo > 1
+				? Promise.all([
 					this.requestRank(oEntityData, oGroupLock),
 					this.requestNodeProperty(oEntityData, oGroupLock, /*bDropFilter*/true)
-				]);
-
-				completeCreation(iIndex, iRank);
-			} else {
-				await this.requestNodeProperty(oEntityData, oGroupLock, /*bDropFilter*/true);
-			}
+				]).then(([iRank]) => completeCreation(iIndex, iRank))
+				: this.requestNodeProperty(oEntityData, oGroupLock, /*bDropFilter*/true));
 
 			return oEntityData;
 		});
@@ -852,7 +844,6 @@ sap.ui.define([
 			this.aElements = aOldElements.concat(aSpliced, aOldElements.splice(iIndex));
 			this.aElements.$byPredicate = aOldElements.$byPredicate;
 			iCount = aSpliced.length;
-			this.aElements.$count = aOldElements.$count + iCount;
 			_Helper.copySelected(aOldElements, this.aElements);
 			const iLevelDiff = oGroupNode["@$ui5.node.level"] - aSpliced.$level;
 			const iRankDiff = _Helper.getPrivateAnnotation(oGroupNode, "rank") - aSpliced.$rank;
@@ -960,7 +951,6 @@ sap.ui.define([
 						+ ",$isTotal=true)");
 				that.addElements(oSubtotals, iIndex + iCount - 1);
 			}
-			that.aElements.$count += iCount;
 
 			return iCount;
 		}, function (oError) {
@@ -1231,7 +1221,7 @@ sap.ui.define([
 		const aElements = this.aElements.slice(iStart, iEnd).map((oElement) => {
 			return _Helper.hasPrivateAnnotation(oElement, "placeholder") ? undefined : oElement;
 		});
-		aElements.$count = this.aElements.$count;
+		aElements.$count = this.aElements.length;
 
 		return aElements;
 	};
@@ -1900,7 +1890,7 @@ sap.ui.define([
 			});
 		}
 
-		if (this.aElements.$count === undefined) {
+		if (this.oFirstLevel.getCount() === undefined) {
 			this.iReadLength = iLength + iPrefetchLength;
 			if (bHasGrandTotalAtTop) { // account for grand total row at top
 				if (iFirstLevelIndex) {
@@ -1967,7 +1957,7 @@ sap.ui.define([
 							: oElement;
 					});
 
-			aElements.$count = that.aElements.$count;
+			aElements.$count = that.aElements.length;
 
 			return {
 				"@$ui5.resetCount" : that.iResetCount,
@@ -2096,18 +2086,15 @@ sap.ui.define([
 					iOffset = 0, // offset for 1st level data rows
 					j;
 
-				that.aElements.length = that.aElements.$count
-					= oResult.value.$count + oResult.value.$inactive;
+				that.aElements.length = oResult.value.$count + oResult.value.$inactive;
 
 				if (that.aElements.length && that.oGrandTotalPromise) {
-					that.aElements.$count += 1;
 					that.aElements.length += 1;
 					oGrandTotal = that.oGrandTotalPromise.getResult();
 
 					switch (that.oAggregation.grandTotalAtBottomOnly) {
 						case false: // top & bottom
 							iOffset = 1;
-							that.aElements.$count += 1;
 							that.aElements.length += 1;
 							that.addElements(oGrandTotal, 0);
 							oGrandTotalCopy
@@ -2127,7 +2114,7 @@ sap.ui.define([
 
 				that.addElements(oResult.value, iStart + iOffset, that.oFirstLevel, iStart);
 				iOffset += oResult.value.$created; // "shift" rank of non-created elements
-				for (j = 0; j < that.aElements.$count; j += 1) {
+				for (j = 0; j < that.aElements.length; j += 1) {
 					that.aElements[j] ??= _AggregationHelper.createPlaceholder(
 						that.oAggregation.expandTo > 1 || that.bUnifiedCache
 							? /*don't know*/0
@@ -2233,7 +2220,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reads and updates the grand total row.
+	 * Reads and updates the grand total row if the grand total is not outdated. If the grand total
+	 * is outdated a full refresh is needed.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   An original lock for the group ID to be used for the GET request, to be cloned via
@@ -2256,6 +2244,10 @@ sap.ui.define([
 		if (this.oAggregation.$leafLevelAggregated) {
 			throw new Error("Leaves must not be aggregated");
 		}
+		const oGrandTotal = this.aElements.$byPredicate["()"];
+		if (oGrandTotal["@$ui5.context.isOutdated"]) {
+			return; // don't read grand total, a full refresh is needed
+		}
 
 		let mQueryOptions = {...this.mQueryOptions};
 		// drop not needed system query options; $expand, $filter, $search, and $select must not be
@@ -2272,7 +2264,6 @@ sap.ui.define([
 				undefined, undefined, undefined, undefined, undefined, undefined, undefined,
 				{/*mMergeableQueryOptions*/})
 			.then((oResult) => {
-				const oGrandTotal = this.aElements.$byPredicate["()"];
 				_Helper.updateExisting(this.mChangeListeners, "()", oGrandTotal, oResult.value[0]);
 				const oGrandTotalCopy = _Helper.getPrivateAnnotation(oGrandTotal, "copy");
 				if (oGrandTotalCopy) {
@@ -2280,7 +2271,10 @@ sap.ui.define([
 						_Helper.getPrivateAnnotation(oGrandTotalCopy, "predicate"), oGrandTotalCopy,
 						oResult.value[0]);
 				}
-				this.setGrandTotalOutdated(false);
+				if (!oGrandTotal["@$ui5.context.isOutdated"]) {
+					// if grand total got outdated in between, update values but keep it outdated
+					this.setGrandTotalOutdated(false);
+				}
 			}, (oError) => {
 				this.setGrandTotalOutdated(true);
 				throw oError;
@@ -2398,8 +2392,14 @@ sap.ui.define([
 			return; // already available
 		}
 
-		await this.requestProperties(oElement, [this.oAggregation.$NodeProperty], oGroupLock, true,
+		const aSelect = [this.oAggregation.$NodeProperty];
+		const oResult = await this.requestProperties(oElement, aSelect, oGroupLock, false,
 			bDropFilter);
+
+		if (oResult) {
+			_Helper.updateSelected(this.mChangeListeners,
+				_Helper.getPrivateAnnotation(oElement, "predicate"), oElement, oResult, aSelect);
+		}
 	};
 
 	/**
@@ -2626,7 +2626,7 @@ sap.ui.define([
 		// "super" call (like @borrows ...)
 		const fnSuper = this.oFirstLevel.reset;
 		if (!this.oAggregation.hierarchyQualifier) {
-			this.aElements.$created = this.oFirstLevel.aElements.$created;
+			this.aElements.$created = this.oFirstLevel.getCreated();
 		}
 		fnSuper.call(this, mKeptElementPredicates, sGroupId, mQueryOptions);
 		if (sGroupId) { // sGroupId means we are in a side-effects refresh
@@ -2641,7 +2641,7 @@ sap.ui.define([
 		oAggregation = Object.assign({}, oAggregation);
 		oAggregation.$ExpandLevels = this.oTreeState.getExpandLevels();
 
-		if (!this.oAggregation.hierarchyQualifier && this.oFirstLevel.aElements.$created) {
+		if (!this.oAggregation.hierarchyQualifier && this.oFirstLevel.getCreated()) {
 			this.oFirstLevel.reset(mKeptElementPredicates, sGroupId, {
 				...mQueryOptions,
 				$count : true
@@ -2822,6 +2822,18 @@ sap.ui.define([
 	};
 
 	/**
+	 * @override
+	 * @see sap.ui.model.odata.v4.lib._Cache#update
+	 */
+	_AggregationCache.prototype.update = function (sPropertyPath, _vValue, oParameters) {
+		return SyncPromise.all([
+			_AggregationHelper.isUsedForGrandTotal(sPropertyPath, this.oAggregation.aggregate)
+				&& this.readGrandTotal(oParameters.oGroupLock),
+			_Cache.prototype.update.apply(this, arguments)
+		]);
+	};
+
+	/**
 	 * Validates for all nodes which contribute to the ExpandLevels parameter whether they are a
 	 * descendant of the given node. If a node is a descendant, its expand info is deleted.
 	 *
@@ -2829,7 +2841,7 @@ sap.ui.define([
 	 *   An unlocked lock for the group to associate the request with
 	 * @param {object} oGroupNode
 	 *   A collapsed(!) group node
-	 * @return {Promise<void>}
+	 * @returns {Promise<void>}
 	 *   A promise resolving when the expand info objects have been deleted
 	 *
 	 * @private

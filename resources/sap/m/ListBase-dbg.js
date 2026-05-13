@@ -89,7 +89,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -298,7 +298,24 @@ function(
 				 *
 				 * @since 1.137
 				 */
-				itemActionCount : {type : "int", group: "Misc", defaultValue: -1}
+				itemActionCount : {type : "int", group: "Misc", defaultValue: -1},
+
+				/**
+				 * Defines whether the control remembers and restores the focus position of items.
+				 *
+				 * If set to <code>true</code> (default), the control remembers the last focused item and restores
+				 * focus to it when the user returns to the control. This is helpful for data inspection scenarios
+				 * where users navigate away and return to continue their work.
+				 *
+				 * If set to <code>false</code>, the control does not restore the previously focused item on re-entry.
+				 * This is suitable for configuration dialogs, settings panels, and other form-like usages where
+				 * a predictable initial focus is required.
+				 *
+				 * @private
+				 * @ui5-restricted sap.m
+				 * @since 1.148
+				 */
+				rememberFocus : {type : "boolean", group : "Behavior", defaultValue : true}
 			},
 			defaultAggregation : "items",
 			aggregations : {
@@ -1834,7 +1851,14 @@ function(
 	};
 
 	ListBase.prototype._getItemActionCount = function() {
-		return Math.min(2, Math.max(-1, this.getItemActionCount()));
+		let iItemActionCount = this.getItemActionCount();
+
+		// Navigation actions make list items behave as if their type property were set to "Navigation" therefore they are not counted as item actions
+		if (iItemActionCount > 0 && this.bUseActionsForNavigation && this.getItems().some((oItem) => oItem._hasNavigationAction())) {
+			iItemActionCount--;
+		}
+
+		return Math.min(2, Math.max(-1, iItemActionCount));
 	};
 
 	ListBase.prototype._onItemActionPress = function(oItem, oAction) {
@@ -2740,13 +2764,21 @@ function(
 
 	ListBase.prototype.onsapfocusleave = function(oEvent) {
 		const oNavigationRoot = this.getNavigationRoot();
-		if (oNavigationRoot && !oNavigationRoot.contains(document.activeElement)) {
+		const oRelatedControl = oEvent.relatedControlId && Element.getElementById(oEvent.relatedControlId);
+		const oNextFocusedDomRef = oRelatedControl?.getFocusDomRef?.() || document.activeElement;
+		const bFocusLeftNavigationRoot = oNavigationRoot && !oNavigationRoot.contains(oNextFocusedDomRef);
+
+		if (bFocusLeftNavigationRoot) {
 			this.$("after").attr("tabindex", "0");
 		}
-		if (this._oItemNavigation &&
-			!this.bAnnounceDetails &&
-			!this.getNavigationRoot().contains(document.activeElement)) {
-			this.bAnnounceDetails = true;
+
+		if (this._oItemNavigation && bFocusLeftNavigationRoot) {
+			if (!this.getRememberFocus()) {
+				this._oItemNavigation.resetFocusedIndex();
+			}
+			if (!this.bAnnounceDetails) {
+				this.bAnnounceDetails = true;
+			}
 		}
 	};
 

@@ -18,18 +18,18 @@ sap.ui.define([
 	 * Creates a new WebSocket connection.
 	 *
 	 * @param {string} sUrl relative or absolute URL for WebSocket connection.
-	 * @param {array} [aProtocols] array of protocols as strings, a single protocol as a string
+	 * @param {string|string[]} [vProtocols] array of protocols as strings, a single protocol as a string
 	 * @public
 	 *
 	 * @class Basic WebSocket class.
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 * @alias sap.ui.core.ws.WebSocket
 	 */
 	var WebSocket = EventProvider.extend("sap.ui.core.ws.WebSocket", /** @lends sap.ui.core.ws.WebSocket.prototype */ {
 
-		constructor: function(sUrl, aProtocols) {
+		constructor: function(sUrl, vProtocols) {
 			EventProvider.apply(this);
 
 			// Check WebSocket support
@@ -43,11 +43,11 @@ sap.ui.define([
 			}
 
 			// Check protocols
-			if (typeof (aProtocols) !== 'undefined' && !Array.isArray(aProtocols) && typeof (aProtocols) !== 'string') {
-				throw new Error("aProtocols must be a string, array of strings or undefined.");
+			if (typeof (vProtocols) !== 'undefined' && !Array.isArray(vProtocols) && typeof (vProtocols) !== 'string') {
+				throw new Error("vProtocols must be a string, array of strings or undefined.");
 			}
 
-			this._openConnection(sUrl, aProtocols);
+			this._openConnection(sUrl, vProtocols);
 		},
 
 		metadata: {
@@ -395,14 +395,14 @@ sap.ui.define([
 	 * Opens the connection and binds the event-handlers.
 	 *
 	 * @param {string} sUrl	URL for WebSocket
-	 * @param {array} [aProtocols] array of protocols as strings, a single protocol as a string
+	 * @param {string|string[]} [vProtocols] array of protocols as strings, a single protocol as a string
 	 * @private
 	 */
-	WebSocket.prototype._openConnection = function(sUrl, aProtocols) {
+	WebSocket.prototype._openConnection = function(sUrl, vProtocols) {
 		sUrl = this._resolveFullUrl(sUrl);
-		this._oWs = (typeof (aProtocols) === 'undefined')
+		this._oWs = (typeof (vProtocols) === 'undefined')
 			? new window.WebSocket(sUrl)
-			: new window.WebSocket(sUrl, aProtocols);
+			: new window.WebSocket(sUrl, vProtocols);
 		this._oWs.onopen = this._onopen.bind(this);
 		this._oWs.onclose = this._onclose.bind(this);
 		this._oWs.onmessage = this._onmessage.bind(this);

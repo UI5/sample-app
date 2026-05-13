@@ -38,7 +38,7 @@ sap.ui.define(["./PluginBase",  "sap/ui/core/Element", "sap/ui/base/ManagedObjec
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 * @private
 	 * @since 1.146
 	 * @alias sap.m.plugins.TitleProvider

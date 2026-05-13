@@ -145,7 +145,7 @@ function(
 	 * </ul>
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @extends sap.m.ComboBoxBase
@@ -1403,6 +1403,21 @@ function(
 
 		oDomRef && this.getFocusDomRef().setAttribute("aria-expanded", "true");
 		this._bPickerIsOpening = false;
+
+		// Ensure first group header is visible when using showSelectAll with grouping
+		if (this.getShowSelectAll() && this.getSelectedItems().length === 0) {
+			var bHasGroups = this.getItems().some(function(oItem) {
+				return oItem.isA("sap.ui.core.SeparatorItem");
+			});
+
+			if (bHasGroups) {
+				var oPickerDomRef = this.getPicker().getDomRef("cont");
+				if (oPickerDomRef) {
+					oPickerDomRef.scrollTop = 0;
+				}
+			}
+		}
+
 		// close error message when the list is open, otherwise the list can be covered by the message
 		this.closeValueStateMessage();
 	};
@@ -2119,6 +2134,10 @@ function(
 		var oTokenizer = new Tokenizer({
 			renderMode: TokenizerRenderMode.Narrow
 		}).attachTokenDelete(this._handleTokenDelete, this);
+
+		// Disable the arrow on the n-more popover when used inside MultiComboBox
+		oTokenizer.setProperty("_usePopoverArrow", false);
+
 		oTokenizer.getTokensPopup()
 			.attachAfterOpen(function () {
 				if (oTokenizer.hasOneTruncatedToken()) {

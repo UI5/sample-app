@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -218,28 +218,6 @@ sap.ui.define([
 			const bKeptAlive = oContext.isEffectivelyKeptAlive();
 			return bNoCreated ? bKeptAlive && !oContext.isOutOfPlace() : bKeptAlive;
 		}));
-	};
-
-	/**
-	 * Converts the view index of a context to the model index in case there are contexts created at
-	 * the end.
-	 *
-	 * @param {number} iViewIndex - The view index (see {@link #getContexts})
-	 * @returns {number} The corresponding model index inside <code>this.aContexts</code>
-	 *
-	 * @private
-	 */
-	ODataListBinding.prototype._getModelIndex = function (iViewIndex) {
-		if (!this.bFirstCreateAtEnd) {
-			return iViewIndex;
-		}
-		if (!this.bLengthFinal) { // created at end, but the read is pending and $count unknown yet
-			return this.aContexts.length - iViewIndex - 1;
-		}
-		return iViewIndex < this.getLength() - this.iCreatedContexts
-			? iViewIndex + this.iCreatedContexts
-			// Note: the created rows are mirrored at the end
-			: this.getLength() - iViewIndex - 1;
 	};
 
 	/**
@@ -1057,7 +1035,7 @@ sap.ui.define([
 			sGroupId = "$inactive." + sGroupId;
 		} else if (!oAggregation?.hierarchyQualifier) {
 			this.iActiveContexts += 1;
-			this.setOutdated();
+			this.setOutdated(true);
 		}
 
 		if (this.bFirstCreateAtEnd === undefined) {
@@ -1149,9 +1127,12 @@ sap.ui.define([
 				sGroupId0 = "$auto";
 			}
 			// currently the optimized update w/o bSkipRefresh is restricted to deep create
-			return bSkipRefresh || bDeepCreate
-				? oContext.updateAfterCreate(bSkipRefresh, sGroupId0)
-				: that.refreshSingle(oContext, sGroupId0);
+			return Promise.all([
+				bSkipRefresh || bDeepCreate
+					? oContext.updateAfterCreate(bSkipRefresh, sGroupId0)
+					: that.refreshSingle(oContext, sGroupId0),
+				_Helper.getPrivateAnnotation(oCreatedEntity, "additionalPromise")
+			]);
 		}, function (oError) {
 			oGroupLock.unlock(true); // createInCache failed, so the lock might still be blocking
 			throw oError;
@@ -1784,11 +1765,12 @@ sap.ui.define([
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#doSetProperty
 	 */
-	ODataListBinding.prototype.doSetProperty = function (sPath/*, ...*/) {
+	ODataListBinding.prototype.doSetProperty = function (sPath, _vValue, oGroupLock) {
 		// entities with transient predicates are either inactive, in that case the outdated flags
-		// must not be set, or the outdated flags have been set already while creating the entity
-		if (!sPath.startsWith("($uid=")) {
-			this.setOutdated();
+		// must not be set, or the outdated flags have been set already while creating the entity;
+		// client-side annotation updates do not influence the outdated flags
+		if (!sPath.startsWith("($uid=") && !sPath.includes("/@$ui5.")) {
+			this.setOutdated(false, sPath, oGroupLock === null);
 		}
 	};
 
@@ -1928,7 +1910,7 @@ sap.ui.define([
 					if (that.iActiveContexts > 0) {
 						// some persisted entries are still in the creation area, so the grand total
 						// may still be outdated
-						that.setOutdated();
+						that.setOutdated(true);
 					} else {
 						// entries and grand total are in sync again
 						that.oHeaderContext.setOutdated(false);
@@ -2607,7 +2589,7 @@ sap.ui.define([
 	ODataListBinding.prototype.fireCreateActivate = function (oContext) {
 		if (this.fireEvent("createActivate", {context : oContext}, true)) {
 			this.iActiveContexts += 1;
-			this.setOutdated();
+			this.setOutdated(true);
 			return true;
 		}
 
@@ -2995,19 +2977,39 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataListBinding.prototype.getContextsInViewOrder = function (iStart, iLength) {
-		var aContexts, iCount, i;
+		let aContexts = this.aContexts;
 
 		if (this.bFirstCreateAtEnd) {
-			aContexts = [];
-			iCount = Math.min(iLength, this.getLength() - iStart);
-			for (i = 0; i < iCount; i += 1) {
-				aContexts[i] = this.aContexts[this._getModelIndex(iStart + i)];
+			if (!this.bLengthFinal) { // there can only be created contexts!
+				// Note: see "ignore fixed bottom row w/ grand total temporarily" in #getContexts
+				return aContexts.toReversed().slice(iStart, iStart + iLength);
 			}
-		} else {
-			aContexts = this.aContexts.slice(iStart, iStart + iLength);
+
+			const bGrandTotalAtBottom
+				= _AggregationHelper.hasGrandTotalAtBottom(this.mParameters.$$aggregation);
+			if (iStart + iLength <= this.iMaxLength - (bGrandTotalAtBottom ? 1 : 0)) {
+				iStart += this.iCreatedContexts;
+			} else if (bGrandTotalAtBottom && iLength === 1 && iStart === this.getLength() - 1) {
+				// fast path: grand total is last in both model and view order, no adjustment needed
+			} else {
+				// Note: the created rows are mirrored at the end
+				const aCreatedContexts = aContexts.slice(0, this.iCreatedContexts).reverse();
+
+				let oGrandTotalContext;
+				aContexts = aContexts.slice(this.iCreatedContexts);
+				if (bGrandTotalAtBottom) {
+					oGrandTotalContext = aContexts.pop();
+				} else if (aContexts.length < this.iMaxLength) {
+					aContexts.length = this.iMaxLength;
+				}
+				aContexts = aContexts.concat(aCreatedContexts);
+				if (oGrandTotalContext) {
+					aContexts.push(oGrandTotalContext);
+				}
+			}
 		}
 
-		return aContexts;
+		return aContexts.slice(iStart, iStart + iLength);
 	};
 
 	/**
@@ -3489,7 +3491,24 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#getQueryOptionsFromParameters
 	 */
 	ODataListBinding.prototype.getQueryOptionsFromParameters = function () {
-		return this.mQueryOptions;
+		let mQueryOptions = this.mQueryOptions;
+		if (this.oModel.bAutoExpandSelect) {
+			const aGroupPaths = [];
+			this.aSorters.forEach((oSorter) => {
+				const aPaths = oSorter.getGroupPaths();
+				if (aPaths) {
+					aGroupPaths.push(...aPaths);
+				}
+			});
+			if (aGroupPaths.length) {
+				mQueryOptions = {...mQueryOptions};
+				// avoid that this.mQueryOptions.$select is modified
+				mQueryOptions.$select &&= mQueryOptions.$select.slice();
+				_Helper.addToSelect(mQueryOptions, aGroupPaths);
+			}
+		}
+
+		return mQueryOptions;
 	};
 
 	/**
@@ -3527,8 +3546,17 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.getViewIndex = function (oContext) {
 		if (this.bFirstCreateAtEnd) {
+			let iMaxLength = (this.bLengthFinal ? this.iMaxLength : 0);
+			if (iMaxLength
+					&& _AggregationHelper.hasGrandTotalAtBottom(this.mParameters.$$aggregation)) {
+				if (oContext.iIndex === iMaxLength - 1) { // grand total at bottom
+					return oContext.iIndex + this.iCreatedContexts;
+				}
+				iMaxLength -= 1;
+			}
+
 			return oContext.iIndex < 0
-				? (this.bLengthFinal ? this.iMaxLength : 0) - oContext.iIndex - 1
+				? iMaxLength - oContext.iIndex - 1
 				: oContext.iIndex;
 		}
 		return oContext.iIndex + this.iCreatedContexts;
@@ -3735,6 +3763,25 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns whether the binding is filtered by the given (or any) property.
+	 *
+	 * @param {string} [sPropertyPath]
+	 *   The property path; if omitted, any filter counts
+	 * @returns {boolean}
+	 *   Whether the binding is filtered by the given (or any) property
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.isFilteredBy = function (sPropertyPath) {
+		if (!sPropertyPath) {
+			return this.aApplicationFilters.length || this.aFilters.length;
+		}
+
+		return _AggregationHelper.isAffected(null, this.aApplicationFilters, [sPropertyPath])
+			|| _AggregationHelper.isAffected(null, this.aFilters, [sPropertyPath]);
+	};
+
+	/**
 	 * Returns whether the overall position of created entries is at the end of the list; this is
 	 * determined by the first call to {@link #create}.
 	 *
@@ -3779,6 +3826,25 @@ sap.ui.define([
 	ODataListBinding.prototype.isLengthFinal = function () {
 		// some controls use .bLengthFinal on list binding instead of calling isLengthFinal
 		return this.bLengthFinal;
+	};
+
+	/**
+	 * Returns whether this binding is sorted by the given (or any) property.
+	 *
+	 * @param {string} [sPropertyPath]
+	 *   A property path; if omitted, any sorter counts
+	 * @returns {boolean}
+	 *   Whether the binding is sorted by the given (or any) property
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.isSortedBy = function (sPropertyPath) {
+		if (!sPropertyPath) {
+			return this.aSorters.length || this.mParameters.$orderby;
+		}
+
+		return this.aSorters.some((oSorter) => oSorter.getPath() === sPropertyPath)
+			|| _AggregationHelper.isOrderedBy(sPropertyPath, this.mParameters.$orderby);
 	};
 
 	/**
@@ -5233,14 +5299,43 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sets the outdated flags at the grand total and the header contexts.
+	 * Sets the outdated flags at the grand total and the header context considering filters,
+	 * sorters, search, and custom query options.
+	 *
+	 * @param {boolean} [bForce]
+	 *   Whether to force setting the outdated flags at the grand total and the header context
+	 * @param {string} [sPropertyPath]
+	 *   An optional property path relative to the binding that gets updated; if omitted the whole
+	 *   entity / list is affected
+	 * @param {boolean} [bNoRequest]
+	 *   Whether the given property is updated without sending a PATCH request to the server
+	 * @throws {Error}
+	 *   If <code>bNoRequest</code> is set and the header context gets outdated or the property with
+	 *   the given path contributes to the grand total
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.setOutdated = function () {
+	ODataListBinding.prototype.setOutdated = function (bForce, sPropertyPath, bNoRequest) {
 		if (_Helper.isDataAggregation(this.mParameters)) {
-			this.oCache.setGrandTotalOutdated?.(true);
-			this.oHeaderContext.setOutdated(true);
+			const sMetaPath = sPropertyPath && _Helper.getMetaPath(sPropertyPath);
+			const oAggregation = this.mParameters.$$aggregation;
+			const bGrandTotalOutdated = bForce
+				|| this.mParameters.$search
+				|| oAggregation.search
+				|| Object.keys(this.mParameters).some((sKey) => sKey[0] !== "$")
+				|| this.isFilteredBy(sMetaPath);
+			const bHeaderContextOutdated = bGrandTotalOutdated || this.isSortedBy(sMetaPath);
+			if (bNoRequest
+					&& (bHeaderContextOutdated
+					|| _AggregationHelper.isUsedForGrandTotal(sMetaPath, oAggregation.aggregate))) {
+				throw new Error("Missing PATCH request when @$ui5.context.isOutdated would be set");
+			}
+			if (bGrandTotalOutdated) {
+				this.oCache.setGrandTotalOutdated?.(true);
+			}
+			if (bHeaderContextOutdated) {
+				this.oHeaderContext.setOutdated(true);
+			}
 		}
 	};
 

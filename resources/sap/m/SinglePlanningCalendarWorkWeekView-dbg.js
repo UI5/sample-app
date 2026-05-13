@@ -30,7 +30,7 @@ function(library, SinglePlanningCalendarView, Formatting, Locale, CalendarDate, 
 	 * @extends sap.m.SinglePlanningCalendarView
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public

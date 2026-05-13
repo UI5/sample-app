@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -425,6 +425,7 @@ sap.ui.define([
 		this.bKeepAlive = undefined;
 		delete this.bOutdated;
 		this.bSelected = false;
+		delete this.iSelectionCount; // on demand, for header contexts only
 		// When removing oModel, ManagedObject#getBindingContext does not return the destroyed
 		// context although the control still refers to it
 		this.oModel = undefined;
@@ -2546,9 +2547,11 @@ sap.ui.define([
 	 * @returns {Promise<void>}
 	 *   A promise which is resolved without a defined result in case of success, or rejected with
 	 *   an instance of <code>Error</code> in case of failure, for example if the annotation belongs
-	 *   to the read-only namespace "@$ui5.*". With <code>bRetry</code> it is only rejected with an
-	 *   <code>Error</code> instance where <code>oError.canceled === true</code> when the entity has
-	 *   been deleted while the request was pending or the property has been reset via the methods
+	 *   to the read-only namespace "@$ui5.*", or if <code>sGroupId</code> is <code>null</code> and
+	 *   the outdated flag at the header context would be set or the grand total would be affected.
+	 *   With <code>bRetry</code> it is only rejected with an <code>Error</code> instance where
+	 *   <code>oError.canceled === true</code> when the entity has been deleted while the request
+	 *   was pending or the property has been reset via the methods
 	 *   <ul>
 	 *     <li> {@link sap.ui.model.odata.v4.ODataModel#resetChanges}
 	 *     <li> {@link sap.ui.model.odata.v4.ODataContextBinding#resetChanges} or

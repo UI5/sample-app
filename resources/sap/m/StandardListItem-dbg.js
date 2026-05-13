@@ -39,7 +39,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -436,6 +436,7 @@ sap.ui.define([
 			oThreeDots.textContent = " ";
 			oButton.textContent = oRb.getText("EXPANDABLE_TEXT_SHOW_LESS");
 			bTextExpanded = true;
+			oButton.scrollIntoView({ behavior: "smooth", block: "nearest" });
 		} else {
 			oText.textContent = this._getCollapsedText(sText);
 			oThreeDots.textContent = " ... ";

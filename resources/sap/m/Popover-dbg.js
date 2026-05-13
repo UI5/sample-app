@@ -121,7 +121,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.147.1
+		* @version 1.148.0
 		*
 		* @public
 		* @alias sap.m.Popover
@@ -195,6 +195,12 @@ sap.ui.define([
 					 * @since 1.9.0
 					 */
 					contentHeight: {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue: null},
+
+					/**
+					 * Sets the maximum height of the Popover. When the content exceeds this height, scrolling is enabled. This property applies to the entire Popover, including the header, content, and footer.
+					 * @since 1.148
+					 */
+					maxHeight: {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue: null},
 
 					/**
 					 * This property is deprecated. Please use properties verticalScrolling and horizontalScrolling instead. If you still use this property it will be mapped on the new properties verticalScrolling and horizontalScrolling.
@@ -1382,6 +1388,27 @@ sap.ui.define([
 			oEvent.preventDefault();
 			oEvent.stopPropagation();
 
+			// Consider user-defined maxHeight if set
+			const userMaxHeight = this.getMaxHeight();
+			let maxContentHeight = parseFloat(contentDimensions["max-height"]);
+
+			if (userMaxHeight) {
+				// Convert user's maxHeight to pixels if needed and subtract header/footer height
+				const footerHeaderHeight = $popover.height() - contentHeight;
+				let userMaxHeightPx;
+
+				if (userMaxHeight.endsWith('%')) {
+					userMaxHeightPx = (parseFloat(userMaxHeight) / 100) * posParams._fDocumentHeight;
+				} else if (userMaxHeight.endsWith('rem')) {
+					userMaxHeightPx = Rem.toPx(userMaxHeight);
+				} else {
+					userMaxHeightPx = parseFloat(userMaxHeight);
+				}
+
+				const userMaxContentHeight = userMaxHeightPx - footerHeaderHeight;
+				maxContentHeight = Math.min(maxContentHeight, userMaxContentHeight);
+			}
+
 			const initial = {
 				x: oEvent.pageX,
 				y: oEvent.pageY,
@@ -1389,7 +1416,7 @@ sap.ui.define([
 				width: $popover.width(),
 				height: contentHeight,
 				maxWidth: parseFloat(contentDimensions["max-width"]),
-				maxHeight: parseFloat(contentDimensions["max-height"]),
+				maxHeight: maxContentHeight,
 				footerHeaderHeight: $popover.height() - contentHeight,
 				offsetX: this._getActualOffsetX(),
 				offsetY: this._getActualOffsetY(),
@@ -1470,7 +1497,7 @@ sap.ui.define([
 
 			switch (placement) {
 				case PlacementType.Top:
-					height = clamp(initial.height + dy, this._minDimensions.height, maxHeightTopSide);
+					height = clamp(initial.height + dy, this._minDimensions.height, Math.min(maxHeightTopSide, initial.maxHeight));
 
 					if (resizeHandlePlacement === "TopRight") {
 						width = clamp(initial.width + dx, this._minDimensions.width, maxWidthRightSide);
@@ -1483,7 +1510,7 @@ sap.ui.define([
 					this.resizedOffsetX = Math.round(offsetX);
 					break;
 				case PlacementType.Bottom:
-					height = clamp(initial.height - dy, this._minDimensions.height, maxHeightBottomSide);
+					height = clamp(initial.height - dy, this._minDimensions.height, Math.min(maxHeightBottomSide, initial.maxHeight));
 
 					if (resizeHandlePlacement === "BottomRight") {
 						width = clamp(initial.width + dx, this._minDimensions.width, maxWidthRightSide);
@@ -1499,10 +1526,10 @@ sap.ui.define([
 					width = clamp(initial.width - dx, this._minDimensions.width, maxWidthLeftSide);
 
 					if (resizeHandlePlacement === "TopLeft") {
-						height = clamp(initial.height + dy, this._minDimensions.height, maxHeightTopSide);
+						height = clamp(initial.height + dy, this._minDimensions.height, Math.min(maxHeightTopSide, initial.maxHeight));
 						offsetY = Math.min(0, initial.offsetY + (initial.height - height) / 2);
 					} else { // BottomLeft
-						height = clamp(initial.height - dy, this._minDimensions.height, maxHeightBottomSide);
+						height = clamp(initial.height - dy, this._minDimensions.height, Math.min(maxHeightBottomSide, initial.maxHeight));
 						offsetY = Math.max(1, initial.offsetY + (height - initial.height) / 2);
 					}
 
@@ -1512,10 +1539,10 @@ sap.ui.define([
 					width = clamp(initial.width + dx, this._minDimensions.width, maxWidthRightSide);
 
 					if (resizeHandlePlacement === "TopRight") {
-						height = clamp(initial.height + dy, this._minDimensions.height, maxHeightTopSide);
+						height = clamp(initial.height + dy, this._minDimensions.height, Math.min(maxHeightTopSide, initial.maxHeight));
 						offsetY = Math.min(-1, initial.offsetY + (initial.height - height) / 2);
 					}	else { // BottomRight
-						height = clamp(initial.height - dy, this._minDimensions.height, maxHeightBottomSide);
+						height = clamp(initial.height - dy, this._minDimensions.height, Math.min(maxHeightBottomSide, initial.maxHeight));
 						offsetY = Math.max(0, initial.offsetY + (height - initial.height) / 2);
 					}
 
@@ -2737,15 +2764,20 @@ sap.ui.define([
 			}
 
 			if (oCustomHeader) {
-				// if there are titles in the header, add all of them to labels, else use the full header
-				var aTitles = this._getTitles(oHeader);
-
-				if (aTitles.length) {
-					aAriaLabels = aTitles.map(function (oTitle) {
-						return oTitle.getId();
-					});
+				// Special handling for ValueStateHeader - only include in aria-labelledby when it has visible content
+				if (oHeader.isA("sap.m.ValueStateHeader") && !oHeader._hasVisibleContent()) {
+					aAriaLabels = [];
 				} else {
-					aAriaLabels = oHeader.getId();
+					// if there are titles in the header, add all of them to labels, else use the full header
+					var aTitles = this._getTitles(oHeader);
+
+					if (aTitles.length) {
+						aAriaLabels = aTitles.map(function (oTitle) {
+							return oTitle.getId();
+						});
+					} else {
+						aAriaLabels = oHeader.getId();
+					}
 				}
 			} else {
 				aAriaLabels = this.getHeaderTitle().getId();
@@ -3073,7 +3105,8 @@ sap.ui.define([
 		};
 
 		/*
-		 * Helps to prevent temporary appearance of a scrollbar in documentElement during Popover calculations.
+		 * Helps to prevent temporary appearance of a scrollbar
+		 * in documentElement during Popover calculations.
 		 */
 		Popover.prototype._preventDocumentElementScrolling = function () {
 			if (this._sDocumentElementOverflow !== undefined) {
@@ -3084,14 +3117,20 @@ sap.ui.define([
 
 			if (!bDocumentElementHasVerticalScrollbar) {
 				this._sDocumentElementOverflow = document.documentElement.style.overflow;
+				this._sDocumentElementScrollBehavior = document.documentElement.style.scrollBehavior;
+
 				document.documentElement.style.overflow = "hidden";
+				document.documentElement.style.scrollBehavior = "smooth";
 			}
 		};
 
 		Popover.prototype._restoreDocumentElementScrolling = function () {
 			if (this._sDocumentElementOverflow !== undefined) {
 				document.documentElement.style.overflow = this._sDocumentElementOverflow;
+				document.documentElement.style.scrollBehavior = this._sDocumentElementScrollBehavior;
+
 				delete this._sDocumentElementOverflow;
+				delete this._sDocumentElementScrollBehavior;
 			}
 		};
 

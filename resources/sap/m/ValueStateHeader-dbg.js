@@ -23,7 +23,7 @@ sap.ui.define(
 		 *
 		 * @extends sap.ui.core.Control
 		 * @author SAP SE
-		 * @version 1.147.1
+		 * @version 1.148.0
 		 *
 		 * @constructor
 		 * @private
@@ -164,6 +164,10 @@ sap.ui.define(
 					}, 0);
 				}
 			}
+		};
+
+		 ValueStateHeader.prototype._hasVisibleContent = function () {
+			return this.getValueState() !== ValueState.None || !!this.getText() || !!this.getFormattedText();
 		};
 
 		return ValueStateHeader;

@@ -162,7 +162,7 @@ function(
 	 * @extends sap.m.InputBase
 	 * @implements sap.ui.core.IAccessKeySupport
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 *
 	 * @constructor
 	 * @public
@@ -1598,6 +1598,8 @@ function(
 	Input.prototype.onmousedown = function(oEvent) {
 		if (this._isSuggestionsPopoverOpen()) {
 			oEvent.stopPropagation();
+			// prevent double focus while a suggestion item has visual focus
+			this._getSuggestionsPopover()?.updateFocus(this, null);
 		}
 	};
 

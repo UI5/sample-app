@@ -1,12 +1,12 @@
 /* ===================================== */
 /* CSS for control sap.ui.ux3/FeedChunk  */
-/* Horizon theme                         */
+/* Morning Horizon theme                 */
 /* ===================================== */
 
 .sapUiFeedChunk{
-	font-family: @sapUiDesktopFontFamily;
+	font-family: var(--sapFontFamily);
 	font-size: @sapUiDesktopFontSize;
-	border-color: lighten(@sapUiContentForegroundBorderColor, 15); // @sapUiExtraLightBorder = #e5e5e5
+	border-color: lighten(@sapUiContentForegroundBorderColor, 15);
 	padding: 15px 15px 10px 15px;
 }
 
@@ -30,7 +30,6 @@
 }
 
 .sapUiFeedChunkComment > img {
-/*	margin-bottom: 0px;*/
 	width: 32px;
 	height: 32px;
 }
@@ -40,7 +39,7 @@
 	font-size: 13px;
 	line-height: 19px;
 	margin-right: 27px;
-	margin-left:58px;
+	margin-left: 58px;
 	margin-top: -2px;
 	min-height: 57px;
 	height: 57px;
@@ -49,7 +48,7 @@
 
 .sapUiFeedChunkComment > .sapUiFeedChunkText {
 	min-height: 19px;
-	margin-left:42px;
+	margin-left: 42px;
 	height: auto;
 }
 
@@ -57,7 +56,7 @@
 	padding: 0;
 	height: 19px;
 	width: 12px;
-	background-image: url(img/feed/ico12_click.png);
+	background-image: url('img/feed/ico12_click.png');
 	margin-right: 2px;
 }
 
@@ -77,7 +76,7 @@
 }
 
 .sapUiFeedChunkStatusIcons > li {
-	width:12px;
+	width: 12px;
 	height: 12px;
 	color: transparent;
 	font-size: 0;
@@ -87,27 +86,27 @@
 }
 
 .sapUiFeedChunkFlagged {
-	background-image: url(img/status_ico_flag.png);
+	background-image: url('img/status_ico_flag.png');
 }
 
 .sapUiFeedChunkFavorite {
-	background-image: url(img/status_ico_favorite.png);
+	background-image: url('img/status_ico_favorite.png');
 }
 
 .sapUiFeedChunkShared {
-	background-image: url(img/status_ico_shared.png);
+	background-image: url('img/status_ico_shared.png');
 }
 
 .sapUiFeedChunkByline {
 	font-family: Arial, regular;
 	font-size: 11px;
-	color: @sapUiListFooterTextColor; // @sapUiLightText = #666666
+	color: var(--sapList_FooterTextColor);
 	margin-top: 5px;
-	margin-left:58px;
+	margin-left: 58px;
 }
 
 .sapUiFeedChunkComment > .sapUiFeedChunkByline {
-	margin-left:42px;
+	margin-left: 42px;
 	display: block;
 }
 
@@ -118,23 +117,19 @@
 	background-repeat: no-repeat;
 	background-color: transparent;
 	border: none;
-	-moz-user-select: none;
 	-webkit-user-select: none;
+	user-select: none;
 	outline: none;
 	padding: 0;
 }
 
-html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
-	filter: none;
-}
-
 .sapUiFeedChunk button:focus,
 .sapUiFeedChunk button:hover {
-	background-color: @sapUiButtonHoverBackground;
+	background-color: var(--sapButton_Hover_Background);
 }
 
 .sapUiFeedChunk button:active {
-	background-color: darken(@sapUiButtonHoverBackground, 45); // @sapUiDarkBG = #777777
+	background-color: darken(@sapUiButtonHoverBackground, 45);
 }
 
 .sapUiFeedChunkExpand,
@@ -142,91 +137,82 @@ html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
 	width: 16px;
 	height: 16px;
 	margin-left: 15px;
-
 }
 
 .sapUiFeedChunkExpand {
-	background-image: url(img/feed/Expand_button.png);
+	background-image: url('img/feed/Expand_button.png');
 }
 
 .sapUiFeedChunkExpand:focus,
 .sapUiFeedChunkExpand:hover {
-	background-image: url(img/feed/Expand_button_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Expand_button_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkCollapse {
-	background-image: url(img/feed/Collapse_button.png);
+	background-image: url('img/feed/Collapse_button.png');
 }
 
 .sapUiFeedChunkCollapse:focus,
 .sapUiFeedChunkCollapse:hover {
-	background-image: url(img/feed/Collapse_button_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Collapse_button_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkAct,
 .sapUiFeedChunk > .sapUiMenuButton {
 	width: 22px;
 	height: 22px;
-/*	visibility: hidden;*/ /* only show on hover in Chunk */
 }
-/*
-.sapUiFeedChunk:focus > .sapUiFeedChunkAct,
-.sapUiFeedChunk:hover > .sapUiFeedChunkAct,
-.sapUiFeedChunk:focus > .sapUiMenuButton,
-.sapUiFeedChunk:hover > .sapUiMenuButton{
-	visibility: visible;
-}
-*/
+
 .sapUiFeedChunkActComment {
-	background-image: url(img/feed/Action_Comment_regular.png);
+	background-image: url('img/feed/Action_Comment_regular.png');
 }
 
 .sapUiFeedChunkActComment:hover,
 .sapUiFeedChunkActComment:focus {
-	background-image: url(img/feed/Action_Comment_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Action_Comment_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkActFlag {
-	background-image: url(img/feed/Action_Flag_regular.png);
+	background-image: url('img/feed/Action_Flag_regular.png');
 }
 
 .sapUiFeedChunkActFlag:hover,
 .sapUiFeedChunkActFlag:focus {
-	background-image: url(img/feed/Action_Flag_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Action_Flag_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkActFavorite {
-	background-image: url(img/feed/Action_Favorite_regular.png);
+	background-image: url('img/feed/Action_Favorite_regular.png');
 }
 
 .sapUiFeedChunkActFavorite:hover,
 .sapUiFeedChunkActFavorite:focus {
-	background-image: url(img/feed/Action_Favorite_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Action_Favorite_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkActInspect {
-	background-image: url(img/feed/Action_Inspect_regular.png);
+	background-image: url('img/feed/Action_Inspect_regular.png');
 }
 
 .sapUiFeedChunkActInspect:hover,
 .sapUiFeedChunkActInspect:focus {
-	background-image: url(img/feed/Action_Inspect_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Action_Inspect_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkActShare {
-	background-image: url(img/feed/Share.png);
+	background-image: url('img/feed/Share.png');
 }
 
 .sapUiFeedChunkActShare:hover,
 .sapUiFeedChunkActShare:focus {
-	background-image: url(img/feed/Share_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Share_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunk > .sapUiMenuButton {
@@ -239,24 +225,24 @@ html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
 
 .sapUiFeedChunkDel {
 	border: none;
-	background-image: url(img/feed/Delete_button.png);
+	background-image: url('img/feed/Delete_button.png');
 	width: 16px;
 	height: 16px;
 	color: transparent;
 	font-size: 0;
-	-moz-user-select: none;
 	-webkit-user-select: none;
+	user-select: none;
 	outline: none;
 }
 
 .sapUiFeedChunkDel:hover,
 .sapUiFeedChunkDel:focus {
-	background-image: url(img/feed/Delete_button_hover.png);
-	background-color: @sapUiHighlight;
+	background-image: url('img/feed/Delete_button_hover.png');
+	background-color: var(--sapHighlightColor);
 }
 
 .sapUiFeedChunkDel:active {
-	background-image: url(img/feed/Delete_button_down.png);
+	background-image: url('img/feed/Delete_button_down.png');
 }
 
 .sapUiFeedChunk > section {
@@ -264,18 +250,13 @@ html[data-sap-ui-browser^="ie"] .sapUiFeedChunk button {
 }
 
 .sapUiFeedChunk > section > header {
-/*	border-color: @sapUiExtraLightBorder;*/
 	border: none;
 	height: 8px;
-	background-image: url(img/feed/Triangle_Comments.png), url(img/feed/Line_Comments.png), url(img/feed/Line_Comments.png);
-	background-image: url(img/feed/Triangle_Comments.png), -moz-linear-gradient(center bottom , lighten(@sapUiContentForegroundBorderColor, 15), lighten(@sapUiContentForegroundBorderColor, 15)), -moz-linear-gradient(center bottom , lighten(@sapUiContentForegroundBorderColor, 15), lighten(@sapUiContentForegroundBorderColor, 15)); // @sapUiExtraLightBorder = #e5e5e5
-	background-image: url(img/feed/Triangle_Comments.png), -webkit-gradient(linear, left top, left bottom, from(lighten(@sapUiContentForegroundBorderColor, 15)), to(lighten(@sapUiContentForegroundBorderColor, 15))), -webkit-gradient(linear, left top, left bottom, from(lighten(@sapUiContentForegroundBorderColor, 15)), to(lighten(@sapUiContentForegroundBorderColor, 15))); // @sapUiExtraLightBorder = #e5e5e5
+	background-image: url('img/feed/Triangle_Comments.png'), url('img/feed/Line_Comments.png'), url('img/feed/Line_Comments.png');
+	background-image: url('img/feed/Triangle_Comments.png'), linear-gradient(center bottom , lighten(@sapUiContentForegroundBorderColor, 15), lighten(@sapUiContentForegroundBorderColor, 15)), linear-gradient(center bottom , lighten(@sapUiContentForegroundBorderColor, 15), lighten(@sapUiContentForegroundBorderColor, 15));
 	background-position: 10px top, left 7px, 15px top;
 	background-repeat: no-repeat, no-repeat, no-repeat;
 	background-size: auto auto, 10px 1px, 100% 1px;
-	-webkit-background-size: auto auto, 10px 1px, 100% 1px;
-	background-origin: padding, padding, content;
-	-webkit-background-origin: padding, padding, content;
 	background-origin: padding-box, padding-box, content-box;
 	padding-top: 7px;
 	padding-left: 10px;

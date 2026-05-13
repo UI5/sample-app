@@ -51,6 +51,8 @@ sap.ui.define([
 	) {
 	"use strict";
 
+	_LocalizationHelper.injectJQuery(jQuery);
+
 	/**
 	 * Constructs and initializes a UI Element with the given <code>sId</code> and settings.
 	 *
@@ -142,7 +144,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.147.1
+	 * @version 1.148.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -1973,7 +1975,7 @@ sap.ui.define([
 	 * Removes the defined binding context of this object, all bindings will now resolve
 	 * relative to the parent context again.
 	 *
-	 * @param {string} sModelName
+	 * @param {string} [sModelName] Name of the model to remove the context for.
 	 * @return {sap.ui.base.ManagedObject} reference to the instance itself
 	 * @public
 	 * @function

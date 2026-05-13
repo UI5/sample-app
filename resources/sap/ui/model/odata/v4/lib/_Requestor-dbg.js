@@ -1826,19 +1826,21 @@ sap.ui.define([
 
 	/**
 	 * Reports OData messages from the "sap-messages" response header (or forwards them via the
-	 * response object). When reporting, the longtext URL is already resolved w.r.t. the request URL
-	 * and the original message is preserved early on.
+	 * response object) in case of success. The original messages are preserved in
+	 * "@$ui5.originalMessage" of each message. When reporting, the longtext URL is already resolved
+	 * w.r.t. the request URL.
 	 *
 	 * @param {string} sResourcePath
-	 *   The resource path of the request whose response contained the messages, see also
-	 *   {@link #request sOriginalResourcePath} which may well be "R#V#C"
+	 *   The (non-canonical) resource path of the request whose response contained the messages, see
+	 *   also {@link #request sOriginalResourcePath} which may well be "R#V#C"
 	 * @param {string} [sMessages]
 	 *   The messages in the serialized form as contained in the "sap-messages" response header
 	 * @param {object} oResponse
 	 *   The response object, needed in case <code>sResourcePath === "R#V#C"</code> as described
-	 *   at {@link #request}
+	 *   at {@link #request} or to replace a transient predicate with a real one
 	 * @param {string} [sRequestUrl]
-	 *   A resource path relative to the service URL for which this requestor has been created
+	 *   A (canonical) resource path relative to the service URL for which this requestor has been
+	 *   created, possibly including query options
 	 *
 	 * @private
 	 */
@@ -1846,6 +1848,9 @@ sap.ui.define([
 			sRequestUrl) {
 		if (sMessages) {
 			const aMessages = JSON.parse(sMessages);
+			aMessages.forEach(function (oMessage) {
+				oMessage["@$ui5.originalMessage"] = _Helper.clone(oMessage);
+			});
 			if (sResourcePath === "R#V#C") {
 				_Helper.setPrivateAnnotation(oResponse, "headerMessages", aMessages);
 			} else {
@@ -1853,6 +1858,16 @@ sap.ui.define([
 				aMessages.forEach((oMessage) => {
 					_Helper.makeAbsoluteLongtextUrl(oMessage, sAbsoluteRequestUrl);
 				});
+
+				const aMatches = _Helper.matchEndsWithTransientPredicate(sResourcePath);
+				if (aMatches) {
+					const sMetaPath = "/" + _Helper.getMetaPath(sResourcePath);
+					const mTypeForMetaPath = {};
+					this.fetchType(mTypeForMetaPath, sMetaPath); // Note: no need to wait here
+					sResourcePath = sResourcePath.slice(0, -aMatches[0].length)
+						+ _Helper.getKeyPredicate(oResponse, sMetaPath, mTypeForMetaPath);
+				}
+
 				this.oModelInterface.reportTransitionMessages(aMessages, sResourcePath);
 			}
 		}

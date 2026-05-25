@@ -21,7 +21,7 @@
 		"@ui5/cli": "^4.0.53",
 		"@ui5/linter": "^1.21.1",
 		"@ui5/middleware-code-coverage": "^2.0.3",
-		"eslint": "^10.3.0",
+		"eslint": "^10.4.0",
 		"globals": "^17.6.0",
 		"local-web-server": "^5.4.0",
 		"rimraf": "^6.1.3",

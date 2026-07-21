@@ -57,7 +57,7 @@ sap.ui.define([
 	 * @extends sap.m.QuickViewBase
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -232,11 +232,13 @@ sap.ui.define([
 			this._clearContainerHeight();
 			this._initPages();
 
+			var oPopupControl = this._oPopover.getAggregation("_popup");
+			oPopupControl.removeAllAriaLabelledBy();
 			var oPage = this._oNavContainer.getCurrentPage();
 			if (oPage) {
 				var oHeader = oPage.getCustomHeader();
 				if (oHeader && oHeader.getContentMiddle()[0]) {
-					this._oPopover.addAriaLabelledBy(oHeader.getContentMiddle()[0].getId());
+					oPopupControl.addAriaLabelledBy(oHeader.getContentMiddle()[0].getId());
 				}
 			}
 

@@ -41,6 +41,9 @@ sap.ui.define([
 	 *   A map of key-value pairs representing the query string (requires "copy on write"!)
 	 * @param {boolean} bHasGrandTotal
 	 *   Whether a grand total is needed
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oFirstLevel]
+	 *   An optional collection cache to be used as this aggregation cache's first (and only) level
+	 * @throws {Error} If the given collection cache has pending DELETEs or POSTs
 	 *
 	 * @alias sap.ui.model.odata.v4.lib._AggregationCache
 	 * @borrows sap.ui.model.odata.v4.lib._CollectionCache#addKeptElement as #addKeptElement
@@ -50,7 +53,7 @@ sap.ui.define([
 	 * @private
 	 */
 	function _AggregationCache(oRequestor, sResourcePath, oAggregation, mQueryOptions,
-			bHasGrandTotal) {
+			bHasGrandTotal, oFirstLevel) {
 		_Cache.call(this, oRequestor, sResourcePath, mQueryOptions, true);
 
 		this.aElements = [];
@@ -58,16 +61,25 @@ sap.ui.define([
 		this.aElements.$created = 0; // required for _Cache#drillDown (see _Cache.from$skip)
 		this.iReadLength = undefined;
 		this.iResetCount = 0;
+		this.bKeptFirstLevel = !!oFirstLevel;
 		// Whether this cache is a unified cache, using oFirstLevel with ExpandLevels instead of
 		// separate group level caches
-		this.bUnifiedCache = oAggregation.expandTo >= Number.MAX_SAFE_INTEGER
-			|| !!oAggregation.createInPlace;
+		this.bUnifiedCache = this.bKeptFirstLevel || !!oAggregation.createInPlace
+			|| oAggregation.expandTo >= Number.MAX_SAFE_INTEGER;
 
-		this.doReset(oAggregation, bHasGrandTotal);
+		this.doReset(oAggregation, bHasGrandTotal, oFirstLevel);
 		this.addKeptElement = this.oFirstLevel.addKeptElement; // @borrows ...
 		this.removeKeptElement = this.oFirstLevel.removeKeptElement; // @borrows ...
 		this.oTreeState = new _TreeState(oAggregation.$NodeProperty,
 			(oNode) => _Helper.getKeyFilter(oNode, this.sMetaPath, this.getTypes()));
+		if (oFirstLevel) {
+			if (oFirstLevel.aElements.$deleted?.length
+					|| !_Helper.isEmptyObject(oFirstLevel.mPostRequests)) {
+				throw new Error("Not allowed due to pending DELETEs or POSTs");
+			}
+			this.mChangeRequests = oFirstLevel.mChangeRequests;
+			this.mEditUrl2PatchPromise = oFirstLevel.mEditUrl2PatchPromise;
+		}
 	}
 
 	// make _AggregationCache a _Cache, but actively disinherit some critical methods
@@ -78,14 +90,15 @@ sap.ui.define([
 	 * Deletes a node on the server and in the cached data.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
-	 *   A lock for the group ID to be used for the DELETE request; w/o a lock, no requests are sent
+	 *   A lock for the group ID to be used for the DELETE request; w/o it, no requests are sent.
+	 *   For a transient entity, the lock is ignored (use NULL)!
 	 * @param {string} sEditUrl
-	 *   The node's edit URL to be used for the DELETE request
+	 *   The node's edit URL to be used for the DELETE request; w/o a lock, this is mostly ignored.
 	 * @param {string} sIndexOrPredicate
 	 *   The node's index or its predicate if it is not in the collection
-	 * @param {object} [_oETagEntity]
-	 *   An entity with the ETag of the binding for which the deletion was requested. Not used and
-	 *   should always be undefined
+	 * @param {object} [oETagEntity]
+	 *   An entity with the ETag of the binding for which the deletion was requested, see
+	 *   {@link sap.ui.model.odata.v4.lib._Cache#_delete}
 	 * @param {function(number,number):void} fnCallback
 	 *   A function which is called immediately with the node's index and offset -1 as parameter
 	 *   when the node has been deleted from the cache; reinsertion does not occur
@@ -99,7 +112,7 @@ sap.ui.define([
 	 */
 	// @override sap.ui.model.odata.v4.lib._Cache#_delete
 	_AggregationCache.prototype._delete = function (oGroupLock, sEditUrl, sIndexOrPredicate,
-			_oETagEntity, fnCallback) {
+			oETagEntity, fnCallback) {
 		let iIndex = parseInt(sIndexOrPredicate);
 		if (isNaN(iIndex)) { // it must be a predicate because the element is not in the collection
 			throw new Error(
@@ -119,16 +132,17 @@ sap.ui.define([
 				_Helper.getPrivateAnnotation(oElement, "transientPredicate"));
 		}
 
-		sEditUrl += this.oRequestor.buildQueryString(this.sMetaPath, this.mQueryOptions, true);
 		if (this.oCountPromise) {
 			this.createCountPromise();
 		}
 
 		return SyncPromise.all(oGroupLock ? [
-			this.oRequestor.request("DELETE", sEditUrl, oGroupLock, {"If-Match" : oElement}),
+			oParentCache._delete(oGroupLock, sEditUrl, sPredicate, oETagEntity, /*fnCallback*/null),
 			this.readCount(oGroupLock),
 			this.readGrandTotal(oGroupLock)
-		] : []).then(() => {
+		] : [
+			this.readCount(this.oRequestor.lockGroup("$auto", this))
+		]).then(() => {
 			this.oTreeState.delete(oElement);
 			if (this.aElements.length === 0) {
 				return; // concurrent side-effects refresh takes care of cleanup
@@ -153,6 +167,7 @@ sap.ui.define([
 			}
 			this.shiftRank(iIndex, -iOffset);
 			// remove in this cache
+			delete oElement["@$ui5.context.isDeleted"]; // @see #removeElement
 			this.removeElement(iIndex, sPredicate);
 			// notify caller
 			fnCallback(iIndex, -1);
@@ -525,17 +540,18 @@ sap.ui.define([
 		_Helper.addByPath(this.mPostRequests, sTransientPredicate, oEntityData);
 		let iIndex = aElements.indexOf(oParentNode) + 1; // 0 w/o oParentNode :-)
 		if (this.oCountPromise) {
-			const fnOldSubmitCallback = fnSubmitCallback;
 			// create a new count promise early, that a synchronous call to
 			// oHeaderContext.requestProperty("$count") waits until the creation was successful or
 			// has been cancelled; cancellation of the creation will restore the old count promise
 			this.createCountPromise(true);
-			fnSubmitCallback = () => {
-				this.readCount(oGroupLock)?.catch(
-					this.oRequestor.getModelInterface().getReporter());
-				fnOldSubmitCallback();
-			};
 		}
+		const fnOldSubmitCallback = fnSubmitCallback;
+		fnSubmitCallback = () => {
+			const fnReporter = this.oRequestor.getModelInterface().getReporter();
+			this.readCount(oGroupLock)?.catch(fnReporter);
+			this.readGrandTotal(oGroupLock)?.catch(fnReporter);
+			fnOldSubmitCallback();
+		};
 		const oPromise = oCache.create(oGroupLock, oPostPathPromise, sPath, sTransientPredicate,
 			oEntityData, bAtEndOfCreated, fnErrorCallback, fnSubmitCallback, /*onCancel*/() => {
 				_Helper.removeByPath(this.mPostRequests, sTransientPredicate, oEntityData);
@@ -593,6 +609,8 @@ sap.ui.define([
 		if (this.oAggregation.createInPlace) {
 			return oPromise.then(async () => {
 				_Helper.removeByPath(this.mPostRequests, sTransientPredicate, oEntityData);
+				_Helper.updateTransientPaths(this.mChangeListeners, sTransientPredicate,
+					_Helper.getPrivateAnnotation(oEntityData, "predicate"));
 				delete oEntityData["@$ui5.context.isTransient"];
 				const [iRank] = await Promise.all([
 					this.requestRank(oEntityData, oGroupLock),
@@ -615,8 +633,9 @@ sap.ui.define([
 
 		return oPromise.then(() => {
 			_Helper.removeByPath(this.mPostRequests, sTransientPredicate, oEntityData);
-			aElements.$byPredicate[_Helper.getPrivateAnnotation(oEntityData, "predicate")]
-				= oEntityData;
+			const sPredicate = _Helper.getPrivateAnnotation(oEntityData, "predicate");
+			aElements.$byPredicate[sPredicate] = oEntityData;
+			_Helper.updateTransientPaths(this.mChangeListeners, sTransientPredicate, sPredicate);
 			if (!this.oAggregation.hierarchyQualifier) {
 				return oEntityData;
 			}
@@ -671,21 +690,25 @@ sap.ui.define([
 
 	/**
 	 * Creates a cache for the children (next group level or leaves) of the given group node.
-	 * Creates the first level cache if there is no group node.
+	 * Creates the first level cache if there is no group node. Reuses a given cache.
 	 *
 	 * @param {object} [oGroupNode]
 	 *   The group node or <code>undefined</code> for the first level cache
 	 * @param {boolean} [bHasConcatHelper]
 	 *   Whether the _ConcatHelper is involved (use only for the first level cache!)
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oCache]
+	 *   An optional collection cache to be reused; must already be
+	 *   {@link sap.ui.model.odata.v4.lib._CollectionCache#reset reset}
 	 * @returns {sap.ui.model.odata.v4.lib._CollectionCache}
 	 *   The group level cache
 	 *
 	 * @private
 	 */
-	_AggregationCache.prototype.createGroupLevelCache = function (oGroupNode, bHasConcatHelper) {
+	_AggregationCache.prototype.createGroupLevelCache = function (oGroupNode, bHasConcatHelper,
+			oCache) {
 		var oAggregation = this.oAggregation,
 			iLevel = oGroupNode ? oGroupNode["@$ui5.node.level"] + 1 : 1,
-			aAllProperties, oCache, aGroupBy, bLeaf, sParentFilter, mQueryOptions, bTotal;
+			aAllProperties, aGroupBy, bLeaf, sParentFilter, mQueryOptions, bTotal;
 
 		if (oAggregation.hierarchyQualifier) {
 			mQueryOptions = Object.assign({}, this.mQueryOptions);
@@ -717,7 +740,11 @@ sap.ui.define([
 			mQueryOptions = _AggregationHelper.buildApply(oAggregation, mQueryOptions, iLevel);
 		}
 		mQueryOptions.$count = true;
-		oCache = _Cache.create(this.oRequestor, this.sResourcePath, mQueryOptions, true);
+		if (oCache) {
+			oCache.setQueryOptions(mQueryOptions); // Note: no bForce needed after #reset
+		} else {
+			oCache = _Cache.create(this.oRequestor, this.sResourcePath, mQueryOptions, true);
+		}
 		oCache.calculateKeyPredicate = oAggregation.hierarchyQualifier
 			? _AggregationCache.calculateKeyPredicateRH.bind(null, oGroupNode, oAggregation)
 			: _AggregationCache.calculateKeyPredicate.bind(null, oGroupNode, aGroupBy,
@@ -745,10 +772,13 @@ sap.ui.define([
 	 *   {@link _AggregationHelper.buildApply}
 	 * @param {boolean} bHasGrandTotal
 	 *   Whether a grand total is needed
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oFirstLevel]
+	 *   An optional collection cache to be used as this aggregation cache's first (and only) level;
+	 *   must already be {@link sap.ui.model.odata.v4.lib._CollectionCache#reset reset}
 	 *
 	 * @private
 	 */
-	_AggregationCache.prototype.doReset = function (oAggregation, bHasGrandTotal) {
+	_AggregationCache.prototype.doReset = function (oAggregation, bHasGrandTotal, oFirstLevel) {
 		this.oAggregation = oAggregation;
 		// early call of _AggregationHelper.buildApply to determine $NodeProperty etc.
 		this.sToString = this.getDownloadUrl("");
@@ -782,7 +812,7 @@ sap.ui.define([
 			: undefined;
 
 		const bHasConcatHelper = aAdditionalRowHandlers.length > 0;
-		this.oFirstLevel ??= this.createGroupLevelCache(null, bHasConcatHelper);
+		this.oFirstLevel ??= this.createGroupLevelCache(null, bHasConcatHelper, oFirstLevel);
 		if (bHasConcatHelper) {
 			// no specific handling needed for "UI5__count" here
 			aAdditionalRowHandlers.push(function () {});
@@ -1167,18 +1197,21 @@ sap.ui.define([
 	};
 
 	/**
-	 * Nothing to do here, we have no created elements.
+	 * Returns all created elements for the given path. Nothing to do here for a recursive hierarchy
+	 * (no created elements), but for data aggregation.
 	 *
-	 * @param {string} [_sPath]
+	 * @param {string} sPath
 	 *   Relative path to drill-down into
 	 * @returns {object[]}
-	 *   An empty array
+	 *   An array with all created elements
 	 *
 	 * @public
 	 */
 	// @override sap.ui.model.odata.v4.lib._Cache#getCreatedElements
-	_AggregationCache.prototype.getCreatedElements = function (_sPath) {
-		return [];
+	_AggregationCache.prototype.getCreatedElements = function (sPath) {
+		return this.oAggregation.hierarchyQualifier
+			? []
+			: this.oFirstLevel.getCreatedElements(sPath);
 	};
 
 	/**
@@ -2110,6 +2143,9 @@ sap.ui.define([
 							iOffset = 1;
 							that.addElements(oGrandTotal, 0);
 					}
+					if (that.oGrandTotalPromise.$outdated) {
+						that.setGrandTotalOutdated(true);
+					}
 				}
 
 				that.addElements(oResult.value, iStart + iOffset, that.oFirstLevel, iStart);
@@ -2245,6 +2281,11 @@ sap.ui.define([
 			throw new Error("Leaves must not be aggregated");
 		}
 		const oGrandTotal = this.aElements.$byPredicate["()"];
+		if (!oGrandTotal) {
+			this.setGrandTotalOutdated(true);
+			return;
+		}
+
 		if (oGrandTotal["@$ui5.context.isOutdated"]) {
 			return; // don't read grand total, a full refresh is needed
 		}
@@ -2259,9 +2300,13 @@ sap.ui.define([
 		mQueryOptions = _AggregationHelper.buildApply(this.oAggregation, mQueryOptions, -1);
 		const sResourcePath = this.sResourcePath
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, false, true);
+		const sGroupId = oGroupLock.getGroupId();
+		const oGroupLock4Request = sGroupId.startsWith("$inactive.")
+			? this.oRequestor.lockGroup(sGroupId.slice(10), oGroupLock.getOwner())
+			: oGroupLock.getUnlockedCopy();
 
-		return this.oRequestor.request("GET", sResourcePath, oGroupLock.getUnlockedCopy(),
-				undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+		return this.oRequestor.request("GET", sResourcePath, oGroupLock4Request, undefined,
+				undefined, undefined, undefined, undefined, undefined, undefined,
 				{/*mMergeableQueryOptions*/})
 			.then((oResult) => {
 				_Helper.updateExisting(this.mChangeListeners, "()", oGrandTotal, oResult.value[0]);
@@ -2593,12 +2638,13 @@ sap.ui.define([
 	// Additionally the grand total row is refreshed. The resulting promise resolves without a
 	// defined result when the side effects and the grand total are updated; rejects if one of these
 	// requests fails.
-	_AggregationCache.prototype.requestSideEffects = function (oGroupLock/*, ...*/) {
+	_AggregationCache.prototype.requestSideEffects = function (oGroupLock, aPaths/*, ...*/) {
 		// "super" call (like @borrows ...)
 		const fnSuper = this.oFirstLevel.requestSideEffects;
 		return SyncPromise.all([
 			fnSuper.apply(this, arguments),
-			this.readGrandTotal(oGroupLock)
+			_AggregationHelper.isUsedForGrandTotal(aPaths, this.oAggregation.aggregate)
+				&& this.readGrandTotal(oGroupLock)
 		]);
 	};
 
@@ -2611,48 +2657,58 @@ sap.ui.define([
 		if (bIsGrouped) {
 			throw new Error("Unsupported grouping via sorter");
 		}
-
 		for (const sPredicate in mKeptElementPredicates) {
 			const oKeptElement = this.aElements.$byPredicate[sPredicate];
 			if (_Helper.hasPrivateAnnotation(oKeptElement, "placeholder")) {
 				throw new Error("Unexpected placeholder");
 			}
-			delete oKeptElement["@$ui5.node.isExpanded"];
-			delete oKeptElement["@$ui5.node.level"];
-			delete oKeptElement["@$ui5._"];
-			_Helper.setPrivateAnnotation(oKeptElement, "predicate", sPredicate);
 		}
 
 		// "super" call (like @borrows ...)
 		const fnSuper = this.oFirstLevel.reset;
+		let iCreated;
 		if (!this.oAggregation.hierarchyQualifier) {
-			this.aElements.$created = this.oFirstLevel.getCreated();
+			iCreated = this.aElements.$created = this.oFirstLevel.getCreated();
 		}
-		fnSuper.call(this, mKeptElementPredicates, sGroupId, mQueryOptions);
+		fnSuper.call(this, {...mKeptElementPredicates}, sGroupId, mQueryOptions);
 		if (sGroupId) { // sGroupId means we are in a side-effects refresh
 			this.oBackup.oCountPromise = this.oCountPromise;
 			this.oBackup.oFirstLevel = this.oFirstLevel;
 			this.oBackup.oGrandTotalPromise = this.oGrandTotalPromise;
 			this.oBackup.bUnifiedCache = this.bUnifiedCache;
-			this.bUnifiedCache = !!oAggregation.hierarchyQualifier;
+			this.bUnifiedCache = this.bKeptFirstLevel || !!oAggregation.hierarchyQualifier;
 		} else {
 			this.oTreeState.reset();
 		}
 		oAggregation = Object.assign({}, oAggregation);
 		oAggregation.$ExpandLevels = this.oTreeState.getExpandLevels();
 
-		if (!this.oAggregation.hierarchyQualifier && this.oFirstLevel.getCreated()) {
-			this.oFirstLevel.reset(mKeptElementPredicates, sGroupId, {
+		let oFirstLevel;
+		if (this.bKeptFirstLevel || iCreated) {
+			this.oFirstLevel.reset({...mKeptElementPredicates}, sGroupId, {
 				...mQueryOptions,
 				$count : true
 			});
 			if (sGroupId) {
 				this.oBackup.oFirstLevel = null;
 			}
-		} else {
-			this.oFirstLevel = null; // we need a new one ;-)
+			oFirstLevel = this.oFirstLevel; // reuse via #createGroupLevelCache (#reset done before)
 		}
-		this.doReset(oAggregation, _AggregationHelper.hasGrandTotal(oAggregation.aggregate));
+		this.oFirstLevel = null;
+		this.doReset(oAggregation, _AggregationHelper.hasGrandTotal(oAggregation.aggregate),
+			oFirstLevel);
+
+		this.aElements.forEach((o) => { // Note: only created elements survive above #reset
+			delete mKeptElementPredicates[_Helper.getPrivateAnnotation(o, "predicate")];
+			delete mKeptElementPredicates[_Helper.getPrivateAnnotation(o, "transientPredicate")];
+		});
+		for (const sPredicate in mKeptElementPredicates) { // kept alive *outside* collection
+			const oKeptElement = this.aElements.$byPredicate[sPredicate];
+			delete oKeptElement["@$ui5.node.isExpanded"];
+			delete oKeptElement["@$ui5.node.level"];
+			delete oKeptElement["@$ui5._"];
+			_Helper.setPrivateAnnotation(oKeptElement, "predicate", sPredicate);
+		}
 	};
 
 	/**
@@ -2685,7 +2741,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sets the outdated state of the grand total row, if there is any.
+	 * Sets the outdated state of the grand total row, if there is any. If the grand total request
+	 * is pending, the outdated state is set just after the grand total is available.
 	 *
 	 * @param {boolean} bOutdated - Whether the grand total row is outdated
 	 *
@@ -2703,6 +2760,8 @@ sap.ui.define([
 					_Helper.getPrivateAnnotation(oGrandTotalCopy, "predicate"), oGrandTotalCopy,
 					{"@$ui5.context.isOutdated" : bOutdated});
 			}
+		} else if (this.oGrandTotalPromise) {
+			this.oGrandTotalPromise.$outdated = true;
 		}
 	};
 
@@ -2827,7 +2886,8 @@ sap.ui.define([
 	 */
 	_AggregationCache.prototype.update = function (sPropertyPath, _vValue, oParameters) {
 		return SyncPromise.all([
-			_AggregationHelper.isUsedForGrandTotal(sPropertyPath, this.oAggregation.aggregate)
+			_AggregationHelper.isUsedForGrandTotal([_Helper.getMetaPath(sPropertyPath)],
+					this.oAggregation.aggregate)
 				&& this.readGrandTotal(oParameters.oGroupLock),
 			_Cache.prototype.update.apply(this, arguments)
 		]);
@@ -3065,6 +3125,9 @@ sap.ui.define([
 	 *   error.
 	 * @param {boolean} [bIsGrouped]
 	 *   Whether the list binding is grouped via its first sorter
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oFirstLevel]
+	 *   An optional collection cache to be used as the new aggregation cache's first (and only)
+	 *   level
 	 * @returns {sap.ui.model.odata.v4.lib._Cache}
 	 *   The cache
 	 * @throws {Error}
@@ -3074,12 +3137,15 @@ sap.ui.define([
 	 *   "$expand" or "$select" are combined with pure data aggregation (no recursive hierarchy), or
 	 *   if the system query option "$search" is combined with grand totals or group levels or a
 	 *   recursive hierarchy, or if shared requests are combined with min/max or with grand totals
-	 *   or group levels or recursive hierarchy
+	 *   or group levels or recursive hierarchy, or if a first level cache is given but no
+	 *   aggregation cache needs to be created, or if a first level cache is given and it has
+	 *   pending DELETEs or POSTs
 	 *
 	 * @public
 	 */
 	_AggregationCache.create = function (oRequestor, sResourcePath, sDeepResourcePath,
-			mQueryOptions, oAggregation, bSortExpandSelect, bSharedRequest, bIsGrouped) {
+			mQueryOptions, oAggregation, bSortExpandSelect, bSharedRequest, bIsGrouped,
+			oFirstLevel) {
 		var bHasGrandTotal, bHasGroupLevels;
 
 		function checkExpandSelect() {
@@ -3108,6 +3174,9 @@ sap.ui.define([
 				if (bSharedRequest) {
 					throw new Error("Unsupported $$sharedRequest together with min/max");
 				}
+				if (oFirstLevel) {
+					throw new Error("Unsupported oFirstLevel together with min/max");
+				}
 				checkExpandSelect();
 
 				return _MinMaxHelper.createCache(oRequestor, sResourcePath, oAggregation,
@@ -3135,10 +3204,13 @@ sap.ui.define([
 				}
 
 				return new _AggregationCache(oRequestor, sResourcePath, oAggregation, mQueryOptions,
-						bHasGrandTotal);
+						bHasGrandTotal, oFirstLevel);
 			}
 		}
 
+		if (oFirstLevel) {
+			throw new Error("Unsupported oFirstLevel");
+		}
 		if ("$$filterOnAggregate" in mQueryOptions) {
 			throw new Error("Unsupported $$filterOnAggregate");
 		}

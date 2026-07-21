@@ -83,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 * @since 1.96
@@ -442,18 +442,25 @@ sap.ui.define([
 		return aSelectedItems;
 	};
 
-	SelectionPanel.prototype._filterList = function(bShowSelected, sSearch, bHideRedundant) {
+	SelectionPanel.prototype._filterList = function(bShowSelectedFilters, sSearch, bHideDescriptionFilters) {
 		const aFilter = [];
 
-		if (bHideRedundant && bShowSelected) {
-			const oFilter1 = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
-			const oFilter2 = new Filter(this.REDUNDANT_ITEMS_ATTRIBUTE, "NE", true);
-			const oRedundantFilter = new Filter({filters: [oFilter1, oFilter2], and: true});
-			aFilter.push(oRedundantFilter);
-		} else if (bShowSelected) {
+		// Filter scenarios:
+		// 1. Both filters active: Show only selected items (visible === true)
+		//    Logic: (visible & !redundant) OR (visible & redundant) = visible
+		// 2. Show selected only: Show all selected items, including redundant ones
+		// 3. Hide descriptions only: Show selected OR non-redundant items (visible OR !redundant)
+
+		if (bHideDescriptionFilters && bShowSelectedFilters) {
+			// Scenario 1: Both active → only selected items
 			const oSelectedFilter = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
 			aFilter.push(oSelectedFilter);
-		} else if (bHideRedundant) {
+		} else if (bShowSelectedFilters) {
+			// Scenario 2: Show selected → all selected items (redundant or not)
+			const oSelectedFilter = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
+			aFilter.push(oSelectedFilter);
+		} else if (bHideDescriptionFilters) {
+			// Scenario 3: Hide descriptions → selected OR non-redundant items
 			const oSelectedFilter = new Filter(this.PRESENCE_ATTRIBUTE, "EQ", true);
 			const oRedundantFilter = new Filter(this.REDUNDANT_ITEMS_ATTRIBUTE, "NE", true);
 			const oFilters = new Filter({filters: [oSelectedFilter, oRedundantFilter], and: false});
@@ -470,6 +477,9 @@ sap.ui.define([
 			vFilter = new Filter(aFilter, true);
 		}
 		this._oListControl.getBinding("items").filter(vFilter);
+
+		// Update the visible items count after filtering
+		this._updateVisibleItemsCount();
 	};
 
 	SelectionPanel.prototype._onSearchFieldLiveChange = function(oEvent) {
@@ -595,6 +605,10 @@ sap.ui.define([
 			this._oListControl.removeSelections();
 		}
 		BasePanel.prototype.setP13nData.call(this, aP13nData);
+
+		// Initialize visible items count with total items count
+		this._getP13nModel().setProperty("/visibleItems", aP13nData.length);
+
 		this._updateCount();
 
 		//After explicitly updating the data (e.g. outer influences by the p13n.Popup such as reset, open & update)
@@ -618,10 +632,30 @@ sap.ui.define([
 		BasePanel.prototype.onReset.apply(this, arguments);
 		this._sSearch = "";
 		this.getModel(this.P13N_MODEL).setProperty("/showSelected", false);
+
+		// Reset visible items count to total items count when filters are cleared
+		const aItems = this._getP13nModel().getProperty("/items");
+		this._getP13nModel().setProperty("/visibleItems", aItems ? aItems.length : 0);
+	};
+
+	/**
+	 * Updates the visible items count in the model based on currently displayed items.
+	 * This should be called whenever filters change to reflect the filtered item count.
+	 * @private
+	 * @since 1.148
+	 */
+	SelectionPanel.prototype._updateVisibleItemsCount = function() {
+		const iVisibleItems = this._oListControl.getItems().length;
+		this._getP13nModel().setProperty("/visibleItems", iVisibleItems);
 	};
 
 	SelectionPanel.prototype._updateCount = function() {
-		this._getP13nModel().setProperty("/selectedItems", this._oListControl.getSelectedContexts(true).length);
+		// Count only selected items that are currently visible
+		const aVisibleItems = this._oListControl.getItems();
+		const iVisibleSelected = aVisibleItems.filter((oItem) => oItem.getSelected()).length;
+
+		this._getP13nModel().setProperty("/selectedItems", iVisibleSelected);
+		this._updateVisibleItemsCount();
 	};
 
 	SelectionPanel.prototype._selectTableItem = function(oTableItem, bSelectAll) {
@@ -682,11 +716,11 @@ sap.ui.define([
 						parts: [{
 							path: this.P13N_MODEL + '>/selectedItems'
 						}, {
-							path: this.P13N_MODEL + '>/items'
+							path: this.P13N_MODEL + '>/visibleItems'
 						}],
-						formatter: (iSelected, aAll) => {
+						formatter: (iSelected, iVisible) => {
 							return this._sText + " " + this._getResourceText('p13n.HEADER_COUNT', [
-								iSelected, aAll instanceof Array ? aAll.length : 0
+								iSelected, iVisible || 0
 							]);
 						}
 					}
@@ -724,6 +758,8 @@ sap.ui.define([
 				this._removeFactoryControl();
 			},
 			updateFinished: () => {
+				// Update visible items count after table rendering completes
+				this._updateVisibleItemsCount();
 				if (this._getShowFactory() && !this._bInactive) {
 					this._addFactoryControl();
 				}

@@ -117,7 +117,7 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", 	"sap/ui/core/Ico
 			}
 			oRm.openEnd();
 			if (sActualDisplayType === AvatarType.Icon || sImageFallbackType === AvatarType.Icon) {
-				oRm.renderControl(oAvatar._getIcon().addStyleClass(sAvatarClass + "TypeIcon"));
+				oRm.renderControl(oAvatar._getIcon().addStyleClass(sAvatarClass + "TypeIcon").removeStyleClass(sAvatarClass + "HiddenIcon"));
 			} else if ((sActualDisplayType === AvatarType.Initials || sImageFallbackType === AvatarType.Initials) ){
 				if (sInitialsLength === 3) {
 				//we render both icon and avatar, for the case where we have 3 initials set to the avatar and they are overflowing,

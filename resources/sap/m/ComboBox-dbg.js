@@ -106,7 +106,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -541,10 +541,16 @@ sap.ui.define([
 		 */
 		ComboBox.prototype.onBeforeRenderingDropdown = function() {
 			var oPopover = this.getPicker(),
-				sWidth = (this.$().outerWidth() / parseFloat(library.BaseFontSize)) + "rem";
+				sWidth = (this.$().outerWidth() / parseFloat(library.BaseFontSize)) + "rem",
+				sMaxHeight = this.getMaxPickerHeight();
 
 			if (oPopover) {
 				oPopover.setContentMinWidth(sWidth);
+
+				// Forward maxPickerHeight to popover
+				if (sMaxHeight) {
+					oPopover.setMaxHeight(sMaxHeight);
+				}
 			}
 		};
 
@@ -943,6 +949,10 @@ sap.ui.define([
 				bTablet = this.isPlatformTablet();
 
 			this.closeValueStateMessage();
+
+			if (this.bOpenedByKeyboardOrButton) {
+				this._announceExpanded();
+			}
 
 			// if there is a selected item, scroll and show the list
 			fnSelectedItemOnViewPort.call(this, true);

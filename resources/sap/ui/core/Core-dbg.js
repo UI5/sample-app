@@ -117,7 +117,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.148.0";
+	const sVersion = "1.150.0";
 
 	/**
 	 * The buildinfo.
@@ -441,7 +441,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -664,6 +664,12 @@ sap.ui.define([
 				}
 			})();
 
+			// loading debug tools if configured via configuration (URL parameter)
+			const debugLoader = "sap/ui/core/support/debug/DebugLoader";
+			if (Supportability.isDebugToolsEnabled()) {
+				this.aModules.unshift(debugLoader);
+			}
+
 			/**
 			 * @deprecated
 			 */
@@ -708,6 +714,8 @@ sap.ui.define([
 			this._setupBrowser();
 
 			this._setupOS();
+
+			this._setupCssCustomPropertiesScope();
 
 			this._setupAnimation();
 
@@ -1061,6 +1069,16 @@ sap.ui.define([
 		if (osCSS) {
 			html.classList.add(osCSS);
 		}
+	};
+
+	/**
+	 * Adds the .sapUI5Scope marker class to the "html" element.
+	 * Used for storing framework specific CSS custom properties distinct from the theming base content.
+	 * @private
+	 */
+	Core.prototype._setupCssCustomPropertiesScope = function() {
+		const html = document.documentElement;
+		html.classList.add("sapUI5Scope");
 	};
 
 	/**

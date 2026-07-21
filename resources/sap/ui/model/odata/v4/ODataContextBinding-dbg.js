@@ -74,7 +74,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
@@ -1738,7 +1738,7 @@ sap.ui.define([
 			});
 		}
 
-		if (aPaths.indexOf("") < 0) {
+		if (!aPaths.includes("")) {
 			try {
 				if (!this.oOperation || this.oReturnValueContext) {
 					aPromises.push(

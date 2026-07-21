@@ -209,7 +209,6 @@
 					oFrameEl.style.border = "none";
 					oFrameEl.style.width = "100%";
 					oFrameEl.style.height = "100vh";
-					oFrameEl.sandbox = "allow-scripts";
 
 					body.appendChild(oFrameEl);
 				});

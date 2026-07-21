@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -131,6 +131,9 @@ sap.ui.define([
 		this.sChangeReason = oModel.bAutoExpandSelect && !_Helper.isDataAggregation(mParameters)
 			? "AddVirtualContext"
 			: undefined;
+		// optional change reason to be used for the next refresh event after RemoveVirtualContext
+		// Note: must only be used in combination with this.sChangeReason set to "AddVirtualContext"
+		this.sChangeReasonAfterRemoveVirtualContext = undefined;
 		// Note: this.aContexts[i].iIndex + this.iCreatedContexts === i
 		// BEWARE: #doReplaceWith can insert a context w/ negative index, but w/o #created promise
 		// into aContexts' area of "created contexts"! And via "keep alive" or selection, we may
@@ -1035,7 +1038,7 @@ sap.ui.define([
 			sGroupId = "$inactive." + sGroupId;
 		} else if (!oAggregation?.hierarchyQualifier) {
 			this.iActiveContexts += 1;
-			this.setOutdated(true);
+			this.setOutdated("header");
 		}
 
 		if (this.bFirstCreateAtEnd === undefined) {
@@ -1616,6 +1619,7 @@ sap.ui.define([
 	ODataListBinding.prototype.doCreateCache = function (sResourcePath, mQueryOptions, oContext,
 			sDeepResourcePath, sGroupId, bSideEffectsRefresh, oOldCache) {
 		var oCache,
+			oFirstLevel,
 			mKeptElementsByPredicate,
 			bResetViaSideEffects = this.bResetViaSideEffects;
 
@@ -1655,13 +1659,23 @@ sap.ui.define([
 			for (const sPredicate in mKeptElementsByPredicate) {
 				mKeptElementsByPredicate[sPredicate] = oCache.getValue(sPredicate);
 			}
-			oCache.setActive(false);
+			Promise.resolve().then(() => {
+				// later, when the new cache has been established, re-register change listeners
+				Object.values(this.mPreviousContextsByPath).forEach((oContext0) => {
+					oContext0.checkUpdate();
+				});
+			});
+			if (oCache.hasPendingChangesForPath("")) {
+				oFirstLevel = oCache;
+			} else {
+				oCache.setActive(false);
+			}
 			oCache = undefined; // create _AggregationCache instead of _CollectionCache
 		}
 		oCache ??= _AggregationCache.create(this.oModel.oRequestor, sResourcePath,
 			sDeepResourcePath, mQueryOptions, this.mParameters.$$aggregation,
 			this.oModel.bAutoExpandSelect || "$$separate" in this.mParameters,
-			this.bSharedRequest, this.isGrouped());
+			this.bSharedRequest, this.isGrouped(), oFirstLevel);
 		oCache.setSeparate?.(this.mParameters.$$separate);
 		if (mKeptElementsByPredicate) {
 			for (const sPredicate in mKeptElementsByPredicate) {
@@ -1770,7 +1784,7 @@ sap.ui.define([
 		// must not be set, or the outdated flags have been set already while creating the entity;
 		// client-side annotation updates do not influence the outdated flags
 		if (!sPath.startsWith("($uid=") && !sPath.includes("/@$ui5.")) {
-			this.setOutdated(false, sPath, oGroupLock === null);
+			this.setOutdated("", [_Helper.getMetaPath(sPath)], oGroupLock === null);
 		}
 	};
 
@@ -1823,8 +1837,8 @@ sap.ui.define([
 				this.fireDataRequested();
 			}
 		).then((iCount) => {
-			if (iCount < 0) { // side-effects expand
-				return this.requestSideEffects(this.getGroupId(), [""]);
+			if (iCount < 0) { // side-effects expand - do not refresh kept elements
+				return this.requestSideEffects(this.getGroupId(), [""], null, true);
 			}
 			if (iCount) {
 				this.insertGap(this.getModelIndex(oContext), iCount);
@@ -1908,9 +1922,9 @@ sap.ui.define([
 				if (!that.bLengthFinal && that.aContexts.length === that.iCreatedContexts
 						&& that.oHeaderContext.isOutdated() !== undefined) {
 					if (that.iActiveContexts > 0) {
-						// some persisted entries are still in the creation area, so the grand total
-						// may still be outdated
-						that.setOutdated(true);
+						// some persisted entries are still in the creation area, so the header
+						// context has to be marked as outdated and maybe also the grand total
+						that.setOutdated("header");
 					} else {
 						// entries and grand total are in sync again
 						that.oHeaderContext.setOutdated(false);
@@ -2589,7 +2603,7 @@ sap.ui.define([
 	ODataListBinding.prototype.fireCreateActivate = function (oContext) {
 		if (this.fireEvent("createActivate", {context : oContext}, true)) {
 			this.iActiveContexts += 1;
-			this.setOutdated(true);
+			this.setOutdated("header");
 			return true;
 		}
 
@@ -2871,7 +2885,10 @@ sap.ui.define([
 							detailedReason : "RemoveVirtualContext",
 							reason : ChangeReason.Change
 						});
-						that.reset(ChangeReason.Refresh);
+						const sWhy
+							= that.sChangeReasonAfterRemoveVirtualContext ?? ChangeReason.Refresh;
+						that.sChangeReasonAfterRemoveVirtualContext = undefined;
+						that.reset(sWhy);
 					}
 				});
 			}, true);
@@ -3260,6 +3277,29 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns a sorted list of all current sorters' group paths, without duplicates. Without
+	 * autoExpandSelect the group paths are ignored.
+	 *
+	 * @returns {string[]}
+	 *   The current group paths, sorted and without duplicates
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.getGroupPaths = function () {
+		if (!this.oModel.bAutoExpandSelect) {
+			return [];
+		}
+		const oGroupPaths = new Set();
+		this.aSorters.forEach((oSorter) => {
+			const aPaths = oSorter.getGroupPaths();
+			if (aPaths) {
+				aPaths.forEach((sPath) => oGroupPaths.add(sPath));
+			}
+		});
+		return [...oGroupPaths].sort();
+	};
+
+	/**
 	 * Returns the header context which allows binding to <code>$count</code>,
 	 * <code>@$ui5.context.isOutdated</code>, or <code>@$ui5.context.isSelected</code>.
 	 *
@@ -3492,20 +3532,12 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.getQueryOptionsFromParameters = function () {
 		let mQueryOptions = this.mQueryOptions;
-		if (this.oModel.bAutoExpandSelect) {
-			const aGroupPaths = [];
-			this.aSorters.forEach((oSorter) => {
-				const aPaths = oSorter.getGroupPaths();
-				if (aPaths) {
-					aGroupPaths.push(...aPaths);
-				}
-			});
-			if (aGroupPaths.length) {
-				mQueryOptions = {...mQueryOptions};
-				// avoid that this.mQueryOptions.$select is modified
-				mQueryOptions.$select &&= mQueryOptions.$select.slice();
-				_Helper.addToSelect(mQueryOptions, aGroupPaths);
-			}
+		const aGroupPaths = this.getGroupPaths();
+		if (aGroupPaths.length) {
+			mQueryOptions = {...mQueryOptions};
+			// avoid that this.mQueryOptions.$select is modified
+			mQueryOptions.$select &&= mQueryOptions.$select.slice();
+			_Helper.addToSelect(mQueryOptions, aGroupPaths);
 		}
 
 		return mQueryOptions;
@@ -3650,9 +3682,7 @@ sap.ui.define([
 		if (this.isResolved()) {
 			this.checkDataState();
 			if (this.isRootBindingSuspended()) {
-				this.sResumeChangeReason = this.sChangeReason === "AddVirtualContext"
-					? ChangeReason.Change
-					: ChangeReason.Refresh;
+				this.sResumeChangeReason = ChangeReason.Refresh;
 			} else if (this.sChangeReason === "AddVirtualContext") {
 				this._fireChange({
 					detailedReason : "AddVirtualContext",
@@ -3763,22 +3793,27 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns whether the binding is filtered by the given (or any) property.
+	 * Returns whether this binding is filtered by any property affected by the given side-effects
+	 * paths, or by any property if no paths are given.
 	 *
-	 * @param {string} [sPropertyPath]
-	 *   The property path; if omitted, any filter counts
+	 * @param {string[]} [aPaths]
+	 *   The "14.4.1.5 Expression edm:NavigationPropertyPath" or
+	 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties may have changed
+	 *   due to an update or side effects of a previous update, see
+	 *   {@link sap.ui.model.odata.v4.Context#requestSideEffects}; if omitted, any filter counts
 	 * @returns {boolean}
-	 *   Whether the binding is filtered by the given (or any) property
+	 *   Whether this binding is filtered by any property affected by the given side-effects paths,
+	 *   or by any property if no paths are given
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.isFilteredBy = function (sPropertyPath) {
-		if (!sPropertyPath) {
+	ODataListBinding.prototype.isFilteredBy = function (aPaths) {
+		if (!aPaths || aPaths.includes("*")) {
 			return this.aApplicationFilters.length || this.aFilters.length;
 		}
 
-		return _AggregationHelper.isAffected(null, this.aApplicationFilters, [sPropertyPath])
-			|| _AggregationHelper.isAffected(null, this.aFilters, [sPropertyPath]);
+		return _AggregationHelper.isAffected(null, this.aApplicationFilters, aPaths)
+			|| _AggregationHelper.isAffected(null, this.aFilters, aPaths);
 	};
 
 	/**
@@ -3829,22 +3864,29 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns whether this binding is sorted by the given (or any) property.
+	 * Returns whether this binding is sorted by any property affected by the given side-effects
+	 * paths, or by any property if no paths are given.
 	 *
-	 * @param {string} [sPropertyPath]
-	 *   A property path; if omitted, any sorter counts
+	 * @param {string[]} [aPaths]
+	 *   The "14.4.1.5 Expression edm:NavigationPropertyPath" or
+	 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties may have changed
+	 *   due to an update or side effects of a previous update, see
+	 *   {@link sap.ui.model.odata.v4.Context#requestSideEffects}; if omitted, any sorter counts
 	 * @returns {boolean}
-	 *   Whether the binding is sorted by the given (or any) property
+	 *   Whether this binding is sorted by any property affected by the given side-effects paths, or
+	 *   by any property if no paths are given
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.isSortedBy = function (sPropertyPath) {
-		if (!sPropertyPath) {
+	ODataListBinding.prototype.isSortedBy = function (aPaths) {
+		if (!aPaths || aPaths.includes("*")) {
 			return this.aSorters.length || this.mParameters.$orderby;
 		}
 
-		return this.aSorters.some((oSorter) => oSorter.getPath() === sPropertyPath)
-			|| _AggregationHelper.isOrderedBy(sPropertyPath, this.mParameters.$orderby);
+		return _AggregationHelper.isOrderedBy(this.mParameters.$orderby, aPaths)
+			|| this.aSorters.some((oSorter) => {
+				return aPaths.some((sPath) => _Helper.isAffectedBy(oSorter.getPath(), sPath));
+			});
 	};
 
 	/**
@@ -4166,7 +4208,7 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.v4.ODataBinding#refreshInternal
 	 */
 	ODataListBinding.prototype.refreshInternal = function (sResourcePathPrefix, sGroupId,
-			_bCheckUpdate, bKeepCacheOnError, bSync) {
+			_bCheckUpdate, bKeepCacheOnError, bSync, bSkipKeptElements) {
 		var that = this;
 
 		// calls refreshInternal on all given bindings and returns an array of promises
@@ -4183,7 +4225,7 @@ sap.ui.define([
 				// another update request in createContexts, when the context for the row is
 				// reused.
 				return oBinding.refreshInternal(sResourcePathPrefix, sGroupId, false,
-					bKeepCacheOnError, bSync);
+					bKeepCacheOnError, bSync, bSkipKeptElements);
 			});
 		}
 
@@ -4215,8 +4257,10 @@ sap.ui.define([
 				} else {
 					that.fetchCache(that.oContext, false, /*bKeepQueryOptions*/true,
 						sGroupId, bKeepCacheOnError, bSync);
-					oKeptElementsPromise = that.refreshKeptElements(sGroupId,
-						/*bIgnorePendingChanges*/ bKeepCacheOnError);
+					if (!bSkipKeptElements) {
+						oKeptElementsPromise = that.refreshKeptElements(sGroupId,
+							/*bIgnorePendingChanges*/ bKeepCacheOnError);
+					}
 					if (that.iCurrentEnd > 0) {
 						oPromise = that.createRefreshPromise(
 							/*bPreventBubbling*/bKeepCacheOnError
@@ -4765,7 +4809,8 @@ sap.ui.define([
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#requestSideEffects
 	 */
-	ODataListBinding.prototype.requestSideEffects = function (sGroupId, aPaths, oContext) {
+	ODataListBinding.prototype.requestSideEffects = function (sGroupId, aPaths, oContext,
+			bSkipKeptElements) {
 		var oModel = this.oModel,
 			aPredicates,
 			aPromises,
@@ -4818,11 +4863,11 @@ sap.ui.define([
 			});
 		}
 
-		if (aPaths.indexOf("") < 0) {
+		if (!aPaths.includes("")) {
 			aPredicates
 				= _Helper.getPredicates(bSingle ? [oContext] : this.keepOnlyVisibleContexts());
 			if (aPredicates) {
-				that.setOutdated();
+				that.setOutdated("", aPaths);
 				aPromises = this.oCache
 					? [this.oCache.requestSideEffects(this.lockGroup(sGroupId), aPaths, aPredicates,
 						bSingle, /*bWithMessages*/bSingle)]
@@ -4843,7 +4888,7 @@ sap.ui.define([
 		if (this.iCurrentEnd === 0) {
 			return SyncPromise.resolve();
 		}
-		return this.refreshInternal("", sGroupId, false, true);
+		return this.refreshInternal("", sGroupId, false, true, false, bSkipKeptElements);
 	};
 
 	/**
@@ -4861,10 +4906,15 @@ sap.ui.define([
 	 *   within the same $batch as the GET for the side-effects refresh.
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used for refresh; used only in case <code>bDrop === false</code>
+	 * @param {boolean} [bRestartAutoExpandSelect]
+	 *   Whether to restart auto-$expand/$select; requires <code>sChangeReason</code>. For an
+	 *   unresolved binding, the state is prepared but the change event is deferred until the
+	 *   binding becomes resolved.
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.reset = function (sChangeReason, bDrop, sGroupId) {
+	ODataListBinding.prototype.reset = function (sChangeReason, bDrop, sGroupId,
+			bRestartAutoExpandSelect) {
 		var iCreated = 0, // index (and finally number) of created elements that we keep
 			bEmpty = this.iCurrentEnd === 0,
 			bKeepTransient = sGroupId && sGroupId !== this.getUpdateGroupId(),
@@ -4914,8 +4964,23 @@ sap.ui.define([
 		// Note: the binding's length can be greater than this.iMaxLength due to iCreatedContexts!
 		this.iMaxLength = Infinity;
 		this.bLengthFinal = false;
-		if (sChangeReason && !(bEmpty && sChangeReason === ChangeReason.Change)
-				&& this.isResolved()) {
+		if (bRestartAutoExpandSelect) {
+			this.mAggregatedQueryOptions = {};
+			this.bAggregatedQueryOptionsInitial = true;
+			this.mCanUseCachePromiseByChildPath = {};
+			this.sChangeReason = "AddVirtualContext";
+		}
+		if (!this.isResolved()) {
+			return; // skip events
+		}
+
+		if (bRestartAutoExpandSelect) {
+			this.sChangeReasonAfterRemoveVirtualContext = sChangeReason;
+			this._fireChange({
+				detailedReason : "AddVirtualContext",
+				reason : sChangeReason
+			});
+		} else if (sChangeReason && !(bEmpty && sChangeReason === ChangeReason.Change)) {
 			this.sChangeReason = sChangeReason;
 			this._fireRefresh({reason : sChangeReason});
 		}
@@ -5007,6 +5072,10 @@ sap.ui.define([
 				!!sResumeChangeReason && !oDependentBinding.oContext.isEffectivelyKeptAlive());
 		});
 		if (this.sChangeReason === "AddVirtualContext") {
+			this.mAggregatedQueryOptions = {};
+			this.bAggregatedQueryOptionsInitial = true;
+			this.mCanUseCachePromiseByChildPath = {};
+			this.sChangeReasonAfterRemoveVirtualContext = sResumeChangeReason;
 			// In a refresh event the table would ignore the result -> no virtual context -> no
 			// auto-$expand/$select. The refresh event is sent later after the change event with
 			// reason "RemoveVirtualContext".
@@ -5302,32 +5371,40 @@ sap.ui.define([
 	 * Sets the outdated flags at the grand total and the header context considering filters,
 	 * sorters, search, and custom query options.
 	 *
-	 * @param {boolean} [bForce]
-	 *   Whether to force setting the outdated flags at the grand total and the header context
-	 * @param {string} [sPropertyPath]
-	 *   An optional property path relative to the binding that gets updated; if omitted the whole
-	 *   entity / list is affected
+	 * @param {string} [sForce]
+	 *   Whether to force setting the outdated flags. Either use <code>sForce</code> or
+	 *   <code>aPaths</code>. Supported values are:
+	 *   - "both": force setting the outdated flags at the grand total and the header context
+	 *   - "header": force setting the outdated flag at the header context
+	 *   - "" or undefined, the outdated flags are set only if needed
+	 * @param {string[]} [aPaths]
+	 *   An optional array of "14.4.1.5 Expression edm:NavigationPropertyPath" or
+	 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties may have changed
+	 *   due to an update or side effects of a previous update, see
+	 *   {@link sap.ui.model.odata.v4.Context#requestSideEffects}; either use <code>sForce</code> or
+	 *   <code>aPaths</code>; if omitted, the whole entity (collection) is affected
 	 * @param {boolean} [bNoRequest]
-	 *   Whether the given property is updated without sending a PATCH request to the server
+	 *   Whether the properties given in <code>aPaths</code> are updated without sending a PATCH
+	 *   request to the server; if <code>true</code>, <code>aPaths</code> is mandatory
 	 * @throws {Error}
 	 *   If <code>bNoRequest</code> is set and the header context gets outdated or the property with
 	 *   the given path contributes to the grand total
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.setOutdated = function (bForce, sPropertyPath, bNoRequest) {
+	ODataListBinding.prototype.setOutdated = function (sForce, aPaths, bNoRequest) {
 		if (_Helper.isDataAggregation(this.mParameters)) {
-			const sMetaPath = sPropertyPath && _Helper.getMetaPath(sPropertyPath);
 			const oAggregation = this.mParameters.$$aggregation;
-			const bGrandTotalOutdated = bForce
+			const bGrandTotalOutdated = sForce === "both"
 				|| this.mParameters.$search
 				|| oAggregation.search
 				|| Object.keys(this.mParameters).some((sKey) => sKey[0] !== "$")
-				|| this.isFilteredBy(sMetaPath);
-			const bHeaderContextOutdated = bGrandTotalOutdated || this.isSortedBy(sMetaPath);
+				|| this.isFilteredBy(aPaths);
+			const bHeaderContextOutdated = sForce === "header" || bGrandTotalOutdated
+				|| this.isSortedBy(aPaths);
 			if (bNoRequest
 					&& (bHeaderContextOutdated
-					|| _AggregationHelper.isUsedForGrandTotal(sMetaPath, oAggregation.aggregate))) {
+					|| _AggregationHelper.isUsedForGrandTotal(aPaths, oAggregation.aggregate))) {
 				throw new Error("Missing PATCH request when @$ui5.context.isOutdated would be set");
 			}
 			if (bGrandTotalOutdated) {
@@ -5384,7 +5461,11 @@ sap.ui.define([
 	 *   The dynamic sorters to be used; they replace the dynamic sorters given in
 	 *   {@link sap.ui.model.odata.v4.ODataModel#bindList}. A nullish or missing value is treated as
 	 *   an empty array and thus removes all dynamic sorters. Static sorters, as defined in the
-	 *   '$orderby' binding parameter, are always applied after the dynamic sorters.
+	 *   '$orderby' binding parameter, are always applied after the dynamic sorters. Since 1.149.0,
+	 *   if any sorter has {@link sap.ui.model.Sorter#getGroupPaths group paths} and the
+	 *   {@link sap.ui.model.odata.v4.ODataModel model}'s <code>autoExpandSelect</code> parameter is
+	 *   set, those paths contribute to <code>$select</code> and <code>$expand</code>; not supported
+	 *   for {@link #setAggregation data aggregation}.
 	 * @returns {this}
 	 *   <code>this</code> to facilitate method chaining
 	 * @throws {Error} If
@@ -5425,19 +5506,25 @@ sap.ui.define([
 			throw new Error("Cannot sort due to pending changes");
 		}
 
+		const aOldGroupPaths = this.getGroupPaths();
 		this.aSorters = aSorters;
 		this.oQueryOptionsPromise = undefined;
 		this.setResetViaSideEffects(true);
 
+		const bRestartAutoExpandSelect = aOldGroupPaths.join() !== this.getGroupPaths().join();
 		if (this.isRootBindingSuspended()) {
 			this.setResumeChangeReason(ChangeReason.Sort);
+			if (bRestartAutoExpandSelect) {
+				this.sChangeReason = "AddVirtualContext";
+			}
 			return this;
 		}
 
 		this.createReadGroupLock(this.getGroupId(), true);
 		this.removeCachesAndMessages("");
 		this.fetchCache(this.oContext);
-		this.reset(ChangeReason.Sort);
+		this.reset(ChangeReason.Sort, /*bDrop*/undefined, /*sGroupId*/undefined,
+			bRestartAutoExpandSelect);
 		if (this.oHeaderContext) {
 			// Update after the refresh event, otherwise $count is fetched before the request
 			this.oHeaderContext.checkUpdate();

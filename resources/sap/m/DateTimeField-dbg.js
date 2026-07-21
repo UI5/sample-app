@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -423,15 +423,15 @@ sap.ui.define([
 
 		if (!sPlaceholder) {
 			if (oBindingType instanceof SimpleDateType) {
-				return oBindingType.getPlaceholderText();
+				return oBindingType.getPlaceholderText(this._oMinDate, this._oMaxDate);
 			}
 
 			if (oBindingType instanceof ODataType && oBindingType.oFormat) {
-				return oBindingType.oFormat.getPlaceholderText();
+				return oBindingType.oFormat.getPlaceholderText(this._oMinDate, this._oMaxDate);
 			}
 
 			// always get placeholder from the display format
-			sPlaceholder = this._getFormatter(true).getPlaceholderText();
+			sPlaceholder = this._getFormatter(true).getPlaceholderText(this._oMinDate, this._oMaxDate);
 		}
 
 		return sPlaceholder;

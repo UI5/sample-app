@@ -1,0 +1,2 @@
+sap.ui.define(["exports"],function(e){"use strict";var n;(function(e){e["None"]="None";e["Single"]="Single";e["SingleStart"]="SingleStart";e["SingleEnd"]="SingleEnd";e["SingleAuto"]="SingleAuto";e["Multiple"]="Multiple";e["Delete"]="Delete"})(n||(n={}));var i=n;e.ListSelectionMode=i});
+//# sourceMappingURL=ListSelectionMode.js.map

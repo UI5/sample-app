@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -759,12 +759,40 @@ sap.ui.define([
 		return this._isIconMode() && this.getFrameType() === FrameType.TwoByHalf;
 	};
 
+	/**
+	 * Moves the background image from the root element to hdrContent for ArticleMode + Stretch tiles
+	 * on large screens (>=800px), where the image is displayed on the RHS of the tile.
+	 * Reads from the control property to ensure the value is stable across rerenders.
+	 * @private
+	 */
 	GenericTile.prototype._setHeaderContentBackgroundImage = function() {
 		if (this.getBackgroundImage() && this.getMode() === GenericTileMode.ArticleMode && this.getFrameType() === FrameType.Stretch) {
 			const oGenericTile = this.getDomRef();
-			const sBackgroundImage = oGenericTile.style.backgroundImage;
+			if (!oGenericTile) {
+				return;
+			}
+			// Use control property as source of truth; DOM inline style is transient and may be cleared after first render, causing image loss on updates.
+			const sBackgroundImage = "url('" + this.getBackgroundImage() + "')";
 			oGenericTile.style.backgroundImage = '';
 			this.getDomRef("hdrContent").style.backgroundImage = sBackgroundImage;
+		}
+	};
+
+	/**
+	 * Restores the background image from hdrContent back to the root element for ArticleMode + Stretch tiles
+	 * on small screens (<800px), where CSS expects the image on the root for the inline stacked layout.
+	 * @private
+	 */
+	GenericTile.prototype._resetHeaderContentBackgroundImage = function () {
+		if (this.getBackgroundImage() && this.getMode() === GenericTileMode.ArticleMode && this.getFrameType() === FrameType.Stretch) {
+			const oGenericTile = this.getDomRef();
+			if (!oGenericTile) {
+				return;
+			}
+			// Restore background-image to root and clear hdrContent for small-screen inline layout.
+			const sBackgroundImage = "url('" + this.getBackgroundImage() + "')";
+			this.getDomRef("hdrContent").style.backgroundImage = '';
+			oGenericTile.style.backgroundImage = sBackgroundImage;
 		}
 	};
 
@@ -1417,7 +1445,8 @@ sap.ui.define([
 			if (keyPressed[16] && event.keyCode !== 16 && this.getState() !== LoadState.Disabled) {
 				preventPress === false;
 			}
-			if ((PseudoEvents.events.sapselect.fnCheck(event) || preventPress) && this.getState() !== LoadState.Disabled) {
+			// Guard: require matching keydown on this tile; without it, Enter keyup from a closed Popover fires unintended press.
+			if ((PseudoEvents.events.sapselect.fnCheck(event) && currentKey || preventPress) && this.getState() !== LoadState.Disabled) {
 				this.removeStyleClass("sapMGTPressActive");
 				if (this.$("hover-overlay").length > 0) {
 					this.$("hover-overlay").removeClass("sapMGTPressActive");

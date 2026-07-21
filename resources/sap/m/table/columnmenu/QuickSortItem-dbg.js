@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.QuickActionItem
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -86,7 +86,7 @@ sap.ui.define([
 	QuickSortItem.prototype._createContent = function() {
 		const oBundle = Library.getResourceBundleFor("sap.m");
 		const oSortNoneButton = new SegmentedButtonItem({
-			icon: "sap-icon://menu2",
+			icon: "sap-icon://decline",
 			key: "None",
 			tooltip: oBundle.getText("table.COLUMNMENU_SORT_NONE")
 		});

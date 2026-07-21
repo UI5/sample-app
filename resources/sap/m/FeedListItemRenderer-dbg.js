@@ -53,6 +53,7 @@ sap.ui.define(["./ListItemBaseRenderer", "sap/base/i18n/Localization", "sap/ui/c
 			oRm.openStart('div').class("sapMFeedListItemHeader").class("sapUiSelectable");
 			if (oControl.getShowIcon()) {
 				oRm.class("sapMFeedListItemHasFigure");
+				oRm.class("sapMFeedListItemHasFigure" + oControl.getIconSize());
 			}
 			if (oControl.getSender() && oControl.getTimestamp()) {
 				oRm.class('sapMFeedListItemFullHeight');
@@ -94,6 +95,7 @@ sap.ui.define(["./ListItemBaseRenderer", "sap/base/i18n/Localization", "sap/ui/c
 			oRm.openStart('div').class("sapMFeedListItemText");
 			if (oControl.getShowIcon()) {
 				oRm.class('sapMFeedListItemHasFigure');
+				oRm.class('sapMFeedListItemHasFigure' + oControl.getIconSize());
 			}
 			oRm.openEnd();
 			oRm.openStart('div', sMyId + '-text').class("sapMFeedListItemTextText").class("sapUiSelectable").openEnd();
@@ -165,6 +167,7 @@ sap.ui.define(["./ListItemBaseRenderer", "sap/base/i18n/Localization", "sap/ui/c
 	FeedListItemRenderer._writeAvatarControl = function(oRm, oControl, sId) {
 		oRm.openStart('figure', sId + '-figure');
 		oRm.class('sapMFeedListItemFigure');
+		oRm.class('sapMFeedListItemFigure' + oControl.getIconSize());
 		if (!oControl.getIcon()) {
 			oRm.class('sapMFeedListItemIsDefaultIcon');
 		}

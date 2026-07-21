@@ -9,7 +9,7 @@
 	border: 0.0625rem solid @sapUiContentForegroundBorderColor;
 }
 
-.sapUiCalHead > button{
+.sapUiCalHead button{
 	border: 0.0625rem solid @sapUiButtonBorderColor;
 	border-radius: 0.375rem;
 }
@@ -85,7 +85,7 @@
 
 /* hover and focus makes only sense on desktops. On mobile devices it's not needed */
 
-html.sap-desktop .sapUiCalHead > button:focus {
+html.sap-desktop .sapUiCalHead button:focus {
 	border: 0.125rem dotted @sapUiContentFocusColor;
 	background-color: transparent;
 }
@@ -347,10 +347,8 @@ and (orientation: landscape) {
 		line-height: 1.25rem;
 	}
 
-	.sap-phone .sapUiCal[data-sap-ui-popup] > .sapUiCalHead > button{
+	.sap-phone .sapUiCal[data-sap-ui-popup] > .sapUiCalHead button{
 		height: 1.875rem;
-		position: relative;
-		float: left;
 	}
 
 	.sap-phone .sapUiCal[data-sap-ui-popup] .sapUiCalHeadPrev,
@@ -424,11 +422,6 @@ and (orientation: landscape) {
 		padding-top: 0.25rem;
 		padding-bottom: 0.25rem;
 		box-sizing: border-box;
-	}
-
-	.sap-phone .sapUiCal[data-sap-ui-popup] .sapUiCalHeadNext,
-	.sap-phone .sapUiCal[data-sap-ui-popup] .sapUiCalHeadBFirst {
-		margin-left: 0.5rem;
 	}
 
 }

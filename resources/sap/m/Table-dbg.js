@@ -66,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -642,6 +642,13 @@ sap.ui.define([
 		ListBase.prototype.onItemSelectedChange.apply(this, arguments);
 	};
 
+	// this gets called when item's rendering is completed
+	Table.prototype.onItemAfterRendering = function(oItem) {
+		if (this.hasListeners("afterItemRendering")) {
+			this.fireEvent("afterItemRendering", {listItem: oItem});
+		}
+	};
+
 	/*
 	 * Returns the <table> DOM reference
 	 * @protected
@@ -740,7 +747,9 @@ sap.ui.define([
 			oEvent.preventDefault();
 			oUI5Event.preventDefault();
 			oItemNavigation.setFocusedIndex(iForwardIndex);
-			oItemNavigation.getItemDomRefs()[iForwardIndex].focus();
+			oItemNavigation.getItemDomRefs()[iForwardIndex].focus({
+				preventScroll: this._bMouseDown // avoid scroll jump when focus is forwarded due to a mouse click
+			});
 			iFocusedIndex && oItemNavigation.setFocusedIndex(iFocusedIndex);
 		}
 	};
@@ -1070,7 +1079,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (oEvent.target.id == this.getId("tblHeader") || this.getDomRef("tblHeadModeCol")?.contains(oEvent.target)) {
+		if (oEvent.target.id == this.getId("tblHeader") || oEvent.target.id == this.getId("tblHeadModeCol")) {
 			// prevent from scrolling
 			oEvent.preventDefault();
 			oEvent.setMarked();
@@ -1150,7 +1159,9 @@ sap.ui.define([
 		}
 
 		ListBase.prototype.onfocusin.call(this, oEvent);
-		this._setNoColumnsMessageAnnouncement(oTarget);
+		if (oTarget.id === this.getId("nodata")) {
+			this._setNoColumnsMessageAnnouncement(oTarget);
+		}
 	};
 
 	// event listener for theme changed

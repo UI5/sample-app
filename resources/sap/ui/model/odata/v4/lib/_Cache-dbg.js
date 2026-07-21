@@ -90,7 +90,8 @@ sap.ui.define([
 	}
 
 	/**
-	 * Deletes an entity on the server and in the cached data.
+	 * Deletes an entity on the server and in the cached data (unless <code>fnCallback</code> is
+	 * missing).
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
 	 *   A lock for the group ID to be used for the DELETE request; w/o a lock, no DELETE is sent.
@@ -105,10 +106,11 @@ sap.ui.define([
 	 *   An entity with the ETag of the binding for which the deletion was requested. This is
 	 *   provided if the deletion is delegated from a context binding with empty path to a list
 	 *   binding. W/o a lock, this is ignored.
-	 * @param {function} fnCallback
-	 *  A function which is called immediately when an entity has been deleted from the cache, or
+	 * @param {function} [fnCallback]
+	 *   A function which is called immediately when an entity has been deleted from the cache, or
 	 *   when it was re-inserted; the index of the entity and an offset (-1 for deletion, 1 for
-	 *   re-insertion) are passed as parameter
+	 *   re-insertion) are passed as parameter; mandatory within a deep create; if missing, the
+	 *   entity is not deleted in the cached data
 	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure
@@ -156,14 +158,14 @@ sap.ui.define([
 				if (Array.isArray(vCacheData)) {
 					iIndex = oDeleted.index;
 					const iDeletedIndex = vCacheData.$deleted.indexOf(oDeleted);
-					if (iIndex !== undefined) {
+					if (iIndex !== undefined && fnCallback) {
 						that.restoreElement(iIndex, oEntity, iDeletedIndex, vCacheData,
 							sParentPath);
 					}
 					vCacheData.$deleted.splice(iDeletedIndex, 1);
 				}
 				if (that.iActiveUsages) {
-					fnCallback(iIndex, 1);
+					fnCallback?.(iIndex, 1);
 				} else if (iIndex === undefined && that.reset) {
 					// an active cache must let the list binding reset to be told about kept-alive
 					// elements, an inactive cache however has no binding and no kept-alive
@@ -199,9 +201,11 @@ sap.ui.define([
 			if (Array.isArray(vCacheData)) {
 				oDeleted = that.addDeleted(vCacheData, iIndex, sKeyPredicate, oGroupLock,
 					!!sTransientPredicate);
-				that.removeElement(iIndex, sKeyPredicate, vCacheData, sParentPath);
+				if (fnCallback) {
+					that.removeElement(iIndex, sKeyPredicate, vCacheData, sParentPath);
+				}
 			}
-			fnCallback(iIndex, -1);
+			fnCallback?.(iIndex, -1);
 			if (oGroupLock) {
 				sGroupId = oGroupLock.getGroupId();
 				// Note: there should be only *one* parked PATCH per entity, but we don't rely on it
@@ -1869,6 +1873,11 @@ sap.ui.define([
 			mTypeForMetaPath, sPath, bKeepReportedMessagesPath) {
 		var oOldElement, sTransientPredicate;
 
+		// Note: iStart is not needed here because we know we have a key predicate
+		this.visitResponse(oElement, mTypeForMetaPath,
+			_Helper.getMetaPath(_Helper.buildPath(this.sMetaPath, sPath)), sPath + sPredicate,
+			undefined, bKeepReportedMessagesPath);
+
 		if (iIndex === undefined) { // kept-alive element not in the list
 			// might be undefined because it was removed in #refreshSingleWithRemove already
 			oOldElement = aElements.$byPredicate[sPredicate];
@@ -1895,11 +1904,6 @@ sap.ui.define([
 			_Helper.copyETags(oElement, oOldElement);
 		}
 		_Helper.restoreUpdatingProperties(oOldElement, oElement);
-
-		// Note: iStart is not needed here because we know we have a key predicate
-		this.visitResponse(oElement, mTypeForMetaPath,
-			_Helper.getMetaPath(_Helper.buildPath(this.sMetaPath, sPath)), sPath + sPredicate,
-			undefined, bKeepReportedMessagesPath);
 	};
 
 	/**
@@ -3324,7 +3328,7 @@ sap.ui.define([
 	 * @public
 	 */
 	_CollectionCache.prototype.isDeletingInOtherGroup = function (sGroupId) {
-		return Object.values(this.aElements.$deleted || {}).some(function (oDeleted) {
+		return !!this.aElements.$deleted?.some(function (oDeleted) {
 			return oDeleted.groupId !== sGroupId;
 		});
 	};
@@ -3670,14 +3674,21 @@ sap.ui.define([
 				mStillAliveElements = oResponse.value.$byPredicate || {};
 
 				aPredicates.forEach(function (sPredicate) {
-					var oElement, iIndex;
+					var oElement = that.aElements.$byPredicate[sPredicate],
+						iIndex;
+
+					if (!oElement) {
+						Log.warning("Ignoring response for refresh of previously kept alive entity "
+							+ sPredicate
+							+ " - consider calling v4.Context#setKeepAlive(false) earlier!",
+							that.toString(), sClassName);
+						return;
+					}
 
 					if (sPredicate in mStillAliveElements) {
-						_Helper.updateAll(that.mChangeListeners, sPredicate,
-							that.aElements.$byPredicate[sPredicate],
+						_Helper.updateAll(that.mChangeListeners, sPredicate, oElement,
 							mStillAliveElements[sPredicate]);
 					} else {
-						oElement = that.aElements.$byPredicate[sPredicate];
 						if (_Helper.hasPrivateAnnotation(oElement, "transientPredicate")) {
 							// Note: iIndex unknown, use -1 instead
 							iIndex = that.removeElement(-1, sPredicate);
@@ -3968,7 +3979,8 @@ sap.ui.define([
 	 * @param {string[]} aPaths
 	 *   The "14.4.1.5 Expression edm:NavigationPropertyPath" or
 	 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties need to be
-	 *   loaded because they may have changed due to side effects of a previous update
+	 *   loaded because they may have changed due to side effects of a previous update; must not
+	 *   contain an empty path
 	 * @param {string[]} aPredicates
 	 *   The key predicates of the root elements to request side effects for
 	 * @param {boolean} bSingle
@@ -4045,6 +4057,7 @@ sap.ui.define([
 			_Helper.selectKeyProperties(mQueryOptions, mTypeForMetaPath[this.sMetaPath]);
 		}
 		mMergeableQueryOptions = _Helper.extractMergeableQueryOptions(mQueryOptions);
+		aPaths = _Helper.getUsedPaths(aPaths, mMergeableQueryOptions);
 		sResourcePath = this.sResourcePath + (bSingle ? aPredicates[0] : "")
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
 
@@ -4190,7 +4203,7 @@ sap.ui.define([
 			this.mChangeListeners[""] = mChangeListeners[""];
 			_Helper.fireChange(this.mChangeListeners, "");
 		}
-		Object.values(this.aElements.$deleted || {}).forEach(function (oDeleted) {
+		this.aElements.$deleted?.forEach(function (oDeleted) {
 			oDeleted.index = undefined;
 		});
 	};
@@ -4724,7 +4737,8 @@ sap.ui.define([
 	 * @param {string[]} aPaths
 	 *   The "14.4.1.5 Expression edm:NavigationPropertyPath" or
 	 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties need to be
-	 *   loaded because they may have changed due to side effects of a previous update
+	 *   loaded because they may have changed due to side effects of a previous update; must not
+	 *   contain an empty path
 	 * @param {string} [sResourcePath=this.sResourcePath]
 	 *   A resource path relative to the service URL; it must not contain a query string
 	 * @returns {sap.ui.base.SyncPromise<void>}
@@ -4756,6 +4770,7 @@ sap.ui.define([
 				+ this.oPromise.getResult().message);
 		}
 		mMergeableQueryOptions = _Helper.extractMergeableQueryOptions(mQueryOptions);
+		aPaths = _Helper.getUsedPaths(aPaths, mMergeableQueryOptions);
 		sResourcePath = (sResourcePath || this.sResourcePath)
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
 		oResult = SyncPromise.all([

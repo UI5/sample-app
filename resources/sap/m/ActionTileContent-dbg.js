@@ -27,7 +27,7 @@ sap.ui.define([
      * @extends sap.m.TileContent
      *
      * @author SAP SE
-     * @version 1.148.0
+     * @version 1.150.0
      * @since 1.122
      *
      * @public

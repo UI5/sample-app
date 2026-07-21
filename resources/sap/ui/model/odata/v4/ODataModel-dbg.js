@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -872,9 +872,8 @@ sap.ui.define([
 	 *   The context which is required as base for a relative path
 	 * @param {sap.ui.model.Sorter|sap.ui.model.Sorter[]} [vSorters=[]]
 	 *   The dynamic sorters to be used initially. Call
-	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} to replace them. Static sorters, as
-	 *   defined in the '$orderby' binding parameter, are always applied after the dynamic sorters.
-	 *   Supported since 1.39.0.
+	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} to replace them, see there for more
+	 *   details. Supported since 1.39.0.
 	 * @param {sap.ui.model.Filter|sap.ui.model.Filter[]} [vFilters=[]]
 	 *   The dynamic {@link sap.ui.model.FilterType.Application application} filters to be used
 	 *   initially. Call {@link sap.ui.model.odata.v4.ODataListBinding#filter} to replace them.
@@ -1637,7 +1636,7 @@ sap.ui.define([
 			return that.oRequestor.request("DELETE",
 					aResults[0].slice(1) + _Helper.buildQuery(that.mURLParameters),
 					that.lockGroup(sGroupId, that, true, true),
-					{"If-Match" : aResults[1]}
+					aResults[1] ? {"If-Match" : aResults[1]} : null
 			).catch(function (oError) {
 				if (bRejectIfNotFound
 						|| !(oError.status === 404 || bInAllBindings && oError.status === 412)) {
@@ -2275,9 +2274,11 @@ sap.ui.define([
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
-	 * @returns {boolean|undefined} Whether it is an API group
+	 * @returns {boolean} Whether it is an API group
 	 *
 	 * @private
+	 * @since 1.149.0
+	 * @ui5-restricted sap.fe
 	 */
 	ODataModel.prototype.isApiGroup = function (sGroupId) {
 		return this.getGroupProperty(sGroupId, "submit") === SubmitMode.API;

@@ -21,6 +21,9 @@ sap.ui.define([
 	// shortcut for sap.ui.core.ValueState
 	var ValueState = coreLibrary.ValueState;
 
+	// shortcut for library resource bundle
+	const oResourceBundle = Library.getResourceBundleFor("sap.m");
+
 	/**
 	 * Dialog renderer.
 	 *
@@ -51,18 +54,25 @@ sap.ui.define([
 			oBeginButton = oDialog.getBeginButton(),
 			oEndButton = oDialog.getEndButton(),
 			sState = oDialog.getState(),
-			bStretch = oDialog.getStretch(),
+			bStretched = oDialog.getStretch(),
 			oValueStateText = oDialog.getAggregation("_valueState"),
-			oFooter = oDialog.getFooter();
+			oFooter = oDialog.getFooter(),
+			sContentHeight = oDialog.getContentHeight(),
+			sContentWidth = oDialog.getContentWidth(),
+			oRb = Library.getResourceBundleFor("sap.m");
 
 		// write the HTML into the render manager
 		// the initial size of the dialog have to be 0, because if there is a large dialog content the initial size can be larger than the html's height (scroller)
 		// The scroller will make the initial window width smaller and in the next recalculation the maxWidth will be larger.
 
-		oRM.openStart("div", oDialog)
-			.style("width", oDialog.getContentWidth())
-			.style("height", oDialog.getContentHeight())
-			.class("sapMDialog")
+		oRM.openStart("div", oDialog);
+
+		if (!bStretched) {
+			oRM.style("width", sContentWidth);
+			oRM.style("height", sContentHeight);
+		}
+
+		oRM.class("sapMDialog")
 			.class("sapMDialog-CTX")
 			.class("sapMPopup-CTX");
 
@@ -78,18 +88,18 @@ sap.ui.define([
 			oRM.class("sapMDialogTouched");
 		}
 
-		if (bStretch) {
+		if (bStretched) {
 			oRM.class("sapMDialogStretched");
 		}
 
-		if (oDialog.getResizable() && !bStretch) {
+		if (oDialog.getResizable() && !bStretched) {
 			oRM.class("sapMDialogResizable");
 		}
 
 		/**
 		 * @deprecated As of version 1.11.2
 		 */
-		if (!bStretch && oDialog.getStretchOnPhone() && Device.system.phone) {
+		if (!bStretched && oDialog.getStretchOnPhone() && Device.system.phone) {
 			oRM.class("sapMDialogStretched");
 		}
 
@@ -144,7 +154,7 @@ sap.ui.define([
 			oRM.class("sapMDialogPhone");
 		}
 
-		if (oDialog.getDraggable() && !bStretch) {
+		if (oDialog.getDraggable() && !bStretched) {
 			oRM.class("sapMDialogDraggable");
 		}
 
@@ -168,7 +178,7 @@ sap.ui.define([
 		}
 
 		if (Device.system.desktop) {
-			if (oDialog.getResizable() && !bStretch) {
+			if (oDialog.getResizable() && !bStretched) {
 				DialogRenderer.renderResizeHandle(oRM);
 			}
 
@@ -185,7 +195,6 @@ sap.ui.define([
 		}
 
 		if (oDialog._isDraggableOrResizable()) {
-			var oRb = Library.getResourceBundleFor("sap.m");
 			let sLabel;
 			if (oDialog.getResizable() && oDialog.getDraggable()) {
 				sLabel = oRb.getText("DIALOG_DRAG_AND_RESIZE_HANDLE_ARIA_LABEL");
@@ -209,15 +218,18 @@ sap.ui.define([
 		}
 
 		if (oHeader || oSubHeader) {
-			oRM.openStart("header")
+			oRM.openStart("div")
+				.attr("role", "region")
+				.attr("aria-label", oResourceBundle.getText("DIALOG_REGION_HEADER"))
+				.class("sapMDialogHeader")
 				.openEnd();
+
 			if (oHeader) {
 				if (oHeader._applyContextClassFor) {
 					oHeader._applyContextClassFor("header");
 				}
 				oRM.openStart("div", sId + "-titleGroup")
 					.class("sapMDialogTitleGroup");
-
 
 				oRM.openEnd()
 					.renderControl(oHeader)
@@ -234,7 +246,7 @@ sap.ui.define([
 					.renderControl(oSubHeader)
 					.close("div");
 			}
-			oRM.close("header");
+			oRM.close("div");
 
 		}
 
@@ -242,7 +254,9 @@ sap.ui.define([
 			oRM.renderControl(oValueStateText);
 		}
 
-		oRM.openStart("section", sId + "-cont")
+		oRM.openStart("div", sId + "-cont")
+			.attr("role", "region")
+			.attr("aria-label", oResourceBundle.getText("DIALOG_REGION_CONTENT"))
 			.class("sapMDialogSection")
 			.openEnd();
 
@@ -253,7 +267,7 @@ sap.ui.define([
 		oRM.openStart("div", sId + "-scrollCont")
 			.class("sapMDialogScrollCont");
 
-		if (oDialog.getStretch() || oDialog.getContentHeight()) {
+		if (bStretched || sContentHeight) {
 			oRM.class("sapMDialogStretchContent");
 		}
 
@@ -263,12 +277,15 @@ sap.ui.define([
 
 		oRM.close("div")
 			.close("div")
-			.close("section");
+			.close("div");
 
 		if (hasFooter) {
-			oRM.openStart("footer")
+			oRM.openStart("div")
+				.attr("role", "region")
+				.attr("aria-label", oResourceBundle.getText("DIALOG_REGION_FOOTER"))
 				.class("sapMDialogFooter")
 				.openEnd();
+
 			if (oFooter) {
 				if (oFooter._applyContextClassFor) {
 					oFooter._applyContextClassFor("footer");
@@ -280,7 +297,7 @@ sap.ui.define([
 				}
 				oRM.renderControl(oDialog._oToolbar);
 			}
-			oRM.close("footer");
+			oRM.close("div");
 		}
 
 		if (Device.system.desktop) {

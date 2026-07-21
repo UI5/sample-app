@@ -17,7 +17,8 @@ sap.ui.define([
 	'./PlanningCalendarLegend',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/unified/library',
-	'sap/ui/core/date/UI5Date'
+	'sap/ui/core/date/UI5Date',
+	'sap/ui/core/library'
 ],
 	function(
 		Formatting,
@@ -32,18 +33,22 @@ sap.ui.define([
 		PlanningCalendarLegend,
 		InvisibleText,
 		unifiedLibrary,
-		UI5Date
+		UI5Date,
+		coreLibrary
 	) {
 		"use strict";
 
 		// shortcut for sap.ui.unified.CalendarDayType
-		var CalendarDayType = unifiedLibrary.CalendarDayType;
+		const CalendarDayType = unifiedLibrary.CalendarDayType;
+
+		// shortcut for sap.ui.core.aria.HasPopup
+		const AriaHasPopup = coreLibrary.aria.HasPopup;
 
 		/**
 		 * SinglePlanningCalendarMonthGrid renderer.
 		 * @namespace
 		 */
-		var SinglePlanningCalendarMonthGridRenderer = {
+		const SinglePlanningCalendarMonthGridRenderer = {
 			apiVersion: 2
 		};
 
@@ -151,6 +156,7 @@ sap.ui.define([
 				oRm.class("sapMSinglePCBlockers");
 				oRm.class("sapUiCalendarRowVisFilled");
 				oRm.attr("role", "list" );
+				oRm.attr("tabindex", "-1");
 				oRm.openEnd();
 
 				for (j = 0; j < iColumns; j++) {
@@ -309,8 +315,9 @@ sap.ui.define([
 				bHasCustomContent = !!aCustomContent.length,
 				bIsFullDay = !oEndDate || oControl._isAllDayAppointment(oStartDate, oEndDate),
 				oValue = bIsFullDay ? InvisibleText.getStaticId("sap.ui.unified", "CALENDAR_ALL_DAY_PREFIX") : InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT"),
-				bDraggable = oAppointment.getParent().getEnableAppointmentsDragAndDrop(),
+				bDraggable = oControl.getEnableAppointmentsDragAndDrop(),
 				oToday = oDay && oDay.isSame(CalendarDate.fromLocalJSDate(UI5Date.getInstance())),
+				sAriaHasPopup = oAppointment.getAriaHasPopup(),
 				mAccProps = {
 					role: "listitem",
 					labelledby: {
@@ -418,6 +425,11 @@ sap.ui.define([
 			oRm.style(bIsRTL ? "right" : "left", "calc(" + (iColumn * 100) / iColumns + "% + " + iBorderThickness + "rem)");
 			oRm.style(bIsRTL ? "left" : "right", "calc(" + (iRight * 100) / iColumns + "% + " + iBorderThickness + "rem)");
 			oRm.style("top", (iLevel * oDensitySizes.appHeight + oDensitySizes.cellHeaderHeight) + "rem");
+
+			if (sAriaHasPopup !== AriaHasPopup.None) {
+				oRm.attr("aria-haspopup", sAriaHasPopup.toLowerCase());
+			}
+
 			oRm.openEnd();
 
 			oRm.openStart("div");

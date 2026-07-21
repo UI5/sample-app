@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.148.0"
+      "version": "1.150.0"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -52,6 +52,11 @@
         "name": "qunit-2.18",
         "packagedWithMySelf": true,
         "version": "2.18.0"
+      },
+      {
+        "name": "qunit-2.26",
+        "packagedWithMySelf": true,
+        "version": "2.26.0"
       },
       {
         "name": "jquery-migrate",
@@ -129,6 +134,16 @@
         "version": "14.0.0"
       },
       {
+        "name": "sinonjs22",
+        "packagedWithMySelf": true,
+        "version": "22.0.0"
+      },
+      {
+        "name": "nise",
+        "packagedWithMySelf": true,
+        "version": "6.1.5"
+      },
+      {
         "name": "sinon-qunit",
         "packagedWithMySelf": true,
         "version": "2.0.0"
@@ -196,7 +211,7 @@
       {
         "name": "lodash",
         "packagedWithMySelf": true,
-        "version": "4.17.23"
+        "version": "4.18.1"
       },
       {
         "name": "hyphenopoly",
@@ -244,7 +259,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.148",
+      "minUI5Version": "1.150",
       "libs": {}
     },
     "library": {

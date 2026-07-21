@@ -15,7 +15,8 @@ sap.ui.define([
 	'./PlanningCalendarLegend',
 	'sap/ui/unified/library',
 	'sap/ui/unified/calendar/RecurrenceUtils',
-	'sap/ui/core/date/UI5Date'
+	'sap/ui/core/date/UI5Date',
+	'sap/ui/core/library'
 ],
 	function(
 		Localization,
@@ -28,22 +29,26 @@ sap.ui.define([
 		PlanningCalendarLegend,
 		unifiedLibrary,
 		RecurrenceUtils,
-		UI5Date
+		UI5Date,
+		coreLibrary
 	) {
 		"use strict";
 
-		var iVerticalPaddingBetweenAppointments = 0.125;
-		var iAppointmentBottomPadding = 0.125;
-		var iAppointmentTopPadding = 0.0625;
+		const iVerticalPaddingBetweenAppointments = 0.125;
+		const iAppointmentBottomPadding = 0.125;
+		const iAppointmentTopPadding = 0.0625;
 
 		// shortcut for sap.ui.unified.CalendarDayType
-		var CalendarDayType = unifiedLibrary.CalendarDayType;
+		const CalendarDayType = unifiedLibrary.CalendarDayType;
+
+		// shortcut for sap.ui.core.aria.HasPopup
+		const AriaHasPopup = coreLibrary.aria.HasPopup;
 
 		/**
 		 * SinglePlanningCalendarGrid renderer.
 		 * @namespace
 		 */
-		var SinglePlanningCalendarGridRenderer = {
+		const SinglePlanningCalendarGridRenderer = {
 			apiVersion: 2
 		};
 
@@ -54,6 +59,9 @@ sap.ui.define([
 		 * @param {sap.m.SinglePlanningCalendarGrid} oControl An object representation of the control that should be rendered
 		 */
 		SinglePlanningCalendarGridRenderer.render = function (oRm, oControl) {
+			// Precompute date→items map for non-working periods to avoid repeated filtering
+			this._buildNonWorkingPeriodsMap(oControl);
+
 			oRm.openStart("div", oControl);
 			oRm.class("sapMSinglePCGrid");
 			oRm.openEnd();
@@ -67,6 +75,74 @@ sap.ui.define([
 			this.renderColumns(oRm, oControl);
 			oRm.close("div"); // END .sapMSinglePCGridContent
 			oRm.close("div"); // END .sapMSinglePCGrid
+
+			// Clean up after rendering
+			delete oControl._nonWorkingPeriodsMap;
+		};
+
+		/**
+		 * Precomputes a map of date→non-working periods for efficient lookup during rendering.
+		 * This avoids repeated filtering operations during the rendering phase.
+		 * @param {sap.m.SinglePlanningCalendarGrid} oControl The control being rendered
+		 * @private
+		 */
+		SinglePlanningCalendarGridRenderer._buildNonWorkingPeriodsMap = function (oControl) {
+			var oStartDate = oControl.getStartDate(),
+				iColumns = oControl._getColumns(),
+				iStartHour = oControl._getVisibleStartHour(),
+				iEndHour = oControl._getVisibleEndHour(),
+				oMap = {},
+				i, j;
+
+			var aNonWorkingPeriods = oControl.getNonWorkingPeriods();
+
+			// Iterate through all visible dates and hours
+			for (i = 0; i < iColumns; i++) {
+				var oColumnCalDate = new CalendarDate(oStartDate.getFullYear(), oStartDate.getMonth(), oStartDate.getDate() + i);
+				var oColumnDate = oColumnCalDate.toLocalJSDate();
+
+				for (j = iStartHour; j <= iEndHour; j++) {
+					const oCellStartDate = UI5Date.getInstance(oColumnDate.getFullYear(), oColumnDate.getMonth(), oColumnDate.getDate(), j, 0, 0);
+					const sCellKey = this._getCellMapKey(oCellStartDate);
+
+					// Filter non-working periods for this cell once
+					oMap[sCellKey] = aNonWorkingPeriods.filter(function(oPeriod) {
+						if (!oPeriod.isRecurring()) {
+							return oPeriod.hasNonWorkingAtDate(oCellStartDate);
+						}
+						var hasOccurrenceOnDate = RecurrenceUtils.hasOccurrenceOnDate.bind(oPeriod);
+						return hasOccurrenceOnDate(oCellStartDate);
+					}).sort(function(oCalendarItemA, oCalendarItemB) {
+						return oCalendarItemA.getStartDate().getMinutes() - oCalendarItemB.getStartDate().getMinutes() ||
+							oCalendarItemB.getEndDate().getMinutes() - oCalendarItemA.getEndDate().getMinutes();
+					});
+				}
+			}
+
+			// Store the map on the control for access during rendering
+			oControl._nonWorkingPeriodsMap = oMap;
+		};
+
+		/**
+		 * Generates a cache key for a cell based on its date and hour.
+		 * @param {Date} oDate The cell date
+		 * @returns {string} The cache key
+		 * @private
+		 */
+		SinglePlanningCalendarGridRenderer._getCellMapKey = function (oDate) {
+			return oDate.getFullYear() + "-" + oDate.getMonth() + "-" + oDate.getDate() + "-" + oDate.getHours();
+		};
+
+		/**
+		 * Retrieves precomputed non-working periods for a cell from the map.
+		 * @param {sap.m.SinglePlanningCalendarGrid} oControl The control
+		 * @param {Date} oDate The cell date
+		 * @returns {array} Array of non-working periods for this cell
+		 * @private
+		 */
+		SinglePlanningCalendarGridRenderer._getNonWorkingPeriodsForCell = function (oControl, oDate) {
+			var sCellKey = this._getCellMapKey(oDate);
+			return (oControl._nonWorkingPeriodsMap && oControl._nonWorkingPeriodsMap[sCellKey]) || [];
 		};
 
 		SinglePlanningCalendarGridRenderer.renderBlockersContainer = function (oRm, oControl) {
@@ -186,6 +262,7 @@ sap.ui.define([
 
 			oRm.openStart("div");
 			oRm.attr("role", "list");
+			oRm.attr("tabindex", "-1");
 			oRm.attr("aria-labelledby", InvisibleText.getStaticId("sap.m", "SPC_BLOCKERS"));
 			oRm.class("sapMSinglePCBlockers");
 			oRm.class("sapUiCalendarRowVisFilled"); // TODO: when refactor the CSS of appointments maybe we won't need this class
@@ -217,6 +294,7 @@ sap.ui.define([
 				sText = oBlocker.getText(),
 				sIcon = oBlocker.getIcon(),
 				sId = oBlocker.getId(),
+				sAriaHasPopup = oBlocker.getAriaHasPopup(),
 				mAccProps = {
 					role: "listitem",
 					labelledby: {
@@ -283,6 +361,11 @@ sap.ui.define([
 			oRm.style("top", iRowHeight * iBlockerLevel + 0.0625 + "rem"); // Adding 0.0625rem to render all of the blockers 0.0625rem below in order to have space on top of them.
 			oRm.style(bIsRTL ? "right" : "left", Math.max(iLeftPosition, 0) + "%");
 			oRm.style(bIsRTL ? "left" : "right", Math.max(iRightPosition, 0) + "%");
+
+			if (sAriaHasPopup !== AriaHasPopup.None) {
+				oRm.attr("aria-haspopup", sAriaHasPopup.toLowerCase());
+			}
+
 			oRm.openEnd();
 
 			oRm.openStart("div");
@@ -370,7 +453,7 @@ sap.ui.define([
 				oRm.class("sapMSinglePCRowHeader");
 				oRm.class("sapMSinglePCRowHeader" + i);
 
-				if (oControl._shouldHideRowHeader(i)) {
+				if (oControl._shouldHideRowHeader(i) && oControl._isNowMarkerInView(UI5Date.getInstance())) {
 					oRm.class("sapMSinglePCRowHeaderHidden");
 				}
 
@@ -449,23 +532,13 @@ sap.ui.define([
 			const iStartHour = oControl._getVisibleStartHour();
 			const iEndHour = oControl._getVisibleEndHour();
 			const oFormat = oControl._getDateFormatter();
-			const oDate = oControl._parseDateStringAndHours(sDate, 0);
-			const aRecurrenceNonWorkingForDay = oControl._isNonWorkingDay(oColumnCalDate) ? [] : oControl.getNonWorkingPeriods().filter((oPeriod) => {
-				if (!oPeriod.isRecurring()) {
-					return oPeriod.hasNonWorkingAtDate(oDate);
-				}
-				const hasOccurrenceOnDate = RecurrenceUtils.hasOccurrenceOnDate.bind(oPeriod);
-				return hasOccurrenceOnDate(oDate);
-			}).sort((oCalendarItemA, oCalendarItemB) => {
-				return  oCalendarItemA.getStartDate().getMinutes() - oCalendarItemB.getStartDate().getMinutes() ||
-				oCalendarItemA.getEndDate().getMinutes() - oCalendarItemB.getEndDate().getMinutes();
-			});
 
 			for (let i = iStartHour; i <= iEndHour; i++) {
 				const oCellStartDate = oControl._parseDateStringAndHours(sDate, i);
 				const oCellEndDate = UI5Date.getInstance(oCellStartDate.getFullYear(), oCellStartDate.getMonth(), oCellStartDate.getDate(), oCellStartDate.getHours() + 1);
 
-				const aNonWorkingPartsForHour = aRecurrenceNonWorkingForDay.filter((oCalendarItem) => {
+				// Use precomputed map instead of filtering on-the-fly
+				const aNonWorkingPartsForHour = SinglePlanningCalendarGridRenderer._getNonWorkingPeriodsForCell(oControl, oCellStartDate).filter((oCalendarItem) => {
 					return oCalendarItem.hasNonWorkingAtHour(oCellStartDate);
 				});
 
@@ -521,6 +594,7 @@ sap.ui.define([
 
 				oRm.openStart("div");
 				oRm.attr("role", "list");
+				oRm.attr("tabindex", "-1");
 				oRm.class("sapMSinglePCAppointments");
 				oRm.class("sapUiCalendarRowVisFilled"); // TODO: when refactor the CSS of appointments maybe we won't need this class
 
@@ -586,8 +660,9 @@ sap.ui.define([
 				iAppTop = bAppStartIsOutsideVisibleStartHour ? 0 : oControl._calculateTopPosition(oAppStartDate),
 				iAppBottom = bAppEndIsOutsideVisibleEndHour ? 0 : oControl._calculateBottomPosition(oAppEndDate),
 				iAppChunkWidth = 100 / (iMaxLevel + 1),
-				bDraggable = oAppointment.getParent().getEnableAppointmentsDragAndDrop(),
+				bDraggable = oControl.getEnableAppointmentsDragAndDrop(),
 				iScaleFactor = oControl.getProperty("scaleFactor"),
+				sAriaHasPopup = oAppointment.getAriaHasPopup(),
 				iDivider = 2 * iScaleFactor,
 				iStartDayDiff,
 				iEndDayDiff,
@@ -661,6 +736,11 @@ sap.ui.define([
 			oRm.style("bottom", iAppBottom + "rem");
 			oRm.style(Localization.getRTL() ? "right" : "left", iAppChunkWidth * iAppointmentLevel + "%");
 			oRm.style("width", iAppChunkWidth * iAppointmentWidth + "%"); // TODO: take into account the levels
+
+			if (sAriaHasPopup !== AriaHasPopup.None) {
+				oRm.attr("aria-haspopup", sAriaHasPopup.toLowerCase());
+			}
+
 			oRm.openEnd();
 
 			oRm.openStart("div");

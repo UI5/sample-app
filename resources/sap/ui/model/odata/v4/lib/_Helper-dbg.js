@@ -68,7 +68,8 @@ sap.ui.define([
 		 * Adds all given children to the given hash set which either appear in the given list or
 		 * have some ancestor in it.
 		 *
-		 * Note: "a/b/c" is deemed a child of the ancestors "a/b" and "a", but not "b" or "a/b/c/d".
+		 * Note: "a/b/c" is deemed a child of the ancestors "a/b" and "a" as well as "a/b/*", but
+		 * not of "b" or "a/b/c/d" or "a/b/c/*".
 		 *
 		 * @param {string[]} aChildren - List of non-empty child paths (unmodified)
 		 * @param {string[]} aAncestors - List of ancestor paths (unmodified)
@@ -90,7 +91,8 @@ sap.ui.define([
 					aSegments = sPath.split("/");
 					aSegments.pop();
 					while (aSegments.length) {
-						if (aAncestors.indexOf(aSegments.join("/")) >= 0) {
+						const sPrefix = aSegments.join("/");
+						if (aAncestors.includes(sPrefix) || aAncestors.includes(sPrefix + "/*")) {
 							mChildren[sPath] = true;
 							break;
 						}
@@ -511,8 +513,9 @@ sap.ui.define([
 		},
 
 		/**
-		 * Recursively copies ETags from the source object to the target object. If the source
-		 * object has an <code>"@odata.etag"</code> property, it is copied to the target object.
+		 * Recursively copies ETags from the source object to the target object. Does nothing if
+		 * the key predicates of source and target differ. For arrays, ETags are copied to
+		 * matching items identified by their key predicate using the $byPredicate lookup.
 		 *
 		 * @param {object} oSource - The source object containing ETags
 		 * @param {object} oTarget - The target object to receive the ETags
@@ -520,15 +523,32 @@ sap.ui.define([
 		 * @public
 		 */
 		copyETags : function (oSource, oTarget) {
+			if (_Helper.getPrivateAnnotation(oSource, "predicate")
+					!== _Helper.getPrivateAnnotation(oTarget, "predicate")) {
+				return;
+			}
 			oTarget["@odata.etag"] = oSource["@odata.etag"];
 
 			for (const sKey in oSource) {
 				const vSourceProperty = oSource[sKey];
 				const vTargetProperty = oTarget[sKey];
 
-				if (vSourceProperty && vTargetProperty && typeof vSourceProperty === "object"
-						&& !Array.isArray(vSourceProperty)) {
-					_Helper.copyETags(vSourceProperty, vTargetProperty);
+				if (vSourceProperty && vTargetProperty) {
+					if (Array.isArray(vSourceProperty)) {
+						// Note: $byPredicate is not available for collections of complex types
+						if (vTargetProperty.$byPredicate) {
+							vSourceProperty.forEach(function (oSourceElement) {
+								const sPredicate
+									= _Helper.getPrivateAnnotation(oSourceElement, "predicate");
+								const oTargetElement = vTargetProperty.$byPredicate[sPredicate];
+								if (oTargetElement) {
+									_Helper.copyETags(oSourceElement, oTargetElement);
+								}
+							});
+						}
+					} else if (typeof vSourceProperty === "object") {
+						_Helper.copyETags(vSourceProperty, vTargetProperty);
+					}
 				}
 			}
 		},
@@ -725,15 +745,14 @@ sap.ui.define([
 		/**
 		 * Drills down into the given object according to the given path, creating missing objects
 		 * along the way, and setting a "...@$ui5.noData" annotation at the end in case the final
-		 * property is missing.
+		 * property is missing. Silently stops if a property along the way is <code>null</code>.
 		 *
 		 * @param {object} oObject
 		 *   The object to start at
 		 * @param {string[]} aSegments
 		 *   Relative path to drill-down into, as array of segments
 		 * @throws {Error}
-		 *   If a property along the way exists, but has an <code>undefined</code> or
-		 *   <code>null</code> value
+		 *   If a property along the way exists, but has an <code>undefined</code> value
 		 *
 		 * @public
 		 * @see .deleteProperty
@@ -743,6 +762,9 @@ sap.ui.define([
 		 */
 		createMissing : function (oObject, aSegments) {
 			aSegments.reduce(function (oCurrent, sSegment, i) {
+				if (oCurrent === null) {
+					return null; // nothing to do from here on
+				}
 				if (!(sSegment in oCurrent)) { // Note: TypeError if !oCurrent
 					if (i + 1 < aSegments.length) {
 						oCurrent[sSegment] = {};
@@ -1881,6 +1903,56 @@ sap.ui.define([
 		},
 
 		/**
+		 * Gets the paths from the given array which are used by $select/$expand of the given query
+		 * options.
+		 *
+		 * @param {string[]} aPaths
+		 *   The read-only array of "14.4.1.5 Expression edm:NavigationPropertyPath" or
+		 *   "14.4.1.6 Expression edm:PropertyPath" strings describing which properties are affected
+		 *   by a side effect; paths may contain wildcards, for example "SO_2_BP/*" or "*"; must not
+		 *   contain an empty path
+		 * @param {object} mQueryOptions
+		 *   A read-only map of query options as returned by
+		 *   {@link sap.ui.model.odata.v4.ODataModel#buildQueryOptions}
+		 * @returns {string[]}
+		 *   An array of paths matching the given query options
+		 *
+		 * @public
+		 */
+		getUsedPaths : function (aPaths, mQueryOptions) {
+			function isRelated(sPath0, sPath1) {
+				return _Helper.isAffectedBy(sPath0, sPath1)
+					|| _Helper.isAffectedBy(sPath1, sPath0);
+			}
+
+			function isUsed(sPath, mQueryOptionsForPath) {
+				let bPathMatchedExpand = false;
+				// if there is no $select the standard select is used (corresponding to "*")
+				const aSelect = mQueryOptionsForPath.$select || ["*"];
+				const mExpand = mQueryOptionsForPath.$expand || {};
+				return sPath === "*" || sPath in mExpand || aSelect.includes(sPath)
+					|| aSelect.some((sSelect) => isRelated(sPath, sSelect))
+					// check whether the path can be reached via expanded navigation properties
+					|| Object.keys(mExpand).some((sExpand) => {
+						if (_Helper.hasPathPrefix(sPath, sExpand)) {
+							bPathMatchedExpand = true;
+							return isUsed(sPath.slice(sExpand.length + 1), mExpand[sExpand]);
+						}
+						if (_Helper.hasPathPrefix(sExpand, sPath)) {
+							bPathMatchedExpand = true;
+							return true; // part of complex type
+						}
+						return false;
+					})
+					// without metadata it cannot be decided whether a path not starting with an
+					// expanded navigation property is used, so keep it
+					|| !bPathMatchedExpand && aSelect.includes("*");
+			}
+
+			return aPaths.filter((sPath) => isUsed(sPath, mQueryOptions));
+		},
+
+		/**
 		 * Tells whether <code>sPath</code> has <code>sBasePath</code> as path prefix. It returns
 		 * <code>true</code> iff {@link .getRelativePath} does not return <code>undefined</code>.
 		 *
@@ -2116,17 +2188,17 @@ sap.ui.define([
 				});
 			}
 
-			if (aPaths.indexOf("") >= 0) {
+			if (aPaths.includes("")) {
 				throw new Error("Unsupported empty navigation property path");
 			}
 
-			if (aPaths.indexOf("*") >= 0) {
+			if (aPaths.includes("*")) {
 				aSelects = (mCacheQueryOptions && mCacheQueryOptions.$select || []).slice();
 				if (sMessagesPath && !aSelects.includes(sMessagesPath)) {
 					aSelects.push(sMessagesPath);
 				}
 			} else if (mCacheQueryOptions && mCacheQueryOptions.$select
-					&& mCacheQueryOptions.$select.indexOf("*") < 0) {
+					&& !mCacheQueryOptions.$select.includes("*")) {
 				_Helper.addChildrenWithAncestor(aPaths, mCacheQueryOptions.$select, mSelects);
 				_Helper.addChildrenWithAncestor(mCacheQueryOptions.$select, aPaths, mSelects);
 				if (sMessagesPath && aPaths.includes(sMessagesPath)) {
@@ -2192,6 +2264,28 @@ sap.ui.define([
 			}
 
 			return mResult;
+		},
+
+		/**
+		 * Tells whether the given property path is affected by the given side-effects path.
+		 *
+		 * @param {string} sPropertyPath
+		 *   A property path
+		 * @param {string} sSideEffectsPath
+		 *   The "14.4.1.5 Expression edm:NavigationPropertyPath" or
+		 *   "14.4.1.6 Expression edm:PropertyPath" string describing which properties may have
+		 *   changed due to an update or side effects of a previous update, see
+		 *   {@link sap.ui.model.odata.v4.Context#requestSideEffects}
+		 * @returns {boolean}
+		 *   Whether the given property path is affected by the given side-effects path
+		 *
+		 * @public
+		 */
+		isAffectedBy : function (sPropertyPath, sSideEffectsPath) {
+			// To avoid metadata access, we do not distinguish between properties and
+			// navigation properties, so there is no need to look closely at "/*".
+			return _Helper.hasPathPrefix(sPropertyPath,
+				sSideEffectsPath.endsWith("/*") ? sSideEffectsPath.slice(0, -2) : sSideEffectsPath);
 		},
 
 		/**
@@ -3263,7 +3357,7 @@ sap.ui.define([
 						}
 						if (fnCheckKeyPredicate && fnCheckKeyPredicate(sPath)) {
 							sTargetPredicate = _Helper.getPrivateAnnotation(oTarget, "predicate");
-							if (sSourcePredicate !== sTargetPredicate) {
+							if (sTargetPredicate && sTargetPredicate !== sSourcePredicate) {
 								throw new Error("Key predicate of '" + sPath + "' changed from "
 									+ sTargetPredicate + " to " + sSourcePredicate);
 							}

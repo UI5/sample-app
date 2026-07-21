@@ -80,7 +80,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -479,9 +479,10 @@ function(
 			bIsUpOrDownArrowKey = [KeyCodes.ARROW_UP, KeyCodes.ARROW_DOWN].includes(oEvent.keyCode),
 			bIsBreadcrumbs = fnHasType("sap.m.Breadcrumbs"),
 			bIsSlider = fnHasType(["sap.m.Slider", "sap.m.RangeSlider"]),
-			bIsTokenizer = fnHasType(["sap.m.OverflowToolbarTokenizer", "sap.m.Tokenizer"]);
+			bIsTokenizer = fnHasType(["sap.m.OverflowToolbarTokenizer", "sap.m.Tokenizer"]),
+			bIsSearchField = fnHasType("sap.m.SearchField");
 
-		if (bIsUpOrDownArrowKey && (bIsSelectOrComboBox  || bIsMenuButton || bIsBreadcrumbs || bIsSlider || bIsTokenizer)) {
+		if (bIsUpOrDownArrowKey && (bIsSelectOrComboBox  || bIsMenuButton || bIsBreadcrumbs || bIsSlider || bIsTokenizer || bIsSearchField)) {
 			return true;
 		}
 

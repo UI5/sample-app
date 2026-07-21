@@ -65,7 +65,7 @@ function(
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -493,6 +493,7 @@ function(
 
 		var that = this;
 		if (this.getIconActive()) {
+			this.oAvatar.removeStyleClass("sapMFeedListItemImageInactive");
 			this.oAvatar.addStyleClass("sapMFeedListItemImage");
 			if (!this.oAvatar.hasListeners("press")) {//Check if the press event is already associated with the avatarControl then block adding the event again.
 				this.oAvatar.attachPress(function() {
@@ -503,6 +504,7 @@ function(
 				});
 			}
 		} else {
+			this.oAvatar.removeStyleClass("sapMFeedListItemImage");
 			this.oAvatar.addStyleClass("sapMFeedListItemImageInactive");
 		}
 

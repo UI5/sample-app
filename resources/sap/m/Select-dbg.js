@@ -126,7 +126,7 @@ function(
 		 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -1390,11 +1390,15 @@ function(
 		 */
 		Select.prototype._createDialog = function() {
 			var that = this,
-				oHeader = this._getPickerHeader(),
+				oResourceBundle = Library.getResourceBundleFor("sap.m"),
 				oDialog = new Dialog({
 					stretch: true,
 					ariaLabelledBy: this._getPickerHiddenLabelId(),
-					customHeader: oHeader,
+					customHeader: this._getPickerHeader(),
+					endButton: new Button({
+						text: oResourceBundle.getText("SELECT_CANCEL_BUTTON"),
+						press: this.close.bind(this)
+					}),
 					beforeOpen: function() {
 						that.updatePickerHeaderTitle();
 					}
@@ -1428,8 +1432,7 @@ function(
 		 * @since 1.52
 		 */
 		Select.prototype._getPickerHeader = function() {
-			var sIconURI = IconPool.getIconURI("decline"),
-				oResourceBundle;
+			var oResourceBundle;
 
 			if (!this.getAggregation("_pickerHeader")) {
 				oResourceBundle = Library.getResourceBundleFor("sap.m");
@@ -1438,10 +1441,6 @@ function(
 					contentMiddle: new Title({
 						text: oResourceBundle.getText("SELECT_PICKER_TITLE_TEXT"),
 						level: TitleLevel.H1
-					}),
-					contentRight: new Button({
-						icon: sIconURI,
-						press: this.close.bind(this)
 					})
 				}));
 			}

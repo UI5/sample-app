@@ -29,6 +29,7 @@ sap.ui.define([
 	// get resource translation bundle;
 	const oLibraryResourceBundle = Library.getResourceBundleFor("sap.m");
 	const InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
+	const TitleLevel = coreLibrary.TitleLevel;
 
 	/**
 	 * Media types that can be previewed.
@@ -46,6 +47,8 @@ sap.ui.define([
 		Mp4: "video/mp4",
 		Quicktime: "video/quicktime",
 		MsVideo: "video/x-msvideo",
+		Webm: "video/webm",
+		Ogg: "video/ogg",
 		Vds: "model/vnd.sap.vds"
 	};
 
@@ -60,13 +63,13 @@ sap.ui.define([
 	 *
 	 * <h3>Supported File Types for Preview</h3>
 	 *
-	 * Following are the supported file types that can be previewed:
+	 * The following file types are supported for preview:
 	 *
 	 * <ul><li>Image (PNG, JPEG, BMP, GIF)</li>
-	 * <li>PDF </li>
+	 * <li>PDF</li>
 	 * <li>Text (Txt)</li>
-	 * <li>Video (MP4, MPEG, Quicktime, MsVideo)</li>
-	 * <li>SAP 3D Visual models (VDS)</li></ul>
+	 * <li>Video (MP4, QuickTime, WebM, OGG) — playback depends on browser codec support.</li>
+	 * <li>SAP 3D Visual models (VDS) — requires {@link sap.ui.vk} and WebGL support.</li></ul>
 	 *
 	 * @author SAP SE
 	 * @param {string} [sId] Id for the new control, it is generated automatically if no id is provided.
@@ -74,7 +77,7 @@ sap.ui.define([
 	 * @constructor
 	 * @public
 	 * @since 1.120
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @extends sap.ui.core.Element
 	 * @name sap.m.upload.FilePreviewDialog
 	 */
@@ -251,12 +254,34 @@ sap.ui.define([
 		},
 
 		/**
+		 * @param {string} sType The MIME type to check
+		 * @return {string} The result of canPlayType for the given MIME type
+		 * @private
+		 */
+		_canPlayType: function (sType) {
+			return document.createElement("video").canPlayType(sType);
+		},
+
+		/**
+		 * @return {boolean} Whether WebGL is available in the current browser context
+		 * @private
+		 */
+		_isWebGLAvailable: function () {
+			const oCanvas = document.createElement("canvas");
+			return !!(oCanvas.getContext("webgl") || oCanvas.getContext("webgl2"));
+		},
+
+		/**
 		 * Creates a viewer for .vds files
 		 * @param {sap.m.upload.UploadItem} oItem The UploadSetwithTableItem or UploadItem to be previewed
 		 * @return {sap.ui.vk.Viewer} A vds viewer instance or undefined if dependency unavailable
 		 * @private
 		 */
 		_createVdsViewer: async function (oItem) {
+			if (!this._isWebGLAvailable()) {
+				Log.warning("FilePreviewDialog: WebGL is not available, VDS preview cannot be rendered.");
+				return null;
+			}
 			if (!this.oViewer || !this._oContentResource) {
 				try {
 					const oVkDependency = await this._loadVkDependency();
@@ -312,6 +337,12 @@ sap.ui.define([
 			const oRequest = new XMLHttpRequest();
 			oRequest.open("GET", oItem.getUrl(), false);
 			oRequest.send(null);
+
+			if (oRequest.status < 200 || oRequest.status >= 300) {
+				Log.error("FilePreviewDialog: failed to load text content, HTTP " + oRequest.status);
+				return null;
+			}
+
 			const sText = oRequest.responseText;
 			oRte.setValue(sText);
 
@@ -405,7 +436,21 @@ sap.ui.define([
 
 		getPageContent: async function(oItem, oNewPage) {
 
-			const sMediaType = oItem.getMediaType();
+			let sMediaType = oItem.getMediaType();
+
+			// Some backends serve files as application/octet-stream regardless of type, fall back to extension detection.
+			if (!sMediaType || sMediaType === "application/octet-stream") {
+				const sExt = (oItem.getFileName() || "").split(".").pop().toLowerCase();
+				const mExtensionMap = {
+					"vds": PreviewableMediaType.Vds,
+					"mov": PreviewableMediaType.Quicktime,
+					"webm": PreviewableMediaType.Webm,
+					"ogg": PreviewableMediaType.Ogg
+				};
+				if (mExtensionMap[sExt]) {
+					sMediaType = mExtensionMap[sExt];
+				}
+			}
 
 			let oPage = this._createIllustratedMessage(oItem.getFileName());
 
@@ -440,7 +485,12 @@ sap.ui.define([
 				case PreviewableMediaType.Mpeg:
 				case PreviewableMediaType.Mp4:
 				case PreviewableMediaType.Quicktime:
-				case PreviewableMediaType.MsVideo: {
+				case PreviewableMediaType.MsVideo:
+				case PreviewableMediaType.Webm:
+				case PreviewableMediaType.Ogg: {
+					if (!this._canPlayType(sMediaType.toLowerCase())) {
+						break;
+					}
 					const oPage = new HTML({
 						content: `<video controls width='100%' height='100%' src=${oItem.getUrl()}>`
 					});
@@ -502,7 +552,7 @@ sap.ui.define([
 			const oActiveItem = this._getActiveUploadSetwithTableItem();
 			const oDialog = new Dialog({
 				customHeader: new Bar({
-					contentLeft: [new Title({ text:  oActiveItem.getFileName()}).addStyleClass("sapMDialogTitle")]
+					contentLeft: [new Title({ text:  oActiveItem.getFileName(), level: TitleLevel.H1}).addStyleClass("sapMDialogTitle")]
 				}),
 				content: this._oCarousel,
 				horizontalScrolling: false,

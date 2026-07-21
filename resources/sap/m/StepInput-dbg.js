@@ -121,7 +121,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -515,7 +515,8 @@ function(
 					decorative: !Device.support.touch || Device.system.desktop ? true : false,
 					press: this._handleButtonPress.bind(this, 1),
 					useIconTooltip: false,
-					alt: StepInput.STEP_INPUT_INCREASE_BTN_TOOLTIP
+					alt: StepInput.STEP_INPUT_INCREASE_BTN_TOOLTIP,
+					tooltip: StepInput.STEP_INPUT_INCREASE_BTN_TOOLTIP
 				});
 
 			oIcon.getEnabled = function () {
@@ -549,7 +550,8 @@ function(
 					decorative: !Device.support.touch || Device.system.desktop ? true : false,
 					press: this._handleButtonPress.bind(this, -1),
 					useIconTooltip: false,
-					alt: StepInput.STEP_INPUT_DECREASE_BTN_TOOLTIP
+					alt: StepInput.STEP_INPUT_DECREASE_BTN_TOOLTIP,
+					tooltip: StepInput.STEP_INPUT_DECREASE_BTN_TOOLTIP
 				});
 
 			oIcon.getEnabled = function () {

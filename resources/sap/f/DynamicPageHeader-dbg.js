@@ -64,7 +64,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -132,6 +132,7 @@ sap.ui.define([
 			LABEL_EXPANDED: DynamicPageHeader._getResourceBundle().getText("EXPANDED_HEADER"),
 			LABEL_COLLAPSED: DynamicPageHeader._getResourceBundle().getText("SNAPPED_HEADER"),
 			LABEL_PINNED: DynamicPageHeader._getResourceBundle().getText("PIN_HEADER"),
+			LABEL_UNPINNED: DynamicPageHeader._getResourceBundle().getText("UNPIN_HEADER"),
 			TOOLTIP_COLLAPSE_BUTTON: DynamicPageHeader._getResourceBundle().getText("COLLAPSE_HEADER_BUTTON_TOOLTIP"),
 			STATE_TRUE: "true",
 			STATE_FALSE: "false"
@@ -170,6 +171,7 @@ sap.ui.define([
 		DynamicPageHeader.prototype._togglePinButton = function (bValue) {
 			this._getPinButton().setPressed(bValue);
 			this._getPinButton().setIcon(bValue ? this._sPressedStatePinIconURI : DynamicPageHeader.UNPRESSED_PIN_ICON);
+			this._getPinButton().setTooltip(bValue ? DynamicPageHeader.ARIA.LABEL_UNPINNED : DynamicPageHeader.ARIA.LABEL_PINNED);
 		};
 
 		/**

@@ -123,7 +123,7 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 			}
 		}
 
-		if (sAriaRole) {
+		if (sAriaRole && !bRenderLink) {
 			oRm.attr("role", sAriaRole);
 		} else if (!bRenderLink) { // buttons only; <a> elements always have the default role
 				oRm.attr("role", bHasPress ? "button" : "presentation");

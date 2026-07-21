@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @public
 	 * @see {sap.ui.model.odata.v2.ODataModel#bindProperty}
 	 * @since 1.99.0
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 */
 	var DateTimeWithTimezone = CompositeType.extend("sap.ui.model.odata.type.DateTimeWithTimezone",
 		{
@@ -223,16 +223,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns a language-dependent placeholder text such as "e.g. <sample value>" where <sample value> is formatted
-	 * using this type.
+	 * Returns a language-dependent placeholder text such as "e.g. <sample value>" where
+	 * <sample value> is formatted using this type. If given, a sample date within the given
+	 * range is used.
 	 *
+	 * @param {module:sap/ui/core/date/UI5Date} [oMinimum] The minimum date
+	 * @param {module:sap/ui/core/date/UI5Date} [oMaximum] The maximum date
 	 * @returns {string|undefined}
 	 *   The language-dependent placeholder text or <code>undefined</code> if the type does not offer a placeholder
 	 *
 	 * @public
 	 */
-	DateTimeWithTimezone.prototype.getPlaceholderText = function () {
-		return this.getFormat().getPlaceholderText();
+	DateTimeWithTimezone.prototype.getPlaceholderText = function (oMinimum, oMaximum) {
+		return this.getFormat().getPlaceholderText(oMinimum, oMaximum);
 	};
 
 	/**

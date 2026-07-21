@@ -62,7 +62,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent, sap.ui.core.ISemanticFormContent
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormFormattedValue as #getFormFormattedValue
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormValueProperty as #getFormValueProperty
@@ -466,7 +466,7 @@ sap.ui.define([
 		var sSourceId = oEvent.target.id || oEvent.srcControl.getId();
 
 		//event should only be fired if the click is on the text, link or icon
-		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-statusIcon" || sSourceId === this.getId() + "-icon");
+		return this._isActive() && (!this.getTitle() || sSourceId !== this.getId() + "-title");
 	};
 
 	ObjectStatus.prototype.getFormFormattedValue = function () {

@@ -29,17 +29,16 @@ sap.ui.define(["sap/ui/core/Lib", 'sap/ui/core/Renderer', './InputBaseRenderer']
 
 		mAccessibilityState["roledescription"] = sCustomRole;
 
-		return mAccessibilityState;
-	};
-
-	MaskInputRenderer.getLabelledByAnnouncement = function(oControl) {
-		var sMask = oControl.getMask();
-
-		if (sMask && sMask.length) {
-			return oControl.getPlaceholder() || "";
+		if (oControl.getValueStateLinksForAcc().length) {
+			const sInvisibleMessageid = oControl.getValueStateLinksShortcutsId();
+			const sExisting = mAccessibilityState["describedby"] && mAccessibilityState["describedby"].value;
+			mAccessibilityState["describedby"] = {
+				value: sExisting ? sExisting + " " + sInvisibleMessageid : sInvisibleMessageid,
+				append: true
+			};
 		}
 
-		return InputBaseRenderer.getLabelledByAnnouncement.apply(this, arguments);
+		return mAccessibilityState;
 	};
 
 	return MaskInputRenderer;

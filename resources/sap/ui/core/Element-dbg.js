@@ -144,7 +144,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -998,6 +998,9 @@ sap.ui.define([
 		mParameters = mParameters || {};
 		mParameters.id = mParameters.id || this.getId();
 
+		/**
+		 * @deprecated As of version 1.147.0, together with ElementHooks.interceptEvent
+		 */
 		ElementHooks.interceptEvent?.(sEventId, this, mParameters);
 
 		return ManagedObject.prototype.fireEvent.call(this, sEventId, mParameters, bAllowPreventDefault, bEnableEventBubbling);

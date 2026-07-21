@@ -61,11 +61,11 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 	 * @protected
 	 */
 	StandardListItemRenderer.renderLIContent = function(rm, oLI) {
-		var sInfo = oLI.getInfo(),
+		const bHasInfo = !!oLI.getInfo(),
 			sTitle = oLI.getTitle(),
 			sDescription = oLI.getDescription(),
 			bAdaptTitleSize = oLI.getAdaptTitleSize(),
-			bShouldRenderInfoWithoutTitle = !sTitle && sInfo;
+			bShouldRenderInfoWithoutTitle = !sTitle && bHasInfo;
 
 		// render image or avatar control
 		if (oLI.getAvatar()) {
@@ -76,8 +76,8 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 
 		rm.openStart("div").class("sapMSLIDiv");
 
-		// if bShouldRenderInfoWithoutTitle=ture then adapt the style class according to have flex-direction: row
-		if ((!sDescription && bAdaptTitleSize && sInfo) || bShouldRenderInfoWithoutTitle) {
+		// if bShouldRenderInfoWithoutTitle=true then adapt the style class according to have flex-direction: row
+		if ((!sDescription && bAdaptTitleSize && bHasInfo) || bShouldRenderInfoWithoutTitle) {
 			rm.class("sapMSLIInfoMiddle");
 		}
 
@@ -106,9 +106,9 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 		var sTextDir = oLI.getTitleTextDirection(),
 			sTitle = oLI.getTitle(),
 			sDescription = oLI.getDescription(),
-			sInfo = oLI.getInfo(),
+			bHasInfo = !!oLI.getInfo(),
 			bWrapping = oLI.getWrapping(),
-			bShouldRenderInfoWithoutTitle = !sTitle && sInfo;
+			bShouldRenderInfoWithoutTitle = !sTitle && bHasInfo;
 
 		rm.openStart("div");
 
@@ -126,7 +126,7 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 
 		if (bWrapping) {
 			this.renderWrapping(rm, oLI, "title");
-			if (sInfo && !sDescription) {
+			if (bHasInfo && !sDescription) {
 				this.renderInfo(rm, oLI);
 			}
 		} else {
@@ -135,7 +135,7 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 
 		rm.close("div");
 
-		if (sInfo && !sDescription && !bWrapping && !bShouldRenderInfoWithoutTitle) {
+		if (bHasInfo && !sDescription && !bWrapping && !bShouldRenderInfoWithoutTitle) {
 			this.renderInfo(rm, oLI);
 		}
 	};
@@ -159,18 +159,18 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 	StandardListItemRenderer.renderDescription = function (rm, oLI) {
 		var bWrapping = oLI.getWrapping(),
 			sDescription = oLI.getDescription(),
-			sInfo = oLI.getInfo();
+			bHasInfo = !!oLI.getInfo();
 
 		rm.openStart("div").class("sapMSLIDescription");
 
-		if (sInfo) {
+		if (bHasInfo) {
 			rm.class("sapMSLIDescriptionAndInfo");
 		}
 
 		rm.openEnd();
 
-		// render info text within the description div to apply the relevant flex layout
-		if (sInfo) {
+		// render info within the description div to apply the relevant flex layout
+		if (bHasInfo) {
 			rm.openStart("div").class("sapMSLIDescriptionText").openEnd();
 
 			if (bWrapping) {
@@ -201,30 +201,8 @@ sap.ui.define(["sap/ui/core/Lib", "sap/ui/core/library", "sap/ui/core/Renderer",
 	 * @protected
 	 */
 	StandardListItemRenderer.renderInfo = function (rm, oLI) {
-		var sInfoDir = oLI.getInfoTextDirection(),
-			bInfoStateInverted = oLI.getInfoStateInverted();
-
-		rm.openStart("div", oLI.getId() + "-info");
-		if (sInfoDir !== TextDirection.Inherit) {
-			rm.attr("dir", sInfoDir.toLowerCase());
-		}
-		rm.class("sapMSLIInfo");
-		rm.class("sapMSLIInfo" + oLI.getInfoState());
-
-		if (bInfoStateInverted) {
-			rm.class("sapMSLIInfoStateInverted");
-		}
-
-		var fWidth = oLI._measureInfoTextWidth();
-
-		rm.style("min-width", oLI._getInfoTextMinWidth(fWidth));
-
-		rm.openEnd();
-		if (oLI.getWrapping() && !bInfoStateInverted) {
-			this.renderWrapping(rm, oLI, "info");
-		} else {
-			rm.text(oLI.getInfo());
-		}
+		rm.openStart("div").class("sapMSLIInfo").openEnd();
+		rm.renderControl(oLI._getInfoStatus());
 		rm.close("div");
 	};
 

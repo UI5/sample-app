@@ -17,7 +17,8 @@ sap.ui.define([
 	'sap/ui/unified/calendar/RecurrenceUtils',
 	'sap/base/Log',
 	// side effect: required by RenderManager#icon
-	'sap/ui/core/IconPool'
+	'sap/ui/core/IconPool',
+	'sap/ui/core/library'
 ],
 	function(
 		Element,
@@ -30,29 +31,34 @@ sap.ui.define([
 		InvisibleText,
 		UI5Date,
 		RecurrenceUtils,
-		Log
+		Log,
+		IconPool,
+		coreLibrary
 	) {
 		"use strict";
 
 
 	// shortcut for sap.ui.unified.CalendarDayType
-	var CalendarDayType = library.CalendarDayType;
+	const CalendarDayType = library.CalendarDayType;
 
 	// shortcut for sap.ui.unified.CalendarIntervalType
-	var CalendarIntervalType = library.CalendarIntervalType;
+	const CalendarIntervalType = library.CalendarIntervalType;
 
 	// shortcut for sap.ui.unified.CalendarAppointmentVisualization
-	var CalendarAppointmentVisualization = library.CalendarAppointmentVisualization;
+	const CalendarAppointmentVisualization = library.CalendarAppointmentVisualization;
 
 	// shortcut for sap.ui.unified.CalendarAppointmentHeight
-	var CalendarAppointmentHeight = library.CalendarAppointmentHeight;
+	const CalendarAppointmentHeight = library.CalendarAppointmentHeight;
 	/**
 	 * CalendarRow renderer.
 	 * @namespace
 	 */
-	var CalendarRowRenderer = {
+	const CalendarRowRenderer = {
 		apiVersion: 2
 	};
+
+	// shortcut for sap.ui.core.aria.HasPopup
+	const AriaHasPopup = coreLibrary.aria.HasPopup;
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -105,6 +111,7 @@ sap.ui.define([
 		oRm.openStart("div", sId + "-Apps");
 		oRm.class("sapUiCalendarRowApps");
 		oRm.attr("role", "list");
+		oRm.attr("tabindex", "-1");
 		oRm.openEnd();
 
 		this.renderBeforeAppointments(oRm, oRow);
@@ -283,8 +290,7 @@ sap.ui.define([
 				if (!oPeriod.isRecurring()) {
 					return oPeriod.hasNonWorkingAtDate(oStartDateInterval);
 				}
-				const hasOccurrenceOnDate = RecurrenceUtils.hasOccurrenceOnDate.bind(oPeriod);
-				return hasOccurrenceOnDate(oStartDateInterval);
+				return RecurrenceUtils.hasOccurrenceOnDateCached.call(oPeriod, oStartDateInterval);
 			});
 
 		const aFilteredItemsForCurrentHours = aFilteredNonWorkingRange.filter((oPeriod) => {
@@ -467,6 +473,11 @@ sap.ui.define([
 
 		oRm.accessibilityState(oIntervalHeader.appointment, mAccProps);
 
+		var sAriaHasPopup = oIntervalHeader.appointment.getAriaHasPopup();
+		if (sAriaHasPopup !== AriaHasPopup.None) {
+			oRm.attr("aria-haspopup", sAriaHasPopup.toLowerCase());
+		}
+
 		oRm.openEnd(); //div element
 		oRm.openStart("div");
 
@@ -536,41 +547,45 @@ sap.ui.define([
 
 	CalendarRowRenderer.renderAppointment = function(oRm, oRow, oAppointmentInfo, aTypes, bRelativePos){
 
-		var oAppointment = oAppointmentInfo.appointment;
-		var sTooltip = oAppointment.getTooltip_AsString();
-		var sType = oAppointment.getType();
-		var sColor = oAppointment.getColor();
-		var sTitle = oAppointment.getTitle();
-		var sText = oAppointment.getText();
-		var sDescription = oAppointment.getDescription();
-		var sIcon = oAppointment.getIcon();
-		var sId = oAppointment.getId();
-		var bReducedHeight = oRow._getAppointmentReducedHeight(oAppointmentInfo);
-		var bAppointmentSelected = oAppointment.getSelected();
-		var mAccProps = {
-			role: "listitem",
-			labelledby: {
-				value: `${InvisibleText.getStaticId("sap.m", "ACC_CTR_TYPE_LISTITEM")} ${InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT")} ${sId.concat("-Descr")}`,
-				append: true
-			},
-			describedby: {value: bAppointmentSelected ? InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED") : "", append: true},
-			selected: null
-		};
+		const oAppointment = oAppointmentInfo.appointment;
+		const sTooltip = oAppointment.getTooltip_AsString();
+		const sType = oAppointment.getType();
+		const sColor = oAppointment.getColor();
+		const sTitle = oAppointment.getTitle();
+		const sText = oAppointment.getText();
+		const sDescription = oAppointment.getDescription();
+		const sIcon = oAppointment.getIcon();
+		const sId = oAppointment.getId();
+		const bReducedHeight = oRow._getAppointmentReducedHeight(oAppointmentInfo);
+		const bAppointmentSelected = oAppointment.getSelected();
+		const bHasCustomContent = !!oAppointment.getCustomContent().length;
+		const sAriaHasPopup = oAppointment.getAriaHasPopup();
+
+		let aLabelledByIds = [InvisibleText.getStaticId("sap.m", "ACC_CTR_TYPE_LISTITEM"), InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT")];
+		if (sTitle && !bHasCustomContent) {
+			aLabelledByIds.push(`${sId}-Title`);
+		}
+
+		aLabelledByIds.push(`${sId}-Descr`);
+
+		if (sText && !bHasCustomContent) {
+			aLabelledByIds.push(`${sId}-Text`);
+		}
+
 		var iRowCount = oRow._getAppointmentRowCount(oAppointmentInfo, bReducedHeight);
 		var aAriaLabels = oRow.getAriaLabelledBy();
 
 		var oArrowValues = oRow._calculateAppoitnmentVisualCue(oAppointment);
 		if (aAriaLabels.length > 0) {
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + aAriaLabels.join(" ");
+			aLabelledByIds = aLabelledByIds.concat(aAriaLabels);
 		}
 
-		if (sTitle && !oAppointment.getCustomContent().length) {
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + sId + "-Title";
-		}
-
-		if (sText && !oAppointment.getCustomContent().length) {
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + sId + "-Text";
-		}
+		var mAccProps = {
+			role: "listitem",
+			labelledby: { value: aLabelledByIds.join(" "), append: true },
+			describedby: { value: bAppointmentSelected ? InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED") : "", append: true },
+			selected: null
+		};
 
 		oRm.openStart("div", oAppointment);
 		oRm.class("sapUiCalendarApp");
@@ -582,7 +597,8 @@ sap.ui.define([
 
 		if (oAppointment.getTentative()) {
 			oRm.class("sapUiCalendarAppTent");
-			mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_TENTATIVE");
+			aLabelledByIds.push(InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_TENTATIVE"));
+			mAccProps["labelledby"].value = aLabelledByIds.join(" ");
 		}
 
 		if (iRowCount === 1) {
@@ -627,6 +643,10 @@ sap.ui.define([
 			} else {
 				oRm.style("border-left-color", sColor);
 			}
+		}
+
+		if (sAriaHasPopup !== AriaHasPopup.None) {
+			oRm.attr("aria-haspopup", sAriaHasPopup.toLowerCase());
 		}
 
 		oRm.accessibilityState(oAppointment, mAccProps);

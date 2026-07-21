@@ -1652,7 +1652,8 @@ sap.ui.define([
 				content: [
 					oLabelName, this.oInputName, oSaveAsDialogOptionsGrid
 				],
-				stretch: Device.system.phone
+				stretch: Device.system.phone,
+				busyIndicatorDelay: 0
 			});
 
 			this.oSaveAsDialog.isPopupAdaptationAllowed = function() {
@@ -1896,6 +1897,11 @@ sap.ui.define([
 			this.oVariantPopOver.close();
 		}
 
+		//Lazy loading of variants
+		if (!this.oSaveAsDialog.isOpen()){
+			this._executeDynamicVariantsLoadedCallback(this.oSaveAsDialog);
+		}
+
 		if (!bDoNotOpen) {
 			this.oSaveAsDialog.open();
 		}
@@ -2060,24 +2066,46 @@ sap.ui.define([
 
 	VariantManagement.prototype._triggerSearchInManageDialogByValue = function(sValue, oManagementTable) {
 
-		var aFilters = [
-			this._getVisibleFilter(), new Filter({
-				filters: [
-					new Filter({
-						path: "title",
-						operator: FilterOperator.Contains,
-						value1: sValue
-					}), new Filter({
-						path: "author",
-						operator: FilterOperator.Contains,
-						value1: sValue
-					})
-				],
-				and: false
-			})
-		];
+		const oBinding = oManagementTable.getBinding("items");
+		const oVisibleFilter = this._getVisibleFilter();
+		const aFilters = oVisibleFilter ? [oVisibleFilter] : [];
 
-		oManagementTable.getBinding("items").filter(aFilters);
+		if (sValue) {
+			const sLowerValue = sValue.toLowerCase();
+			const aBranches = [];
+			let bMatchAll = false;
+
+			for (const sProperty of ["title", "author"]) {
+				const oResolved = this._resolveTemplatePath(sProperty);
+				if (oResolved.path) {
+					aBranches.push(new Filter({
+						path: oResolved.path,
+						operator: FilterOperator.Contains,
+						value1: sValue
+					}));
+				} else if ("value" in oResolved) {
+					if (String(oResolved.value ?? "").toLowerCase().includes(sLowerValue)) {
+						// Static value matches search -> show all rows, no further filtering
+						bMatchAll = true;
+						break;
+					}
+				} else {
+					// Complex binding with formatter -> filter by formatted value
+					const oFormatterFilter = this._buildFormatterFilter(oResolved.bindingInfo, sValue, oBinding);
+					if (oFormatterFilter) {
+						aBranches.push(oFormatterFilter);
+					}
+				}
+			}
+
+			if (!bMatchAll) {
+				aFilters.push(aBranches.length
+					? new Filter({ filters: aBranches, and: false })
+					: new Filter({ path: "/", test: () => false }));
+			}
+		}
+
+		oBinding.filter(aFilters);
 
         if (this.oManagementTable.getItems().length < 1) {
 			if (this._oNoDataFoundIllustratedMessage.hasStyleClass("sapMVarMngmtIllustratedMessage")) {
@@ -2087,6 +2115,43 @@ sap.ui.define([
 		}
 
 		this._bRebindRequired = true;
+	};
+
+	/**
+	 * Builds an OR-filter that matches rows whose formatted value contains <code>sValue</code>,
+	 * by evaluating the formatter against each binding context's properties and emitting
+	 * key-based <code>EQ</code> filters for the matches. Operates on a snapshot of contexts
+	 * cached in <code>this._aManageDialogContexts</code> (populated lazily on first use and
+	 * reset on each manage-dialog open), so consecutive searches see the full unfiltered set.
+	 *
+	 * @param {object} oBI The binding info of the template's property.
+	 * @param {string} sValue The search string to match against the formatted value.
+	 * @param {sap.ui.model.ListBinding} oBinding The items binding of the management table.
+	 * @returns {sap.ui.model.Filter|null} An OR-combined multi-filter of key-based <code>EQ</code>
+	 *   filters for the matching rows, or <code>null</code> if no row matches.
+	 * @private
+	 */
+	VariantManagement.prototype._buildFormatterFilter = function(oBI, sValue, oBinding) {
+		const sLowerValue = sValue.toLowerCase();
+		const aParts = oBI.parts ?? [{ path: oBI.path }];
+		const fnFormatter = oBI.formatter ?? ((v) => v);
+		const sKeyPath = this._resolveTemplatePath("key").path ?? "key";
+		// Snapshot the unfiltered context set on first use; subsequent searches in the same
+		// dialog session reuse it so they see all variants, not just the previously filtered ones.
+		// Note: Only gets currently materialized contexts in case of oData models
+		this._aManageDialogContexts ??= oBinding.getAllCurrentContexts();
+
+		const aMatchingFilters = [];
+		this._aManageDialogContexts.forEach((oContext) => {
+			const sFormatted = fnFormatter.apply(null, aParts.map((p) => oContext.getProperty(p.path)));
+			if (typeof sFormatted === "string" && sFormatted.toLowerCase().includes(sLowerValue)) {
+				aMatchingFilters.push(new Filter(sKeyPath, FilterOperator.EQ, oContext.getProperty(sKeyPath)));
+			}
+		});
+
+		return aMatchingFilters.length
+			? new Filter({ filters: aMatchingFilters, and: false })
+			: null;
 	};
 
 	VariantManagement.prototype.getManageDialog = function() {
@@ -2187,7 +2252,8 @@ sap.ui.define([
 					}), new Column(this.getId() + "-managementTable-col-last", {
 						visible: false
 					})
-				]
+				],
+				busyIndicatorDelay: 0
 			});
 
 			this.oManagementSave = new Button(this.getId() + "-managementsave", {
@@ -2487,6 +2553,18 @@ sap.ui.define([
 		// roles
 		const oRolesCell = this._createRolesCell(oItem, oContext);
 
+		const oSharingBinding = fnCreateBinding("sharing");
+		const oSharingText = new Text(sIdPrefix + "-type-" + nPos, {
+			text: {
+				path: oSharingBinding.parts?.[0]?.path ?? "sharing",
+				model: oSharingBinding.parts?.[0]?.model ?? sModelName,
+				formatter: function(sValue) {
+					return this._oRb.getText(sValue === "Private" ? "VARIANT_MANAGEMENT_PRIVATE" : "VARIANT_MANAGEMENT_PUBLIC");
+				}.bind(this)
+			},
+			textAlign: "Center"
+		});
+
 		const oDefaultRadioButton = new RadioButton(sIdPrefix + "-def-" + nPos, {
 			groupName: this.getId(),
 			select: fSelectRB,
@@ -2510,16 +2588,7 @@ sap.ui.define([
 			cells: [
 				oFavoriteIcon,
 				oNameControl,
-				new Text(sIdPrefix + "-type-" + nPos, {
-					text: {
-						path: "sharing",
-						model: sModelName,
-						formatter: function(sValue) {
-							return this._oRb.getText(sValue === "Private" ? "VARIANT_MANAGEMENT_PRIVATE" : "VARIANT_MANAGEMENT_PUBLIC");
-						}.bind(this)
-					},
-					textAlign: "Center"
-				}),
+				oSharingText,
 				oDefaultRadioButton,
 				oExecuteOnSelectCtrl,
 				oRolesCell,
@@ -2551,6 +2620,14 @@ sap.ui.define([
 		this._clearRenamedItems();
 		this._createManagementDialog();
 
+		//Lazy loading of variants
+		if (!this.oManagementDialog.isOpen()){
+			this._executeDynamicVariantsLoadedCallback(this.oManagementTable, function() {
+				//Rebind table to display refreshed data after lazy loading variants
+				this._rebindVMTable(true);
+			}.bind(this));
+		}
+
 		this.oManagementDialog.open();
 
 		if (this.oVariantPopOver) {
@@ -2573,20 +2650,38 @@ sap.ui.define([
 			this._rebindVMTable();
 		}
 
+		this._aManageDialogContexts = null;
+		const oBinding = this.oManagementTable.getBinding("items");
+		if (oBinding) {
+			const oVisibleFilter = this._getVisibleFilter();
+			oBinding.filter(oVisibleFilter ? [oVisibleFilter] : []);
+		}
+
 		if (this.oManagementTable.getItems().length < 1) {
 			this.oManagementTable.setNoData(this._oNoDataIllustratedMessage);
 		}
-		//Lazy loading of variants
+	};
+
+	/**
+	 * Executes the <code>dynamicVariantsLoadedCallback</code> if provided, managing the busy state of the given control.
+	 * The control will be set to busy until the returned <code>Promise</code> is settled.
+	 *
+	 * @param {sap.ui.core.Control} oControl - The control to set busy during loading
+	 * @param {function} [fnAfterLoad] - Optional callback to execute after the promise is settled
+	 * @private
+	 */
+	VariantManagement.prototype._executeDynamicVariantsLoadedCallback = function(oControl, fnAfterLoad) {
 		const fnCallback = this.getDynamicVariantsLoadedCallback();
 		if (typeof fnCallback === "function") {
 			const oResult = fnCallback();
-			if (oResult instanceof Promise) {
-				this.oManagementTable.setBusy(true);
+			if (oResult instanceof Promise && !oControl.isDestroyed()) {
+				oControl.setBusy(true);
 				oResult.finally(function() {
-					this.oManagementTable.setBusy(false);
-					//Rebind table to display refreshed data after lazy loading variants
-					this._rebindVMTable(true);
-				}.bind(this));
+					oControl.setBusy(false);
+					if (fnAfterLoad) {
+						fnAfterLoad();
+					}
+				});
 			}
 		}
 	};
@@ -2759,9 +2854,9 @@ sap.ui.define([
 		for (let i = 0; i < aTableItems.length; i++) {
 			const oRow = aTableItems[i];
 			if (oRow.getVisible()) {
-				const oBindingContext = oRow.getBindingContext("$mVariants");
+				const oBindingContext = oRow.getBindingContext(this._sModelName);
 				if (oBindingContext) {
-					const oRowItem = oBindingContext.getObject();
+					const oRowItem = this._findVariantItem(oBindingContext);
 					if (oRowItem && oRowItem.getKey() === sCurrentKey) {
 						nCurrentIndex = i;
 						break;
@@ -2775,13 +2870,13 @@ sap.ui.define([
 		}
 
 		// Try to find the next visible row
-		let oFoundRow = _findVisibleRowFromIndex(aTableItems, nCurrentIndex + 1, aTableItems.length, 1);
+		let oFoundRow = _findVisibleRowFromIndex(aTableItems, nCurrentIndex + 1, aTableItems.length, 1, this._sModelName);
 		if (oFoundRow) {
 			return oFoundRow;
 		}
 
 		// If no next row found, try to find the previous visible row
-		oFoundRow = _findVisibleRowFromIndex(aTableItems, nCurrentIndex - 1, -1, -1);
+		oFoundRow = _findVisibleRowFromIndex(aTableItems, nCurrentIndex - 1, -1, -1, this._sModelName);
 		if (oFoundRow) {
 			return oFoundRow;
 		}
@@ -2792,17 +2887,11 @@ sap.ui.define([
 	/**
 	 * Helper function to find a visible row with valid binding context in a given direction
 	 */
-	function _findVisibleRowFromIndex(aTableItems, nStartIndex, nEndIndex, nStep) {
+	function _findVisibleRowFromIndex(aTableItems, nStartIndex, nEndIndex, nStep, sModelName) {
 		for (let i = nStartIndex; (nStep > 0 ? i < nEndIndex : i > nEndIndex); i += nStep) {
 			const oRow = aTableItems[i];
-			if (oRow && oRow.getVisible()) {
-				const oBindingContext = oRow.getBindingContext("$mVariants");
-				if (oBindingContext) {
-					const oRowItem = oBindingContext.getObject();
-					if (oRowItem) {
-						return oRow;
-					}
-				}
+			if (oRow && oRow.getVisible() && oRow.getBindingContext(sModelName)) {
+				return oRow;
 			}
 		}
 		return null;
@@ -3036,35 +3125,80 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._getFilters = function(oFilter) {
-		var aFilters = [];
+		const aFilters = [];
 
 		if (oFilter) {
 			aFilters.push(oFilter);
 		}
 
-		aFilters.push(this._getVisibleFilter());
+		const oVisibleFilter = this._getVisibleFilter();
+		if (oVisibleFilter) {
+			aFilters.push(oVisibleFilter);
+		}
 
 		if (this.getSupportFavorites()) {
-			aFilters.push(this._getFavoriteFilter());
+			const oFavoriteFilter = this._getFavoriteFilter();
+			if (oFavoriteFilter) {
+				aFilters.push(oFavoriteFilter);
+			}
 		}
 
 		return aFilters;
 	};
 
+	/**
+	 * Classifies a property of the items template into a filter-relevant shape.
+	 * Returns one of:
+	 *   { path: "<modelPath>" }                 — bound with a single path, no formatter; suitable for path-based filtering
+	 *   { value: <static> }                     — set as a static value on the template
+	 *   { complex: true, bindingInfo: <BI> }    — bound with a formatter or multiple parts; needs formatter evaluation
+	 * If no external items binding exists, falls back to { path: sProperty } for the legacy $mVariants layout.
+	 *
+	 * @param {string} sProperty The property to classify
+	 * @returns {object} One of <code>{ path: string }</code>, <code>{ value: any }</code>, or <code>{ complex: true, bindingInfo: object }</code>
+	 * @private
+	 */
+	VariantManagement.prototype._resolveTemplatePath = function(sProperty) {
+		const oTemplate = this.getBindingInfo("items")?.template;
+		if (!oTemplate) {
+			return { path: sProperty };
+		}
+		// VariantItem extends Item; consumers may bind 'text' instead of 'title'.
+		// Mirrors the renderer fallback in _templateFactoryManagementDialog.
+		let oBI = oTemplate.getBindingInfo(sProperty);
+		if (!oBI && sProperty === "title") {
+			oBI = oTemplate.getBindingInfo("text");
+		}
+		if (!oBI) {
+			return { value: oTemplate.getProperty(sProperty) };
+		}
+		if (!oBI.formatter && (!oBI.parts || oBI.parts.length === 1)) {
+			return { path: oBI.parts ? oBI.parts[0].path : oBI.path };
+		}
+		return { complex: true, bindingInfo: oBI };
+	};
+
+	VariantManagement.prototype._getFilterForPath = function(sPath) {
+		const oResolved = this._resolveTemplatePath(sPath);
+		if (oResolved.path) {
+			return new Filter({ path: oResolved.path, operator: FilterOperator.EQ, value1: true });
+		}
+		if ("value" in oResolved) {
+			if (oResolved.value === true || oResolved.value == null) {
+				return null;
+			}
+			return new Filter({ path: "/", test: () => false });
+		}
+		Log.warning(`VariantManagement: '${sPath}' has a complex binding; filter is not applied.`);
+		return null;
+	};
+
 	VariantManagement.prototype._getVisibleFilter = function() {
-		return new Filter({
-			path: "visible",
-			operator: FilterOperator.EQ,
-			value1: true
-		});
+		return this._getFilterForPath("visible");
 	};
 
 	VariantManagement.prototype._getFavoriteFilter = function() {
-		return new Filter({
-			path: "favorite",
-			operator: FilterOperator.EQ,
-			value1: true
-		});
+		return this._getFilterForPath("favorite");
 	};
 
 
@@ -3177,11 +3311,11 @@ sap.ui.define([
 			aItems = this.oManagementTable.getItems();
 			aItems.some((oItem) => {
 				let sTitleLowerCase;
-				const oObject = oItem.getBindingContext(this._sModelName).getObject();
-				if (oObject?.visible) {
+				const oVariantItem = this._findVariantItem(oItem.getBindingContext(this._sModelName));
+				if (oVariantItem && oVariantItem.getVisible()) {
 					var oInput = oItem.getCells()[VariantManagement.COLUMN_NAME_IDX];
 
-					if (oInput && (oObject.key !== sKey)) {
+					if (oInput && (oVariantItem.getKey() !== sKey)) {
 						if (oInput.isA("sap.m.Input")) {
 							sTitleLowerCase = oInput.getValue().toLowerCase();
 						} else {
@@ -3214,11 +3348,12 @@ sap.ui.define([
 
 	VariantManagement.prototype._rebindVMTable = function(bForceRebind) {
 		const bHasExternalBinding = !!this.getBindingInfo("items");
+		const oVisibleFilter = this._getVisibleFilter();
 		const oItemsBindingInfos = this.getBindingInfo("items") ?? {
 			path: "/items",
 			model: "$mVariants",
 			factory: this._templateFactoryManagementDialog.bind(this, null),
-			filters: this._getVisibleFilter()
+			filters: oVisibleFilter ?? []
 		};
 
 		if (!this.oManagementTable.getBinding("items") || bForceRebind) {
@@ -3228,18 +3363,13 @@ sap.ui.define([
 				parameters: oItemsBindingInfos.parameters
 			}, {
 				factory: this._templateFactoryManagementDialog.bind(this, oItemsBindingInfos.template),
-				filters: this._getVisibleFilter()
+				filters: oVisibleFilter ?? []
 			});
-
-			if (bHasExternalBinding) {
-				// If an items binding is provided, then visibility should be handled there.
-				delete oBindingInfo.filters;
-			}
 
 			this._sModelName = oBindingInfo.model;
 			this.oManagementTable.bindAggregation("items", oBindingInfo);
 		} else if (!bHasExternalBinding) {
-			this.oManagementTable.getBinding("items").filter(this._getVisibleFilter());
+			this.oManagementTable.getBinding("items").filter(oVisibleFilter ? [oVisibleFilter] : []);
 		}
 
 		this._bRebindRequired = false;

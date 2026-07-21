@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.148.0"
+      "version": "1.150.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -16,7 +16,7 @@
       {
         "name": "DOMPurify",
         "packagedWithMySelf": true,
-        "version": "3.2.4"
+        "version": "3.4.1"
       },
       {
         "name": "qunit-composite-2",
@@ -34,17 +34,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.148",
+      "minUI5Version": "1.150",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.148.0"
+          "minVersion": "1.150.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.148.0",
+          "minVersion": "1.150.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.148.0",
+          "minVersion": "1.150.0",
           "lazy": true
         }
       }
@@ -279,6 +279,7 @@
           "sap.m.Toolbar",
           "sap.m.ToolbarSpacer",
           "sap.m.ToolbarSeparator",
+          "sap.m.Tooltip",
           "sap.m.Tree",
           "sap.m.TreeItemBase",
           "sap.m.UploadCollection",
@@ -486,6 +487,7 @@
           "sap.m.P13nConditionOperation",
           "sap.m.PageBackgroundDesign",
           "sap.m.PanelAccessibleRole",
+          "sap.m.PanelBackgroundDesign",
           "sap.m.PDFViewerDisplayType",
           "sap.m.PlacementType",
           "sap.m.CarouselPageIndicatorPlacementType",

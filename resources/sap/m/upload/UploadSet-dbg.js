@@ -56,7 +56,7 @@ sap.ui.define([
 	 * but it also helps to avoid template-related issues and ensures better data handling.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @constructor
 	 * @public
 	 * @since 1.63
@@ -639,7 +639,7 @@ sap.ui.define([
 		var oNoDataDom = aList?.getDomRef()?.querySelector(".sapMUCNoDataPage");
 		var iCurrentHeight = oNoDataDom?.offsetHeight;
 		if (iCurrentHeight){
-			oNoDataDom.style.height = iCurrentHeight + "px";
+			oNoDataDom.style.minHeight = iCurrentHeight + "px";
 		}
 
 		if (this.getCloudFilePickerEnabled()) {

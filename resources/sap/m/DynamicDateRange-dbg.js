@@ -288,7 +288,7 @@ sap.ui.define([
 		 * is opened. The dialog is closed via a date time period value selection or by pressing the "Cancel" button.
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -1049,6 +1049,11 @@ sap.ui.define([
 				sType,
 				sSuggestionOptionKey;
 
+			const sFooterType = this._oSelectedOption && this._oSelectedOption.getValueHelpUIFooterFormatTypes();
+			if (sFooterType) {
+				return sFooterType;
+			}
+
 			if (
 				!oValue &&
 				!oSelect &&
@@ -1509,6 +1514,7 @@ sap.ui.define([
 			this._infoDatesFooter = new Toolbar({
 				design: ToolbarDesign.Info,
 				style: ToolbarStyle.Clear,
+				height: "auto",
 				content: [
 					new Label({
 						text: oResourceBundle.getText("DDR_INFO_DATES_EMPTY_HINT")
@@ -1582,6 +1588,8 @@ sap.ui.define([
 					oOption.alignValueHelpUI(this);
 				}
 				this._updateDatesLabel();
+			} else {
+				this._getDatesLabel().setText(oResourceBundle.getText("DDR_INFO_DATES_EMPTY_HINT"));
 			}
 			this._setApplyButtonEnabled(bValidValueHelpUI);
 		};

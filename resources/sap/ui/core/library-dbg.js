@@ -27,13 +27,13 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @since 0.8
 	 * @public
 	 */
 	 var thisLib = Library.init({
 		 name: "sap.ui.core",
-		 version: "1.148.0",
+		 version: "1.150.0",
 		 designtime: "sap/ui/core/designtime/library.designtime",
 		 apiVersion: 2,
 		 ...{
@@ -159,6 +159,7 @@ sap.ui.define([
 			 "sap.ui.core.InvisibleMessage"
 		 ],
 		 extensions: {
+			"sap.ui.debug": true,
 			 "sap.ui.support" : {
 				 diagnosticPlugins: [
 					 "sap/ui/core/support/plugins/TechInfo",
@@ -1647,7 +1648,7 @@ sap.ui.define([
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0

@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Item that represents one file to be uploaded using the {@link sap.m.upload.UploadSet} control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @constructor
 	 * @public
 	 * @since 1.63
@@ -197,6 +197,9 @@ sap.ui.define([
 				oRm.attr("id", oControl.getId());
 				oRm.openEnd();
 				oRm.openStart("div").class("sapMUSTextInnerContainer").openEnd();
+				if (oItem._bInEditMode) {
+					oRm.renderControl(oItem._getFileNameEditLabel());
+				}
 				oRm.renderControl(oItem._bInEditMode ? oItem._getFileNameEdit() : oItem._getFileNameLink());
 				oItem._renderMarkers(oRm);
 				oItem._renderMarkersAsStatus(oRm);
@@ -226,7 +229,7 @@ sap.ui.define([
 				this._item._getTerminateButton()
 			];
 		}
-		return {children: [ this._item._bInEditMode ? this._item._getFileNameEdit() : this._item._getFileNameLink(), ...this._item.getMarkers(), ...this._item.getMarkersAsStatus(), ...this._item.getAttributes(), ...this._item.getStatuses(), ...aButtonsToRender]};
+		return {children: [ this._item._bInEditMode ? this._item._getFileNameEditLabel() : null, this._item._bInEditMode ? this._item._getFileNameEdit() : this._item._getFileNameLink(), ...this._item.getMarkers(), ...this._item.getMarkersAsStatus(), ...this._item.getAttributes(), ...this._item.getStatuses(), ...aButtonsToRender]};
 	};
 
 	/* ========= */
@@ -248,6 +251,7 @@ sap.ui.define([
 		this._oIcon = null;
 		this._oFileNameLink = null;
 		this._oFileNameEdit = null;
+		this._oFileNameEditLabel = null;
 		this._oDynamicContent = null;
 
 		// Buttons
@@ -725,12 +729,25 @@ sap.ui.define([
 				placeholder: this._oRb.getText("UPLOAD_SET_FILE_NAME")
 			});
 			this._oFileNameEdit.addStyleClass("sapMUCEditBox");
-			this._oFileNameEdit.setFieldWidth("75%");
-			this._oFileNameEdit.setDescription(oSplit.extension);
+			this._oFileNameEdit.setFieldWidth("73%");
+			this._oFileNameEdit.setDescription("." + oSplit.extension);
 			this.addDependent(this._oFileNameEdit);
 		}
 
 		return this._oFileNameEdit;
+	};
+
+	UploadSetItem.prototype._getFileNameEditLabel = function () {
+		if (!this._oFileNameEditLabel) {
+			this._oFileNameEditLabel = new Label({
+				id: this.getId() + "-fileNameEditLabel",
+				text: this._oRb.getText("UPLOAD_SET_FILE_NAME_LABEL"),
+				labelFor: this.getId() + "-fileNameEdit"
+			});
+			this._oFileNameEditLabel.addStyleClass("sapMUCEditLabel");
+			this.addDependent(this._oFileNameEditLabel);
+		}
+		return this._oFileNameEditLabel;
 	};
 
 	/**
@@ -1149,6 +1166,10 @@ sap.ui.define([
 		if (this._oDynamicContent) {
 			this._oDynamicContent.destroy();
 			this._oDynamicContent = null;
+		}
+		if (this._oFileNameEditLabel) {
+			this._oFileNameEditLabel.destroy();
+			this._oFileNameEditLabel = null;
 		}
 	};
 

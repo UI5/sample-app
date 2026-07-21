@@ -59,7 +59,7 @@ function(
 	 *
 	* <b>Note:</b> This control should not be used with {@link sap.m.Label} or in Forms along with {@link sap.m.Label}.
 	 * @extends sap.ui.core.Control
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -312,7 +312,6 @@ function(
 			// Lazy initialization
 			if (this.getProperty("titleActive")) {
 				addAriaLabelledBy = this.getAriaLabelledBy().slice();
-				addAriaLabelledBy.push(InvisibleText.getStaticId("sap.m", "OI_ARIA_ROLE"));
 				oTitleControl = new Link({
 					id : sId + "-link",
 					text: sTitle,
@@ -320,7 +319,6 @@ function(
 					//Add a custom hidden role "ObjectIdentifier" with hidden text
 					ariaLabelledBy: addAriaLabelledBy
 				});
-				oTitleControl.addAriaLabelledBy(sId + "-text");
 			} else {
 				oTitleControl = new Text({
 					id : sId + "-txt",
@@ -489,7 +487,21 @@ function(
 		ObjectIdentifier.prototype._handlePress.apply(this, arguments);
 	};
 
-
+	/**
+	 * @override
+	 */
+	ObjectIdentifier.prototype.enhanceAccessibilityState = function (oElement, mAriaProps) {
+		const sId = this.getId();
+		const sLinkId = `${sId}-link`;
+		const sTextId = `${sId}-text`;
+		if (oElement.getId() === sLinkId) {
+			const aLabelledBy = (mAriaProps["labelledby"] || "")
+				.split(" ")
+				.filter((sEntry) => sEntry && sEntry !== sLinkId);
+			aLabelledBy.push(InvisibleText.getStaticId("sap.m", "OI_ARIA_ROLE"), sLinkId, sTextId);
+			mAriaProps["labelledby"] = aLabelledBy.join(" ");
+		}
+	};
 	ObjectIdentifier.prototype.addAssociation = function(sAssociationName, sId, bSuppressInvalidate) {
 		var oTitle = this.getAggregation("_titleControl");
 

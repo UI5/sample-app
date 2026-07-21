@@ -29,7 +29,7 @@ sap.ui.define(['./InputBase', './MaskEnabler', './MaskInputRenderer'], function(
 	 *
 	 * @author SAP SE
 	 * @extends sap.m.InputBase
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -177,6 +177,65 @@ sap.ui.define(['./InputBase', './MaskEnabler', './MaskInputRenderer'], function(
 		this.updateDomValue(this._oTempValue.toString());
 		this._setCursorPosition(Math.max(this._iUserInputStartPosition, iStart));
 	};
+
+	MaskInput.prototype.getValueStateLinksForAcc = function(){
+		const oFormattedText = this.getFormattedValueStateText();
+		if (!oFormattedText){
+			return [];
+		}
+		return oFormattedText.getControls();
+	};
+
+	/**
+	 * Handles the focusin event.
+	 *
+	 * Adds an aria-description attribute with the placeholder text when the input has no value,
+	 * so that screen readers announce the placeholder despite the presence of a mask.
+	 *
+	 * @param {jQuery.Event} oEvent Event object
+	 */
+	MaskInput.prototype.onfocusin = function(oEvent) {
+		MaskEnabler.onfocusin.apply(this, arguments);
+		if (this.getMask() && !this.getValue()) {
+			this._$input.attr("aria-description", this._getPlaceholder());
+		}
+	};
+
+	MaskInput.prototype.onkeydown = function(oEvent) {
+		// Handle keyboard shortcut for value state link navigation first
+		if (this.areHotKeysPressed(oEvent)) {
+			this._handleValueStateLinkNav();
+			return;
+		}
+
+		// Let MaskEnabler handle all other keys
+		MaskEnabler.onkeydown.apply(this, arguments);
+	};
+
+
+	MaskInput.prototype.onfocusout = function (oEvent) {
+		// Call MaskEnabler's onfocusout but prevent it from closing value state message
+		// if focus is moving to a value state link
+		if (this._isMaskEnabled()) {
+			this.bFocusoutDueRendering = this.bRenderingPhase;
+			this.removeStyleClass("sapMFocus");
+
+			if (this.bRenderingPhase) {
+				return;
+			}
+
+			// Don't close the ValueStateMessage on focusout if it contains links and we're navigating to one
+			if (!this._bClickOnValueStateLink(oEvent)) {
+				this.closeValueStateMessage();
+			}
+			this._inputCompletedHandler();
+		} else {
+			this._inputCompletedHandlerNoMask();
+			InputBase.prototype.onfocusout.apply(this, arguments);
+		}
+		this._$input.removeAttr("aria-description");
+	};
+
 
 	MaskInput.prototype.onsapenter = function(oEvent) {
 		const bFireSubmit = this.getEnabled() && this.getEditable();

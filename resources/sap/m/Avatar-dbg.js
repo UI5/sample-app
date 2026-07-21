@@ -89,9 +89,10 @@ sap.ui.define([
 	 * <code>customDisplaySize</code> and <code>customFontSize</code> properties.
 	 *
 	 * @extends sap.ui.core.Control
+	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -101,6 +102,7 @@ sap.ui.define([
 	 */
 	var Avatar = Control.extend("sap.m.Avatar", {
 		metadata: {
+			interfaces: ["sap.ui.core.IFormContent"],
 			library: "sap.m",
 			properties: {
 				/**
@@ -1194,6 +1196,19 @@ sap.ui.define([
 		this._setNewCacheBustingValue();
 		this._loadImage(this._getAvatarSrc());
 		this.invalidate();
+	};
+
+	/**
+	 * Implements {@link sap.ui.core.IFormContent} interface.
+	 *
+	 * Prevents the Form layout from stretching the <code>Avatar</code>
+	 * to full width, preserving its predefined fixed sizes.
+	 *
+	 * @protected
+	 * @returns {boolean} <code>true</code>
+	 */
+	Avatar.prototype.getFormDoNotAdjustWidth = function () {
+		return true;
 	};
 
 	return Avatar;

@@ -49,23 +49,23 @@
 /*** HEADER ***/
 .sapUiCalHead {
 	width: 100%;
-	position: relative;
 	text-align: center;
-	display: block;
-	height: 2.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
 	background-color: @sapUiListBackground;
 }
 
-.sapUiCalTwoMonthsTwoColumnsJaZh:not(.sapUiCalInt) > .sapUiCalHead,
-.sapUiCalTwoMonthsTwoColumns:not(.sapUiCalInt) > .sapUiCalHead {
+.sapUiCalTwoMonthsTwoColumnsJaZh:not(.sapUiCalInt) .sapUiCalHead,
+.sapUiCalTwoMonthsTwoColumns:not(.sapUiCalInt) .sapUiCalHead {
 	max-width: 100%;
-	text-align: left;
 }
 
-.sapUiCalHead > button,
+.sapUiCalHead button,
 .sapUiCalCancel {
+	position: relative;
 	background-color: @sapUiButtonLiteBackground;
 	border: none;
 	color: @sapUiButtonTextColor;
@@ -73,7 +73,6 @@
 	overflow: hidden;
 	white-space: nowrap;
 	height: 2.5rem;
-	padding: 0;
 	font-size: @sapMFontMediumSize;
 }
 
@@ -93,23 +92,46 @@
 	.sapUiCalHeadPrev,
 	.sapUiCalHeadNext,
 	 .sapUiCalHeadToday {
+		line-height: 2.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
 		&:not(.sapUiCalDsbl) .sapUiIcon {
 			cursor: pointer;
 		}
 
-		position: absolute;
+		flex: 0 0 auto;
 		width: 2.5rem;
 	}
-	.sapUiCalHeadNext {
-		right: 0.5rem;
-	}
+}
+
+/* Flex content containers for header buttons */
+.sapUiCalHeadContent {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.sapUiCalHeadAlignStart {
+	justify-content: flex-start;
+}
+
+.sapUiCalHeadAlignCenter {
+	justify-content: center;
+}
+
+.sapUiCalHeadAlignEnd {
+	justify-content: flex-end;
 }
 
 .sapUiCalHead.sapUiCalHeaderWithTodayButton {
 	.sapUiCalHeadPrev,
 	.sapUiCalHeadNext,
 	.sapUiCalHeadToday {
-		position: initial;
 		width: 2rem;
 	}
 }
@@ -119,9 +141,6 @@
 	.sapUiCalHeadNext,
 	.sapUiCalHeadToday {
 		width: 2rem;
-	}
-	.sapUiCalHeadNext {
-		right: 0.25rem;
 	}
 }
 
@@ -133,53 +152,44 @@
 	}
 }
 
-.sapUiCalHeadPrev {
-	left: 0.5rem;
-}
-
-.sapUiCalHead.sapUiCalHeaderWithTodayButton {
-	display: flex;
-	justify-content: space-evenly;
-}
-
 /* no default (browser) outline, if device needs focus visualization its defined later */
-.sapUiCalHead > button:focus,
+.sapUiCalHead button:focus,
 .sapUiCalCancel:focus {
 	outline: none;
 }
 
 /* hover and focus makes only sense on desktops. On mobile devices it's not needed */
-html.sap-desktop .sapUiCalHead > button:focus,
+html.sap-desktop .sapUiCalHead button:focus,
 html.sap-desktop .sapUiCalCancel:focus {
 	background-color: @sapUiButtonHoverBackground;
 	color: @sapUiButtonHoverTextColor;
 }
 
-html.sap-desktop .sapUiCalHead > button:hover,
+html.sap-desktop .sapUiCalHead button:hover,
 html.sap-desktop .sapUiCalCancel:hover {
 	background-color: @sapUiButtonHoverBackground;
 	color: @sapUiButtonHoverTextColor;
 }
 
 /* once for desktop to overwrite focus and once for all devices needed */
-.sapUiCalHead > button:active,
+.sapUiCalHead button:active,
 .sapUiCalCancel:active,
-html.sap-desktop .sapUiCalHead > button:active,
-html.sap-desktop .sapUiCalHead > button:active > .sapUiCalHeadBAddText,
+html.sap-desktop .sapUiCalHead button:active,
+html.sap-desktop .sapUiCalHead button:active .sapUiCalHeadBAddText,
 html.sap-desktop .sapUiCalCancel:active {
 	background-color: @sapUiButtonActiveBackground;
 	color: @sapUiButtonActiveTextColor;
 }
 
-.sapUiCalHead > button.sapUiCalDsbl {
+.sapUiCalHead button.sapUiCalDsbl {
 	cursor: default;
 	opacity: .3;
 	filter: alpha(opacity=30);
 }
 
-html.sap-desktop .sapUiCalHead > button.sapUiCalDsbl:focus,
-.sapUiCalHead > button.sapUiCalDsbl:hover,
-.sapUiCalHead > button.sapUiCalDsbl:active {
+html.sap-desktop .sapUiCalHead button.sapUiCalDsbl:focus,
+.sapUiCalHead button.sapUiCalDsbl:hover,
+.sapUiCalHead button.sapUiCalDsbl:active {
 	background-color: @sapUiButtonLiteBackground;
 	color: @sapUiButtonTextColor;
 }
@@ -477,12 +487,6 @@ html.sap-desktop .sapUiCalHead > button.sapUiCalDsbl:focus,
 			display: flex;
 			justify-content: space-between;
 		}
-		.sapUiCalHeadNext {
-			right: 0;
-		}
-		.sapUiCalHeadPrev {
-			left: 0;
-		}
 	}
 	.sapUiCal .sapUiCalMonthView {
 		padding-bottom: 0.5rem;
@@ -529,21 +533,12 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	width: 3rem; /* do not overflow buttons on phone */
 }
 
-.sapUiCalHeadBFirst{
-	margin-right: 0.25rem;
-}
-
-.sapUiCalHeadBLast{
-	margin-left: 0.25rem;
-}
-
 .sapUiCalMulti .sapUiCalHeadB1,
 .sapUiCalMonthInt .sapUiCalHeadB2,
 .sapUiCalMulti .sapUiCalHeadB3,
 .sapUiCalIntLarge .sapUiCalHeadB3,
 .sapUiCalMonthInt .sapUiCalHeadB4 {
 	width: 12.5rem;
-	margin-right: 0.5rem
 }
 
 .sapUiCalIntLarge .sapUiCalHeadB1 {
@@ -590,32 +585,10 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 		}
 	}
 
-	&.sapUiCalTwoMonthsTwoColumns,
-	&.sapUiCalTwoMonthsTwoColumnsJaZh {
-		.sapUiCalHeadB2.sapUiCalSingleYearButton{
-			margin-left: calc(~"25% - 5.75rem");
-		}
-
-		.sapUiCalHeadB2 + .sapUiCalHeadB4 {
-			margin-left: 6.25rem;
-		}
-	}
 }
 
 .sapUiCalHeadBPlaceholder {
 	width: inherit;
-}
-
-.sapUiCalTwoMonthsTwoColumnsJaZh .sapUiCalHeadB2,
-.sapUiCalTwoMonthsTwoColumns .sapUiCalHeadB1 {
-	margin-left: calc(~"25% - 6rem");
-}
-
-.sapUiSizeCompact .sapUiCalTwoMonthsTwoColumnsJaZh .sapUiCalHeadB4,
-.sapUiSizeCompact .sapUiCalTwoMonthsTwoColumns .sapUiCalHeadB3,
-.sapUiCalTwoMonthsTwoColumnsJaZh .sapUiCalHeadB4:not(.sapUiCalSingleYearButton),
-.sapUiCalTwoMonthsTwoColumns .sapUiCalHeadB3 {
-	margin-left: 6.25rem;
 }
 
 .sapUiCalItemNow > .sapUiCalItemText{
@@ -805,8 +778,16 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	padding: 0;
 }
 
-.sapUiSizeCompact .sapUiCalHead > button{
+.sapUiSizeCompact .sapUiCalHead button{
 	height: 2rem;
+}
+
+.sapUiSizeCompact .sapUiCalHead{
+	.sapUiCalHeadPrev,
+	.sapUiCalHeadNext,
+	.sapUiCalHeadToday {
+		line-height: 2rem;
+	}
 }
 
 .sapUiSizeCompact .sapUiCalMonthView,
@@ -822,19 +803,6 @@ html.sapUiMedia-Std-Phone .sapUiCalHeadB0{
 	padding-left: 0.25rem;
 	padding-right: 0.25rem;
 	padding-bottom: 0.5rem;
-}
-
-.sapUiSizeCompact .sapUiCal .sapUiCalHeadPrev,
-.sapUiSizeCompact.sapUiCal .sapUiCalHeadPrev{
-	left: 0.25rem;
-}
-
-.sapUiSizeCompact .sapUiCalHeadBFirst{
-	margin-right: 0.25rem;
-}
-
-.sapUiSizeCompact .sapUiCalHeadBLast{
-	margin-left: 0.25rem;
 }
 
 .sapUiSizeCompact .sapUiCalMulti .sapUiCalHeadB3,
@@ -994,32 +962,6 @@ html.sap-phone [data-sap-ui-popup] .sapUiCal > .sapUiCalContent > .sapUiCalYearP
 }
 
 .sapUiCal.sapUiCalMulti.sapUiCalTwoMonthsTwoColumns {
-	.sapUiCalHead.sapUiCalHeaderWithTodayButton {
-		justify-content: space-evenly;
-	}
-	.sapUiCalHead.sapUiCalHeaderWithTodayButton .sapUiCalHeadBPlaceholder {
-		width:100%;
-	}
-	& .sapUiCalHeadB.sapUiCalHeadB1 {
-		margin-right: 0.25rem;
-	}
-	& .sapUiCalHeadB.sapUiCalHeadB4 {
-		margin-left: 0.25rem;
-	}
-	& .sapUiCalHeadB.sapUiCalHeadB2.sapUiCalHeadBFirst {
-		margin-left: 0.25rem;
-		margin-right: calc(~"25% - 6rem");
-	}
-	& .sapUiCalHeadB.sapUiCalHeadB3.sapUiCalHeadBLast {
-		margin-right: 0.25rem;
-		margin-left: calc(~"25% - 6rem");
-	}
-	.sapUiCalHeadB.sapUiCalHeadB2.sapUiCalSingleYearButton,
-	.sapUiCalHeadB.sapUiCalHeadB4.sapUiCalSingleYearButton {
-		width: 12rem;
-		margin-left: calc(~"25% - 6rem");
-	}
-
 	.sapUiCalContent > .sapUiCalMonthPicker, .sapUiCalContent > .sapUiCalYearPicker {
 		left: 50%;
 	}

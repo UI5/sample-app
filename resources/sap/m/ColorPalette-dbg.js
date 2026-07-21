@@ -108,7 +108,7 @@ sap.ui.define([
 		 * To prevent this, apps using the <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library in advance.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -353,6 +353,10 @@ sap.ui.define([
 		};
 
 		ColorPalette.prototype.onsaptabnext = ColorPalette.prototype.onsaptabprevious = function (oEvent) {
+			if (!this.getProperty("_isInPopover")) {
+				return;
+			}
+
 			var oElementInfo = this._getElementInfo(oEvent.target);
 
 			if (oElementInfo.bIsMoreColorsButton) {

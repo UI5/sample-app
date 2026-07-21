@@ -22,8 +22,8 @@ sap.ui.define([
 	// shortcut for sap.m.PanelAccessibleRole
 	var PanelAccessibleRole = library.PanelAccessibleRole;
 
-	// shortcut for sap.m.BackgroundDesign
-	var BackgroundDesign = library.BackgroundDesign;
+	// shortcut for sap.m.PanelBackgroundDesign
+	var PanelBackgroundDesign = library.PanelBackgroundDesign;
 
 	// shortcut for sap.m.ButtonType
 	var ButtonType = library.ButtonType;
@@ -69,7 +69,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -124,10 +124,10 @@ sap.ui.define([
 
 				/**
 				 * This property is used to set the background color of the Panel.
-				 * Depending on the theme you can change the state of the background from "Solid" over "Translucent" to "Transparent".
+				 * Depending on the theme you can change the state of the background from "Solid" over "Translucent" to "Transparent" or "Contrast".
 				 * @since 1.30
 				 */
-				backgroundDesign: {type: "sap.m.BackgroundDesign", group: "Appearance", defaultValue: BackgroundDesign.Translucent},
+				backgroundDesign: {type: "sap.m.PanelBackgroundDesign", group: "Appearance", defaultValue: PanelBackgroundDesign.Translucent},
 
 				/**
 				 * This property is used to set the accessible aria role of the Panel.
@@ -284,6 +284,8 @@ sap.ui.define([
 		if (this.getExpandable()) {
 			this.getHeaderToolbar() && oPanelContent && this._oExpandButton.$().attr("aria-controls", oPanelContent.id);
 
+			this._toggleButtonIcon(this.getExpanded());
+
 			if (!this.getExpanded()) {
 				// hide those parts which are collapsible (w/o animation, otherwise initial loading doesn't look good ...)
 				$this.children(".sapMPanelExpandablePart").css("display", "none");
@@ -387,7 +389,7 @@ sap.ui.define([
 
 	Panel.prototype._createExpandButton = function () {
 		var that = this,
-			sIconURI = this.getExpanded() ? IconPool.getIconURI("slim-arrow-down") : IconPool.getIconURI("slim-arrow-right"),
+			sIconURI = IconPool.getIconURI("slim-arrow-right"),
 			sTooltipBundleText = Library.getResourceBundleFor("sap.m").getText("PANEL_ICON"),
 			oButton;
 
@@ -418,16 +420,17 @@ sap.ui.define([
 	};
 
 	Panel.prototype._toggleButtonIcon = function (bIsExpanded) {
-		var sIconURI = bIsExpanded ? IconPool.getIconURI("slim-arrow-down") : IconPool.getIconURI("slim-arrow-right");
+		var oIconDomRef;
 
 		if (!this._oExpandButton) {
 			return;
 		}
 
 		if (this.getHeaderToolbar()) {
-			this._oExpandButton.setIcon(sIconURI);
+			this._oExpandButton.toggleStyleClass("sapMPanelExpandBtnRotated", bIsExpanded);
 		} else {
-			this._oExpandButton.setSrc(sIconURI);
+			oIconDomRef = this._oExpandButton.getDomRef();
+			oIconDomRef && oIconDomRef.classList.toggle("sapMPanelExpandIconRotated", bIsExpanded);
 		}
 	};
 

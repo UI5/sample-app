@@ -65,6 +65,14 @@ sap.ui.define([
 
 		oRM.renderControl(oInvisiblePopupText);
 
+		oRM.openStart("span", oControl.getId() + "-firstfe")
+			.class("sapMLightBoxFirstFE")
+			.class("sapUiSkipFocusFail")
+			.attr("role", "none")
+			.attr("tabindex", "0")
+			.openEnd()
+			.close("span");
+
 		if (oImageState === LightBoxLoadingStates.Loading) {
 			this.renderBusyState(oRM, oControl);
 		} else if (oImageState === LightBoxLoadingStates.TimeOutError || oImageState === LightBoxLoadingStates.Error) {
@@ -74,6 +82,14 @@ sap.ui.define([
 		}
 
 		this.renderFooter(oRM, oControl, oLightBoxItem);
+
+		oRM.openStart("span", oControl.getId() + "-lastfe")
+			.class("sapMLightBoxLastFE")
+			.class("sapUiSkipFocusFail")
+			.attr("role", "none")
+			.attr("tabindex", "0")
+			.openEnd()
+			.close("span");
 
 		oRM.close("div");
 

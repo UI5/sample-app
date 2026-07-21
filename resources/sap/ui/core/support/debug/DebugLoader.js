@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/base/Log","sap/ui/core/Lib","sap/ui/core/support/debug/UI5Debug"],function(e,t,n){"use strict";const i=n.scope();function a(t,n,s){if(typeof n==="string"){s=n;n=i}n=n||i;for(const i of Object.keys(t)){if(!Object.hasOwn(n,i)){n[i]=t[i]}else if(typeof t[i]==="object"){a(t[i],n[i],s)}else{e.warning(`Debugging tool with name ${i} already exists. Renaming the new one to ${s}:${i}`);n[`${s}:${i}`]=t[i]}}return i}function s(t){const i=t.extensions?.["sap.ui.debug"];if(i===true){const i=t.name;sap.ui.require([i.replaceAll(".","/")+"/support/debug/debug-tools"],async function(e){const t=await e;if(Array.isArray(t.__help)){n._libraryHelp.push({library:i,entries:t.__help});delete t.__help}globalThis.ui5=a(t,i)},function(){e.warning(`Library '${i}' declares 'sap.ui.debug' extension but no module was found at '${i.replaceAll(".","/")}/support/debug/debug-tools'.`)})}else if(i!==undefined){e.warning(`Invalid value for 'sap.ui.debug' extension in library '${t.name}'. Expected 'true', but got '${i}'.`)}}globalThis.ui5=a(n);const o=t.all();for(const e of Object.keys(o)){s(o[e])}t.attachLibraryChanged(e=>{if(e.getParameter("stereotype")==="library"){Promise.resolve().then(s.bind(null,e.getParameter("metadata")))}})});
+//# sourceMappingURL=DebugLoader.js.map

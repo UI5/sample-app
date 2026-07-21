@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.148.0",
+		version: "1.150.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -164,6 +164,7 @@ sap.ui.define([
 			"sap.m.P13nConditionOperation",
 			"sap.m.PageBackgroundDesign",
 			"sap.m.PanelAccessibleRole",
+			"sap.m.PanelBackgroundDesign",
 			"sap.m.PDFViewerDisplayType",
 			"sap.m.PlacementType",
 			"sap.m.CarouselPageIndicatorPlacementType",
@@ -411,6 +412,7 @@ sap.ui.define([
 			"sap.m.Toolbar",
 			"sap.m.ToolbarSpacer",
 			"sap.m.ToolbarSeparator",
+			"sap.m.Tooltip",
 			"sap.m.Tree",
 			"sap.m.TreeItemBase",
 			"sap.m.UploadCollection",
@@ -4054,6 +4056,40 @@ sap.ui.define([
 	};
 
 	/**
+	 * Available Panel Background Design.
+	 *
+	 * @enum {string}
+	 * @public
+	 */
+	thisLib.PanelBackgroundDesign = {
+
+		/**
+		 * A solid background color dependent on the theme.
+		 * @public
+		 */
+		Solid : "Solid",
+
+		/**
+		 * Transparent background.
+		 * @public
+		 */
+		Transparent : "Transparent",
+
+		/**
+		 * A translucent background depending on the opacity value of the theme.
+		 * @public
+		 */
+		Translucent : "Translucent",
+
+		/**
+		 * Contrasting background for a better visual grouping when a panel is placed inside a container
+		 * @public
+		 */
+		Contrast : "Contrast"
+
+	};
+
+	/**
 	 * PDF viewer display types.
 	 *
 	 * @enum {string}
@@ -7069,6 +7105,7 @@ sap.ui.define([
 	DataType.registerEnum("sap.m.P13nConditionOperation", thisLib.P13nConditionOperation);
 	DataType.registerEnum("sap.m.PageBackgroundDesign", thisLib.PageBackgroundDesign);
 	DataType.registerEnum("sap.m.PanelAccessibleRole", thisLib.PanelAccessibleRole);
+	DataType.registerEnum("sap.m.PanelBackgroundDesign", thisLib.PanelBackgroundDesign);
 	DataType.registerEnum("sap.m.PDFViewerDisplayType", thisLib.PDFViewerDisplayType);
 	DataType.registerEnum("sap.m.PlacementType", thisLib.PlacementType);
 	DataType.registerEnum("sap.m.PlanningCalendarBuiltInView", thisLib.PlanningCalendarBuiltInView);

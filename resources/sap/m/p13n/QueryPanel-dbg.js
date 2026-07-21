@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.BasePanel
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 *
@@ -194,7 +194,7 @@ sap.ui.define([
 		const oList = new List(this.getId() + "-innerP13nList", {
 			itemPress: [this._onItemPressed, this],
 			dragDropConfig: this._getDragDropConfig(),
-			rememberFocus: false,
+			formsMode: true,
 			keyboardMode: ListKeyboardMode.Edit
 		});
 		return oList;

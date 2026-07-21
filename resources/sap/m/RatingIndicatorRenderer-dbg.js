@@ -196,7 +196,7 @@ sap.ui.define(
 		};
 
 		RatingIndicatorRenderer.renderIcon = function(iconType, oRm, oControl, iValue) {
-			var sIconURI = this.getIconURI(iconType, oControl),
+			var sIconURI = this.getIconURI(iconType, oControl, iValue),
 				sTagName = this.getIconTag(sIconURI),
 				bIsIconURI = IconPool.isIconURI(sIconURI),
 				sSize = this._fIconSize + sIconSizeMeasure;
@@ -252,12 +252,18 @@ sap.ui.define(
 			}
 		};
 
-		RatingIndicatorRenderer.getIconURI = function(sState, oControl) {
+		RatingIndicatorRenderer.getIconURI = function(sState, oControl, iValue) {
+			var bIsHalfRatedIcon = isHalfRatedIcon(oControl, iValue);
+
 			if (
 				Theming
 					.getTheme() === "sap_hcb"
 			) {
 				if (sState === "UNSELECTED" && (oControl.getEnabled() && !oControl.getDisplayOnly())) {
+					return IconPool.getIconURI("unfavorite");
+				}
+
+				if (sState === "UNSELECTED" && bIsHalfRatedIcon) {
 					return IconPool.getIconURI("unfavorite");
 				}
 
@@ -270,13 +276,25 @@ sap.ui.define(
 				case "UNSELECTED":
 					if (oControl.getEditable() && !oControl.getDisplayOnly() && oControl.getEnabled()) {
 						return oControl.getIconUnselected() || IconPool.getIconURI("unfavorite");
+					} else if (bIsHalfRatedIcon) {
+						return oControl.getIconUnselected() || IconPool.getIconURI("unfavorite");
 					} else {
 						return oControl.getIconUnselected() || IconPool.getIconURI("favorite");
 					}
 				case "HOVERED":
 					return oControl.getIconHovered() || IconPool.getIconURI("favorite");
+				default:
+					return IconPool.getIconURI("favorite");
 			}
 		};
+
+		function isHalfRatedIcon(oControl, iValue) {
+			if (typeof iValue !== "number") {
+				return false;
+			}
+			var fValue = oControl._roundValueToVisualMode(oControl.getValue());
+			return (fValue * 2) % 2 === 1 && iValue === Math.floor(fValue);
+		}
 
 		RatingIndicatorRenderer.getIconTag = function(sIconURI) {
 			if (IconPool.isIconURI(sIconURI)) {

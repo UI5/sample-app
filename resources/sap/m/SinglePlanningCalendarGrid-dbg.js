@@ -118,7 +118,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @private
@@ -164,6 +164,9 @@ sap.ui.define([
 					 *
 					 * The drag and drop interaction is visualized by a placeholder highlighting the area where the
 					 * appointment can be dropped by the user.
+					 *
+					 * <b>Note:</b> Drag and drop is currently not supported for occurrences of
+					 * {@link sap.ui.unified.RecurringCalendarAppointment recurring appointments}.
 					 *
 					 * @since 1.64
 					 */
@@ -459,13 +462,18 @@ sap.ui.define([
 				this._oItemNavigation.destroy();
 				delete this._oItemNavigation;
 			}
+			if (this._aOccurrenceClones) {
+				this._aOccurrenceClones.forEach((oClone) => oClone.destroy());
+				delete this._aOccurrenceClones;
+			}
 		};
 
 		SinglePlanningCalendarGrid.prototype.onBeforeRendering = function () {
-			var oAppointmentsMap = this._createAppointmentsMap(this.getAppointments()),
-				oStartDate = this.getStartDate(),
+			var oStartDate = this.getStartDate(),
 				oCalStartDate = CalendarDate.fromLocalJSDate(oStartDate),
 				iColumns = this._getColumns();
+
+			var oAppointmentsMap = this._createAppointmentsMap(this.getAppointments(), oStartDate, iColumns);
 
 			this._oVisibleAppointments = this._calculateVisibleAppointments(oAppointmentsMap.appointments, this.getStartDate(), iColumns);
 			this._oAppointmentsToRender = this._calculateAppointmentsLevelsAndWidth(this._oVisibleAppointments);
@@ -1141,6 +1149,11 @@ sap.ui.define([
 				return this;
 			}
 
+			if (this._oLastSelectedAppointment) {
+				this._oLastSelectedAppointment.focus();
+				return this;
+			}
+
 			// Search amongst the visible blockers
 			for (i = 0; i < aVisibleBlockers.length; ++i) {
 				if (aVisibleBlockers[i].getId() === oFocusInfo.id) {
@@ -1222,8 +1235,10 @@ sap.ui.define([
 				oAppointment.setProperty("selected", !oAppointment.getSelected());
 				aChangedApps.push(oAppointment);
 				this._sSelectedAppointment = oAppointment.getSelected() && oAppointmentDomRef ? oAppointment : undefined;
+				this._oLastSelectedAppointment = oAppointmentDomRef ? oAppointment : undefined;
 			} else {
 				this._sSelectedAppointment = undefined;
+				this._oLastSelectedAppointment = undefined;
 			}
 
 			return aChangedApps;
@@ -1398,10 +1413,10 @@ sap.ui.define([
 				sAppointmentId = oTargetElement.getAttribute("data-sap-ui-related") || oTargetElement.id;
 			}
 
-			// finding the appointment
+			// finding the appointment — check aggregation first, then element registry for occurrence clones
 			return this.getAppointments().find(function (oAppointment) {
 				return oAppointment.sId === sAppointmentId;
-			});
+			}) || Element.getElementById(sAppointmentId);
 		};
 
 		/**
@@ -1794,6 +1809,10 @@ sap.ui.define([
 
 			$domRef.find(".sapMSinglePCRowHeader").removeClass("sapMSinglePCRowHeaderHidden");
 
+			if (!this._isNowMarkerInView(UI5Date.getInstance())) {
+				return;
+			}
+
 			if (this._shouldHideRowHeader(iCurrentHour)) {
 				$domRef.find(".sapMSinglePCRowHeader" + iCurrentHour).addClass("sapMSinglePCRowHeaderHidden");
 			} else if (this._shouldHideRowHeader(iNextHour)) {
@@ -1807,25 +1826,60 @@ sap.ui.define([
 		 * @returns {object} a map with separated regular appointments and all-day appointments (blockers)
 		 * @private
 		 */
-		SinglePlanningCalendarGrid.prototype._createAppointmentsMap = function (aAppointments) {
-			var that = this;
+		SinglePlanningCalendarGrid.prototype._createAppointmentsMap = function (aAppointments, oStartDate, iColumns) {
+			// Destroy previously created occurrence clones to prevent memory leaks
+			if (this._aOccurrenceClones) {
+				this._aOccurrenceClones.forEach((oClone) => oClone.destroy());
+			}
+			this._aOccurrenceClones = [];
 
-			return aAppointments.reduce(function (oMap, oAppointment) {
-				var oAppStartDate = oAppointment.getStartDate(),
-					oAppEndDate = oAppointment.getEndDate();
+			// Calculate the range end date based on columns
+			const oRangeStart = UI5Date.getInstance(oStartDate);
+			const oRangeEnd = UI5Date.getInstance(oStartDate);
+			oRangeEnd.setDate(oRangeEnd.getDate() + iColumns - 1);
+			oRangeEnd.setHours(23, 59, 59, 999);
+
+			return aAppointments.reduce((oMap, oAppointment) => {
+				const oAppStartDate = oAppointment.getStartDate();
+				const oAppEndDate = oAppointment.getEndDate();
 
 				if (!oAppStartDate || !oAppEndDate) {
 					return oMap;
 				}
 
-				if (that.isAllDayAppointment(oAppStartDate, oAppEndDate)) {
-					oMap.blockers.push(oAppointment);
-				} else {
-					oMap.appointments.push(oAppointment);
-				}
+				// Check if this is a recurring appointment
+				const bIsRecurring = oAppointment.getRecurrenceType && oAppointment.getRecurrenceType();
+				const aAppointmentList = bIsRecurring
+					? this._cloneRecurringAppointment(oAppointment, oRangeStart, oRangeEnd)
+					: [oAppointment];
+
+				aAppointmentList.forEach((oApp) => {
+					if (this.isAllDayAppointment(oApp.getStartDate(), oApp.getEndDate())) {
+						oMap.blockers.push(oApp);
+					} else {
+						oMap.appointments.push(oApp);
+					}
+				});
 
 				return oMap;
 			}, { appointments: [], blockers: []});
+		};
+
+		/**
+		 * Creates CalendarAppointment clones for each occurrence of a recurring appointment within a date range.
+		 *
+		 * @param {sap.ui.unified.CalendarAppointment} oAppointment the recurring appointment
+		 * @param {Date} oRangeStart the start of the visible range
+		 * @param {Date} oRangeEnd the end of the visible range
+		 * @returns {sap.ui.unified.CalendarAppointment[]} array of cloned appointments for each occurrence
+		 * @private
+		 */
+		SinglePlanningCalendarGrid.prototype._cloneRecurringAppointment = function (oAppointment, oRangeStart, oRangeEnd) {
+			const aClones = oAppointment.createOccurrenceClones(oRangeStart, oRangeEnd);
+			// Limitation: D&D is not supported for recurring appointment occurrences.
+			// The behavior needs further design before it can be enabled.
+			this._aOccurrenceClones = this._aOccurrenceClones.concat(aClones);
+			return aClones;
 		};
 
 		/**

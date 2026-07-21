@@ -168,8 +168,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.148.0
-	 * @version 1.148.0
+	 * @version 1.150.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -333,7 +333,7 @@ sap.ui.define([
 	};
 
 	DateRangeSelection.prototype._getDateFormatPlaceholderText = function (oFormatOptions) {
-		return  DateFormat.getDateInstance(oFormatOptions).getPlaceholderText();
+		return  DateFormat.getDateInstance(oFormatOptions).getPlaceholderText(this.getMinDate(), this.getMaxDate());
 	};
 
 	// Overwrite DatePicker's setValue to support two date range processing

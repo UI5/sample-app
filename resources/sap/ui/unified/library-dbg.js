@@ -32,14 +32,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.unified
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @since 1.28
 	 * @public
 	 */
 	var thisLib = Library.init({
 		name : "sap.ui.unified",
 		apiVersion: 2,
-		version: "1.148.0",
+		version: "1.150.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/ui/unified/designtime/library.designtime",
 		types: [
@@ -98,6 +98,11 @@ sap.ui.define([
 			"sap.ui.unified.MenuItemGroup",
 			"sap.ui.unified.MenuTextFieldItem",
 			"sap.ui.unified.NonWorkingPeriod",
+			"sap.ui.unified.RecurrenceRule",
+			"sap.ui.unified.MonthlyRecurrenceRule",
+			"sap.ui.unified.WeeklyRecurrenceRule",
+			"sap.ui.unified.YearlyRecurrenceRule",
+			"sap.ui.unified.RecurringCalendarAppointment",
 			"sap.ui.unified.RecurringNonWorkingPeriod",
 			"sap.ui.unified.ShellHeadItem",
 			"sap.ui.unified.ShellHeadUserItem",
@@ -391,6 +396,72 @@ sap.ui.define([
 	};
 
 	DataType.registerEnum("sap.ui.unified.RecurrenceType", thisLib.RecurrenceType);
+
+	/**
+	 * Types of recurrence rule pattern.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.149.0
+	 */
+	thisLib.RecurrenceRuleType = {
+		/**
+		 * Recurrence based on a specific day of the month (e.g., the 15th).
+		 *
+		 * @since 1.149.0
+		 */
+		DayOfMonth: "DayOfMonth",
+		/**
+		 * Recurrence based on a specific day of the week (e.g., second Tuesday).
+		 *
+		 * @since 1.149.0
+		 */
+		DayOfWeek: "DayOfWeek"
+	};
+
+	DataType.registerEnum("sap.ui.unified.RecurrenceRuleType", thisLib.RecurrenceRuleType);
+
+	/**
+	 * Week order within a month for recurrence rules.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.149.0
+	 */
+	thisLib.WeekOfMonth = {
+		/**
+		 * First occurrence in the month.
+		 *
+		 * @since 1.149.0
+		 */
+		First: "First",
+		/**
+		 * Second occurrence in the month.
+		 *
+		 * @since 1.149.0
+		 */
+		Second: "Second",
+		/**
+		 * Third occurrence in the month.
+		 *
+		 * @since 1.149.0
+		 */
+		Third: "Third",
+		/**
+		 * Fourth occurrence in the month.
+		 *
+		 * @since 1.149.0
+		 */
+		Fourth: "Fourth",
+		/**
+		 * Last occurrence in the month.
+		 *
+		 * @since 1.149.0
+		 */
+		Last: "Last"
+	};
+
+	DataType.registerEnum("sap.ui.unified.WeekOfMonth", thisLib.WeekOfMonth);
 
 	/**
 	 * Types of a calendar appointment display mode

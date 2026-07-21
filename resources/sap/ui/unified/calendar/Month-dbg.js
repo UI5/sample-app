@@ -78,7 +78,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -1798,6 +1798,7 @@ sap.ui.define([
 			// when again clicked on a same week number - then remove the selections
 			oAggOwner.removeAllSelectedDates();
 			oAggOwner.addSelectedDate(oDateRange);
+			_fireSelect.call(this);
 		}
 
 		return this;

@@ -37,7 +37,7 @@ sap.ui.define([
 	 * The <code>sap.m.PlanningCalendarRow</code> allows you to modify appointments at row level.
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -131,6 +131,9 @@ sap.ui.define([
 			 *
 			 * <b>Note:</b> In "One month" view, the appointments are not draggable on small screen (as there they are
 			 * displayed as a list below the dates). Group appointments are also not draggable.
+			 *
+			 * <b>Note:</b> Drag and drop is currently not supported for occurrences of
+			 * {@link sap.ui.unified.RecurringCalendarAppointment recurring appointments}.
 			 *
 			 * <b>Note:</b> Additional application-level code will be needed to provide a keyboard alternative to drag and drop mouse interactions.
 			 * One possible option is by handling {@link sap.m.PlanningCalendar#event:appointmentSelect appointmentSelect} event of the

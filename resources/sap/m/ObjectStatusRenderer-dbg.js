@@ -51,13 +51,14 @@ sap.ui.define(["sap/base/i18n/Localization", "sap/ui/core/Lib", 'sap/ui/core/lib
 				sTextDir = oObjStatus.getTextDirection(),
 				bPageRTL = Localization.getRTL(),
 				oAccAttributes = {},
-				sTooltip = oObjStatus.getTooltip_AsString();
+				sTooltip = oObjStatus.getTooltip_AsString(),
+				bIsIconOnly = oObjStatus.getIcon() && !oObjStatus.getText();
 
 			if (sTextDir === TextDirection.Inherit) {
 				sTextDir = bPageRTL ? TextDirection.RTL : TextDirection.LTR;
 			}
 
-			if (sTooltip) {
+			if (sTooltip && !bIsIconOnly) {
 				oRm.attr("title", sTooltip);
 			}
 

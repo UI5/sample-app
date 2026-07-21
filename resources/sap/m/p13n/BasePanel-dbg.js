@@ -84,7 +84,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 * @abstract
@@ -178,11 +178,19 @@ sap.ui.define([
 		renderer: {
 			apiVersion: 2,
 			render: function(oRm, oControl) {
+				const mAriaProps = {role: "tabpanel"};
+				const oInvText = oControl._oInvText;
+
+				if (oInvText) {
+					mAriaProps["labelledby"] = {value: oInvText.getId(), append: true};
+				}
+
 				oRm.openStart("div", oControl);
 				oRm.style("height", "100%");
 				if (oControl.getProperty("_useFixedWidth")) {
 					oRm.style("width", oControl.getWidth());
 				}
+				oRm.accessibilityState(oControl, mAriaProps);
 				oRm.openEnd();
 				oRm.renderControl(oControl.getAggregation("_content"));
 				oRm.close("div");
@@ -223,8 +231,8 @@ sap.ui.define([
 		// list is necessary to set the template + model on
 		this._oListControl = this._createInnerListControl();
 
-		this._oInvText = new InvisibleText({
-			text: this.getTitle() //use the Panel title als invisibleText title for the table
+		this._oInvText = new InvisibleText(this.getId() + "-viewDescription", {
+			text: this.getTitle()
 		});
 		this._oListControl.addAriaLabelledBy(this._oInvText);
 
@@ -256,10 +264,7 @@ sap.ui.define([
 	 */
 	BasePanel.prototype._setInnerLayout = function() {
 		this.setAggregation("_content", new VBox({
-			items: [
-				this._oListControl,
-				this._oInvText
-			]
+			items: [this._oListControl, this._oInvText]
 		}));
 	};
 
@@ -609,7 +614,7 @@ sap.ui.define([
 		return {
 			mode: ListMode.MultiSelect,
 			rememberSelections: true,
-			rememberFocus: false,
+			formsMode: true,
 			keyboardMode: ListKeyboardMode.Edit,
 			itemPress: [this._onItemPressed, this],
 			selectionChange: [this._onSelectionChange, this],

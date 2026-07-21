@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @implements sap.m.ITableItem
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -135,6 +135,8 @@ sap.ui.define([
 		if (this.bOutput !== false && document.activeElement.id === this.getId()) {
 			this.getTable()?._setFirstLastVisibleCells(document.activeElement);
 		}
+
+		this.informList("AfterRendering");
 	};
 
 	ColumnListItem.prototype.exit = function() {

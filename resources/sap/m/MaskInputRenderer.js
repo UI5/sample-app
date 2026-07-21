@@ -3,5 +3,5 @@
  * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/ui/core/Lib","sap/ui/core/Renderer","./InputBaseRenderer"],function(e,t,n){"use strict";var r=t.extend(n);r.apiVersion=2;r.getAccessibilityState=function(t){var r=e.getResourceBundleFor("sap.m"),i=r.getText("MASKINPUT_ROLE_DESCRIPTION"),a=n.getAccessibilityState.apply(this,arguments);a["roledescription"]=i;return a};r.getLabelledByAnnouncement=function(e){var t=e.getMask();if(t&&t.length){return e.getPlaceholder()||""}return n.getLabelledByAnnouncement.apply(this,arguments)};return r},true);
+sap.ui.define(["sap/ui/core/Lib","sap/ui/core/Renderer","./InputBaseRenderer"],function(e,t,i){"use strict";var r=t.extend(i);r.apiVersion=2;r.getAccessibilityState=function(t){var r=e.getResourceBundleFor("sap.m"),s=r.getText("MASKINPUT_ROLE_DESCRIPTION"),n=i.getAccessibilityState.apply(this,arguments);n["roledescription"]=s;if(t.getValueStateLinksForAcc().length){const e=t.getValueStateLinksShortcutsId();const i=n["describedby"]&&n["describedby"].value;n["describedby"]={value:i?i+" "+e:e,append:true}}return n};return r},true);
 //# sourceMappingURL=MaskInputRenderer.js.map

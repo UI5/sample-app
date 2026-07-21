@@ -162,7 +162,7 @@ function(
 	 * @extends sap.m.InputBase
 	 * @implements sap.ui.core.IAccessKeySupport
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -1818,6 +1818,11 @@ function(
 			return;
 		}
 
+		// Reset value help request flag if the user types text in the input field
+		// The flag reset ensures a change event will be triggered properly and the underlying model will be updated with the latest value.
+		if (this.bValueHelpRequested) {
+			this.bValueHelpRequested = false;
+		}
 		var sValue = this.getDOMValue(),
 			oSuggestionsPopover,
 			oList,
@@ -2018,6 +2023,13 @@ function(
 				sAriaText = oRb.getText("INPUT_SUGGESTIONS_NO_HIT");
 			}
 
+
+			// append popover state to the announcement only when the popover is actually open;
+			// when there are no results the popover never opens, so a "Collapsed" suffix would be misleading
+			if (this._isSuggestionsPopoverOpen()) {
+				sAriaText = sAriaText + " " + oRb.getText("SUGGESTIONS_POPOVER_EXPANDED");
+			}
+
 			// update Accessibility text for suggestion
 			this._oInvisibleMessage?.announce(sAriaText, CoreLibrary.InvisibleMessageMode.Polite);
 		}.bind(this), iTimeoutDuration);
@@ -2166,7 +2178,6 @@ function(
 	 * @private
 	 */
 	Input.prototype._closeSuggestionPopup = function () {
-
 		this._bShouldRefreshListItems = false;
 		this.cancelPendingSuggest();
 		this._isSuggestionsPopoverOpen() && this._getSuggestionsPopover().getPopover().close();
@@ -2908,7 +2919,7 @@ function(
 					return;
 				}
 
-				aListItemsDomRef = oList.$().find('.sapMSLIInfo [id$=-infoText], .sapMSLITitleOnly [id$=-titleText]');
+				aListItemsDomRef = oList.$().find(".sapMSLIInfo .sapMObjStatusText, .sapMSLITitleOnly [id$=-titleText]");
 				sInputValue = this._bDoTypeAhead ? this._getTypedInValue() : this.getValue();
 				sInputValue = (sInputValue || "").toLowerCase();
 
@@ -3108,6 +3119,10 @@ function(
 
 		oPopover.attachBeforeClose(function () {
 			this._updateSuggestionsPopoverValueState();
+		}, this);
+
+		oPopover.attachAfterClose(function () {
+			this._oInvisibleMessage?.announce(this._oRb.getText("SUGGESTIONS_POPOVER_COLLAPSED"), CoreLibrary.InvisibleMessageMode.Polite);
 		}, this);
 
 		oPopover.attachAfterOpen(function () {

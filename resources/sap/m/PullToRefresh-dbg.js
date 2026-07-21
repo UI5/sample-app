@@ -37,7 +37,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -246,7 +246,6 @@ sap.ui.define([
 				$this.toggleClass("sapMFlip", false).toggleClass("sapMLoading", true);
 				this._oBusyIndicator.setVisible(true);
 				$text.html(oResourceBundle.getText("PULL2REFRESH_LOADING"));
-				$this.attr("aria-live", "assertive");
 				$this.find(".sapMPullDownInfo").html(this._bTouchMode ? oResourceBundle.getText("PULL2REFRESH_LOADING_LONG") : "");
 				break;
 		}

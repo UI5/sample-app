@@ -850,8 +850,7 @@ sap.ui.define([
 				}
 				// Note: sResolvedChildPath could be "/SalesOrderList('42')/SO_2_SOITEM/0/Note"
 				// w/ index (thus getMetaPath helps), but getStrippedMetaPath makes no difference
-				if (!sChildPath.includes("/")
-					|| _Helper.getMetaPath(sOldReducedPath)
+				if (_Helper.getMetaPath(sOldReducedPath)
 						=== _Helper.getMetaPath(sResolvedChildPath)) {
 					return sResolvedChildPath;
 				}
@@ -1329,7 +1328,7 @@ sap.ui.define([
 			this.oModel.getDependentBindings(oContext).forEach(function (oBinding) {
 				oBinding.resetChanges();
 			});
-			this.setOutdated?.(true);
+			this.setOutdated?.("both");
 			this.delete(null, sCanonicalPath.slice(1), oContext);
 		}
 	};
@@ -1382,6 +1381,9 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.Context} [oContext]
 	 *   The context for which to request side effects; if this parameter is missing or if it is the
 	 *   header context of a list binding, the whole binding is affected
+	 * @param {boolean} [bSkipKeptElements]
+	 *   If <code>true</code>, kept elements are not refreshed (in case of an empty path affecting
+	 *   the whole binding)
 	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result, or rejected with an error if loading
 	 *   of side effects fails

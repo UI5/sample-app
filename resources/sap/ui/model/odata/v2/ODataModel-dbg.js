@@ -218,7 +218,7 @@ sap.ui.define([
 	 * This model is not prepared to be inherited from.
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.v2.ODataModel
@@ -2269,6 +2269,8 @@ sap.ui.define([
 	 *
 	 * @returns {sap.ui.model.odata.v2.ODataTreeBinding}
 	 *   The new tree binding
+	 * @deprecated As of version 1.150.0, will be replaced by OData V4 hierarchy functionality, see
+	 *   {@link topic:7d914317c0b64c23824bf932cc8a4ae1/section_RCH Recursive Hierarchy}
 	 * @public
 	 * @see {@link http://www.sap.com/protocols/SAPData "SAP Annotations for OData Version 2.0" Specification}
 	 */
@@ -5946,9 +5948,13 @@ sap.ui.define([
 	 *   <code>mParameters.context</code>; if the path contains a query string, the query string is
 	 *   ignored, use <code>mParameters.urlParameters</code> instead
 	 * @param {Object<string, any>} [mParameters] Optional parameter map containing any of the following properties:
+	 * @param {boolean} [mParameters.canonicalRequest=false] Whether to calculate a canonical URL to request the data.
+	 *   See {@link sap.ui.model.odata.v2.ODataModel#constructor mParameters.canonicalRequests}
+	 *   for details.
 	 * @param {sap.ui.model.Context} [mParameters.context] If specified, <code>sPath</code> has to be relative to the path
 	 *   given with the context.
 	 * @param {Object<string,string>} [mParameters.urlParameters] A map containing the parameters that will be passed as query strings
+	 * @param {Object<string,string>} [mParameters.headers] A map of headers for this request
 	 * @param {sap.ui.model.Filter[]} [mParameters.filters] An array of filters to be included in the request URL
 	 * @param {sap.ui.model.Sorter[]} [mParameters.sorters] An array of sorters to be included in the request URL
 	 * @param {function} [mParameters.success] A callback function which is called when the data has

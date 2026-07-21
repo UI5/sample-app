@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.148.0"
+      "version": "1.150.0"
     },
     "title": "Unified controls intended for both, mobile and desktop scenarios",
     "description": "Unified controls intended for both, mobile and desktop scenarios",
@@ -22,10 +22,10 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.148",
+      "minUI5Version": "1.150",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.148.0"
+          "minVersion": "1.150.0"
         }
       }
     },
@@ -127,6 +127,11 @@
           "sap.ui.unified.MenuItemGroup",
           "sap.ui.unified.MenuTextFieldItem",
           "sap.ui.unified.NonWorkingPeriod",
+          "sap.ui.unified.RecurrenceRule",
+          "sap.ui.unified.MonthlyRecurrenceRule",
+          "sap.ui.unified.WeeklyRecurrenceRule",
+          "sap.ui.unified.YearlyRecurrenceRule",
+          "sap.ui.unified.RecurringCalendarAppointment",
           "sap.ui.unified.RecurringNonWorkingPeriod",
           "sap.ui.unified.ShellHeadItem",
           "sap.ui.unified.ShellHeadUserItem",

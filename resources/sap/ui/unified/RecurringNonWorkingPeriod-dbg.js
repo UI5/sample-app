@@ -6,10 +6,20 @@
 
 // Provides control sap.ui.unified.RecurringNonWorkingPeriod.
 sap.ui.define([
-	"./NonWorkingPeriod"
+	"./NonWorkingPeriod",
+	"./calendar/RecurrenceUtils",
+	"./library",
+	"./WeeklyRecurrenceRule",
+	"./MonthlyRecurrenceRule",
+	"./YearlyRecurrenceRule"
 ],
 	function(
-		NonWorkingPeriod
+		NonWorkingPeriod,
+		RecurrenceUtils,
+		library,
+		WeeklyRecurrenceRule,
+		MonthlyRecurrenceRule,
+		YearlyRecurrenceRule
 	) {
 	"use strict";
 
@@ -24,14 +34,14 @@ sap.ui.define([
 	 *
 	 * Applications can inherit from this element to add own fields.
 	 * @extends sap.ui.unified.NonWorkingPeriod
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
 	 * @ui5-experimental-since 1.127.0
 	 * @alias sap.ui.unified.RecurringNonWorkingPeriod
 	 */
-	var RecurringNonWorkingPeriod = NonWorkingPeriod.extend("sap.ui.unified.RecurringNonWorkingPeriod", /** @lends sap.ui.unified.RecurringNonWorkingPeriod.prototype */ { metadata : {
+	const RecurringNonWorkingPeriod = NonWorkingPeriod.extend("sap.ui.unified.RecurringNonWorkingPeriod", /** @lends sap.ui.unified.RecurringNonWorkingPeriod.prototype */ { metadata : {
 
 		library : "sap.ui.unified",
 		properties : {
@@ -51,8 +61,47 @@ sap.ui.define([
 			 * If the recurrencePattern is set to 3, this would imply the calendar item is recurring once for every three days.
 			 */
 			recurrencePattern: {type : "int", group : "Behavior", defaultValue : 1}
+		},
+		aggregations: {
+			/**
+			 * Advanced recurrence rule configuration.
+			 * @see sap.ui.unified.RecurrenceRule
+			 */
+			recurrenceRule: {type: "sap.ui.unified.RecurrenceRule", multiple: false}
 		}
 	}});
+
+	RecurringNonWorkingPeriod.prototype.setRecurrenceRule = function(oRule) {
+		RecurrenceUtils.invalidateCache.call(this);
+		if (oRule && oRule.getMetadata().getName() === "sap.ui.unified.RecurrenceRule") {
+			const RecurrenceType = library.RecurrenceType;
+			switch (oRule.getRecurrenceType()) {
+				case RecurrenceType.Weekly:
+					oRule = new WeeklyRecurrenceRule({days: oRule.getDays()});
+					break;
+				case RecurrenceType.Monthly:
+					oRule = new MonthlyRecurrenceRule({
+						type: oRule.getType(), dayOfMonth: oRule.getDayOfMonth(),
+						weekOfMonth: oRule.getWeekOfMonth(), dayOfWeek: oRule.getDayOfWeek()
+					});
+					break;
+				case RecurrenceType.Yearly: {
+					const mSettings = {
+						type: oRule.getType(), dayOfMonth: oRule.getDayOfMonth(),
+						weekOfMonth: oRule.getWeekOfMonth(), dayOfWeek: oRule.getDayOfWeek()
+					};
+					if (oRule.getMonth() >= 0) {
+						mSettings.month = oRule.getMonth();
+					}
+					oRule = new YearlyRecurrenceRule(mSettings);
+					break;
+				}
+				default:
+					break;
+			}
+		}
+		return this.setAggregation("recurrenceRule", oRule);
+	};
 
 	/**
 	 * Determines whether the current instance has recurrence or not.
@@ -60,7 +109,78 @@ sap.ui.define([
 	 * @private
 	 */
 	RecurringNonWorkingPeriod.prototype.isRecurring = function () {
-		return true;
+		return !!this.getRecurrenceType();
+	};
+
+	/**
+	 * Returns the recurrence start date. Falls back to the calendar date (midnight) when
+	 * no timeRange is set, which is the normal case for RecurringNonWorkingPeriod.
+	 * RecurrenceUtils.hasOccurrenceOnDate normalises to midnight itself, so this is safe.
+	 * @returns {Date|module:sap/ui/core/date/UI5Date} The start date
+	 * @private
+	 */
+	RecurringNonWorkingPeriod.prototype.getStartDate = function() {
+		if (this.getTimeRange()) {
+			return NonWorkingPeriod.prototype.getStartDate.call(this);
+		}
+		return this.getDate();
+	};
+
+	/**
+	 * Checks if a given date (without time) is a non-working day.
+	 * @param {Date|module:sap/ui/core/date/UI5Date} oDate - Date to check
+	 * @returns {boolean} True if the date is non-working
+	 * @public
+	 */
+	RecurringNonWorkingPeriod.prototype.hasNonWorkingAtDate = function(oDate) {
+		// Delegate to RecurrenceUtils
+		const hasOccurrenceOnDate = RecurrenceUtils.hasOccurrenceOnDate.bind(this);
+		return hasOccurrenceOnDate(oDate);
+	};
+
+	RecurringNonWorkingPeriod.prototype.setRecurrenceType = function(sValue) {
+		RecurrenceUtils.invalidateCache.call(this);
+		return this.setProperty("recurrenceType", sValue);
+	};
+
+	RecurringNonWorkingPeriod.prototype.setRecurrencePattern = function(iValue) {
+		if (iValue < 1) {
+			throw new Error("recurrencePattern must be >= 1");
+		}
+		RecurrenceUtils.invalidateCache.call(this);
+		return this.setProperty("recurrencePattern", iValue);
+	};
+
+	RecurringNonWorkingPeriod.prototype.setRecurrenceEndDate = function(oDate) {
+		RecurrenceUtils.invalidateCache.call(this);
+		return this.setProperty("recurrenceEndDate", oDate);
+	};
+
+	RecurringNonWorkingPeriod.prototype.hasOccurrenceOnDateCached = function(oDate) {
+		return RecurrenceUtils.hasOccurrenceOnDateCached.call(this, oDate);
+	};
+
+	/**
+	 * Gets cached non-working periods for a date range.
+	 * Returns cached result if available, or null if not cached.
+	 * @param {Date|module:sap/ui/core/date/UI5Date} oStartDate - Start date of range
+	 * @param {Date|module:sap/ui/core/date/UI5Date} oEndDate - End date of range
+	 * @returns {sap.ui.unified.NonWorkingPeriod[]|null} Cached non-working periods or null
+	 * @public
+	 */
+	RecurringNonWorkingPeriod.prototype.getCachedOccurrences = function(oStartDate, oEndDate) {
+		return RecurrenceUtils.getCachedOccurrences.call(this, oStartDate, oEndDate);
+	};
+
+	/**
+	 * Sets cached non-working periods for a date range.
+	 * @param {Date|module:sap/ui/core/date/UI5Date} oStartDate - Start date of range
+	 * @param {Date|module:sap/ui/core/date/UI5Date} oEndDate - End date of range
+	 * @param {sap.ui.unified.NonWorkingPeriod[]} aPeriods - Array of non-working periods to cache
+	 * @public
+	 */
+	RecurringNonWorkingPeriod.prototype.setCachedOccurrences = function(oStartDate, oEndDate, aPeriods) {
+		RecurrenceUtils.setCachedOccurrences.call(this, oStartDate, oEndDate, aPeriods);
 	};
 
 	return RecurringNonWorkingPeriod;

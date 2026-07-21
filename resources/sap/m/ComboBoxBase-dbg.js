@@ -14,6 +14,8 @@ sap.ui.define([
 	"sap/ui/core/Lib",
 	'sap/ui/core/SeparatorItem',
 	'sap/ui/core/InvisibleText',
+	'sap/ui/core/InvisibleMessage',
+	'sap/ui/core/library',
 	'sap/ui/base/ManagedObject',
 	'sap/base/Log',
 	'./library',
@@ -37,6 +39,8 @@ sap.ui.define([
 		Library,
 		SeparatorItem,
 		InvisibleText,
+		InvisibleMessage,
+		CoreLibrary,
 		ManagedObject,
 		Log,
 		library,
@@ -70,7 +74,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -116,7 +120,23 @@ sap.ui.define([
 					 * Specifies whether the clear icon should be shown/hidden on user interaction.
 					 * @private
 					 */
-					effectiveShowClearIcon: { type: "boolean", defaultValue: false, visibility: "hidden" }
+					effectiveShowClearIcon: { type: "boolean", defaultValue: false, visibility: "hidden" },
+
+					/**
+					 * Defines the maximum height of the picker popup.
+					 * When the available items exceed this height, vertical scrolling is enabled.
+					 * This property only applies to the picker popup on desktop and tablet devices.
+					 *
+					 * <b>Note:</b> On phones, the suggestions are displayed in a fullscreen dialog,
+					 * so this property has no effect.
+					 *
+					 * @since 1.150
+					 */
+					maxPickerHeight: {
+						type: "sap.ui.core.CSSSize",
+						group: "Dimension",
+						defaultValue: null
+					}
 				},
 				aggregations: {
 
@@ -270,7 +290,7 @@ sap.ui.define([
 		ComboBoxBase.prototype.highlightList = function (sValue) {
 			var aListItemsDOM = [];
 
-			aListItemsDOM = this._getList().$().find('.sapMSLIInfo [id$=-infoText], .sapMSLITitleOnly [id$=-titleText]');
+			aListItemsDOM = this._getList().$().find(".sapMSLIInfo .sapMObjStatusText, .sapMSLITitleOnly [id$=-titleText]");
 
 			if (this.useHighlightItemsWithContains()) {
 				highlightItemsWithContains(aListItemsDOM, sValue);
@@ -1197,6 +1217,8 @@ sap.ui.define([
 			if (!this._getItemsShownWithFilter()) {
 				this.toggleIconPressedStyle(true);
 			}
+
+			this._setAriaExpanded(true);
 		};
 
 		/**
@@ -1208,6 +1230,7 @@ sap.ui.define([
 			this.bOpenedByKeyboardOrButton = false;
 			this._setItemsShownWithFilter(false);
 			this._updateSuggestionsPopoverValueState();
+			this._setAriaExpanded(false);
 		};
 
 		/**
@@ -1540,6 +1563,32 @@ sap.ui.define([
 		ComboBoxBase.prototype.isOpen = function() {
 			var oPicker = this.getPicker();
 			return !!(oPicker && oPicker.isOpen());
+		};
+
+		/**
+		 * Reflects the picker open state on the focusable input element via
+		 * <code>aria-expanded</code>.
+		 *
+		 * @param {boolean} bExpanded Whether the picker is open.
+		 * @private
+		 */
+		ComboBoxBase.prototype._setAriaExpanded = function(bExpanded) {
+			var oFocusDomRef = this.getFocusDomRef();
+			if (oFocusDomRef) {
+				oFocusDomRef.setAttribute("aria-expanded", bExpanded ? "true" : "false");
+			}
+		};
+
+		/**
+		 * Announces the picker's expanded state via the polite live region.
+		 *
+		 * @private
+		 */
+		ComboBoxBase.prototype._announceExpanded = function() {
+			if (!this._oInvisibleMessage) {
+				this._oInvisibleMessage = InvisibleMessage.getInstance();
+			}
+			this._oInvisibleMessage.announce(this._oRb.getText("SUGGESTIONS_POPOVER_EXPANDED"), CoreLibrary.InvisibleMessageMode.Polite);
 		};
 
 		/**

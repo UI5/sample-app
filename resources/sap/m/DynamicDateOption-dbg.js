@@ -44,7 +44,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @public
 		 * @since 1.92
@@ -94,6 +94,20 @@ sap.ui.define([
 		 */
 		DynamicDateOption.prototype.getValueHelpUITypes = function(oControl) {
 			throw new Error("Need implementation for method getValueHelpUITypes. Option: " + this.getKey());
+		};
+
+		/**
+		 * Returns the format type used for the ValueHelp dialog footer "Selected" date label.
+		 *
+		 * Override this in custom options when the default date-only label is not sufficient.
+		 * Return <code>datetime</code> to include the time portion.
+		 *
+		 * @param {sap.m.DynamicDateRange} oControl The control instance
+		 * @returns {string|null} <code>datetime</code> for date-and-time formatting, or <code>null</code> for date-only formatting (default).
+		 * @public
+		 */
+		DynamicDateOption.prototype.getValueHelpUIFooterFormatTypes = function() {
+			return null;
 		};
 
 		/**
@@ -521,7 +535,9 @@ sap.ui.define([
 		};
 
 		DynamicDateOption.prototype._createCustomMonthControl = function(oValue, iIndex, fnControlsUpdated) {
-			var oControl = new CustomMonthPicker(),
+			var oControl = new CustomMonthPicker({
+					width: "100%"
+				}),
 				oDate = UI5Date.getInstance(),
 				iMonth = (oValue && iIndex >= 0 && this.getKey() === oValue.operator) ? oValue.values[iIndex] : oDate.getMonth(),
 				iYear = (oValue  && iIndex >= 0 && this.getKey() === oValue.operator) ? oValue.values[iIndex + 1] : oDate.getFullYear();

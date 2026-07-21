@@ -55,6 +55,9 @@ sap.ui.define([
 	// shortcut for sap.m.PageBackgroundDesign
 	var PageBackgroundDesign = mLibrary.PageBackgroundDesign;
 
+	// shortcut for sap.m.BackgroundDesign
+	var BackgroundDesign = mLibrary.BackgroundDesign;
+
 	// shortcut for sap.f.DynamicPageMediaRange
 	var DynamicPageMediaRange = library.DynamicPageMediaRange;
 
@@ -121,7 +124,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -962,15 +965,18 @@ sap.ui.define([
 	 * @private
 	 */
 	DynamicPage.prototype._moveHeaderToContentArea = function (bOffsetContent) {
-		var oDynamicPageHeader = this.getHeader();
+		var oDynamicPageHeader = this.getHeader(),
+			oLastFocusedElement;
 
 		if (exists(oDynamicPageHeader)) {
+			oLastFocusedElement = document.activeElement;
 			oDynamicPageHeader.$().prependTo(this.$headerInContentWrapper);
 			this._bHeaderInTitleArea = false;
 			if (bOffsetContent) {
 				this._offsetContentOnMoveHeader();
 			}
 			this.fireEvent("_moveHeader");
+			this._restoreFocusIfNeeded(oLastFocusedElement, oDynamicPageHeader.$()[0]);
 		}
 	};
 
@@ -980,15 +986,32 @@ sap.ui.define([
 	 * @private
 	 */
 	DynamicPage.prototype._moveHeaderToTitleArea = function (bOffsetContent) {
-		var oDynamicPageHeader = this.getHeader();
+		var oDynamicPageHeader = this.getHeader(),
+			oLastFocusedElement;
 
 		if (exists(oDynamicPageHeader)) {
+			oLastFocusedElement = document.activeElement;
+
 			oDynamicPageHeader.$().prependTo(this.$stickyPlaceholder);
 			this._bHeaderInTitleArea = true;
 			if (bOffsetContent) {
 				this._offsetContentOnMoveHeader();
 			}
 			this.fireEvent("_moveHeader");
+			this._restoreFocusIfNeeded(oLastFocusedElement, oDynamicPageHeader.$()[0]);
+		}
+	};
+
+	/**
+	 * Restores focus to the previously focused element if it was inside the given container.
+	 * @param {Element} oFocusedElement - the element that had focus before a DOM move
+	 * @param {Element} oContainer - the DOM node that was moved
+	 * @private
+	 * @since 1.150
+	 */
+	DynamicPage.prototype._restoreFocusIfNeeded = function (oFocusedElement, oContainer) {
+		if (oFocusedElement && oContainer && oContainer.contains(oFocusedElement)) {
+			oFocusedElement.focus();
 		}
 	};
 
@@ -1414,10 +1437,21 @@ sap.ui.define([
 
 		var bScrollBarNeeded = this._needsVerticalScrollBar(),
 			oWrapperElement = this.$wrapper.get(0),
-			iTitleHeight = this.$titleArea.get(0).getBoundingClientRect().height,
-			iTitleWidth = this._getTitleAreaWidth(),
-			iSpaceForScrollbar = this._getEffectiveScrollbarWidth(bScrollBarNeeded),
+			oTitle = this.getTitle(),
+			bTitleTransparent = oTitle && oTitle.getBackgroundDesign() === BackgroundDesign.Transparent,
+			iTitleHeight,
+			iTitleWidth,
+			iSpaceForScrollbar,
 			sClipPath;
+
+		this.toggleStyleClass("sapFDynamicPageWithScroll", bScrollBarNeeded);
+		// Apply the scrollbar space offset first so that the title area width is final
+		// before we measure its height (the width affects height when content wraps).
+		this._toggleSpaceForScrollbar(bScrollBarNeeded);
+
+		iTitleHeight = this.$titleArea.get(0).getBoundingClientRect().height;
+		iTitleWidth = this._getTitleAreaWidth();
+		iSpaceForScrollbar = this._getEffectiveScrollbarWidth(bScrollBarNeeded);
 
 		// the top area of the scroll container is reserved for showing the title element,
 		// (where the title element is positioned absolutely on top of the scroll container),
@@ -1432,19 +1466,22 @@ sap.ui.define([
 		// (2) also make the area underneath the title invisible (using clip-path)
 		// to allow usage of *transparent background* of the title element
 		// (otherwise content from the scroll *overflow* will show underneath the transparent title element)
-		sClipPath = 'polygon(0px ' + Math.floor(iTitleHeight) + 'px, '
-			+ iTitleWidth + 'px ' + Math.floor(iTitleHeight) + 'px, '
-			+ iTitleWidth + 'px 0, 100% 0, 100% 100%, 0 100%)';
+		if (bTitleTransparent) {
+			sClipPath = 'polygon(0px ' + Math.floor(iTitleHeight) + 'px, '
+				+ iTitleWidth + 'px ' + Math.floor(iTitleHeight) + 'px, '
+				+ iTitleWidth + 'px 0, 100% 0, 100% 100%, 0 100%)';
 
-		if (Localization.getRTL()) {
-			sClipPath = 'polygon(0px 0px, ' + iSpaceForScrollbar + 'px 0px, '
-			+ iSpaceForScrollbar + 'px ' + iTitleHeight + 'px, 100% '
-			+ iTitleHeight + 'px, 100% 100%, 0 100%)';
+			if (Localization.getRTL()) {
+				sClipPath = 'polygon(0px 0px, ' + iSpaceForScrollbar + 'px 0px, '
+				+ iSpaceForScrollbar + 'px ' + iTitleHeight + 'px, 100% '
+				+ iTitleHeight + 'px, 100% 100%, 0 100%)';
+			}
+			oWrapperElement.style.clipPath = sClipPath;
+			this._bClipPathApplied = true;
+		} else if (this._bClipPathApplied) {
+			oWrapperElement.style.clipPath = '';
+			this._bClipPathApplied = false;
 		}
-		oWrapperElement.style.clipPath = sClipPath;
-
-		this.toggleStyleClass("sapFDynamicPageWithScroll", bScrollBarNeeded);
-		this._toggleSpaceForScrollbar(bScrollBarNeeded);
 
 		 // update styles for scrolling after a timeout of 0, in order to obtain the final state
 		 // e.g. after the ResizeHandler looped though *all* resized controls (to notify them) =>
@@ -2140,7 +2177,7 @@ sap.ui.define([
 			oStickySubheaderProvider._returnStickyContent();
 		}
 
-		oLastFocusedElement.focus();
+		this._restoreFocusIfNeeded(oLastFocusedElement, this._oStickySubheader.$()[0]);
 		this._bStickySubheaderInTitleArea = bShouldStick;
 	};
 

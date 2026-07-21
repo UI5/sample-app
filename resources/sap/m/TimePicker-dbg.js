@@ -186,7 +186,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.148.0
+		 * @version 1.150.0
 		 *
 		 * @constructor
 		 * @public
@@ -611,7 +611,7 @@ function(
 			if (!this._isMobileDevice()) {
 				DateTimeField.prototype.onfocusin.apply(this, arguments);
 				MaskEnabler.onfocusin.apply(this, arguments);
-				if (this.getMaskMode() !== TimePickerMaskMode.Off && !this.getValue()) {
+				if (this._isMaskEnabled() && !this.getValue()) {
 					var sPlaceholder = this._getPlaceholder();
 					this._$input.attr("aria-description", sPlaceholder);
 				}

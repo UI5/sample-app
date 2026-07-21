@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.m.p13n.SelectionController
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @public
 	 * @alias sap.m.table.ColumnWidthController
@@ -150,7 +150,8 @@ sap.ui.define([
 		aChanges.forEach(function(oChange){
 			var oChangeContent = merge({}, oChange.changeSpecificData.content);
 			var oXSettings = {
-				name: oChangeContent.name,
+				key: oChangeContent.name || oChangeContent.key,
+				name: oChangeContent.name || oChangeContent.key,
 				controlMeta: {
 					aggregation: "columns"
 				},

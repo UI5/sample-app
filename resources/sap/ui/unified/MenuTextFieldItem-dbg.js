@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @implements sap.ui.unified.IMenuItem
 	 *
 	 * @author SAP SE
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -360,7 +360,7 @@ sap.ui.define([
 			sCountInfo = oUnifiedBundle.getText("UNIFIED_MENU_ITEM_COUNT_TEXT", [oInfo.iItemNo, oInfo.iTotalItems]);
 			sTypeInfo = oUnifiedBundle.getText("UNIFIED_MENU_ITEM_HINT_TEXT");
 			this._invisibleDescription = new InvisibleText({
-				text: sCountInfo + " " + sTypeInfo
+				text: `${sTypeInfo} ${sCountInfo}`
 			}).toStatic();
 		}
 

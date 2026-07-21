@@ -80,7 +80,7 @@ sap.ui.define([
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.148.0
+	 * @version 1.150.0
 	 *
 	 * @constructor
 	 * @public
@@ -2534,13 +2534,15 @@ sap.ui.define([
 	 * @private
 	 */
 	Calendar.prototype._updateHeadersButtons = function () {
-		var oSecondMonthHeader = this.getAggregation("secondMonthHeader");
+		var oSecondMonthHeader = this.getAggregation("secondMonthHeader"),
+			oHeader = this.getAggregation("header");
 
 		if (this._isTwoMonthsInOneColumn()) {
 			// Two months displayed in one column
 			// Than we need the second header
 			// and hide the third and fourth buttons of the first header
 			oSecondMonthHeader.setVisible(true);
+			oHeader.setProperty("_alignRight", "Center");
 
 			if (this._iMode === 2) {
 				this._updateHeadersButtonsHelper(false, true, false, false);
@@ -2554,6 +2556,8 @@ sap.ui.define([
 			// Than we need to hide the second header
 			// and show third and fourth buttons of the first
 			oSecondMonthHeader.setVisible(false);
+			oHeader.setProperty("_alignRight", "End");
+
 			if (this._iMode === 2) {
 				this._bActionTriggeredFromSecondHeader ?
 					this._updateHeadersButtonsHelper(true, true, false, true) :
@@ -2572,6 +2576,7 @@ sap.ui.define([
 			// No second header
 			// No third and fourth button
 			oSecondMonthHeader.setVisible(false);
+			oHeader.setProperty("_alignRight", "Center");
 			if (this._iMode === 1) {
 				this._updateHeadersButtonsHelper(false, true, false, false);
 			} else if (this._iMode === 2) {
@@ -2629,7 +2634,7 @@ sap.ui.define([
 
 	/**
 	 *
-	 * @returns {boolean} if there are two months in one column
+	 * @returns {boolean} if there are two (or more) months in one column
 	 * @private
 	 */
 	Calendar.prototype._isTwoMonthsInOneColumn = function () {
@@ -2640,7 +2645,7 @@ sap.ui.define([
 
 	/**
 	 *
-	 * @returns {boolean} if there are two months in two columns
+	 * @returns {boolean} if there are two (or more) months in two columns
 	 * @private
 	 */
 	Calendar.prototype._isTwoMonthsInTwoColumns = function () {

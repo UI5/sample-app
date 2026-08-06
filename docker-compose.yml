@@ -1,0 +1,10 @@
+services:
+  ui5:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the repository so edits on the host are served live.
+      - .:/app
+      # Keep the container's node_modules; do not let the host's shadow it.
+      - /app/node_modules

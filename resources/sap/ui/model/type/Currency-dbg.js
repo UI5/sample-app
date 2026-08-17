@@ -96,8 +96,8 @@ sap.ui.define([
 	 *   grouping is disabled, the decimal separator is a dot, and the grouping separator is a comma.
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+     *   When set to <code>short</code> or <code>long</code>, numbers are formatted into the <code>short</code> form
+	 *   only.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.
@@ -125,7 +125,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.CompositeType
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @public
 	 * @param {sap.ui.model.type.CurrencyFormatOptions} [oFormatOptions={

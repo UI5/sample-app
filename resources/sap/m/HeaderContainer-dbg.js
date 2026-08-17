@@ -99,7 +99,7 @@ sap.ui.define([
 					oRM.attr("tabindex", -1);
 					oRM.attr("aria-setsize", oControl.getSetSize());
 					oRM.attr("aria-posinset", oControl.getPosition());
-					oRM.attr("role", "listitem");
+					oRM.attr("role", "option");
 					if (oControl.getAriaLabelledBy()) {
 						oRM.attr("aria-labelledby", oControl.getAriaLabelledBy());
 					}
@@ -125,7 +125,7 @@ sap.ui.define([
 		 * @since 1.44.0
 		 *
 		 * @author SAP SE
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 *
 		 * @public
 		 * @alias sap.m.HeaderContainer
@@ -335,7 +335,7 @@ sap.ui.define([
 						var oFocusRef = this._oScrollCntr.getDomRef("scroll");
 						var oFocusObj = this._oScrollCntr.$("scroll");
 						var aDomRefs = oFocusObj.find(".sapMHrdrCntrInner").attr("tabindex", "0");
-						oFocusRef.setAttribute("role", "list");
+						oFocusRef.setAttribute("role", "listbox");
 
 						if (!this._oItemNavigation) {
 							this._oItemNavigation = new HeaderContainerItemNavigator();

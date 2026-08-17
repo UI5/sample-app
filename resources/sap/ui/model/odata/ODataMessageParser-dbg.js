@@ -76,7 +76,7 @@ const rQuestionMarkOrHash = /[?#]/;
  * @extends sap.ui.core.message.MessageParser
  *
  * @author SAP SE
- * @version 1.150.0
+ * @version 1.151.0
  * @public
  * @alias sap.ui.model.odata.ODataMessageParser
  */

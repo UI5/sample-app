@@ -177,7 +177,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.150.0
+		* @version 1.151.0
 		*
 		* @constructor
 		* @public
@@ -652,15 +652,7 @@ function(
 
 			this._createToolbarButtons();
 
-			if (ControlBehavior.isAccessibilityEnabled() && this.getState() != ValueState.None) {
-				if (!this._oValueState) {
-					this._oValueState = new InvisibleText();
-
-					this.setAggregation("_valueState", this._oValueState);
-					this.addAriaLabelledBy(this._oValueState.getId());
-				}
-				this._oValueState.setText(this.getValueStateString(this.getState()));
-			}
+			this._updateValueStateText();
 
 			// title alignment
 			if (oHeader && oHeader.setTitleAlignment) {
@@ -704,6 +696,8 @@ function(
 			InstanceManager.removeDialogInstance(this);
 			this._deregisterResizeObserver();
 			this._deregisterWithinAreaResizeObserver();
+
+			this._invokeCloseCallback();
 
 			if (this.oPopup) {
 				this.oPopup.detachOpened(this._handleOpened, this);
@@ -907,6 +901,29 @@ function(
 		};
 
 		/**
+		 * Registers a callback to be invoked once the dialog has fully closed.
+		 * The callback is also invoked if the dialog is destroyed while still closing.
+		 *
+		 * @param {function} fnCallback The callback function
+		 * @private
+		 * @ui5-restricted sap.m.InstanceManager
+		 */
+		Dialog.prototype._registerCloseCallback = function (fnCallback) {
+			this._fnCloseCallback = fnCallback;
+		};
+
+		/**
+		 * Invokes and clears the registered close callback.
+		 * @private
+		 */
+		Dialog.prototype._invokeCloseCallback = function () {
+			if (this._fnCloseCallback) {
+				this._fnCloseCallback();
+				this._fnCloseCallback = null;
+			}
+		};
+
+		/**
 		 *
 		 * @private
 		 */
@@ -932,6 +949,7 @@ function(
 			}
 
 			InstanceManager.removeDialogInstance(this);
+			this._invokeCloseCallback();
 			this.fireAfterClose({origin: this._oCloseTrigger});
 
 			this._bDuringOpenCalled = false;
@@ -1858,7 +1876,19 @@ function(
 				return oFocusRealTarget.getId();
 			}
 
-			return oFocusRealTarget?.id;
+			// If the DOM target has no id, assign a stable one so Popup._getDomRefToFocus
+			// can resolve and focus it directly on open. Without this, Popup falls back
+			// to firstFocusableDomRef(), hits the -firstfe sentinel, and onfocusin
+			// redirects focus to the last focusable element (e.g. a footer button).
+			// Falling back to the dialog id here would also be wrong — Popup would then
+			// focus the dialog root first, causing a two-step focus that prevents
+			// screen readers from announcing the dialog role and title on open.
+			// Typical case: raw <a> rendered inside sap.m.FormattedText.
+			if (oFocusRealTarget && !oFocusRealTarget.id) {
+				oFocusRealTarget.id = this.getId() + "-x_initialFocus";
+			}
+
+			return oFocusRealTarget?.id || this.getId();
 		};
 
 		/**
@@ -2055,6 +2085,34 @@ function(
 				if (endButton) {
 					toolbar.addContent(endButton);
 				}
+			}
+		};
+
+		/**
+		 * Updates the invisible text used to announce the value state to screen readers.
+		 *
+		 * @private
+		 */
+		Dialog.prototype._updateValueStateText = function () {
+			if (!ControlBehavior.isAccessibilityEnabled()) {
+				return;
+			}
+
+			const sValueStateText = this.getValueStateString(this.getState());
+			const sTitle = this.getTitle() || "";
+
+			// Avoid redundant SR announcement when the title already conveys the value state
+			if (this.getState() !== ValueState.None && !sTitle.trim().toLowerCase().includes(sValueStateText.toLowerCase())) {
+				if (!this._oValueState) {
+					this._oValueState = new InvisibleText();
+
+					this.setAggregation("_valueState", this._oValueState);
+					this.addAriaLabelledBy(this._oValueState.getId());
+				}
+
+				this._oValueState.setText(sValueStateText);
+			} else if (this._oValueState) {
+				this._oValueState.setText("");
 			}
 		};
 

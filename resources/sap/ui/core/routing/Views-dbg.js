@@ -22,7 +22,7 @@ sap.ui.define([
 		 * @since 1.28.1
 		 * @param {object} [oOptions]
 		 * @param {sap.ui.core.UIComponent} [oOptions.component] the owner of all the views that will be created by this Instance.
-		 * @param {boolean} [oOptions.async=false] @since 1.34 Whether the views which are created through this Views are loaded asyncly. This option can be set only when the Views
+		 * @param {boolean} [oOptions.async=false] {@since 1.34} Whether the views which are created through this Views are loaded asyncly. This option can be set only when the Views
 		 * is used standalone without the involvement of a Router. Otherwise the async option is inherited from the Router.
 		 * @alias sap.ui.core.routing.Views
 		 * @ui5-transform-hint replace-param oOptions.async true

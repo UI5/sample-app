@@ -80,7 +80,7 @@ sap.ui.define([
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -200,6 +200,15 @@ sap.ui.define([
 			 * @since 1.48
 			 */
 			showWeekNumbers : {type : "boolean", group : "Appearance", defaultValue : true},
+
+			/**
+			 * Determines whether the header of the week numbers column is displayed.
+			 * The column header text is translated according to the active language.
+			 *
+			 * <b>Note:</b> Takes effect only when <code>showWeekNumbers</code> is set to <code>true</code>.
+			 * @since 1.151
+			 */
+			showWeekNumbersHeader : {type : "boolean", group : "Appearance", defaultValue : false},
 
 			/**
 			 * Determines whether there is a shortcut navigation to Today. When used in Month, Year or
@@ -620,6 +629,7 @@ sap.ui.define([
 			}
 			aMonths[i].displayDate(oDisplayDate.toLocalJSDate());
 			aMonths[i].setShowWeekNumbers(this.getShowWeekNumbers());
+			aMonths[i].setShowWeekNumbersHeader(this.getShowWeekNumbersHeader());
 		}
 
 		if (this._getMonthPicker()) {

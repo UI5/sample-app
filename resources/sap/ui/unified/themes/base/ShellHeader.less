@@ -140,7 +140,7 @@
 	font-size: @_sap_ui_unified_ShellHeader_HeaderBarHeight / 2;
 	margin: @_sap_ui_unified_ShellHeader_ButtonOuterSpace - @_sap_ui_unified_ShellHeader_ButtonOutlineWidth;
 	margin-top: @_sap_ui_unified_ShellHeader_ButtonOuterSpace;
-	color: var(--sapTextColor);
+	color: var(--sapButton_IconColor);
 	border-radius: @_sap_ui_unified_ShellHeader_ButtonBorderRadius;
 	border: @_sap_ui_unified_ShellHeader_ButtonOutlineWidth solid transparent;
 	box-sizing: border-box;
@@ -178,11 +178,6 @@
 	left: 0;
 	border-left: @_sap_ui_unified_ShellHeader_ButtonOuterSpace solid transparent;
 	border-right: @_sap_ui_unified_ShellHeader_ButtonSeparatorWidth solid var(--sapToolbar_SeparatorColor);
-}
-
-.sapUiUfdShellHeadItm > span,
-.sapUiUfdShellHeadUsrItm {
-	color: var(--sapButton_IconColor);
 }
 
 html.sapUiMedia-Std-Desktop .sapUiUfdShellHeadItm:hover > span,
@@ -300,7 +295,7 @@ html.sapUiMedia-Std-Desktop .sapUiUfdShellHeadItm.sapUiUfdShellHeadItmSel:hover 
 	display: inline-block;
 	vertical-align: top;
 	height: 100%;
-	color: var(--sapButton_TextColor);
+	color: var(--sapButton_IconColor);
 }
 
 .sapUiUfdShellHeadUsrItm > * {

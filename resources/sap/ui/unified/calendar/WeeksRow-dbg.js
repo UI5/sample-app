@@ -41,7 +41,7 @@ sap.ui.define([
 	 * The WeeksRow works with UI5Date or JavaScript Date objects for its API, but internally uses CalendarDate objects for calculations.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @private

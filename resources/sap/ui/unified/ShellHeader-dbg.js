@@ -8,13 +8,14 @@ sap.ui.define([
 	'./library',
 	"sap/base/i18n/Localization",
 	'sap/ui/core/Control',
+	'sap/ui/core/IconPool',
 	'sap/ui/Device',
 	"sap/ui/core/ControlBehavior",
 	"sap/ui/core/Lib",
 	'sap/ui/core/theming/Parameters',
 	"sap/ui/thirdparty/jquery"
 ],
-	function(library, Localization, Control, Device, ControlBehavior, Library, Parameters, jQuery) {
+	function(library, Localization, Control, _IconPool, Device, ControlBehavior, Library, Parameters, jQuery) {
 	"use strict";
 
 
@@ -116,7 +117,18 @@ sap.ui.define([
 							pressed: aItems[i].getToggleEnabled() ? aItems[i].getSelected() : null
 						});
 					}
-					rm.write("><span></span><div class='sapUiUfdShellHeadItmMarker'><div></div></div></div>");
+					rm.write(">");
+					var sIcon = aItems[i].getIcon();
+					if (sIcon) {
+						if (_IconPool.isIconURI(sIcon)) {
+							rm.writeIcon(sIcon, null, {role: "presentation"});
+						} else {
+							rm.write("<span><img role='presentation' src='");
+							rm.writeEscaped(sIcon);
+							rm.write("'></span>");
+						}
+					}
+					rm.write("<div class='sapUiUfdShellHeadItmMarker'><div></div></div></div>");
 				}
 
 				var oUser = oHeader.getUser();
@@ -141,7 +153,21 @@ sap.ui.define([
 						}
 					}
 
-					rm.write("><span id='", oUser.getId(), "-img' aria-hidden='true' class='sapUiUfdShellHeadUsrItmImg'></span>");
+					rm.write(">");
+					var sImage = oUser.getImage();
+					if (sImage) {
+						if (_IconPool.isIconURI(sImage)) {
+							rm.writeIcon(sImage, ["sapUiUfdShellHeadUsrItmImg"], {id: oUser.getId() + "-img", "aria-hidden": "true"});
+						} else {
+							rm.write("<span id='", oUser.getId(), "-img' aria-hidden='true' class='sapUiUfdShellHeadUsrItmImg'>");
+							rm.write("<img role='presentation' src='");
+							rm.writeEscaped(sImage);
+							rm.write("'>");
+							rm.write("</span>");
+						}
+					} else {
+						rm.write("<span id='", oUser.getId(), "-img' aria-hidden='true' class='sapUiUfdShellHeadUsrItmImg'></span>");
+					}
 					rm.write("<span id='" + oUser.getId() + "-name' class='sapUiUfdShellHeadUsrItmName'");
 					var sUserName = oUser.getUsername() || "";
 					rm.writeAttributeEscaped("title", sUserName);
@@ -237,22 +263,12 @@ sap.ui.define([
 	};
 
 	ShellHeader.prototype._refresh = function(){
-		function updateItems(aItems){
-			for (var i = 0; i < aItems.length; i++) {
-				aItems[i]._refreshIcon();
-			}
-		}
-
-		updateItems(this.getHeadItems());
-		updateItems(this.getHeadEndItems());
-
 		var oUser = this.getUser(),
 			isPhoneSize = jQuery("html").hasClass("sapUiMedia-Std-Phone"),
 			searchVisible = !this.$("hdr-search").hasClass("sapUiUfdShellHidden"),
 			$logo = this.$("icon");
 
 		if (oUser) {
-			oUser._refreshImage();
 			oUser._checkAndAdaptWidth(searchVisible && !!this.getSearch());
 		}
 

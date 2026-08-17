@@ -37,13 +37,13 @@ sap.ui.define([
 	 * @param {sap.ui.core.RenderManager} rm the RenderManager that can be used for writing to the Render-Output-Buffer
 	 * @param {sap.m.SearchField} oSF an object representation of the control that should be rendered
 	 */
-	SearchFieldRenderer.render = function(rm, oSF){
+	SearchFieldRenderer.render = function(rm, oSF) {
 		// render nothing if control is invisible
 		if (!oSF.getVisible()) {
 			return;
 		}
 
-		var sPlaceholder = oSF.getPlaceholder() || Library.getResourceBundleFor("sap.m").getText("FACETFILTER_SEARCH", undefined, true),
+		var sPlaceholder = oSF._getPlaceholder(),
 			sValue = oSF.getValue(),
 			sWidth = oSF.getProperty("width"),
 			sId = oSF.getId(),
@@ -94,8 +94,16 @@ sap.ui.define([
 			rm.voidStart('input', sId + "-I")
 				.class("sapMSFI")
 				.attr("type", "search")
-				.attr("aria-label", sPlaceholder)
 				.attr("autocomplete", "off");
+
+			if (!oSF._hasAriaLabelledBy()) {
+				rm.attr("aria-label", sPlaceholder);
+			}
+
+			const sAriaControls = oSF.getAriaControls().join(" ");
+			if (sAriaControls) {
+				rm.attr("aria-controls", sAriaControls);
+			}
 
 			if (oSF.getEnableSuggestions()) {
 				rm.attr("aria-haspopup", HasPopup.ListBox.toLowerCase());
@@ -132,7 +140,7 @@ sap.ui.define([
 
 			oAccAttributes.disabled = null;
 
-			rm.accessibilityState(oSF, oAccAttributes);
+			this._accessibilityState(rm, oSF, oAccAttributes);
 
 			rm.voidEnd();
 
@@ -193,6 +201,10 @@ sap.ui.define([
 		}
 
 		return sDescribedBy;
+	};
+
+	SearchFieldRenderer._accessibilityState = function (rm, oSF, oAccAttributes) {
+		rm.accessibilityState(oSF, oAccAttributes);
 	};
 
 	return SearchFieldRenderer;

@@ -124,7 +124,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -571,6 +571,31 @@ sap.ui.define([
 		this._detachHeaderEventListeners();
 
 		return this.setAggregation("header", oHeader);
+	};
+
+	DynamicPage.prototype.setTitle = function (oTitle) {
+		var oOldTitle = this.getTitle();
+
+		if (oOldTitle === oTitle) {
+			return this;
+		}
+
+		if (oOldTitle) {
+			oOldTitle.detachEvent("_titleTextChange", this._onTitleTextChange, this);
+		}
+		if (oTitle && typeof oTitle.attachEvent === "function") {
+			oTitle.attachEvent("_titleTextChange", this._onTitleTextChange, this);
+		}
+
+		return this.setAggregation("title", oTitle);
+	};
+
+	DynamicPage.prototype.destroyTitle = function () {
+		var oTitle = this.getTitle();
+		if (oTitle) {
+			oTitle.detachEvent("_titleTextChange", this._onTitleTextChange, this);
+		}
+		return this.destroyAggregation("title");
 	};
 
 	DynamicPage.prototype.destroyHeader = function () {
@@ -2654,6 +2679,7 @@ sap.ui.define([
 
 			if (sRole === AccessibleLandmarkRole.None) {
 				sRole = '';
+				sLabel = '';
 			}
 
 			return {
@@ -2666,14 +2692,43 @@ sap.ui.define([
 	};
 
 	DynamicPage.prototype._getAccessibilityStateTitle = function () {
-		var oInfo = this._formatLandmarkInfo(this.getLandmarkInfo(), "Header"),
+		var oLandmarkInfo = this.getLandmarkInfo(),
+			oInfo = this._formatLandmarkInfo(oLandmarkInfo, "Header"),
 			oTitle = this.getTitle();
 
-		if (oTitle) {
-			oInfo.label = oTitle._getTitleText() || oInfo.label;
+		// Apply title text as fallback label only when no landmarkInfo is set,
+		// or when a non-None headerRole is configured. When headerRole is explicitly
+		// None, _formatLandmarkInfo already cleared oInfo.role and oInfo.label, and
+		// no aria-label should be rendered.
+		if (oTitle && (!oLandmarkInfo || oInfo.role)) {
+			oInfo.label = oInfo.label || oTitle._getTitleText();
 		}
 
 		return oInfo;
+	};
+
+	/**
+	 * Refreshes the cached accessibility attributes on the title's wrapper element to reflect
+	 * the current title text. Subscribed to the private <code>_titleTextChange</code> event of
+	 * the contained {@link sap.f.DynamicPageTitle} — title-text mutations only invalidate the
+	 * inner controls, not the <code>DynamicPage</code>, so the rendered <code>aria-label</code>
+	 * would otherwise stay stale.
+	 *
+	 * @private
+	 */
+	DynamicPage.prototype._onTitleTextChange = function () {
+		var oLandmarkInfo = this.getLandmarkInfo(),
+			bHeaderLabelSet = oLandmarkInfo && oLandmarkInfo.getHeaderLabel(),
+			$header;
+
+		if (bHeaderLabelSet) {
+			return; // user-defined label takes precedence
+		}
+
+		$header = this.$("header");
+		if ($header.length) {
+			$header.attr("aria-label", this._getAccessibilityStateTitle().label || null);
+		}
 	};
 
 	/**

@@ -117,7 +117,7 @@ sap.ui.define([
 	 * @private
 	 * @ui5-restricted sap.ui.core, sap.ui.test
 	 */
-	const sVersion = "1.150.0";
+	const sVersion = "1.151.0";
 
 	/**
 	 * The buildinfo.
@@ -441,7 +441,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -1142,6 +1142,9 @@ sap.ui.define([
 
 		// add KeyboardInteractionEndpoint to list of modules
 		this.aModules.push("sap/ui/core/boot/KeyboardInteractionEndpoint");
+
+		// add ExtendedKeyboardNavigationSupport to list of modules
+		this.aModules.push("sap/ui/core/boot/ExtendedKeyboardNavigationSupport");
 
 		// load all modules now
 		if ( bAsync ) {

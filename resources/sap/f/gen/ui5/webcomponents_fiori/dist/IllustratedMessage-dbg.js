@@ -59,7 +59,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.IllustratedMessage",
       {
         metadata: {
-          tag: "ui5-illustrated-message-e93a470b",
+          tag: "ui5-illustrated-message-6bfd01e3",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 

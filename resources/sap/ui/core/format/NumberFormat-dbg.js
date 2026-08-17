@@ -128,8 +128,7 @@ sap.ui.define([
 	 *   When decimals aren't preserved, the formatted number is rounded to <code>maxFractionDigits</code>.
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+	 *   When set to <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.
@@ -179,8 +178,7 @@ sap.ui.define([
 	 *   When decimals aren't preserved, the formatted number is rounded to <code>maxFractionDigits</code>.
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+	 *   When set to <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.
@@ -258,8 +256,7 @@ sap.ui.define([
 	 *   If both <code>showMeasure</code> and <code>showNumber</code> are false, an empty string is returned
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+	 *   When set to <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.
@@ -337,8 +334,8 @@ sap.ui.define([
 	 *   If both <code>showMeasure</code> and <code>showNumber</code> are false, an empty string is returned
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+     *   When set to <code>short</code> or <code>long</code>, numbers are formatted into the <code>short</code> form
+	 *   only.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.

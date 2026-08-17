@@ -15,7 +15,8 @@
 	border: 1px solid var(--sapContent_ForegroundBorderColor);
 }
 
-.sapMTC .sapMTCScroller:focus::before {
+html.sap-desktop .sapMTC .sapMTCScroller:focus::before,
+.sapMTC .sapMTCScroller:focus-visible::before {
 	border: 0.125rem dotted var(--sapContent_FocusColor);
 	position: absolute;
 	top: -1px;

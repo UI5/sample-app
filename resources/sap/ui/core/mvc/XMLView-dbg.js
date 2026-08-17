@@ -117,7 +117,7 @@ sap.ui.define([
 	 * bound content aggregation. An error will be thrown when the above combination is detected.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -862,7 +862,7 @@ sap.ui.define([
 	 * @param {string|function(Object, sap.ui.core.mvc.View.Preprocessor.ViewInfo, object)} vPreprocessor
 	 *      module path of the preprocessor implementation or a preprocessor function
 	 * @param {string} [sViewType="XML"]
-	 *      Since 1.89, added for signature compatibility with {@link sap.ui.core.mvc.View#registerPreprocessor
+	 *      {@since 1.89} added for signature compatibility with {@link sap.ui.core.mvc.View#registerPreprocessor
 	 *      View#registerPreprocessor}. Only supported value is "XML".
 	 * @param {boolean} bSyncSupport
 	 *		Deprecated as of version 1.145, because this parameter is only applicable to sync views and is no longer used.

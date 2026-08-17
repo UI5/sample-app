@@ -18,7 +18,7 @@ sap.ui.define(["./PluginBase", "../library", "../Button" ,"sap/ui/core/Lib"], fu
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @public
 	 * @since 1.136

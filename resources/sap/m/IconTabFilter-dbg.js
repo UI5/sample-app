@@ -94,7 +94,7 @@ sap.ui.define([
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -880,7 +880,7 @@ sap.ui.define([
 		}
 
 		var iTabFilters = this._getIconTabHeader()
-			._getItemsForOverflow(this._bIsStartOverflow, true)
+			._getItemsForOverflow(this._bIsStartOverflow, true, true)
 			.filter(function (oItem) { return oItem.isA("sap.m.IconTabFilter"); })
 			.length;
 
@@ -926,7 +926,9 @@ sap.ui.define([
 	};
 
 	IconTabFilter.prototype._hasChildWithBadge = function () {
-		var aItems = this._isOverflow() ? this._getIconTabHeader()._getItemsForOverflow(this._bIsStartOverflow) : this._getAllSubItems();
+		const aItems = this._isOverflow()
+			? this._getIconTabHeader()._getItemsForOverflow(this._bIsStartOverflow, false, false)
+			: this._getAllSubItems();
 
 		return aItems.some(function (oIT) {
 			return oIT.isA("sap.m.IBadge") && oIT.getBadgeCustomData() && oIT.getBadgeCustomData().getVisible();
@@ -1206,7 +1208,7 @@ sap.ui.define([
 			iCustomDataItemIndex;
 
 		if (this._isOverflow()) {
-			aItemsForList = oIconTabHeader._getItemsForOverflow(this._bIsStartOverflow);
+			aItemsForList = oIconTabHeader._getItemsForOverflow(this._bIsStartOverflow, false, false);
 		}
 
 		oSelectList.destroyItems();

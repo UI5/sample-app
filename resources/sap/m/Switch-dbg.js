@@ -16,7 +16,8 @@ sap.ui.define([
 	'sap/ui/events/KeyCodes',
 	'./SwitchRenderer',
 	"sap/base/assert",
-	"sap/ui/core/InvisibleText"
+	"sap/ui/core/InvisibleText",
+	"sap/ui/Device"
 ],
 function(
 	library,
@@ -29,7 +30,8 @@ function(
 	KeyCodes,
 	SwitchRenderer,
 	assert,
-	InvisibleText
+	InvisibleText,
+	Device
 ) {
 		"use strict";
 
@@ -54,7 +56,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 *
 		 * @constructor
 		 * @public
@@ -291,7 +293,9 @@ function(
 			this._bDragging = false;
 
 			// note: force ie browsers to set the focus to switch
-			setTimeout(this["focus"].bind(this), 0);
+			if (Device.system.desktop) {
+				setTimeout(this["focus"].bind(this), 0);
+			}
 
 			// add active state
 			this.$("switch").addClass(CSS_CLASS + "Pressed");

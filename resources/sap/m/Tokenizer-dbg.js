@@ -20,7 +20,9 @@ sap.ui.define([
 	'sap/ui/core/delegate/ScrollEnablement',
 	"sap/ui/base/ManagedObjectObserver",
 	'sap/ui/Device',
+	'sap/ui/core/InvisibleMessage',
 	'sap/ui/core/InvisibleText',
+	"sap/ui/core/library",
 	'sap/ui/core/ResizeHandler',
 	'./TokenizerRenderer',
 	"sap/ui/dom/containsOrEquals",
@@ -46,7 +48,9 @@ sap.ui.define([
 		ScrollEnablement,
 		ManagedObjectObserver,
 		Device,
+		InvisibleMessage,
 		InvisibleText,
+		coreLibrary,
 		ResizeHandler,
 		TokenizerRenderer,
 		containsOrEquals,
@@ -91,7 +95,7 @@ sap.ui.define([
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormObservingProperties as #getFormObservingProperties
 	 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -373,6 +377,8 @@ sap.ui.define([
 			// Prevent _bFocusFirstToken from interfering with deletion focus
 			this._bFocusFirstToken = false;
 
+			this._announceTokenDeletion(1);
+
 			this._fireCompatibilityEvents(oToken, aSelectedTokens);
 			this.fireEvent("tokenDelete", {
 				tokens: [oToken]
@@ -468,6 +474,24 @@ sap.ui.define([
 			// Clear the deletion flag
 			this._bDeletionInProgress = false;
 		}.bind(this), 0);
+	};
+
+	/**
+	 * Announces the number of deleted tokens.
+	 *
+	 * @private
+	 * @param {int} iCount The number of tokens deleted
+	 */
+	Tokenizer.prototype._announceTokenDeletion = function(iCount) {
+		if (!this._oInvisibleMessage) {
+			this._oInvisibleMessage = InvisibleMessage.getInstance();
+		}
+
+		var sText = iCount === 1
+			? oRb.getText("TOKENIZER_TOKEN_DELETED_SINGULAR")
+			: oRb.getText("TOKENIZER_TOKEN_DELETED_PLURAL", [iCount]);
+
+		this._oInvisibleMessage.announce(sText, coreLibrary.InvisibleMessageMode.Assertive);
 	};
 
 	/**
@@ -662,6 +686,8 @@ sap.ui.define([
 		if (oTokenToDelete) {
 			// Calculate focus index using helper function
 			this._iPopoverIndexToFocusAfterDelete = this._calculateFocusIndexAfterDeletion(iDeletedIndex, aListItems.length, "click");
+
+			this._announceTokenDeletion(1);
 
 			this.fireTokenUpdate({
 				addedTokens: [],
@@ -1388,6 +1414,8 @@ sap.ui.define([
 		this._bFocusFirstToken = false;
 
 		oEvent.preventDefault();
+
+		this._announceTokenDeletion(aDeletingTokens.length);
 
 		this.fireTokenDelete({
 			tokens: aDeletingTokens,
@@ -2365,9 +2393,16 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype._handleClearAll = function() {
+		var aTokens = this.getTokens();
+		var iTokenCount = aTokens.length;
+
 		this.fireTokenDelete({
-			tokens: this.getTokens()
+			tokens: aTokens
 		});
+
+		if (iTokenCount > 0) {
+			this._announceTokenDeletion(iTokenCount);
+		}
 	};
 
 	/**

@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Item that represents one file to be uploaded using the {@link sap.m.upload.UploadSet} control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @constructor
 	 * @public
 	 * @since 1.63
@@ -199,8 +199,10 @@ sap.ui.define([
 				oRm.openStart("div").class("sapMUSTextInnerContainer").openEnd();
 				if (oItem._bInEditMode) {
 					oRm.renderControl(oItem._getFileNameEditLabel());
+					oRm.renderControl(oItem._getFileNameEdit());
+				} else {
+					oRm.renderControl(oItem._getFileNameLink());
 				}
-				oRm.renderControl(oItem._bInEditMode ? oItem._getFileNameEdit() : oItem._getFileNameLink());
 				oItem._renderMarkers(oRm);
 				oItem._renderMarkersAsStatus(oRm);
 				oRm.close("div");
@@ -257,7 +259,9 @@ sap.ui.define([
 		// Buttons
 		this._oRestartButton = null;
 		this._oEditButton = null;
+		this._oEditInvisibleText = null;
 		this._oDeleteButton = null;
+		this._oDeleteInvisibleText = null;
 		this._oTerminateButton = null;
 		this._oConfirmRenameButton = null;
 		this._oCancelRenameButton = null;
@@ -298,6 +302,12 @@ sap.ui.define([
 				this._getFileNameEdit().setValue(oFile.name);
 				this._checkNameLengthRestriction(this.getParent().getMaxFileNameLength());
 				this._checkTypeRestriction(this.getParent().getFileTypes());
+			}
+			if (this._oEditInvisibleText) {
+				this._oEditInvisibleText.setText(this._oRb.getText("UPLOAD_SET_EDIT_BUTTON_ARIA_LABEL"));
+			}
+			if (this._oDeleteInvisibleText) {
+				this._oDeleteInvisibleText.setText(this._oRb.getText("UPLOAD_SET_DELETE_BUTTON_ARIA_LABEL"));
 			}
 		}
 
@@ -698,8 +708,8 @@ sap.ui.define([
 	UploadSetItem.prototype._getEditButton = function () {
 		var oParent = this.getParent();
 		if (!this._oEditButton) {
-			this._oInvisibleText = new InvisibleText();
-			this._oInvisibleText.toStatic();
+			this._oEditInvisibleText = new InvisibleText();
+			this._oEditInvisibleText.toStatic();
 			this._oEditButton = new Button({
 				id: this.getId() + "-editButton",
 				icon: "sap-icon://edit",
@@ -711,9 +721,9 @@ sap.ui.define([
 			});
 			this._oEditButton.addStyleClass("sapMUCEditBtn");
 			this.addDependent(this._oEditButton);
-			this._oEditButton.addAriaLabelledBy(this._oInvisibleText.getId());
-			this._oInvisibleText.setText("Button" + this._oRb.getText("UPLOAD_SET_EDIT_BUTTON_TEXT"));
-			}
+			this._oEditButton.addAriaLabelledBy(this._oEditInvisibleText.getId());
+			this._oEditInvisibleText.setText(this._oRb.getText("UPLOAD_SET_EDIT_BUTTON_ARIA_LABEL"));
+		}
 
 		return this._oEditButton;
 	};
@@ -798,6 +808,9 @@ sap.ui.define([
 			iMaxLength = iMaxLength ? iMaxLength : 0;
 			var iNameMaxLength = iMaxLength - iFileExtensionLength;
 			iNameMaxLength = iNameMaxLength < 0 ? 0 : iNameMaxLength;
+			if (this.getUrl() && !this.getMediaType()) {
+				iNameMaxLength = iMaxLength ? Math.max(0, Math.min(iMaxLength, 40) - iFileExtensionLength) : Math.max(0, 40 - iFileExtensionLength);
+			}
 			this._getFileNameEdit().setProperty("maxLength", iNameMaxLength, true);
 			this._getFileNameEdit().setValue(oSplit.name);
 		}
@@ -848,8 +861,8 @@ sap.ui.define([
 	UploadSetItem.prototype._getDeleteButton = function () {
 		var oParent = this.getParent();
 		if (!this._oDeleteButton) {
-			this._oInvisibleText = new InvisibleText();
-			this._oInvisibleText.toStatic();
+			this._oDeleteInvisibleText = new InvisibleText();
+			this._oDeleteInvisibleText.toStatic();
 			this._oDeleteButton = new Button({
 				id: this.getId() + "-deleteButton",
 				icon: "sap-icon://delete",
@@ -861,8 +874,8 @@ sap.ui.define([
 			});
 			this._oDeleteButton.addStyleClass("sapMUCDeleteBtn");
 			this.addDependent(this._oDeleteButton);
-			this._oDeleteButton.addAriaLabelledBy(this._oInvisibleText.getId());
-			this._oInvisibleText.setText("Button" + this._oRb.getText("UPLOAD_SET_DELETE_BUTTON_TEXT"));
+			this._oDeleteButton.addAriaLabelledBy(this._oDeleteInvisibleText.getId());
+			this._oDeleteInvisibleText.setText(this._oRb.getText("UPLOAD_SET_DELETE_BUTTON_ARIA_LABEL"));
 		}
 
 		return this._oDeleteButton;

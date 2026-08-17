@@ -187,7 +187,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -524,6 +524,9 @@ sap.ui.define([
 	DatePicker.prototype.onBeforeRendering = function() {
 
 		DateTimeField.prototype.onBeforeRendering.apply(this, arguments);
+
+		// Ensure the internal min/max boundaries respect the constraints of the bound type
+		this._syncMinMaxWithBindingConstraints();
 
 		this._checkMinMaxDate();
 
@@ -960,6 +963,60 @@ sap.ui.define([
 		}
 	};
 
+	/**
+	 * Reads the minimum/maximum date constraints from the bound value type (if any)
+	 * and narrows the internal _oMinDate / _oMaxDate accordingly, so the DatePicker
+	 * never formats or validates a date outside the range accepted by the type.
+	 * @private
+	 */
+	DatePicker.prototype._syncMinMaxWithBindingConstraints = function () {
+		var oBinding = this.getBinding("value"),
+			oType = oBinding && oBinding.getType && oBinding.getType(),
+			oConstraints = oType && oType.oConstraints, oMin, oMax;
+
+		if (!oConstraints || !(oConstraints.minimum || oConstraints.maximum)) {
+			return;
+		}
+
+		// constraints may be Date objects or strings depending on the type/source format
+		oMin = this._toDate(oConstraints.minimum);
+		oMax = this._toDate(oConstraints.maximum);
+
+		if (oMin && oMin.getTime() > this._oMinDate.getTime()) {
+			this._oMinDate = UI5Date.getInstance(oMin.getTime());
+			this.setProperty("minDate", this._oMinDate, true);
+			if (this._getCalendar()) {
+				this._getCalendar().setMinDate(this._oMinDate);
+			}
+		}
+		if (oMax && oMax.getTime() < this._oMaxDate.getTime()) {
+			this._oMaxDate = UI5Date.getInstance(oMax.getTime());
+			this.setProperty("maxDate", this._oMaxDate, true);
+			if (this._getCalendar()) {
+				this._getCalendar().setMaxDate(this._oMaxDate);
+			}
+		}
+	};
+
+	/**
+	 * Normalizes a constraint value (Date instance or parsable string) to a Date.
+	 * @param {Date|string} vValue The constraint value.
+	 * @returns {Date|undefined} The normalized date or undefined.
+	 * @private
+	 */
+	DatePicker.prototype._toDate = function (vValue) {
+		if (!vValue) {
+			return undefined;
+		}
+
+		if (vValue instanceof Date) {
+			return vValue;
+		}
+
+		var oParsed = this._parseValue(vValue, false);
+
+		return (oParsed && oParsed.getTime) ? oParsed : undefined;
+	};
 
 	DatePicker.prototype.getDisplayFormatType = function () {
 		return this.getProperty("displayFormatType");

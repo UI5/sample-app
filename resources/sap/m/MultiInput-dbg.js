@@ -112,7 +112,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.150.0
+	* @version 1.151.0
 	*
 	* @constructor
 	* @public
@@ -1217,6 +1217,29 @@ function(
 
 		this._handleInnerVisibility();
 	};
+
+	/**
+	 * Prevents the <code>change</code> event from firing when focus moves between the
+	 * inner input element and a Token of this MultiInput's Tokenizer (e.g. via Arrow keys).
+	 * The change event must only fire on ENTER or when focus leaves the MultiInput entirely.
+	 *
+	 * @param {jQuery.Event} [oEvent] The event object.
+	 * @returns {boolean} Whether the change event should be prevented.
+	 * @protected
+	 */
+	MultiInput.prototype.preventChangeOnFocusLeave = function (oEvent) {
+		var oTokenizer = this.getAggregation("tokenizer");
+		if (oEvent && oEvent.relatedControlId && oTokenizer) {
+			var aTargetControls = [Element.getElementById(oEvent.relatedControlId), Element.closestTo(oEvent.target)];
+			var bShouldPreventChange = aTargetControls.some(function (oControl) {
+				return oControl && containsOrEquals(oTokenizer.getFocusDomRef(), oControl.getFocusDomRef());
+			});
+			if (bShouldPreventChange) {
+				return true;
+			}
+		}
+		return Input.prototype.preventChangeOnFocusLeave.apply(this, arguments);
+  };
 
 	/**
 	 * When tap on text field, deselect all tokens

@@ -4,14 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleRenderer", "sap/ui/core/InvisibleText", "sap/m/library"],
-	function(coreLibrary, Library, InvisibleRenderer, InvisibleText, library) {
+sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer", "sap/ui/core/InvisibleText", "sap/m/library"],
+	function(coreLibrary, InvisibleRenderer, InvisibleText, library) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
 	var TextDirection = coreLibrary.TextDirection;
-
-	var oResourceBundle = Library.getResourceBundleFor("sap.m");
 
 	var SegmentedButtonContentMode = library.SegmentedButtonContentMode;
 
@@ -72,7 +70,6 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 		oRM.accessibilityState(oControl, {
 			role : "listbox",
 			multiselectable: false,
-			roledescription: oResourceBundle.getText("SEGMENTEDBUTTON_NAME"),
 			orientation: "horizontal"
 		});
 
@@ -149,7 +146,6 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Lib", "sap/ui/core/InvisibleR
 				// Inner buttons' ARIA
 				var mButtonAccessibilityState = {
 					role : "option",
-					roledescription: oResourceBundle.getText("SEGMENTEDBUTTON_BUTTONS_NAME"),
 					label: sButtonText ? "" : sButtonTooltip,
 					posinset: iVisibleButtonPos,
 					setsize: aVisibleButtons.length,

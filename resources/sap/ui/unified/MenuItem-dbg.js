@@ -39,7 +39,7 @@ sap.ui.define([
 	 * @implements sap.ui.unified.IMenuItem
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -170,7 +170,7 @@ sap.ui.define([
 				posinset: oInfo.iItemNo,
 				setsize: oInfo.iTotalItems,
 				selected: null,
-				checked: bIsSelected ? true : undefined,
+				checked: oItem._getItemSelectionMode() !== ItemSelectionMode.None ? bIsSelected : undefined,
 				labelledby: { value: this.getId() + "-txt", append: true },
 				keyshortcuts : !oSubMenu && sShortcutText ? sShortcutText : null,
 				haspopup: oSubMenu && coreLibrary.aria.HasPopup.Menu.toLowerCase(),

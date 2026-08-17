@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -178,6 +178,15 @@ sap.ui.define([
 		}
 
 		this.destroyCardBadgeEnablement();
+	};
+
+	/**
+	 * Called on before rendering of the control.
+	 *
+	 * @private
+	 */
+	CardBase.prototype.onBeforeRendering = function () {
+		this._syncCardBadges();
 	};
 
 	CardBase.prototype.setAggregation = function (sAggregationName, oObject) {

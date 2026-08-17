@@ -22,7 +22,7 @@ sap.ui.define([
 	 * with <code>recurrenceType</code> set to <code>Weekly</code> is provided.
 	 *
 	 * @extends sap.ui.unified.RecurrenceRule
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @private

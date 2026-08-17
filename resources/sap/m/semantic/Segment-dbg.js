@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/Log"], function(BaseObject, Log) 
 	 * Constructor for an sap.m.semantic.Segment.
 	 *
 	 * @class Abstraction for a segment in a SegmentedContainer
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @private
 	 * @since 1.30.0
 	 * @alias sap.m.semantic.Segment

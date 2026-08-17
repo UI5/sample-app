@@ -23,7 +23,7 @@
 .sapMTC .sapMTile,
 .sapMTC .sapMCustomTile {
 
-	&:focus {
+	&:focus-visible {
 		outline: none;
 
 		&::before {
@@ -36,5 +36,21 @@
 			border: 0.125rem solid var(--sapContent_FocusColor);
 			border-radius: 0.125rem;
 		}
+	}
+}
+
+html.sap-desktop .sapMTC .sapMTile:focus,
+html.sap-desktop .sapMTC .sapMCustomTile:focus {
+	outline: none;
+
+	&::before {
+		content: '';
+		position: absolute;
+		left: -0.1875rem;
+		right: -0.1875rem;
+		top: -0.1875rem;
+		bottom: -0.1875rem;
+		border: 0.125rem solid var(--sapContent_FocusColor);
+		border-radius: 0.125rem;
 	}
 }

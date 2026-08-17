@@ -144,7 +144,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -658,7 +658,17 @@ sap.ui.define([
 
 				case FocusMode.RENDERING_PENDING:
 					Rendering.addPrerenderingTask(() => {
-						_focusTarget(oOriginalDomRef, oFocusTarget);
+						// If the source control has been re-inserted into the same
+						// parent (e.g. remove + insert for reordering) and is still
+						// visible and enabled, skip focus redirect. RenderManager's
+						// focus save/restore will correctly restore focus to the
+						// control's new DOM position within the same parent's rendering.
+						var oSrcControl = oEvent.srcControl;
+						if (oSrcControl.getParent() !== this
+							|| oSrcControl.getVisible?.() === false
+							|| oSrcControl.getEnabled?.() === false) {
+							_focusTarget(oOriginalDomRef, oFocusTarget);
+						}
 					});
 					break;
 
@@ -1354,9 +1364,9 @@ sap.ui.define([
 	 * Sets the focus to the stored focus DOM reference.
 	 *
 	 * @param {object} [oFocusInfo={}] Options for setting the focus
-	 * @param {boolean} [oFocusInfo.preventScroll=false] @since 1.60 if it's set to true, the focused
+	 * @param {boolean} [oFocusInfo.preventScroll=false] {@since 1.60} if it's set to true, the focused
 	 *   element won't be shifted into the viewport if it's not completely visible before the focus is set
-	 * @param {any} [oFocusInfo.targetInfo] Further control-specific setting of the focus target within the control @since 1.98
+	 * @param {any} [oFocusInfo.targetInfo] Further control-specific setting of the focus target within the control {@since 1.98}
 	 * @public
 	 */
 	Element.prototype.focus = function (oFocusInfo) {
@@ -1415,7 +1425,7 @@ sap.ui.define([
 	 * To be overwritten by the specific control method.
 	 *
 	 * @param {object} oFocusInfo Focus info object as returned by {@link #getFocusInfo}
-	 * @param {boolean} [oFocusInfo.preventScroll=false] @since 1.60 if it's set to true, the focused
+	 * @param {boolean} [oFocusInfo.preventScroll=false] {@since 1.60} if it's set to true, the focused
 	 *   element won't be shifted into the viewport if it's not completely visible before the focus is set
 	 * @returns {this} Returns <code>this</code> to allow method chaining
 	 * @protected
@@ -1542,15 +1552,25 @@ sap.ui.define([
 
 	// ---- data container ----------------------------------
 
-	// Note: the real class documentation can be found in sap/ui/core/CustomData so that the right module is
-	// shown in the API reference. A reduced copy of the class documentation and the documentation of the
-	// settings has to be provided here, close to the runtime metadata to allow extracting the metadata.
 	/**
+	 * Constructor for a new <code>CustomData</code> element.
+	 *
+	 * @param {string} [sId] ID for the new element, generated automatically if no ID is given
+	 * @param {object} [mSettings] initial settings for the new element
+	 *
 	 * @class
 	 * Contains a single key/value pair of custom data attached to an <code>Element</code>.
+	 *
+	 * See method {@link sap.ui.core.Element#data Element.prototype.data} and the chapter
+	 * {@link topic:91f0c3ee6f4d1014b6dd926db0e91070 Custom Data - Attaching Data Objects to Controls}
+	 * in the documentation.
+	 *
+	 * @extends sap.ui.core.Element
+	 * @version 1.151.0
+	 *
 	 * @public
 	 * @alias sap.ui.core.CustomData
-	 * @synthetic
+	 * @ui5-module-override sap/ui/core/CustomData
 	 */
 	var CustomData = Element.extend("sap.ui.core.CustomData", /** @lends sap.ui.core.CustomData.prototype */ { metadata : {
 

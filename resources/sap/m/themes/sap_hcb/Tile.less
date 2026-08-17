@@ -16,16 +16,20 @@
 	background-color: @sapUiTileBackground;
 }
 
-.sapMTile:focus,
-.sapMCustomTile:focus .sapMTile {
+html.sap-desktop .sapMTile:focus,
+html.sap-desktop .sapMCustomTile:focus .sapMTile,
+.sapMTile:focus-visible,
+.sapMCustomTile:focus-visible .sapMTile {
 	border: 1px dotted transparent;
 	border-radius: 0;
 	position: relative;
 }
 
-.sapMTile:focus::before,
+html.sap-desktop .sapMTile:focus::before,
+.sapMTile:focus-visible::before,
 .sapMTile:hover::before,
-.sapMCustomTile:focus .sapMTile::before,
+html.sap-desktop .sapMCustomTile:focus .sapMTile::before,
+.sapMCustomTile:focus-visible .sapMTile::before,
 .sapMCustomTile:hover .sapMTile::before{
 	content: "";
 	position: absolute;
@@ -36,8 +40,10 @@
 	pointer-events: none;
 }
 
-.sapMTile:focus::before,
-.sapMCustomTile:focus .sapMTile::before {
+html.sap-desktop .sapMTile:focus::before,
+.sapMTile:focus-visible::before,
+html.sap-desktop .sapMCustomTile:focus .sapMTile::before,
+.sapMCustomTile:focus-visible .sapMTile::before {
 	outline: 0.125rem dotted @sapUiContentFocusColor;
 	outline-offset: -0.25rem;
 }

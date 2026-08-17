@@ -240,7 +240,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -357,7 +357,10 @@ sap.ui.define([
 
 		// BEWARE: do not share mHeaders between _MetadataRequestor and _Requestor!
 		this.mHeaders = {"Accept-Language" : sLanguageTag};
-		this.mMetadataHeaders = {"Accept-Language" : sLanguageTag};
+		this.mMetadataHeaders = {
+			"Accept-Language" : sLanguageTag,
+			"X-SAP-Security-Session" : "disabled"
+		};
 
 		mQueryParams = Object.assign({}, mURLParameters, mParameters.metadataUrlParams);
 		const fnGetOrCreateRetryAfterPromise = this.getOrCreateRetryAfterPromise.bind(this);
@@ -1540,7 +1543,6 @@ sap.ui.define([
 		}
 
 		if (bIsBound) {
-			sResourcePath &&= sResourcePath.split("?")[0]; // remove query string
 			aTargets = [resolveTarget(oRawMessage.target)];
 			if (oRawMessage.additionalTargets) {
 				oRawMessage.additionalTargets.forEach(function (sTarget) {
@@ -1746,9 +1748,7 @@ sap.ui.define([
 	 * @see #requestKeyPredicate
 	 */
 	ODataModel.prototype.fetchKeyPredicate = function (sMetaPath, oEntity) {
-		var mTypeForMetaPath = {};
-
-		return this.oRequestor.fetchType(mTypeForMetaPath, sMetaPath).then(function () {
+		return this.oRequestor.fetchType(sMetaPath).then((mTypeForMetaPath) => {
 			return _Helper.getKeyPredicate(oEntity, sMetaPath, mTypeForMetaPath);
 		});
 	};
@@ -2674,7 +2674,7 @@ sap.ui.define([
 
 		if (sResourcePath) {
 			const oMetaModel = this.getMetaModel();
-			sContextPath = "/" + sResourcePath.split("?")[0]; // remove query string
+			sContextPath = "/" + sResourcePath;
 			const sMetaPath = _Helper.getMetaPath(sContextPath);
 			const vMetadata = oMetaModel.getObject(sMetaPath);
 			if (Array.isArray(vMetadata)) {

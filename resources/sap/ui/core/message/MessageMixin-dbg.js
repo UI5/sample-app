@@ -51,7 +51,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/base/Log", "sa
 					if (oLabel.getMetadata().isInstanceOf("sap.ui.core.Label") && oLabel.getText) {
 						let sAdditionalText = oMessage.getAdditionalText() || '';
 						const sLabel = oLabel.getText();
-						if (!sAdditionalText.split(',').includes(sLabel)) {
+						if (!sAdditionalText.split(', ').includes(sLabel)) {
 							if (oMessage[HANDLEDBYMIXIN]) {
 								sAdditionalText = sAdditionalText ? `${sAdditionalText}, ${sLabel}` : sLabel;
 							} else {

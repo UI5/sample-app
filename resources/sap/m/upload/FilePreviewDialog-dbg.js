@@ -22,8 +22,9 @@ sap.ui.define([
 	"sap/m/Title",
 	"sap/ui/core/Control",
 	"sap/ui/core/InvisibleMessage",
-	"sap/ui/core/library"
-], function(Core, Element, HTML, Button, Image, PDFViewer, Dialog, IllustratedMessage, IllustratedMessageType, Carousel, Log, Library, VBox, Bar, Title, Control, InvisibleMessage, coreLibrary) {
+	"sap/ui/core/library",
+	"sap/base/security/encodeXML"
+], function(Core, Element, HTML, Button, Image, PDFViewer, Dialog, IllustratedMessage, IllustratedMessageType, Carousel, Log, Library, VBox, Bar, Title, Control, InvisibleMessage, coreLibrary, encodeXML) {
 	"use strict";
 
 	// get resource translation bundle;
@@ -77,7 +78,7 @@ sap.ui.define([
 	 * @constructor
 	 * @public
 	 * @since 1.120
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @extends sap.ui.core.Element
 	 * @name sap.m.upload.FilePreviewDialog
 	 */
@@ -492,7 +493,7 @@ sap.ui.define([
 						break;
 					}
 					const oPage = new HTML({
-						content: `<video controls width='100%' height='100%' src=${oItem.getUrl()}>`
+						content: `<video controls width='100%' height='100%' src="${encodeXML(oItem.getUrl())}">`
 					});
 					return oPage;
 				}

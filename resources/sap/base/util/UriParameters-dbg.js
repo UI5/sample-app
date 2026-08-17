@@ -212,7 +212,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sName Name of the query parameter to get the value for
 	 * @param {boolean} [bAll=false] Whether all values for the parameter should be returned; the use of
-	 *   this parameter is deprecated and highly discouraged; use the {@link #getAll} method instead
+	 *   this parameter is deprecated and highly discouraged; use the {@link #getAll} method instead {@deprecated}
 	 * @return {string|null} First value of the query parameter with the given name or <code>null</code>
 	 * @SecSource {return|XSS} Return value contains URL parameters
 	 * @public

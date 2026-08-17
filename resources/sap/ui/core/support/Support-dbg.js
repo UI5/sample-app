@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @class This class provides the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 	 *
 	 * @extends sap.ui.base.EventProvider
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @private
 	 * @alias sap.ui.core.support.Support
 	 */

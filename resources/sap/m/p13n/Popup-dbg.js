@@ -18,9 +18,9 @@ sap.ui.define([
 	"sap/ui/core/Element",
 	"sap/ui/core/Lib",
 	"sap/ui/core/library",
-	"sap/ui/core/syncStyleClass",
 	"sap/ui/model/json/JSONModel",
-	"sap/ui/core/ShortcutHintsMixin"
+	"sap/ui/core/ShortcutHintsMixin",
+	"sap/ui/core/InvisibleMessage"
 ], (
 	Control,
 	Button,
@@ -36,9 +36,9 @@ sap.ui.define([
 	Element,
 	Library,
 	coreLibrary,
-	syncStyleClass,
 	JSONModel,
-	ShortcutHintsMixin
+	ShortcutHintsMixin,
+	InvisibleMessage
 ) => {
 	"use strict";
 
@@ -46,7 +46,7 @@ sap.ui.define([
 	const {P13nPopupMode} = mLibrary;
 
 	//Shortcut to sap.ui.core.TitleLevel
-	const {TitleLevel} = coreLibrary;
+	const {TitleLevel, InvisibleMessageMode} = coreLibrary;
 
 	/**
 	 * Constructor for a new <code>Popup</code>.
@@ -60,7 +60,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @public
 	 * @since 1.97
@@ -160,6 +160,7 @@ sap.ui.define([
 			resetText: this.oResourceBundle.getText("p13n.POPUP_RESET")
 		});
 		this.setModel(oModel, this.LOCALIZATION_MODEL);
+		this.oInvisibleMessage = InvisibleMessage.getInstance();
 	};
 
 	/**
@@ -533,6 +534,7 @@ sap.ui.define([
 				oPanel.onReset();
 			}
 		});
+		this.oInvisibleMessage.announce(this.oResourceBundle.getText("p13n.POPUP_ANNOUNCEMENT_RESET"), InvisibleMessageMode.Assertive);
 	};
 
 	Popup.prototype._getContainer = function(bWithoutSwitch) {

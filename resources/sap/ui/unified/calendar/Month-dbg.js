@@ -78,7 +78,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -154,6 +154,15 @@ sap.ui.define([
 			 * @since 1.48
 			 */
 			showWeekNumbers : {type : "boolean", group : "Appearance", defaultValue : true},
+
+			/**
+			 * Determines whether the header of the week numbers column is displayed.
+			 * The column header text is translated according to the active language.
+			 *
+			 * <b>Note:</b> Takes effect only when <code>showWeekNumbers</code> is set to <code>true</code>.
+			 * @since 1.151
+			 */
+			showWeekNumbersHeader : {type : "boolean", group : "Appearance", defaultValue : false},
 
 			/**
 			 * The value of this property is set trough the sap.ui.unified.Calendar control,
@@ -326,6 +335,30 @@ sap.ui.define([
 		return "";
 	};
 
+	/**
+	 * Returns the text to display in the week numbers column header.
+	 * Returns an empty string when the header should not be shown.
+	 * @returns {string} The week numbers column header text, or empty string
+	 * @private
+	 */
+	Month.prototype._getWeekNumbersHeaderText = function() {
+		if (!this.getShowWeekNumbersHeader()) {
+			return "";
+		}
+
+		// Locales where the calendar week abbreviation (sap-calendarWeek narrow) is too long
+		// to fit in the week number column header cell — verified manually.
+		// These fall back to the "week" narrow display name from CLDR (week-narrow.displayName).
+		const _oLongCWLocales = new Set(["ar", "ar-EG", "ar-SA", "he", "vi", "zh-CN", "zh-HK", "zh-TW"]),
+			oLocaleData = this._getLocaleData();
+
+		if (_oLongCWLocales.has(this._getLocale())) {
+			return oLocaleData.getDisplayName("week", "narrow");
+		}
+
+		return oLocaleData.getCalendarWeek("narrow").replace("{0}", "").trim();
+	};
+
 	Month.prototype.exit = function(){
 
 		if (this._oItemNavigation) {
@@ -364,6 +397,14 @@ sap.ui.define([
 
 		// check if day names are too big -> use smaller ones
 		_checkNamesLength.call(this);
+
+		if (this._bFocusFromTouch) {
+			const iFocusedIndex = this._oItemNavigation.getFocusedIndex();
+			const oDomRef = this._oItemNavigation.getItemDomRefs()[iFocusedIndex];
+			if (oDomRef) {
+				oDomRef.classList.add("sapUiCalItemFocusFromTouch");
+			}
+		}
 	};
 
 	Month.prototype.onmouseover = function(oEvent) {
@@ -1084,6 +1125,10 @@ sap.ui.define([
 			clientY: oEvent.clientY
 		};
 
+		if (oEvent.target.closest(".sapUiCalItem")) {
+			this._bFocusFromTouch = true;
+		}
+
 		// handle only mouse down on a week number
 		if (oEvent.button
 			|| Device.support.touch
@@ -1100,6 +1145,12 @@ sap.ui.define([
 			oFirstDayOfWeekCalendarDate = CalendarDate.fromLocalJSDate(oParsedDate, this._getPrimaryCalendarType());
 
 		this._handleWeekSelection(oFirstDayOfWeekCalendarDate, bFocusStartDate);
+	};
+
+	Month.prototype.ontouchstart = function(oEvent) {
+		if (oEvent.target.closest(".sapUiCalItem")) {
+			this._bFocusFromTouch = true;
+		}
 	};
 
 	Month.prototype.onmouseup = function(oEvent){
@@ -1188,6 +1239,7 @@ sap.ui.define([
 		if (oEvent.which === KeyCodes.SPACE){
 			this.bSpaceButtonPressed = true;
 		}
+		this._bFocusFromTouch = false;
 	};
 	Month.prototype.onkeyup = function(oEvent){
 		if (oEvent.which === KeyCodes.SPACE){
@@ -2162,6 +2214,12 @@ sap.ui.define([
 			// as in the focus event the month can be changed, store the last target here
 			this._sLastTargetId = oDomRef.id;
 			this._selectedWithMouse = true;
+		}
+
+		if (this._bFocusFromTouch) {
+			oDomRef.classList.add("sapUiCalItemFocusFromTouch");
+		} else {
+			oDomRef.classList.remove("sapUiCalItemFocusFromTouch");
 		}
 
 		if (bFireFocus) {

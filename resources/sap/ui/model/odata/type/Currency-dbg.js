@@ -70,8 +70,8 @@ sap.ui.define([
 	 *   returned
 	 * @property {"short"|"long"|"standard"} [style]
 	 *   The style of format.
-	 *   Valid values are based on the CLDR <code>decimalFormat</code>. When set to
-	 *   <code>short</code> or <code>long</code>, numbers are formatted into compact forms.
+     *   When set to <code>short</code> or <code>long</code>, numbers are formatted into the <code>short</code> form
+	 *   only.
 	 *   When this option is set, the default value of the <code>precision</code> option is set to <code>2</code>.
 	 *   This can be changed by setting either <code>min/maxFractionDigits</code>,
 	 *   <code>decimals</code>, <code>shortDecimals</code>, or the <code>precision</code> option itself.
@@ -152,7 +152,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.type.Currency
 	 * @public
 	 * @since 1.63.0
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 */
 	var Currency = BaseCurrency.extend("sap.ui.model.odata.type.Currency", {
 		constructor : function (oFormatOptions, oConstraints) {

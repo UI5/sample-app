@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @implements sap.ui.unified.IMenuItem
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -235,7 +235,7 @@ sap.ui.define([
 	};
 
 
-	MenuTextFieldItem.prototype.onkeydown = function(oEvent){
+	MenuTextFieldItem.prototype.onkeyup = function(oEvent){
 		oEvent.stopPropagation(); //Avoid bubbling key events to the Menu -> Events are only selectively forwarded
 	};
 
@@ -249,9 +249,13 @@ sap.ui.define([
 	};
 
 
-	MenuTextFieldItem.prototype.onkeyup = function(oEvent){
+	MenuTextFieldItem.prototype.onkeydown = function(oEvent){
 		//like sapenter but on keyup -> see Menu.prototype.onkeyup
 		if (!PseudoEvents.events.sapenter.fnCheck(oEvent) && oEvent.key !== "Enter") {
+			if (oEvent.key === "Home" || oEvent.key === "End") {
+				oEvent.stopPropagation();
+			}
+
 			return;
 		}
 		var sValue = this.$("tf").val();

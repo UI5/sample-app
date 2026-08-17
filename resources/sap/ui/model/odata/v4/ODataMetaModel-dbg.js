@@ -203,7 +203,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -3470,7 +3470,9 @@ sap.ui.define([
 	 *
 	 *   For fixed values, only one mapping is expected and the qualifier is ignored. The mapping
 	 *   is available with key "" and has an additional property "$qualifier" which is the original
-	 *   qualifier (useful in case of "ValueListRelevantQualifiers" annotation).
+	 *   qualifier (useful in case of "ValueListRelevantQualifiers" annotation). Since 1.151.0,
+	 *   multiple mappings are supported in case of "ValueListRelevantQualifiers" annotation but
+	 *   missing <code>oContext</code> instance; in this case qualifiers are unchanged.
 	 *
 	 *   The promise is rejected with an error if there is no value list information available
 	 *   for the given property path. Use {@link #getValueListType} to determine if value list
@@ -3489,7 +3491,8 @@ sap.ui.define([
 	 *       service that are not mappings for the property.
 	 *     <li> Two different referenced services contain a mapping using the same qualifier.
 	 *     <li> A service is referenced twice.
-	 *     <li> There are multiple mappings for a fixed value list.
+	 *     <li> There are multiple mappings for a fixed value list (with given <code>oContext</code>
+	 *       instance or missing "ValueListRelevantQualifiers" annotation).
 	 *     <li> A <code>com.sap.vocabularies.Common.v1.ValueList</code> annotation in a referenced
 	 *       service has the property <code>CollectionRoot</code> or <code>SearchSupported</code>.
 	 *   </ul>
@@ -3520,6 +3523,7 @@ sap.ui.define([
 		]).then(function ([sQualifiedParentName, oProperty, mAnnotationByTerm, bFixedValues,
 				aOverloads]) {
 			var mMappingUrlByQualifier = {},
+				aRelevantQualifiers,
 				oValueListInfo = {};
 
 			/*
@@ -3593,7 +3597,7 @@ sap.ui.define([
 					});
 				});
 			})).then(function () {
-				var aRelevantQualifiers = mAnnotationByTerm[sValueListRelevantQualifiers];
+				aRelevantQualifiers = mAnnotationByTerm[sValueListRelevantQualifiers];
 
 				// add all mappings in the data service (or local annotation files)
 				Object.keys(mAnnotationByTerm).filter(function (sTerm) {
@@ -3621,6 +3625,9 @@ sap.ui.define([
 					aQualifiers = Object.keys(mValueListByRelevantQualifier);
 					// With fixed values, only one mapping should exist. Return it for qualifier "".
 					if (aQualifiers.length !== 1) {
+						if (!oContext && aRelevantQualifiers) {
+							return mValueListByRelevantQualifier; // Note: cannot be empty!
+						}
 						throw new Error("Annotation '" + sValueListWithFixedValues.slice(1)
 							+ "' but not exactly one '" + sValueList.slice(1)
 							+ "' for property " + sPropertyPath);

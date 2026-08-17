@@ -210,7 +210,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -3496,7 +3496,7 @@ sap.ui.define([
 
 				case CalendarIntervalType.OneMonth:
 				case "OneMonth":
-					if (this._oOneMonthsRow && this._oOneMonthsRow.getDays() != iIntervals) {
+					if (this._oOneMonthsRow && (this._oOneMonthsRow.getDays() != iIntervals || iOldSize != this._iSize)) {
 						this._oOneMonthsRow.setDays(iIntervals);
 						this._dateNav.setStep(iIntervals * iIntervalSize);
 						if (this._iSize > 1) {

@@ -108,7 +108,7 @@ sap.ui.define([
 		 * To prevent this, apps using the <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library in advance.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 *
 		 * @constructor
 		 * @public
@@ -440,7 +440,7 @@ sap.ui.define([
 					this._bMainRegionSelection = false;
 					this._fireColorSelect(this._getDefaultColor(), true, oEvent);
 				}.bind(this)
-			});
+			}).addStyleClass("sapMColorPaletteDefaultColorBtn");
 		};
 
 		// Default color

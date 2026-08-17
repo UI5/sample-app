@@ -28,7 +28,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.SearchItemGroup",
       {
         metadata: {
-          tag: "ui5-search-item-group-e93a470b",
+          tag: "ui5-search-item-group-6bfd01e3",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 

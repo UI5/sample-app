@@ -10,7 +10,7 @@
  * @alias module:sap/base/util/restricted/_zipObjectDeep
  * @author SAP SE
  * @since 1.81
- * @version 1.150.0
+ * @version 1.151.0
  * @private
  * @ui5-restricted
 */

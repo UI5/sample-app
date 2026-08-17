@@ -72,7 +72,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @constructor
 	 * @public
@@ -1212,10 +1212,12 @@ sap.ui.define([
 	};
 
 	ColorPicker.prototype.exit = function() {
+		this._stopZoomWatch();
 		this._cleanup();
 	};
 
 	ColorPicker.prototype.onBeforeRendering = function() {
+		this._stopZoomWatch();
 		this._cleanup();
 		// Create the layout controls
 		this._createLayout();
@@ -2438,6 +2440,9 @@ sap.ui.define([
 			// toggle fields - HEX field will be visible initially on mobile
 			this._toggleFields();
 		}
+
+		this._bLastHighZoom = this._isHighZoom();
+		this._startZoomWatch();
 	};
 
 	/**
@@ -2650,6 +2655,46 @@ sap.ui.define([
 				break;
 			}
 		}
+	};
+
+	ColorPicker.prototype._getViewportWidth = function() {
+		return (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+	};
+
+	ColorPicker.prototype._isHighZoom = function() {
+		return this._getViewportWidth() <= 320;
+	};
+
+	ColorPicker.prototype._startZoomWatch = function() {
+		this._fnWindowResizeListener = function() {
+			if (!this.getDomRef()) { return; }
+			var bHighZoom = this._isHighZoom();
+			if (bHighZoom !== this._bLastHighZoom) {
+				this._bLastHighZoom = bHighZoom;
+				this.invalidate();
+			}
+		}.bind(this);
+		if (window.visualViewport) {
+			window.visualViewport.addEventListener("resize", this._fnWindowResizeListener);
+		}
+		window.addEventListener("resize", this._fnWindowResizeListener);
+	};
+
+	ColorPicker.prototype._stopZoomWatch = function() {
+		if (this._fnWindowResizeListener) {
+			window.removeEventListener("resize", this._fnWindowResizeListener);
+			if (window.visualViewport) {
+				window.visualViewport.removeEventListener("resize", this._fnWindowResizeListener);
+			}
+			this._fnWindowResizeListener = null;
+		}
+	};
+
+	ColorPicker.prototype._getEffectiveDisplayMode = function() {
+		if (this._isHighZoom()) {
+			return ColorPickerDisplayMode.Simplified;
+		}
+		return this.getDisplayMode();
 	};
 
 	return ColorPicker;

@@ -33,7 +33,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents.dist.ListItemGroup",
       {
         metadata: {
-          tag: "ui5-li-group-e93a470b",
+          tag: "ui5-li-group-6bfd01e3",
 
           namespace: "sap.f.gen.ui5.webcomponents",
 

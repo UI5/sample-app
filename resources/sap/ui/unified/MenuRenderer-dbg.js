@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/core/ControlBehavior"],
 	 * Menu renderer.
 	 * @author SAP - TD Core UI&AM UI Infra
 	 *
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @namespace
 	 */
 	var MenuRenderer = {
@@ -165,7 +165,9 @@ sap.ui.define(["sap/ui/core/ControlBehavior"],
 		oRm.openEnd();
 		oRm.close("div");
 
-		oRm.voidStart("hr").voidEnd();
+		oRm.voidStart("hr");
+		oRm.attr("aria-hidden", "true");
+		oRm.voidEnd();
 
 		oRm.openStart("div");
 		oRm.class("sapUiMnuDivR");

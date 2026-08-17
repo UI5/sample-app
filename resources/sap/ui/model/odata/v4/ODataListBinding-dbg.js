@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -914,8 +914,7 @@ sap.ui.define([
 	 *
 	 * When using data aggregation without <code>groupLevels</code> and without
 	 * <code>"grandTotal like 1.84"</code> (see {@link #setAggregation}), single entities can be
-	 * created (@experimental as of version 1.146.0, see
-	 * {@link sap.ui.model.odata.v4.Context#isAggregated}).
+	 * created (since 1.151.0, see {@link sap.ui.model.odata.v4.Context#isAggregated}).
 	 *
 	 * @param {Object<any>} [oInitialData={}]
 	 *   The initial data for the created entity
@@ -3338,9 +3337,8 @@ sap.ui.define([
 	 *     <li> the given context path does not match this binding,
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> the binding is part of a {@link #create deep create} because it is relative to a
-	 *       {@link sap.ui.model.odata.v4.Context#isTransient transient} context,
-	 *     <li> {@link sap.ui.model.odata.v4.Context#setKeepAlive} fails, or
-	 *     <li> data aggregation but no recursive hierarchy (see {@link #setAggregation}) is used.
+	 *       {@link sap.ui.model.odata.v4.Context#isTransient transient} context, or
+	 *     <li> {@link sap.ui.model.odata.v4.Context#setKeepAlive} fails.
 	 *   </ul>
 	 *
 	 * @public
@@ -3355,9 +3353,6 @@ sap.ui.define([
 			iPredicateIndex = _Helper.getPredicateIndex(sPath),
 			sResolvedPath = this.getResolvedPath();
 
-		if (_Helper.isDataAggregation(this.mParameters)) {
-			throw new Error("Unsupported $$aggregation at " + this);
-		}
 		this.checkKeepAlive();
 		this.checkSuspended();
 		this.checkTransient();

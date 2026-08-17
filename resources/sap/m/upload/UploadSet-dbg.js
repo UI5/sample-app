@@ -56,7 +56,7 @@ sap.ui.define([
 	 * but it also helps to avoid template-related issues and ensures better data handling.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @constructor
 	 * @public
 	 * @since 1.63
@@ -1551,6 +1551,13 @@ sap.ui.define([
 			oItem._setInEditMode(false);
 			this.fireAfterItemEdited({item: oItem});
 			this._oEditedItem = null;
+			return;
+		}
+
+		if (oItem.getUrl() && !oItem.getMediaType() && sNewFileName.includes(".")) {
+			oEdit.setValueStateText(this._oRb.getText("UPLOADSET_WITH_TABLE_DOCUMENT_RENAME_SPLC_VALIDATION_ERROR_MESSAGE", ["."]));
+			oEdit.setProperty("valueState", "Error", true);
+			oEdit.setShowValueStateMessage(true);
 			return;
 		}
 		if (!this.getSameFilenameAllowed() && UploadSetItem._checkDoubleFileName(sNewFileName + "." + oFile.extension, this._getAllItems())) {

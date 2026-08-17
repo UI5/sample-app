@@ -130,7 +130,7 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 		} else {
 				oRm.attr("role", "link");
 		}
-		if (sState === LoadState.Loaded) {
+		if (sState === LoadState.Loaded && (bHasPress || bRenderLink || sAriaRole)) {
 			oRm.attr("aria-label", sAriaText);
 		}
 		if (sAriaRoleDescription) {
@@ -394,11 +394,18 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS", "sap/ui/core/Them
 			var aTileContents = oControl.getTileContent();
 			var oTileContent = Array.isArray(aTileContents) && aTileContents[0];
 			var oContentPriorityBadge = oTileContent && oTileContent._getPriorityBadge();
+			var oContentAdditionalPriorityBadge = oTileContent && oTileContent._getAdditionalPriorityBadge();
 
-			// Render Content Priority Badge - only in ArticleMode
-			if (bIsArticleMode && oContentPriorityBadge) {
+			// Render priority badges in header — only in ArticleMode. Hidden on desktop,
+			// shown on mobile where the background image covers the tile body.
+			if (bIsArticleMode && (oContentPriorityBadge || oContentAdditionalPriorityBadge)) {
 				oRm.openStart("div", oControl.getId() + "-content-priority-badge").class("sapMGTBackgroundBadge").openEnd();
-				oRm.renderControl(oContentPriorityBadge);
+				if (oContentPriorityBadge) {
+					oRm.renderControl(oContentPriorityBadge);
+				}
+				if (oContentAdditionalPriorityBadge) {
+					oRm.renderControl(oContentAdditionalPriorityBadge);
+				}
 				oRm.close("div");
 			}
 			oRm.close("div");

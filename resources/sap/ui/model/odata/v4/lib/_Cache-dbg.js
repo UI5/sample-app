@@ -361,11 +361,8 @@ sap.ui.define([
 			_Helper.setPrivateAnnotation(oElement, "promise", _Helper.addPromise(oElement));
 			aElements.$byPredicate[sTransientPredicate] = oElement;
 		});
-		// add the collection type to mTypeForMetaPath
-		this.fetchTypes().then(function (mTypeForMetaPath) {
-			that.oRequestor.fetchType(mTypeForMetaPath,
-				that.sMetaPath + "/" + _Helper.getMetaPath(sPath));
-		});
+		// add the collection type
+		that.oRequestor.fetchType(that.sMetaPath + "/" + _Helper.getMetaPath(sPath));
 
 		return aElements;
 	};
@@ -547,13 +544,13 @@ sap.ui.define([
 			fnSubmitCallback();
 		}
 
-		function request(sPostPath, oPostGroupLock) {
+		function request(sResourcePathWithQuery, oPostGroupLock) {
 			// mark as transient (again)
 			_Helper.setPrivateAnnotation(oEntityData, "transient", sGroupId);
 			_Helper.addByPath(that.mPostRequests, sPath, oEntityData);
 			return SyncPromise.all([
-				that.oRequestor.request("POST", sPostPath, oPostGroupLock, null, oPostBody,
-					setCreatePending, cleanUp, undefined,
+				that.oRequestor.request("POST", sResourcePathWithQuery, oPostGroupLock, null,
+					oPostBody, setCreatePending, cleanUp, undefined,
 					_Helper.buildPath(that.sResourcePath, sPath, sTransientPredicate)),
 				that.fetchTypes()
 			]).then(function ([oCreatedEntity, mTypeForMetaPath]) {
@@ -580,7 +577,7 @@ sap.ui.define([
 						// contexts still use the transient predicate to access the data
 					} // else: transient element was not kept by #reset, leave it like that!
 				}
-				_Helper.cancelNestedCreates(oEntityData, "Deep create of " + sPostPath
+				_Helper.cancelNestedCreates(oEntityData, "Deep create of " + sResourcePathWithQuery
 					+ " succeeded. Do not use this promise.");
 				// update the cache with the POST response
 				sResultingPath = _Helper.buildPath(sPath, sPredicate || sTransientPredicate);
@@ -629,7 +626,7 @@ sap.ui.define([
 				sGroupId = that.oRequestor.getGroupSubmitMode(sGroupId) === "API"
 					? sGroupId
 					: "$parked." + sGroupId;
-				oPromise = request(sPostPath,
+				oPromise = request(sResourcePathWithQuery,
 					that.oRequestor.lockGroup(sGroupId, that, true, true));
 				fnErrorCallback(oError); // Note: fires "createCompleted"
 
@@ -687,8 +684,9 @@ sap.ui.define([
 		}
 
 		return oPostPathPromise.then(function (sPostPath) {
-			sPostPath += that.oRequestor.buildQueryString(that.sMetaPath, that.mQueryOptions, true);
-			return request(sPostPath, oGroupLock);
+			const sResourcePathWithQuery = sPostPath
+				+ that.oRequestor.buildQueryString(that.sMetaPath, that.mQueryOptions, true);
+			return request(sResourcePathWithQuery, oGroupLock);
 		});
 	};
 
@@ -958,10 +956,10 @@ sap.ui.define([
 			sFullResourcePath,
 			sGroupId,
 			iIndexOfAt = sRequestedPropertyPath.indexOf("@"),
-			sMergeBasePath, // full resource path plus custom query options
+			sMergeBasePathWithQuery, // full resource path plus custom query options
 			oPromise,
 			mQueryOptions,
-			sRequestPath,
+			sResourcePathWithQuery,
 			sResourceMetaPath = _Helper.getMetaPath(sResourcePath),
 			mTypeForMetaPath = this.getTypes(),
 			aUpdateProperties,
@@ -987,7 +985,7 @@ sap.ui.define([
 				oEntityType = mTypeForMetaPath[sMetaPath],
 				sExpand;
 
-			oEntityType ??= that.oRequestor.fetchType(mTypeForMetaPath, sMetaPath).getResult();
+			oEntityType ??= that.oRequestor.fetchType(sMetaPath).getResult()[sMetaPath];
 			if (sBasePath) {
 				// The key properties must only be copied from the result for nested entities. The
 				// root entity is already loaded and has them already. We check that they are
@@ -1043,16 +1041,16 @@ sap.ui.define([
 		visitQueryOptions(mQueryOptions);
 		sFullResourcePath = _Helper.buildPath(this.sResourcePath, sResourcePath);
 		// include $expand/$select only; this uniquely *describes* the late property request
-		sRequestPath = sFullResourcePath
+		sResourcePathWithQuery = sFullResourcePath
 			+ this.oRequestor.buildQueryString(sFullResourceMetaPath, mQueryOptions, false, true);
-		oPromise = this.mPropertyRequestByPath[sRequestPath];
+		oPromise = this.mPropertyRequestByPath[sResourcePathWithQuery];
 		if (!oPromise) {
 			// include non-system query options into string; pass $expand/$select as objects to
 			// allow merge
-			sMergeBasePath = sFullResourcePath
+			sMergeBasePathWithQuery = sFullResourcePath
 				+ this.oRequestor.buildQueryString(sFullResourceMetaPath, this.mQueryOptions, true);
 			sGroupId = _Helper.getPrivateAnnotation(oResource, "groupId");
-			oPromise = this.oRequestor.request("GET", sMergeBasePath,
+			oPromise = this.oRequestor.request("GET", sMergeBasePathWithQuery,
 				sGroupId ? this.oRequestor.lockGroup(sGroupId, this) : oGroupLock.getUnlockedCopy(),
 				undefined, undefined, onSubmit, undefined, sFullResourceMetaPath, undefined,
 				false, mQueryOptions
@@ -1061,7 +1059,7 @@ sap.ui.define([
 
 				return oData;
 			});
-			this.mPropertyRequestByPath[sRequestPath] = oPromise;
+			this.mPropertyRequestByPath[sResourcePathWithQuery] = oPromise;
 		}
 		// With the V2 adapter the surrounding complex type is requested for nested properties. So
 		// even when two late properties lead to the same request, each of them must be copied to
@@ -1071,13 +1069,13 @@ sap.ui.define([
 				sOldPredicate = _Helper.getPrivateAnnotation(oResource, "predicate");
 
 			if (sOldPredicate && sNewPredicate && sOldPredicate !== sNewPredicate) {
-				throw new Error("GET " + sRequestPath + ": Key predicate changed from "
+				throw new Error("GET " + sResourcePathWithQuery + ": Key predicate changed from "
 					+ sOldPredicate + " to " + sNewPredicate);
 			}
 			// only check for ETag change if the cache contains one; otherwise either the cache
 			// element is empty (via #addKeptElement) or the server did not send one last time
 			if (oResource["@odata.etag"] && oData["@odata.etag"] !== oResource["@odata.etag"]) {
-				throw new Error("GET " + sRequestPath + ": ETag changed");
+				throw new Error("GET " + sResourcePathWithQuery + ": ETag changed");
 			}
 
 			_Helper.updateSelected(that.mChangeListeners, sResourcePath, oResource, oData,
@@ -1094,55 +1092,28 @@ sap.ui.define([
 			}
 			throw oError;
 		}).finally(function () { // clean up only after updateSelected!
-			delete that.mPropertyRequestByPath[sRequestPath];
+			delete that.mPropertyRequestByPath[sResourcePathWithQuery];
 		});
 	};
 
 	/**
-	 * Fetches the type from the metadata for the root entity plus all types for $expand and puts
-	 * them into a map from meta path to type. Checks the types' key properties and puts their types
-	 * into the map, too, if they are complex. If a type has a
-	 * "@com.sap.vocabularies.Common.v1.Messages" annotation for messages, the type is enriched by
-	 * the property "@com.sap.vocabularies.Common.v1.Messages" containing the annotation object.
+	 * Fetches the type from the metadata for the root entity plus all types for $expand via this
+	 * cache's requestor. Checks the types' key properties and puts their types into the requestor's
+	 * map, too, if they are complex. If a type has a "@com.sap.vocabularies.Common.v1.Messages"
+	 * annotation for messages, the type is enriched by the property
+	 * "@com.sap.vocabularies.Common.v1.Messages" containing the annotation object.
 	 *
 	 * @returns {sap.ui.base.SyncPromise<object>}
 	 *   A promise that is resolved with a map from resource path + entity path to the type
 	 *
 	 * @private
+	 * @see sap.ui.model.odata.v4.lib._Requestor#fetchTypes
 	 * @see #getTypes
 	 */
 	_Cache.prototype.fetchTypes = function () {
-		var aPromises, mTypeForMetaPath,
-			that = this;
+		this.oTypePromise ??= this.oRequestor.fetchTypes(this.sMetaPath,
+			this.mLateExpandSelect ?? this.mQueryOptions);
 
-		/*
-		 * Recursively calls fetchType for all (sub)paths in $expand.
-		 * @param {string} sBaseMetaPath The resource meta path + entity path
-		 * @param {object} [mQueryOptions] The corresponding query options
-		 */
-		function fetchExpandedTypes(sBaseMetaPath, mQueryOptions) {
-			if (mQueryOptions && mQueryOptions.$expand) {
-				Object.keys(mQueryOptions.$expand).forEach(function (sNavigationPath) {
-					var sMetaPath = sBaseMetaPath;
-
-					sNavigationPath.split("/").forEach(function (sSegment) {
-						sMetaPath += "/" + sSegment;
-						aPromises.push(that.oRequestor.fetchType(mTypeForMetaPath, sMetaPath));
-					});
-					fetchExpandedTypes(sMetaPath, mQueryOptions.$expand[sNavigationPath]);
-				});
-			}
-		}
-
-		if (!this.oTypePromise) {
-			aPromises = [];
-			mTypeForMetaPath = {};
-			aPromises.push(this.oRequestor.fetchType(mTypeForMetaPath, this.sMetaPath));
-			fetchExpandedTypes(this.sMetaPath, this.mLateExpandSelect ?? this.mQueryOptions);
-			this.oTypePromise = SyncPromise.all(aPromises).then(function () {
-				return mTypeForMetaPath;
-			});
-		}
 		return this.oTypePromise;
 	};
 
@@ -1359,10 +1330,11 @@ sap.ui.define([
 	 *   A map from resource path + entity path to the type
 	 *
 	 * @private
+	 * @see sap.ui.model.odata.v4.lib._Requestor#getTypes
 	 * @see #fetchTypes
 	 */
 	_Cache.prototype.getTypes = function () {
-		return this.fetchTypes().getResult();
+		return this.oRequestor.getTypes();
 	};
 
 	/**
@@ -3847,10 +3819,10 @@ sap.ui.define([
 			mQueryOptions.$select = [];
 			_Helper.selectKeyProperties(mQueryOptions, mTypeForMetaPath[this.sMetaPath]);
 		}
-		const sResourcePath = this.sResourcePath
+		const sResourcePathWithQuery = this.sResourcePath
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true, true);
 
-		const oResponse = await this.oRequestor.request("GET", sResourcePath, oGroupLock);
+		const oResponse = await this.oRequestor.request("GET", sResourcePathWithQuery, oGroupLock);
 
 		this.visitResponse(oResponse, mTypeForMetaPath, undefined, undefined, 0);
 
@@ -4002,7 +3974,7 @@ sap.ui.define([
 		var aElements,
 			mMergeableQueryOptions,
 			mQueryOptions,
-			sResourcePath,
+			sResourcePathWithQuery,
 			bSkip,
 			mTypeForMetaPath = this.getTypes(),
 			that = this;
@@ -4058,12 +4030,12 @@ sap.ui.define([
 		}
 		mMergeableQueryOptions = _Helper.extractMergeableQueryOptions(mQueryOptions);
 		aPaths = _Helper.getUsedPaths(aPaths, mMergeableQueryOptions);
-		sResourcePath = this.sResourcePath + (bSingle ? aPredicates[0] : "")
+		sResourcePathWithQuery = this.sResourcePath + (bSingle ? aPredicates[0] : "")
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
 
-		return this.oRequestor.request("GET", sResourcePath, oGroupLock, undefined, undefined,
-				undefined, undefined, this.sMetaPath, undefined, false, mMergeableQueryOptions,
-				this, function (aOtherPaths) {
+		return this.oRequestor.request("GET", sResourcePathWithQuery, oGroupLock, undefined,
+				undefined, undefined, undefined, this.sMetaPath, undefined, false,
+				mMergeableQueryOptions, this, function (aOtherPaths) {
 					if (arguments.length) {
 						aPaths = aPaths.concat(aOtherPaths);
 					} else {
@@ -4740,7 +4712,7 @@ sap.ui.define([
 	 *   loaded because they may have changed due to side effects of a previous update; must not
 	 *   contain an empty path
 	 * @param {string} [sResourcePath=this.sResourcePath]
-	 *   A resource path relative to the service URL; it must not contain a query string
+	 *   A resource path relative to the service URL
 	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise which is resolved without a defined result, or rejected with an error if loading
 	 *   of side effects fails.
@@ -4752,6 +4724,7 @@ sap.ui.define([
 	_SingleCache.prototype.requestSideEffects = function (oGroupLock, aPaths, sResourcePath) {
 		var mMergeableQueryOptions,
 			mQueryOptions,
+			sResourcePathWithQuery,
 			oResult,
 			bSkip,
 			that = this;
@@ -4771,10 +4744,10 @@ sap.ui.define([
 		}
 		mMergeableQueryOptions = _Helper.extractMergeableQueryOptions(mQueryOptions);
 		aPaths = _Helper.getUsedPaths(aPaths, mMergeableQueryOptions);
-		sResourcePath = (sResourcePath || this.sResourcePath)
+		sResourcePathWithQuery = (sResourcePath || this.sResourcePath)
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
 		oResult = SyncPromise.all([
-			this.oRequestor.request("GET", sResourcePath, oGroupLock, undefined, undefined,
+			this.oRequestor.request("GET", sResourcePathWithQuery, oGroupLock, undefined, undefined,
 				undefined, undefined, this.sMetaPath, undefined, false, mMergeableQueryOptions,
 				this, function (aOtherPaths) {
 					if (arguments.length) {
@@ -4951,9 +4924,7 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.lib._Requestor} oRequestor
 	 *   The requestor
 	 * @param {string} sResourcePath
-	 *   A resource path relative to the service URL; it must not contain a query string
-	 *   <br>
-	 *   Example: Products
+	 *   A resource path relative to the service URL
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string (requires "copy on write"!), the
 	 *   value in this pair has to be a string or an array of strings; if it is an array, the
@@ -4976,14 +4947,15 @@ sap.ui.define([
 	 */
 	_Cache.create = function (oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,
 			sDeepResourcePath, bSharedRequest) {
-		var iCount, aKeys, sPath, oSharedCollectionCache, mSharedCollectionCacheByPath;
+		var iCount, aKeys, sResourcePathWithQuery, oSharedCollectionCache,
+			mSharedCollectionCacheByPath;
 
 		if (bSharedRequest) {
-			sPath = sResourcePath
+			sResourcePathWithQuery = sResourcePath
 				+ oRequestor.buildQueryString(_Helper.getMetaPath("/" + sResourcePath),
 					mQueryOptions, false, bSortExpandSelect);
 			mSharedCollectionCacheByPath = oRequestor.$mSharedCollectionCacheByPath ??= {};
-			oSharedCollectionCache = mSharedCollectionCacheByPath[sPath];
+			oSharedCollectionCache = mSharedCollectionCacheByPath[sResourcePathWithQuery];
 			if (oSharedCollectionCache) {
 				oSharedCollectionCache.setActive(true);
 			} else {
@@ -5003,7 +4975,7 @@ sap.ui.define([
 					});
 				}
 
-				oSharedCollectionCache = mSharedCollectionCacheByPath[sPath]
+				oSharedCollectionCache = mSharedCollectionCacheByPath[sResourcePathWithQuery]
 					= new _CollectionCache(oRequestor, sResourcePath, mQueryOptions,
 						bSortExpandSelect, sDeepResourcePath, bSharedRequest);
 			}
@@ -5021,9 +4993,7 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.lib._Requestor} oRequestor
 	 *   The requestor
 	 * @param {string} sResourcePath
-	 *   A resource path relative to the service URL; it must not contain a query string
-	 *   <br>
-	 *   Example: Products
+	 *   A resource path relative to the service URL
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string (requires "copy on write"!), the
 	 *   value in this pair has to be a string or an array of strings; if it is an array, the
@@ -5049,9 +5019,7 @@ sap.ui.define([
 	 * @param {sap.ui.model.odata.v4.lib._Requestor} oRequestor
 	 *   The requestor
 	 * @param {string} sResourcePath
-	 *   A resource path relative to the service URL; it must not contain a query string
-	 *   <br>
-	 *   Example: Products
+	 *   A resource path relative to the service URL
 	 * @param {object} [mQueryOptions]
 	 *   A map of key-value pairs representing the query string (requires "copy on write"!), the
 	 *   value in this pair has to be a string or an array of strings; if it is an array, the

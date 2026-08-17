@@ -41,7 +41,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents.dist.Label",
       {
         metadata: {
-          tag: "ui5-label-e93a470b",
+          tag: "ui5-label-6bfd01e3",
 
           namespace: "sap.f.gen.ui5.webcomponents",
 

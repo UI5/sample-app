@@ -69,7 +69,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 *
 		 * @constructor
 		 * @public
@@ -557,9 +557,7 @@ sap.ui.define([
 		TabContainer.prototype.setShowAddNewButton = function (bShowButton) {
 			this.setProperty("showAddNewButton", bShowButton, true);
 
-			if (Device.system.phone) {
-				bShowButton ? this.addStyleClass("sapUiShowAddNewButton") : this.removeStyleClass("sapUiShowAddNewButton");
-			}
+			bShowButton ? this.addStyleClass("sapUiShowAddNewButton") : this.removeStyleClass("sapUiShowAddNewButton");
 
 			var oTabStrip = this._getTabStrip();
 			if (oTabStrip) {

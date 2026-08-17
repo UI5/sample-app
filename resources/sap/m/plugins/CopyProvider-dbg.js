@@ -37,7 +37,7 @@ sap.ui.define(["./PluginBase", "sap/base/Log", "sap/base/strings/formatMessage",
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -283,13 +283,20 @@ sap.ui.define(["./PluginBase", "sap/base/Log", "sap/base/strings/formatMessage",
 			});
 			sap.ui.require(["sap/ui/core/ShortcutHintsMixin"], (ShortcutHintsMixin) => {
 				if (this._oCopyButton) { // Button might be destroyed in the meantime, esp. in tests
-					ShortcutHintsMixin.addConfig(this._oCopyButton, {
-						shortcut: "Ctrl+C" // ShortcutHintMixin takes care of normalizing and localizing
-					}, this.getParent());
+					this._oCopyButton.attachBrowserEvent("keydown", this._onCopyButtonKeyDown, this);
+					ShortcutHintsMixin.addConfig(this._oCopyButton, { shortcut: "Ctrl+C" }, this.getParent());
 				}
 			});
 		}
 		return this._oCopyButton;
+	};
+
+	CopyProvider.prototype._onCopyButtonKeyDown = function(oEvent) {
+		if (oEvent.repeat || oEvent.code !== "KeyC" || !(oEvent.ctrlKey || oEvent.metaKey)) {
+			return;
+		}
+		oEvent.preventDefault();
+		this.copySelectionData(true);
 	};
 
 	/**

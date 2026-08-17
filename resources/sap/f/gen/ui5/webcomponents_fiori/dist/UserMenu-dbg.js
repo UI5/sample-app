@@ -35,7 +35,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents_fiori.dist.UserMenu",
       {
         metadata: {
-          tag: "ui5-user-menu-e93a470b",
+          tag: "ui5-user-menu-6bfd01e3",
 
           namespace: "sap.f.gen.ui5.webcomponents_fiori",
 
@@ -48,6 +48,20 @@ sap.ui.define(
           defaultAggregation: "menuItems",
 
           properties: {
+            /**
+             * Defines whether the avatar of the selected account is interactive (focusable and pressable).
+             *
+             * When `false` (default), the avatar is rendered as a non-interactive image
+             * and is not announced as a button by screen readers.
+             *
+             * **Note:** When `showEditButton` is set to `true`, the avatar is treated as interactive
+             * regardless of this property's value, to preserve the edit affordance.
+             */
+            avatarInteractive: {
+              type: "boolean",
+              mapping: "property",
+              defaultValue: false
+            },
             /**
              * Defines if the User Menu is opened.
              */
@@ -129,6 +143,17 @@ sap.ui.define(
               type: "sap.ui.core.Control",
               multiple: true,
               slot: "footer"
+            },
+            /**
+             * Defines the content of the info area inside the User Menu's account block.
+             *
+             * **Note:** When empty, the User Menu renders unchanged.
+             * @type module:sap/ui/core/Control
+             */
+            infoArea: {
+              type: "sap.ui.core.Control",
+              multiple: true,
+              slot: "infoArea"
             }
           },
 

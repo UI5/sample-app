@@ -63,7 +63,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.150.0
+		 * @version 1.151.0
 		 *
 		 * @constructor
 		 * @public
@@ -406,7 +406,6 @@ sap.ui.define([
 					(oOriginalEvent.pageX === undefined && oOriginalEvent.clientX === undefined) ||
 					(oOriginalEvent.pageY === undefined && oOriginalEvent.clientY === undefined)));
 			let oOpenerDomRef = oOpenerRef && oOpenerRef.getDomRef ? oOpenerRef.getDomRef() : oOpenerRef,
-				oPointerElement = document.getElementById("sapMMenuContextMenuPointer"),
 				oPointerParent = document.body,
 				oPointerSibling = null,
 				iX = 0,
@@ -441,14 +440,15 @@ sap.ui.define([
 				}
 			}
 
-			// remove previously existing pointer element
-			if (oPointerElement) {
-				oPointerElement.remove();
+			// remove this instance's previously existing pointer element
+			if (this._oPointerElement) {
+				this._oPointerElement.remove();
+				this._oPointerElement = null;
 			}
 
 			// create a new pointer element
-			oPointerElement = document.createElement("div");
-			oPointerElement.id = "sapMMenuContextMenuPointer";
+			const oPointerElement = document.createElement("div");
+			oPointerElement.id = this.getId() + "-sapMMenuContextMenuPointer";
 			oPointerElement.className = "sapMMenuContextMenuPointer";
 
 			// if the opener DOM ref is provided, we should get its position data
@@ -507,6 +507,7 @@ sap.ui.define([
 			oPointerElement.style.insetBlockStart = `${iY}px`;
 			oPointerElement.setAttribute("aria-hidden", "true");
 
+			this._oPointerElement = oPointerElement;
 			oPopover.openBy(oPointerElement);
 			oPopover.attachAfterClose(this._onContextMenuClose, this);
 		};
@@ -516,10 +517,12 @@ sap.ui.define([
 		 * @private
 		 */
 		Menu.prototype._onContextMenuClose = function() {
-			const oPointerElement = document.getElementById("sapMMenuContextMenuPointer"),
-				oPopover = this._getPopover();
+			const oPopover = this._getPopover();
 
-			oPointerElement && oPointerElement.remove();
+			if (this._oPointerElement) {
+				this._oPointerElement.remove();
+				this._oPointerElement = null;
+			}
 			oPopover.detachAfterClose(this._onContextMenuClose, this);
 		};
 

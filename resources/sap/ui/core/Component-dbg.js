@@ -288,7 +288,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.150.0
+	 * @version 1.151.0
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -2446,7 +2446,7 @@ sap.ui.define([
 	 *     A non-null object value will be interpreted as manifest content.
 	 *     <b>Note:</b> If a manifest is provided as URL or plain object, it must use the same major schema version as the original manifest
 	 *      to avoid incompatible changes in the behavior of the component.
-	 * @param {string} [mOptions.altManifestUrl] @since 1.61.0 Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
+	 * @param {string} [mOptions.altManifestUrl] {@since 1.61.0} Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
 	 *     is set to an object value, this URL specifies the location to which the manifest object should resolve the relative
 	 *     URLs to.
 	 * @param {string} [mOptions.handleValidation=false] If set to <code>true</code> validation of the component is handled by the <code>Messaging</code>
@@ -2537,24 +2537,24 @@ sap.ui.define([
 	 *              documentation describes the processing behavior in more detail.
 	 *              Please also have a look at this dev-guide chapter for general usage instructions: {@link topic:eba8d25a31ef416ead876e091e67824e Text Verticalization}.
 	 * @param {boolean} [vConfig.async] Indicates whether the Component creation should be done asynchronously; defaults to true when using the manifest property with a truthy value otherwise the default is false (experimental setting)
-	 * @param {object} [vConfig.asyncHints] @since 1.27.0 Hints for the asynchronous loading.
+	 * @param {object} [vConfig.asyncHints] {@since 1.27.0} Hints for the asynchronous loading.
 	 *     <b>Beware:</b> This parameter is only used internally by the UI5 framework and compatibility cannot be guaranteed.
 	 *     The parameter must not be used in productive code, except in code delivered by the UI5 teams.
 	 * @param {string[]} [vConfig.asyncHints.libs] Libraries that should be (pre-)loaded before the Component (experimental setting)
 	 * @param {string[]} [vConfig.asyncHints.components] Components that should be (pre-)loaded before the Component (experimental setting)
-	 * @param {Promise|Promise[]} [vConfig.asyncHints.waitFor] @since 1.37.0 a <code>Promise</code> or and array of <code>Promise</code>s for which the Component instantiation should wait (experimental setting)
-	 * @param {boolean|string|object} [vConfig.manifest=undefined] @since 1.49.0 Controls when and from where to load the manifest for the Component.
+	 * @param {Promise|Promise[]} [vConfig.asyncHints.waitFor] {@since 1.37.0} a <code>Promise</code> or and array of <code>Promise</code>s for which the Component instantiation should wait (experimental setting)
+	 * @param {boolean|string|object} [vConfig.manifest=undefined] {@since 1.49.0} Controls when and from where to load the manifest for the Component.
 	 *              When set to any truthy value, the manifest will be loaded asynchronously by default and evaluated before the Component controller, if it is set to a falsy value
 	 *              other than <code>undefined</code>, the manifest will be loaded after the controller.
 	 *              A non-empty string value will be interpreted as the URL location from where to load the manifest.
 	 *              A non-null object value will be interpreted as manifest content.
 	 *              Setting this property to a value other than <code>undefined</code>, completely deactivates the properties
 	 *              <code>manifestUrl</code> and <code>manifestFirst</code>, no matter what their values are.
-	 * @param {string} [vConfig.manifestUrl] @since 1.33.0 Specifies the URL from where the manifest should be loaded from
+	 * @param {string} [vConfig.manifestUrl] {@since 1.33.0} Specifies the URL from where the manifest should be loaded from
 	 *              Using this property implies <code>vConfig.manifestFirst=true</code>.
 	 *              <br/><b>DEPRECATED since 1.49.0, use <code>vConfig.manifest=url</code> instead!</b>.
 	 *              Note that this property is ignored when <code>vConfig.manifest</code> has a value other than <code>undefined</code>.
-	 * @param {boolean} [vConfig.manifestFirst] @since 1.33.0 defines whether the manifest is loaded before or after the
+	 * @param {boolean} [vConfig.manifestFirst] {@since 1.33.0} defines whether the manifest is loaded before or after the
 	 *              Component controller. Defaults to <code>sap.ui.getCore().getConfiguration().getManifestFirst()</code>
 	 *              <br/><b>DEPRECATED since 1.49.0, use <code>vConfig.manifest=true|false</code> instead!</b>
 	 *              Note that this property is ignored when <code>vConfig.manifest</code> has a value other than <code>undefined</code>.
@@ -2852,7 +2852,7 @@ sap.ui.define([
 	 *     A non-empty string value will be interpreted as the URL to load the manifest from.
 	 *     This implies that the manifest is loaded and evaluated <b>before</b> the Component controller.
 	 *     A non-null object value will be interpreted as manifest content.
-	 * @param {string} [mOptions.altManifestUrl] @since 1.61.0 Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
+	 * @param {string} [mOptions.altManifestUrl] {@since 1.61.0} Alternative URL for the manifest.json. If <code>mOptions.manifest</code>
 	 *     is set to an object value, this URL specifies the location to which the manifest object should resolve the relative
 	 *     URLs to.
 	 * @param {object} [mOptions.asyncHints] Hints for asynchronous loading.

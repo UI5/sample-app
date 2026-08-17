@@ -483,8 +483,8 @@ sap.ui.define([
 		 * @param [mOptions.url] URL to load the library from
 		 * @param [mOptions.lazy] Whether the library-preload-lazy bundle should be loaded instead of the
 		 *  library-preload bundle
-		 * @param [mOptions.sync] @deprecated Whether to load the preload bundle in sync mode
-		 * @param [mOptions.json] @deprecated Whether to load the preload in JSON format
+		 * @param [mOptions.sync] {@deprecated} Whether to load the preload bundle in sync mode
+		 * @param [mOptions.json] {@deprecated} Whether to load the preload in JSON format
 		 * @returns {Promise<Lib>|Lib} A promise that resolves with the library instance in async mode and the library
 		 *  instance itself in sync mode
 		 * @private

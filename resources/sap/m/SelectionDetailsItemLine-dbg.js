@@ -23,7 +23,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/base/Log", "sap/base/util/isPlainObje
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @protected

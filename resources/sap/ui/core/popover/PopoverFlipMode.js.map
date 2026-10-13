@@ -1,0 +1,1 @@
+{"version":3,"file":"PopoverFlipMode.js","names":["sap","ui","define","PopoverFlipMode","Never","MoreSpace","Opposite","PureSpace","Object","freeze"],"sources":["PopoverFlipMode-dbg.js"],"mappings":";;;;;AAMAA,IAAIC,GAAGC,OAAO,GAAI,KACjB,aAWA,MAAMC,EAAkB,CAOvBC,MAAO,QAOPC,UAAW,YAOXC,SAAU,WAOVC,UAAW,aAGZ,OAAOC,OAAOC,OAAON","ignoreList":[]}

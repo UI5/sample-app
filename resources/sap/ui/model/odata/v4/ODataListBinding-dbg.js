@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -116,7 +116,7 @@ sap.ui.define([
 			throw new Error("Invalid path: " + sPath);
 		}
 
-		mParameters = _Helper.clone(mParameters) || {};
+		mParameters = _Helper.clone(mParameters) ?? {};
 		this.checkBindingParameters(mParameters, ["$$aggregation", "$$canonicalPath",
 			"$$clearSelectionOnFilter", "$$getKeepAliveContext", "$$groupId", "$$operationMode",
 			"$$ownRequest", "$$patchWithoutSideEffects", "$$separate", "$$sharedRequest",
@@ -763,7 +763,8 @@ sap.ui.define([
 	 * @param {boolean} [bAll]
 	 *   Whether to collapse the node and all its descendants
 	 * @param {boolean} [bSilent]
-	 *   Whether no ("change") events should be fired
+	 *   Whether no ("change") events should be fired and no changes to the tree state should be
+	 *   recorded
 	 * @param {number} [iCount]
 	 *   The count of nodes affected by the collapse, in case the cache already performed it
 	 * @throws {Error}
@@ -785,15 +786,15 @@ sap.ui.define([
 
 		iCount ??= this.oCache.collapse(
 			_Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath()),
-			this.getKeepAlivePredicates(), bAll ? this.lockGroup() : undefined, bSilent, false);
+			this.getKeepAlivePredicates(), bSilent, bAll ? this.lockGroup() : undefined, false);
 
 		if (iCount > 0) {
 			const aContexts = this.aContexts;
 			const iModelIndex = this.getModelIndex(oContext);
 			aContexts.splice(iModelIndex + 1, iCount).forEach((oContext0) => {
-				if (!oContext0.created()) {
-					this.mPreviousContextsByPath[oContext0.getPath()] = oContext0;
-				} // else: created (even persisted) is kept inside "context" annotation
+				oContext0.iIndex = undefined; // "outside the collection"
+				// Note: created (even persisted) is also kept inside "context" annotation
+				this.mPreviousContextsByPath[oContext0.getPath()] = oContext0;
 			});
 			for (let i = iModelIndex + 1; i < aContexts.length; i += 1) {
 				if (aContexts[i]) {
@@ -1046,7 +1047,7 @@ sap.ui.define([
 
 		// clone data to avoid modifications outside the cache
 		// remove any property starting with "@$ui5."
-		oEntityData = _Helper.publicClone(oInitialData, true) || {};
+		oEntityData = _Helper.publicClone(oInitialData, true) ?? {};
 		if (oAggregation?.hierarchyQualifier) {
 			if (!bSkipRefresh) {
 				throw new Error("Missing bSkipRefresh");
@@ -1347,6 +1348,7 @@ sap.ui.define([
 			: String(this.getModelIndex(oContext));
 
 		this.iDeletedContexts += 1;
+		const bSelected = oContext.isSelected();
 
 		return oContext.doDelete(oGroupLock, sEditUrl, sPath, oETagEntity, this,
 			function (iIndex, iOffset) {
@@ -1382,19 +1384,31 @@ sap.ui.define([
 					bReset = true;
 					fnUndelete();
 				} else if (that.bLengthFinal && !bDoNotRequestCount) {
+					const bDataAggregation = _Helper.isDataAggregation(that.mParameters);
+					const iOldCount = bDataAggregation && that.getCount();
 					// a kept-alive context is not in aContexts -> request the count
 					that.oCache.requestCount(
 						oGroupLock && !that.oModel.isApiGroup(oGroupLock.getGroupId())
 							? oGroupLock.getUnlockedCopy()
 							: that.lockGroup("$auto")
 					).then(function (iCount) {
-						var iOldMaxLength = that.iMaxLength;
+						let bChanged;
+						if (bDataAggregation) {
+							bChanged = iCount !== iOldCount;
+							if (bChanged) {
+								that.oHeaderContext.setOutdated(true);
+							}
+							// must not affect iMaxLength; keep #getLength unchanged
+						} else {
+							const iOldMaxLength = that.iMaxLength;
+							that.iMaxLength = iCount - that.iActiveContexts;
+							bChanged = iOldMaxLength !== that.iMaxLength;
+						}
 
-						that.iMaxLength = iCount - that.iActiveContexts;
 						// Note: Although we know that oContext is not in aContexts, a "change"
 						// event needs to be fired in order to notify the control about the new
-						// length, for example, to update the 'More' button or the scrollbar.
-						if (iOldMaxLength !== that.iMaxLength) {
+						// #getLength, for example, to update the 'More' button or the scrollbar.
+						if (bChanged) {
 							that._fireChange({reason : ChangeReason.Remove});
 						}
 					});
@@ -1409,6 +1423,9 @@ sap.ui.define([
 			oContext.resetKeepAlive();
 			oContext.iIndex = Context.VIRTUAL; // prevent further cache access via this context
 			that.destroyPreviousContextsLater([oContext.getPath()]);
+			if (bSelected) {
+				that.fireSelectionChanged(oContext);
+			}
 		}, function (oError) {
 			that.iDeletedContexts -= 1;
 			// if the cache has become inactive, the callback is not called -> undelete here
@@ -1489,10 +1506,17 @@ sap.ui.define([
 	 *   If given, only contexts with paths in this list except kept alive and pending deletes are
 	 *   removed and destroyed (transient contexts are removed only); otherwise all contexts in the
 	 *   list are removed and destroyed
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oCache]
+	 *   The cache from which we are supposed to remove data for the kept element(s) identified by
+	 *   the given path(s). If the cache has changed in the meantime (or was reset), no data must be
+	 *   removed
+	 * @param {number} [iResetCount]
+	 *   The cache's expected reset count
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.destroyPreviousContexts = function (aPathsToDelete) {
+	ODataListBinding.prototype.destroyPreviousContexts = function (aPathsToDelete, oCache,
+			iResetCount) {
 		var mPreviousContextsByPath = this.mPreviousContextsByPath,
 			that = this;
 
@@ -1507,7 +1531,8 @@ sap.ui.define([
 					} else {
 						if (!oContext.isTransient()) {
 							oContext.destroy();
-							if (oContext.iIndex === undefined && that.oCache) {
+							if (oContext.iIndex === undefined && oCache && oCache === that.oCache
+									&& iResetCount === oCache.iResetCount) {
 								// was kept alive (or deleted)
 								that.oCache.removeKeptElement(
 									_Helper.getRelativePath(sPath, that.oHeaderContext.getPath()));
@@ -1527,13 +1552,18 @@ sap.ui.define([
 	 * @param {string[]} aPathsToDelete
 	 *   Only contexts with paths in this list except kept alive and pending deletes are removed and
 	 *   destroyed (transient contexts are removed only)
+	 * @param {sap.ui.model.odata.v4.lib._CollectionCache} [oCache]
+	 *   The cache from which {@link #destroyPreviousContexts} is supposed to remove data for the
+	 *   kept element(s) identified by the given path(s). If the cache changes in the meantime (or
+	 *   is reset), no data must be removed
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype.destroyPreviousContextsLater = function (aPathsToDelete) {
+	ODataListBinding.prototype.destroyPreviousContextsLater = function (aPathsToDelete, oCache) {
 		if (aPathsToDelete.length) {
 			this.oModel.addPrerenderingTask(
-				this.destroyPreviousContexts.bind(this, aPathsToDelete));
+				this.destroyPreviousContexts
+					.bind(this, aPathsToDelete, oCache, oCache?.iResetCount));
 		}
 	};
 
@@ -1808,7 +1838,8 @@ sap.ui.define([
 	 *   The number of levels to expand, <code>iLevels >= Number.MAX_SAFE_INTEGER</code> can be
 	 *   used to expand all levels
 	 * @param {boolean} [bSilent]
-	 *   Whether no ("change") events should be fired
+	 *   Whether no ("change") events should be fired and no changes to the tree state should be
+	 *   recorded
 	 * @returns {sap.ui.base.SyncPromise<void>}
 	 *   A promise that is resolved when the expand is successful and rejected when it fails
 	 * @throws {Error}
@@ -1831,7 +1862,7 @@ sap.ui.define([
 		const sPath = _Helper.getRelativePath(oContext.getPath(), this.oHeaderContext.getPath());
 
 		return this.oCache.expand(this.lockGroup(), sPath, iLevels, this.getKeepAlivePredicates(),
-			/*fnDataRequested*/ () => {
+			bSilent, /*fnDataRequested*/ () => {
 				bDataRequested = true;
 				this.fireDataRequested();
 			}
@@ -2088,9 +2119,10 @@ sap.ui.define([
 		 * @param {string} sEdmType - The Edm type
 		 * @param {boolean} bWithinAnd - Whether the embedding filter is an 'and'
 		 * @param {boolean} bThese - Whether the special syntax "$these/aggregate(...)" is needed
+		 * @param {object} [oTypeMetadata] - The metadata of sEdmType
 		 * @returns {string} The $filter value
 		 */
-		function getSingleFilterValue(oFilter, sEdmType, bWithinAnd, bThese) {
+		function getSingleFilterValue(oFilter, sEdmType, bWithinAnd, bThese, oTypeMetadata) {
 			var sFilter, sFilterPath, bToLower, sValue;
 
 			function setCase(sText) {
@@ -2101,16 +2133,18 @@ sap.ui.define([
 			sFilterPath = bThese && !aFiltersNoThese?.includes(oFilter)
 				? setCase(`$these/aggregate(${oFilter.getPath()})`)
 				: setCase(decodeURIComponent(oFilter.getPath()));
-			sValue = setCase(_Helper.formatLiteral(oFilter.getValue1(), sEdmType));
+			sValue = setCase(_Helper.formatLiteral(oFilter.getValue1(), sEdmType, oTypeMetadata));
 
 			switch (oFilter.getOperator()) {
 				case FilterOperator.BT:
 					sFilter = sFilterPath + " ge " + sValue + " and " + sFilterPath + " le "
-						+ setCase(_Helper.formatLiteral(oFilter.getValue2(), sEdmType));
+						+ setCase(
+							_Helper.formatLiteral(oFilter.getValue2(), sEdmType, oTypeMetadata));
 					break;
 				case FilterOperator.NB:
 					sFilter = wrap(sFilterPath + " lt " + sValue + " or " + sFilterPath + " gt "
-						+ setCase(_Helper.formatLiteral(oFilter.getValue2(), sEdmType)),
+						+ setCase(
+							_Helper.formatLiteral(oFilter.getValue2(), sEdmType, oTypeMetadata)),
 						bWithinAnd);
 					break;
 				case FilterOperator.EQ:
@@ -2197,7 +2231,12 @@ sap.ui.define([
 							+ "(" + sLambdaVariable + ":" + sFilterValue + ")";
 					});
 				}
-				return getSingleFilterValue(oFilter, oPropertyMetadata.$Type, bWithinAnd, bThese);
+
+				const sType = oPropertyMetadata.$Type;
+				const oTypeMetadata = sType.startsWith("Edm.")
+					? undefined
+					: oMetaModel.getObject("/" + sType);
+				return getSingleFilterValue(oFilter, sType, bWithinAnd, bThese, oTypeMetadata);
 			});
 		}
 
@@ -4062,6 +4101,11 @@ sap.ui.define([
 		}
 
 		return oPromise.then(([iCount, iNewIndex, iCollapseCount]) => {
+			if (iCount === undefined) {
+				// concurrent side-effects refresh, only the index needs to be updated
+				oChildContext.iIndex = iNewIndex;
+				return;
+			}
 			if (iCount > 1) { // Note: skip oChildContext which is treated below
 				this.insertGap(this.getModelIndex(oParentContext), iCount - 1);
 			}
@@ -4123,7 +4167,7 @@ sap.ui.define([
 		if (!oContext.isDeleted() // data of a deleted context must remain for the exclusion filter
 				&& oContext.getPath() in this.mPreviousContextsByPath
 				&& !oContext.isEffectivelyKeptAlive()) {
-			this.destroyPreviousContextsLater([oContext.getPath()]);
+			this.destroyPreviousContextsLater([oContext.getPath()], this.oCache);
 		}
 	};
 
@@ -4470,7 +4514,11 @@ sap.ui.define([
 
 					if (!bStillAlive) {
 						bDestroyed = true;
-						oContext.doSetSelected(false, true);
+						if (oContext.doSetSelected(false, true)) {
+							oContext.oDeletePromise = SyncPromise.resolve();
+							oContext.iIndex = Context.VIRTUAL; // prevent further cache access...
+							that.fireSelectionChanged(oContext);
+						}
 						oContext.destroy();
 					}
 				}

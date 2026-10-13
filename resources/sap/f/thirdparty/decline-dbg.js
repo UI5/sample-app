@@ -1,4 +1,4 @@
-sap.ui.define(['exports', 'sap/f/thirdparty/Theme', 'sap/f/thirdparty/Icons'], (function (exports, Theme, Icons) { 'use strict';
+sap.ui.define(['exports', 'sap/f/thirdparty/ManagedStyles', 'sap/f/thirdparty/Icons'], (function (exports, ManagedStyles, Icons) { 'use strict';
 
 	const ICON_DECLINE = { key: "ICON_DECLINE", defaultText: "Decline" };
 	const ICON_ERROR = { key: "ICON_ERROR", defaultText: "Error" };

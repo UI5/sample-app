@@ -46,7 +46,7 @@ function(
 		 * @class
 		 * The FormattedText control allows the usage of a limited set of tags for inline display of formatted text in HTML format.
 		 * @extends sap.ui.core.Control
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @public
@@ -216,7 +216,8 @@ function(
 				'a::href' : 1,
 				'a::target' : 1,
 				'span::style' : 1,
-				'span::class' : 1
+				'span::class' : 1,
+				'span::data-sap-ui-icon-content' : 1
 			},
 			ELEMENTS: {
 				'a' : {cssClass: 'sapMLnk'},

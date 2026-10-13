@@ -42,7 +42,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.39.0
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 */
 		Context = BaseContext.extend("sap.ui.model.odata.v4.Context", {
 				constructor : constructor
@@ -160,6 +160,9 @@ sap.ui.define([
 	/**
 	 * Collapses the group node that this context points to.
 	 *
+	 * <b>Note:</b> It is unsafe to keep a reference to a context instance which is not
+	 * {@link #isKeepAlive kept alive}.
+	 *
 	 * @param {boolean} [bAll]
 	 *   Whether to collapse the node and all its descendants (since 1.132.0)
 	 * @throws {Error}
@@ -257,8 +260,8 @@ sap.ui.define([
 	 * {@link sap.ui.model.odata.v4.SubmitMode.API}. Such a deletion is not a pending change.
 	 *
 	 * When using data aggregation without <code>groupLevels</code>, single entities can be deleted
-	 * (since 1.151.0, see {@link #isAggregated}). The same restrictions as for a recursive
-	 * hierarchy apply.
+	 * (since 1.151.0, see {@link #isAggregated}). The group ID must not have
+	 * {@link sap.ui.model.odata.v4.SubmitMode.API}.
 	 *
 	 * @param {string} [sGroupId]
 	 *   The group ID to be used for the DELETE request; if not specified, the update group ID for
@@ -341,7 +344,8 @@ sap.ui.define([
 			}
 		}
 		if (this.oBinding.mParameters.$$aggregation) {
-			if (this.iIndex === undefined) {
+			if (this.oBinding.mParameters.$$aggregation.hierarchyQualifier
+					&& this.iIndex === undefined) {
 				throw new Error("Unsupported kept-alive context: " + this);
 			}
 			if (sGroupId !== null) {
@@ -476,9 +480,9 @@ sap.ui.define([
 			});
 		}).catch(function (oError) {
 			oModel.reportError("Failed to delete " + that.getPath(), sClassName, oError);
-			that.checkUpdate();
 			throw oError;
 		});
+		// Note: #deleteFromCache may cancel request and thus deselect synchronously!
 		if (this.bSelected) {
 			this.oBinding.getHeaderContext().onSelectionChanged(this);
 		}
@@ -1006,7 +1010,12 @@ sap.ui.define([
 	 *   The context's index within the binding's collection. It is <code>undefined</code> if
 	 *   <ul>
 	 *     <li> it does not belong to a list binding,
-	 *     <li> it is {@link #isKeepAlive kept alive}, but not in the collection currently.
+	 *     <li> it is {@link #isKeepAlive kept alive}, but not in the collection currently. When
+	 *       collapsing a node's ancestor in a recursive hierarchy, the index becomes
+	 *       <code>undefined</code>. After expanding, the index is only determined again when that
+	 *       node comes into view, so to say. Use
+	 *       {@link sap.ui.model.odata.v4.ODataListBinding#getAllCurrentContexts} to try to
+	 *       determine the index again.
 	 *   </ul>
 	 *
 	 * @public

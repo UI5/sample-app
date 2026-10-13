@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/core/webc/WebComponent","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/HeroBanner"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.HeroBanner",{metadata:{tag:"ui5-hero-banner-0b2c601f",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/HeroBanner.designtime",interfaces:[],defaultAggregation:"startContent",properties:{actionsPlacement:{type:"sap.f.gen.ui5.webcomponents_fiori.dist.types.HeroBannerActionsPlacement",mapping:"property",defaultValue:"TopEnd"},columnsRatio:{type:"sap.f.gen.ui5.webcomponents_fiori.dist.types.HeroBannerColumnsRatio",mapping:"property",defaultValue:"FirstWider"},headerBlockPlacement:{type:"sap.f.gen.ui5.webcomponents_fiori.dist.types.HeroBannerHeaderBlockPlacement",mapping:"property",defaultValue:"Top"},headerText:{type:"string",mapping:"property"},overlineText:{type:"string",mapping:"property"},text:{type:"string",mapping:"textContent"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{actions:{type:"sap.ui.core.Control",multiple:true,slot:"actions"},startContent:{type:"sap.ui.core.Control",multiple:true},endContent:{type:"sap.ui.core.Control",multiple:true,slot:"endContent"}},associations:{},events:{},getters:[],methods:[]}});return t});
+//# sourceMappingURL=HeroBanner.js.map

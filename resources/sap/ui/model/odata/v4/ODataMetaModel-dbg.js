@@ -203,7 +203,7 @@ sap.ui.define([
 		 * @hideconstructor
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 */
 		ODataMetaModel = MetaModel.extend("sap.ui.model.odata.v4.ODataMetaModel", {
 				constructor : constructor
@@ -1718,7 +1718,7 @@ sap.ui.define([
 						// Note: inline annotations are reached via above fast path for pure "JSON"
 						// drill-down
 						vBindingParameterType = vResult && vResult.$Type || vBindingParameterType;
-						vResult = mScope.$Annotations[sTarget] || {};
+						vResult = mScope.$Annotations[sTarget] ?? {};
 						bODataMode = false; // switch to pure "JSON" drill-down
 					} else if (sSegment === "$" && i + 1 < aSegments.length) {
 						return log(WARNING, "Unsupported path after $");
@@ -1808,7 +1808,10 @@ sap.ui.define([
 	 * @param {object} [mFormatOptions]
 	 *   Type-specific format options, since 1.81.0. The boolean format option
 	 *   "parseKeepsEmptyString" applies to {@link sap.ui.model.odata.type.String} only and is
-	 *   ignored for all other types. All other format options are passed "as is".
+	 *   ignored for all other types. All other format options are passed "as is". Since 1.152.0,
+	 *   "parseKeepsEmptyString" is automatically set based on the model parameter of the same name
+	 *   unless you provide <code>parseKeepsEmptyString: false</code> in
+	 *   <code>mFormatOptions</code>.
 	 * @returns {sap.ui.base.SyncPromise<sap.ui.model.odata.type.ODataType>}
 	 *   A promise that gets resolved with the corresponding UI5 type from
 	 *   {@link sap.ui.model.odata.type}; if no specific type can be determined, a warning is logged
@@ -1850,7 +1853,9 @@ sap.ui.define([
 				if (_Helper.isEmptyObject(mFormatOptions)) {
 					mFormatOptions = undefined;
 				} else if ("parseKeepsEmptyString" in mFormatOptions
-						&& oProperty.$Type !== "Edm.String") {
+						&& (oProperty.$Type !== "Edm.String"
+							|| mFormatOptions.parseKeepsEmptyString
+								=== this.oModel.getParseKeepsEmptyString())) {
 					if (Object.keys(mFormatOptions).length === 1) {
 						mFormatOptions = undefined;
 					} else {
@@ -1860,7 +1865,9 @@ sap.ui.define([
 				}
 			}
 
-			if (!mFormatOptions && oProperty["$ui5.type"]) {
+			const bCaching = !mFormatOptions;
+
+			if (bCaching && oProperty["$ui5.type"]) {
 				return oProperty["$ui5.type"];
 			}
 
@@ -1870,6 +1877,14 @@ sap.ui.define([
 			} else {
 				oTypeInfo = mUi5TypeForEdmType[oProperty.$Type];
 				if (oTypeInfo) {
+					if (oProperty.$Type === "Edm.String"
+							&& this.oModel.getParseKeepsEmptyString()
+							&& mFormatOptions?.parseKeepsEmptyString !== false) {
+						mFormatOptions = {
+							parseKeepsEmptyString : true,
+							...mFormatOptions
+						};
+					}
 					oType = new oTypeInfo.Type(mFormatOptions,
 						this.getConstraints(oProperty, oMetaContext.getPath()));
 				} else {
@@ -1877,7 +1892,7 @@ sap.ui.define([
 						+ oType.getName(), sPath, sODataMetaModel);
 				}
 			}
-			if (!mFormatOptions) {
+			if (bCaching) {
 				oProperty["$ui5.type"] = oType;
 			}
 
@@ -2384,7 +2399,7 @@ sap.ui.define([
 			return j < iBasePathLength || sSegment[0] === "#" || sSegment[0] === "@"
 					|| rNumber.test(sSegment) || sSegment === "$Parameter"
 				? {} // simply an object w/o $Partner and $isCollection
-				: that.getObject(_Helper.getMetaPath(aSegments.slice(0, j + 1).join("/"))) || {};
+				: that.getObject(_Helper.getMetaPath(aSegments.slice(0, j + 1).join("/"))) ?? {};
 		});
 		mPaths[sPath] = true;
 		if (!(bNoReduceBeforeCollection
@@ -2688,7 +2703,10 @@ sap.ui.define([
 	 * @param {object} [mFormatOptions]
 	 *   Type-specific format options, since 1.81.0. The boolean format option
 	 *   "parseKeepsEmptyString" applies to {@link sap.ui.model.odata.type.String} only and is
-	 *   ignored for all other types. All other format options are passed "as is".
+	 *   ignored for all other types. All other format options are passed "as is". Since 1.152.0,
+	 *   "parseKeepsEmptyString" is automatically set based on the model parameter of the same name
+	 *   unless you provide <code>parseKeepsEmptyString: false</code> in
+	 *   <code>mFormatOptions</code>.
 	 * @returns {sap.ui.model.odata.type.ODataType}
 	 *   The corresponding UI5 type from {@link sap.ui.model.odata.type}, if all required
 	 *   metadata to calculate this type is already available; if no specific type can be
@@ -3311,7 +3329,10 @@ sap.ui.define([
 	 * @param {object} [mFormatOptions]
 	 *   Type-specific format options, since 1.81.0. The boolean format option
 	 *   "parseKeepsEmptyString" applies to {@link sap.ui.model.odata.type.String} only and is
-	 *   ignored for all other types. All other format options are passed "as is".
+	 *   ignored for all other types. All other format options are passed "as is". Since 1.152.0,
+	 *   "parseKeepsEmptyString" is automatically set based on the model parameter of the same name
+	 *   unless you provide <code>parseKeepsEmptyString: false</code> in
+	 *   <code>mFormatOptions</code>.
 	 * @returns {Promise<sap.ui.model.odata.type.ODataType>}
 	 *   A promise that gets resolved with the corresponding UI5 type from
 	 *   {@link sap.ui.model.odata.type}; if no specific type can be

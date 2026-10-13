@@ -10,6 +10,7 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/core/Control",
 	"sap/ui/core/CustomData",
+	"sap/ui/core/Element",
 	"sap/ui/core/IconPool",
 	"sap/ui/core/HTML",
 	"sap/ui/core/Icon",
@@ -44,6 +45,7 @@ sap.ui.define([
 	jQuery,
 	Control,
 	CustomData,
+	Element,
 	IconPool,
 	HTML,
 	Icon,
@@ -126,7 +128,7 @@ sap.ui.define([
 	 * The responsiveness of the <code>MessageView</code> is determined by the container in which it is embedded. For that reason the control could not be visualized if the
 	 * container’s sizes are not defined.
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -359,42 +361,25 @@ sap.ui.define([
 
 	/**
 	 * Resets the navigation state before the enclosing container is opened.
-	 * Clears the item-count tracker and, if the MessageView currently contains
-	 * exactly one navigable item and the user was left on the list page (e.g.
-	 * via the back button), forwards the NavContainer to the details page so
-	 * that the next open starts on the details view - matching the documented
-	 * default behaviour for a single item.
 	 *
-	 * <code>NavContainer.to()</code> is safe to call here even though the
-	 * enclosing container has not rendered yet: the page-stack push happens
-	 * synchronously and the transition step is a no-op when the NavContainer
-	 * has no DOM, so the correct page is picked up when the container
-	 * subsequently renders. See GitHub issue #4334.
+	 * Clears the item-count tracker so that the next <code>onBeforeRendering</code>
+	 * treats the upcoming render as a fresh presentation. For a single navigable
+	 * item this makes <code>onBeforeRendering</code> perform a real forward
+	 * navigation via <code>_fnHandleForwardNavigation</code>, which both moves the
+	 * NavContainer to the details page and refreshes its content (title, subtitle,
+	 * description, icon) with the latest message data - restoring the documented
+	 * default single-item behaviour on every open.
+	 *
+	 * We intentionally do <b>not</b> forward the NavContainer here ourselves: a
+	 * bare <code>NavContainer.to()</code> only swaps the visible page and leaves
+	 * the previously rendered details content in place, so a message received
+	 * while the container was closed would still show the stale title on reopen.
+	 * See GitHub issue #4334.
 	 *
 	 * @private
 	 */
 	MessageView.prototype._resetNavigationState = function () {
 		this._iLastRenderedItemCount = undefined;
-
-		if (!this._oLists || !this._oLists.all || !this._navContainer) {
-			return;
-		}
-
-		var aListItems = this._oLists.all.getItems().filter(function (oItem) {
-			return oItem.isA("sap.m.MessageListItem");
-		});
-
-		if (aListItems.length !== 1
-			|| aListItems[0].getType() !== ListType.Navigation
-			|| this._navContainer.getCurrentPage() === this._detailsPage) {
-			return;
-		}
-
-		this._navContainer.to(this._detailsPage, "show");
-
-		// Prevent onBeforeRendering from treating this as a fresh N->1
-		// transition and forwarding again.
-		this._iLastRenderedItemCount = 1;
 	};
 
 	/**
@@ -1184,7 +1169,11 @@ sap.ui.define([
 			.addStyleClass(CSS_CLASS + "DescIcon")
 			.addStyleClass(this._previousIconTypeClass);
 
-		this._detailsPage.addContent(this._oMessageIcon);
+		// Insert the icon as the first element in the details page so that screen
+		// readers announce it before the title/subtitle/description. Its visual
+		// position (top-left of the section) is controlled via CSS (position: absolute),
+		// so the DOM order does not affect the layout.
+		this._detailsPage.insertContent(this._oMessageIcon, 0);
 	};
 
 	/**
@@ -1507,7 +1496,7 @@ sap.ui.define([
 		this._detailsPage.invalidate();
 		this.fireLongtextLoaded();
 
-		const oContentTitle = this._detailsPage.getContent()[0];
+		const oContentTitle = Element.getElementById(this.getId() + "MessageTitleText");
 
 		if (oContentTitle && !oContentTitle.isA("sap.m.Link")) {
 			const sTypeText = this._oResourceBundle.getText("LIST_ITEM_STATE_" + oMessageItem.getType().toUpperCase());

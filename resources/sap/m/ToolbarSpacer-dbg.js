@@ -29,7 +29,7 @@ function(library, Control, ToolbarSpacerRenderer, Log) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public

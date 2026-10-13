@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m.table.Util
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @since 1.96.0
 	 * @private
 	 * @ui5-restricted sap.fe, sap.ui.mdc, sap.ui.comp
@@ -374,7 +374,7 @@ sap.ui.define([
 		})).then(function(oModules) {
 			var oResourceBundle = Library.getResourceBundleFor("sap.m");
 			var sIconColor = oModules.coreLib.IconColor.Critical,
-			sTitleLevel = oModules.coreLib.TitleLevel.H2;
+			sTitleLevel = oModules.coreLib.TitleLevel.H1;
 
 			oSelectAllNotificationPopover = new oModules.Popover({
 				customHeader: new oModules.Bar({

@@ -94,7 +94,7 @@ sap.ui.define([
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -1276,6 +1276,7 @@ sap.ui.define([
 		if (this._isOverflow() ||
 				((this._getNestedLevel() === 1 && this._getRealTab() === this) && this._getRealTab().getItems().length !== 0)) {
 
+					oEvent.preventDefault();
 					oEvent.stopImmediatePropagation();
 					this._expandButtonPress();
 		}

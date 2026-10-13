@@ -99,7 +99,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.MenuBase
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @public
 	 * @since 1.110

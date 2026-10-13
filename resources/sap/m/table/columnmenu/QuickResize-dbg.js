@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.QuickActionBase
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @public
 	 * @since 1.137
@@ -134,7 +134,9 @@ sap.ui.define([
 
 	QuickResize.prototype.setWidth = function(iValue) {
 		this.setProperty("width", iValue);
-		this.getContent()[0].setValue(iValue);
+		const oStepInput = this.getContent()[0];
+		oStepInput.setValueState(null);
+		oStepInput.setValue(iValue);
 		return this;
 	};
 

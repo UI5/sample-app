@@ -70,7 +70,7 @@ sap.ui.define([
 	 * The MontsRow works with UI5Date or JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -279,6 +279,14 @@ sap.ui.define([
 
 		// check if day names are too big -> use smaller ones
 		_checkNamesLength.call(this);
+
+		if (this._bFocusFromTouch) {
+			const iFocusedIndex = this._oItemNavigation.getFocusedIndex();
+			const oDomRef = this._oItemNavigation.getItemDomRefs()[iFocusedIndex];
+			if (oDomRef) {
+				oDomRef.classList.add("sapUiCalItemFocusFromTouch");
+			}
+		}
 
 	};
 
@@ -1008,6 +1016,8 @@ sap.ui.define([
 		if (this.getIntervalSelection()) {
 			this._selectedWithMouse = false;
 		}
+
+		this._bFocusFromTouch = false;
 	};
 
 	MonthsRow.prototype.onsapselect = function(oEvent){
@@ -1028,6 +1038,12 @@ sap.ui.define([
 
 		this.onsapselect(oEvent);
 
+	};
+
+	MonthsRow.prototype.ontouchstart = function(oEvent){
+		if (oEvent.target.closest(".sapUiCalItem")) {
+			this._bFocusFromTouch = true;
+		}
 	};
 
 	MonthsRow.prototype.onsappageupmodifiers = function(oEvent){
@@ -1203,6 +1219,7 @@ sap.ui.define([
 		this.setDate(oFocusedDate.toLocalJSDate());
 
 		this.fireFocus({date: oFocusedDate.toLocalJSDate(), notVisible: false});
+		aDomRefs[iIndex].classList.toggle("sapUiCalItemFocusFromTouch", !!this._bFocusFromTouch);
 
 		if (oEvent.type == "mousedown") {
 			// as no click event is fired in some cases, e.g. if DOM changed select the month on mousedown

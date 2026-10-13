@@ -27,13 +27,13 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @since 0.8
 	 * @public
 	 */
 	 var thisLib = Library.init({
 		 name: "sap.ui.core",
-		 version: "1.151.0",
+		 version: "1.153.0",
 		 designtime: "sap/ui/core/designtime/library.designtime",
 		 apiVersion: 2,
 		 ...{
@@ -92,6 +92,7 @@ sap.ui.define([
 			 "sap.ui.core.dnd.DropEffect",
 			 "sap.ui.core.dnd.DropLayout",
 			 "sap.ui.core.dnd.DropPosition",
+			 "sap.ui.core.popover.PopoverPlacement",
 			 "sap.ui.core.mvc.ViewType",
 			 "sap.ui.core.routing.HistoryDirection"
 		 ],
@@ -1649,7 +1650,7 @@ sap.ui.define([
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -2364,6 +2365,48 @@ sap.ui.define([
 		After : "After"
 	};
 	DataType.registerEnum("sap.ui.core.dnd.RelativeDropPosition", thisLib.dnd.RelativeDropPosition);
+
+	thisLib.popover = thisLib.popover || {};
+
+	/**
+	 * Placement of a popover / tooltip relative to its opener.
+	 *
+	 * @enum {string}
+	 * @private
+	 * @ui5-restricted sap.m, sap.ui.core
+	 * @since 1.153
+	 */
+	thisLib.popover.PopoverPlacement = {
+
+		/**
+		 * Placed above the opener.
+		 * @private
+		 * @ui5-restricted sap.m, sap.ui.core
+		 */
+		Top : "Top",
+
+		/**
+		 * Placed below the opener.
+		 * @private
+		 * @ui5-restricted sap.m, sap.ui.core
+		 */
+		Bottom : "Bottom",
+
+		/**
+		 * Placed at the locale-relative start of the opener (left in LTR, right in RTL).
+		 * @private
+		 * @ui5-restricted sap.m, sap.ui.core
+		 */
+		Begin : "Begin",
+
+		/**
+		 * Placed at the locale-relative end of the opener (right in LTR, left in RTL).
+		 * @private
+		 * @ui5-restricted sap.m, sap.ui.core
+		 */
+		End : "End"
+	};
+	DataType.registerEnum("sap.ui.core.popover.PopoverPlacement", thisLib.popover.PopoverPlacement);
 
 	/**
 	 * Configuration options for the layout of the droppable controls.

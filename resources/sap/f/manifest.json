@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.151.0"
+      "version": "1.153.0"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
@@ -16,27 +16,27 @@
       {
         "name": "ui5-web-components",
         "packagedWithMySelf": true,
-        "version": "2.24.0"
+        "version": "2.24.2"
       },
       {
         "name": "ui5-web-components-fiori",
         "packagedWithMySelf": true,
-        "version": "2.24.0"
+        "version": "2.24.2"
       },
       {
         "name": "ui5-web-components-icons",
         "packagedWithMySelf": true,
-        "version": "2.24.0"
+        "version": "2.24.2"
       },
       {
         "name": "ui5-web-components-icons-business-suite",
         "packagedWithMySelf": true,
-        "version": "2.24.0"
+        "version": "2.24.2"
       },
       {
         "name": "ui5-web-components-icons-tnt",
         "packagedWithMySelf": true,
-        "version": "2.24.0"
+        "version": "2.24.2"
       }
     ]
   },
@@ -49,16 +49,16 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.151",
+      "minUI5Version": "1.153",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.151.0"
+          "minVersion": "1.153.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.151.0"
+          "minVersion": "1.153.0"
         },
         "sap.m": {
-          "minVersion": "1.151.0"
+          "minVersion": "1.153.0"
         }
       }
     },
@@ -132,6 +132,7 @@
           "sap.f.CalendarInCard",
           "sap.f.Card",
           "sap.f.GridContainer",
+          "sap.f.HeroBanner",
           "sap.f.DynamicPage",
           "sap.f.DynamicPageHeader",
           "sap.f.DynamicPageTitle",
@@ -199,7 +200,10 @@
           "sap.f.IllustratedMessageType",
           "sap.f.LayoutType",
           "sap.f.SidePanelPosition",
-          "sap.f.NavigationDirection"
+          "sap.f.NavigationDirection",
+          "sap.f.HeroBannerActionsPlacement",
+          "sap.f.HeroBannerColumnsRatio",
+          "sap.f.HeroBannerHeaderBlockPlacement"
         ],
         "interfaces": [
           "sap.f.cards.IHeader",

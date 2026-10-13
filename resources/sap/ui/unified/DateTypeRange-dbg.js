@@ -5,14 +5,23 @@
  */
 
 // Provides control sap.ui.unified.DateTypeRange.
-sap.ui.define(['./DateRange', './library'],
-	function(DateRange, library) {
+sap.ui.define([
+	'./DateRange',
+	'./library',
+	'sap/ui/core/library'
+],
+function(
+	DateRange,
+	library,
+	coreLibrary
+) {
 	"use strict";
-
-
 
 	// shortcut for sap.ui.unified.CalendarDayType
 	var CalendarDayType = library.CalendarDayType;
+
+	// shortcut for sap.ui.core.aria.HasPopup
+	var AriaHasPopup = coreLibrary.aria.HasPopup;
 
 
 
@@ -25,7 +34,7 @@ sap.ui.define(['./DateRange', './library'],
 	 * @class
 	 * Date range with calendar day type information. Used to visualize special days in the Calendar.
 	 * @extends sap.ui.unified.DateRange
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -54,7 +63,19 @@ sap.ui.define(['./DateRange', './library'],
 			 * If set, this color will override the default background color defined in <code>Calendar</code> <code>specialDates</code> aggregation
 			 * @since 1.76.0
 			 */
-			color : {type : "sap.ui.core.CSSColor", group : "Appearance", defaultValue : null}
+			color : {type : "sap.ui.core.CSSColor", group : "Appearance", defaultValue : null},
+
+			/**
+			 * Defines the value of the <code>aria-haspopup</code> attribute of the day cell.
+			 *
+			 * <b>Note:</b> Use this property only when the cell is related to a popover/popup.
+			 * The value should be equal to the main/root role of the popup.
+			 *
+			 * <b>Note:</b> Setting <code>type</code> to <code>sap.ui.unified.CalendarDayType.None</code>
+			 * together with this property allows adding the attribute without any visual marking.
+			 * @since 1.152.0
+			 */
+			ariaHasPopup : {type : "sap.ui.core.aria.HasPopup", group : "Accessibility", defaultValue : AriaHasPopup.None}
 		}
 	}});
 

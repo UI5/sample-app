@@ -55,7 +55,7 @@ sap.ui.define([
 	 *
 	 * This control cannot be used stand-alone, it just renders a {@link sap.ui.layout.form.Form Form}, so it must be assigned to a {@link sap.ui.layout.form.Form Form} using the <code>layout</code> aggregation.
 	 * @extends sap.ui.layout.form.FormLayout
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -272,7 +272,7 @@ sap.ui.define([
 				var bExpandable = oContainer.getExpandable();
 				var sTooltip = oContainer.getTooltip_AsString();
 				var oToolbar = oContainer.getToolbar();
-				var oTitle = oContainer.getTitle();
+				var oTitle = oContainer.getAggregation("_renderingTitle") || oContainer.getTitle();
 
 				oRm.openStart("div", oPanel);
 				oRm.class("sapUiRGLContainer");

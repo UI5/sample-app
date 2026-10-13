@@ -75,7 +75,7 @@ sap.ui.define([
 	 *   A map of query parameters as described in
 	 *   {@link sap.ui.model.odata.v4.lib._Helper.buildQuery}; used only to request the CSRF token
 	 * @param {object} oModelInterface
-	 *   An interface allowing to call back to the owning model (see {@link .create})
+	 *   An interface allowing to call back to the owning model (see {@link #.create})
 	 * @param {string} sODataVersion
 	 *   The version of the OData service. Supported values are "2.0", "4.0", and "4.01".
 	 * @param {boolean} [bWithCredentials]
@@ -912,30 +912,59 @@ sap.ui.define([
 	};
 
 	/**
-	 * Wrapper for fetch API ("design for testability").
+	 * Builds and sends a fetch request. Constructs the request URL from the service URL
+	 * and resource path, assembles the fetch options including headers and optional payload, and
+	 * delegates to the global fetch API via {@link _Requestor.fetch}.
 	 *
 	 * @param {string} sMethod - HTTP method (e.g. GET or POST)
 	 * @param {string} sResourcePath - Resource path relative to service URL
+	 * @param {string} sQueryString - Query string as returned by {@link #buildQueryString}
 	 * @param {object} [oPayload] - Request payload
-	 * @returns {Promise<Response>} Promise resolving with the response interface of the fetch API
+	 * @returns {Promise<Response>}
+	 *   Promise resolving with the response interface of the fetch API, or rejected with an Error
+	 *   created by {@link sap.ui.model.odata.v4.lib._Helper.createError} if the response is not OK.
+	 *
 	 * @public
 	 */
-	_Requestor.prototype.fetch = function (sMethod, sResourcePath, oPayload) {
-		const sRequestUrl = this.sServiceUrl + sResourcePath;
+	_Requestor.prototype.fetch = async function (sMethod, sResourcePath, sQueryString, oPayload) {
+		await this.oModelInterface.getOrCreateRetryAfterPromise();
+
 		const oFetchOptions = {
 			method : sMethod,
 			headers : {
 				...this.mPredefinedRequestHeaders,
+				Accept : "*/*",
 				...this.mHeaders,
 				...this.mFinalHeaders
 			}
 		};
-
 		if (oPayload) {
 			oFetchOptions.body = JSON.stringify(oPayload);
 		}
 
-		return fetch(sRequestUrl, oFetchOptions);
+		const sRequestUrl = this.sServiceUrl + sResourcePath + sQueryString;
+		// Note: fetch API needs to be invoked on window object
+		const oResponse = await _Requestor.fetch.call(window, sRequestUrl, oFetchOptions);
+		if (oResponse.ok) {
+			return oResponse;
+		}
+
+		const jqXHR = {
+			getResponseHeader : function (sHeaderName) {
+				return oResponse.headers.get(sHeaderName);
+			},
+			responseText : await oResponse.text(),
+			status : oResponse.status,
+			statusText : oResponse.statusText
+		};
+		const oError
+			= _Helper.createError(jqXHR, "Communication error", sRequestUrl, sResourcePath);
+		if (oResponse.status === 503 && oResponse.headers.get("Retry-After")
+				&& this.oModelInterface.getOrCreateRetryAfterPromise(oError)) {
+			return this.fetch(sMethod, sResourcePath, sQueryString, oPayload);
+		}
+
+		throw oError;
 	};
 
 	/**
@@ -971,7 +1000,7 @@ sap.ui.define([
 
 				this.mTypeForMetaPath[sMetaPath] = oType;
 
-				(oType.$Key || []).forEach((vKey) => {
+				oType.$Key?.forEach((vKey) => {
 					if (typeof vKey === "object") {
 						// key has an alias
 						vKey = vKey[Object.keys(vKey)[0]];
@@ -1472,7 +1501,7 @@ sap.ui.define([
 	 */
 	_Requestor.prototype.processBatch = function (sGroupId) {
 		var bHasChanges,
-			aRequests = this.mBatchQueue[sGroupId] || [],
+			aRequests = this.mBatchQueue[sGroupId] ?? [],
 			that = this;
 
 		/*
@@ -1915,6 +1944,26 @@ sap.ui.define([
 		if (!bCanceled) {
 			throw new Error("Cannot reset the changes, the batch request is running");
 		}
+	};
+
+	/**
+	 * Replaces the GET request identified by the given promise with the last one inside the same
+	 * group.
+	 *
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
+	 *   The group lock of the request to be replaced
+	 * @param {Promise} oPromise
+	 *   The promise of the request to be replaced as returned by {@link #request}
+	 *
+	 * @private
+	 */
+	_Requestor.prototype.replaceWithLast = function (oGroupLock, oPromise) {
+		const aRequests = this.mBatchQueue[oGroupLock.getGroupId()];
+		const iIndex = aRequests.findIndex((oRequest) => oRequest.$promise === oPromise);
+		const oNewRequest = aRequests.pop();
+
+		aRequests[iIndex].$resolve(oNewRequest.$promise);
+		aRequests[iIndex] = oNewRequest;
 	};
 
 	/**
@@ -2372,7 +2421,8 @@ sap.ui.define([
 
 	/**
 	 * Sets the session context. Starts a keep-alive timer in case there is a session context and
-	 * a timeout of 60 seconds or more is indicated. This timer runs for at most 30 minutes.
+	 * a timeout of 60 seconds or more is indicated. This timer sends a keep-alive request every
+	 * 60 seconds and runs for at most 30 minutes.
 	 *
 	 * @param {string} [sContextId] The value of the header 'SAP-ContextId'
 	 * @param {string} [sSAPHttpSessionTimeout] The value of the header 'SAP-Http-Session-Timeout',
@@ -2417,7 +2467,7 @@ sap.ui.define([
 								that.clearSessionContext(/*bTimeout*/true);
 							} // else keep the timer running
 						});
-				}, (iTimeoutSeconds - 5) * 1000);
+				}, 60 * 1000); // ping every 60s
 			} else if (sSAPHttpSessionTimeout !== null) {
 				Log.warning("Unsupported SAP-Http-Session-Timeout header", sSAPHttpSessionTimeout,
 					sClassName);
@@ -2482,16 +2532,21 @@ sap.ui.define([
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
-	 * @returns {sap.ui.base.SyncPromise<void>}
+	 * @returns {sap.ui.base.SyncPromise<void>|undefined}
 	 *   A promise that resolves without a defined result when a batch response has been received
-	 *   for the given group ID, no matter if the batch succeeded or failed
+	 *   for the given group ID, no matter if the batch succeeded or failed; returns
+	 *   <code>undefined</code> when there are no change(!) requests yet
 	 *
 	 * @public
 	 * @see #batchResponseReceived
 	 */
 	_Requestor.prototype.waitForBatchResponseReceived = function (sGroupId) {
-		// Note: this currently works only in case there is at least one change request already
-		return SyncPromise.resolve(this.mBatchQueue[sGroupId][0][0].$promise);
+		for (let i = 0; i <= this.mBatchQueue[sGroupId].iChangeSet; i += 1) {
+			if (this.mBatchQueue[sGroupId][i].length) {
+				// Note: this currently works only if there is at least one change request already
+				return SyncPromise.resolve(this.mBatchQueue[sGroupId][i][0].$promise);
+			}
+		}
 	};
 
 	/**
@@ -2636,6 +2691,13 @@ sap.ui.define([
 
 		return oRequestor;
 	};
+
+	/**
+	 * Trampoline property for the native fetch API ("design for testability").
+	 *
+	 * @private
+	 */
+	_Requestor.fetch = fetch;
 
 	/**
 	 * A "reviver" function to be used by JSON.parse in order to transform 4.01 control information

@@ -99,7 +99,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @private
@@ -485,6 +485,14 @@ sap.ui.define([
 		SinglePlanningCalendarMonthGrid.prototype.onAfterRendering = function() {
 			this._initItemNavigation();
 			this._aMoreCountPerDay.fill(0);
+
+			if (this._bFocusFromTouch) {
+				const iFocusedIndex = this._oItemNavigation.getFocusedIndex();
+				const oDomRef = this._oItemNavigation.getItemDomRefs()[iFocusedIndex];
+				if (oDomRef) {
+					oDomRef.classList.add("sapUiCalItemFocusFromTouch");
+				}
+			}
 		};
 
 		SinglePlanningCalendarMonthGrid.prototype._getColumns = function() {
@@ -563,6 +571,19 @@ sap.ui.define([
 			this._oItemNavigation.focusItem(iIndex);
 		};
 
+		SinglePlanningCalendarMonthGrid.prototype.ontouchstart = function(oEvent) {
+			if (oEvent.target.closest(".sapMSPCMonthDay")) {
+				this._bFocusFromTouch = true;
+			}
+		};
+
+		SinglePlanningCalendarMonthGrid.prototype.onfocusin = function(oEvent) {
+			const oCell = oEvent.target.closest(".sapMSPCMonthDay");
+			if (oCell) {
+				oCell.classList.toggle("sapUiCalItemFocusFromTouch", !!this._bFocusFromTouch);
+			}
+		};
+
 		SinglePlanningCalendarMonthGrid.prototype._addSelectedDate = function(oDate) {
 			var aSelectedDates = this.getAggregation("selectedDates");
 			var bDateExists = aSelectedDates && aSelectedDates.some(function(oRange) {
@@ -632,6 +653,8 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent The event object.
 		 */
 		SinglePlanningCalendarMonthGrid.prototype.onkeydown = function(oEvent) {
+			this._bFocusFromTouch = false;
+
 			const bArrowNavigation = oEvent.which === KeyCodes.ARROW_UP ||  oEvent.which === KeyCodes.ARROW_DOWN ||
 				oEvent.which === KeyCodes.ARROW_LEFT || oEvent.which === KeyCodes.ARROW_RIGHT;
 			const bMultiDateSelection = SinglePlanningCalendarSelectionMode.MultiSelect === this.getDateSelectionMode();

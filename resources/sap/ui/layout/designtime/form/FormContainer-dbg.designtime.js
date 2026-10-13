@@ -69,7 +69,7 @@ sap.ui.define([
 						domRef: function (oFormContainer) {
 							if (!oFormContainer.getRenderedDomRef()) {
 								var oTitleOrToolbar = oFormContainer.getTitle() || oFormContainer.getToolbar();
-								return oTitleOrToolbar.getDomRef();
+								return oTitleOrToolbar.getRenderedDomRef?.() || oTitleOrToolbar.getDomRef();
 							}
 							return jQuery(oFormContainer.getRenderedDomRef()).find(".sapUiFormTitle")[0];
 						},
@@ -96,7 +96,7 @@ sap.ui.define([
 					}
 					if (oFormContainer.getFormElements().length === 0 || _allFormElementsInvisible(oFormContainer)) {
 						if (oHeader instanceof UI5Element) {
-							return oHeader.getDomRef();
+							return oHeader.getRenderedDomRef?.() || oHeader.getDomRef();
 						}
 						if (typeof oHeader === "string") {
 							return jQuery(oDomRef).find(".sapUiFormTitle").get(0);

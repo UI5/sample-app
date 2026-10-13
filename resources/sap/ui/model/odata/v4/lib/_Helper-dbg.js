@@ -849,7 +849,7 @@ sap.ui.define([
 		 * Decomposes the given error into an array of errors, one for each of the given requests.
 		 *
 		 * @param {Error} oError
-		 *   The error created by {@link .createError}.
+		 *   The error created by {@link #.createError}.
 		 * @param {object} oError.error
 		 *   An error response as sent from the OData server
 		 * @param {object[]} [oError.error.details]
@@ -1102,7 +1102,7 @@ sap.ui.define([
 		 * Extracts all (top and detail) messages from the given error instance.
 		 *
 		 * @param {Error} oError
-		 *   An error instance as created by {@link .createError} or {@link .decomposeError}
+		 *   An error instance as created by {@link #.createError} or {@link #.decomposeError}
 		 * @param {object} [oError.error]
 		 *   An error response as sent from the OData server
 		 * @param {object[]} [oError.error.details]
@@ -1305,7 +1305,10 @@ sap.ui.define([
 		 * @param {any} vValue
 		 *   The value according to "OData JSON Format Version 4.01" section "7.1 Primitive Value"
 		 * @param {string} sType
-		 *   The OData Edm type, e.g. "Edm.String"
+		 *   The name of the type, e.g. "Edm.String"
+		 * @param {object} [oTypeMetadata]
+		 *   The type metadata for non-Edm types (as returned by
+		 *   {@link sap.ui.model.odata.v4.ODataMetaModel#fetchObject})
 		 * @returns {string}
 		 *   The literal according to "OData Version 4.01 Part 2: URL Conventions" section
 		 *   "5.1.1.14.1 Primitive Literals"
@@ -1314,7 +1317,7 @@ sap.ui.define([
 		 *
 		 * @public
 		 */
-		formatLiteral : function (vValue, sType) {
+		formatLiteral : function (vValue, sType, oTypeMetadata) {
 			if (vValue === undefined) {
 				throw new Error("Illegal value: undefined");
 			}
@@ -1350,6 +1353,9 @@ sap.ui.define([
 					return "'" + String(vValue).replace(rSingleQuote, "''") + "'";
 
 				default:
+					if (oTypeMetadata?.$kind === "EnumType") {
+						return sType + "'" + vValue + "'";
+					}
 					throw new Error("Unsupported type: " + sType);
 			}
 		},
@@ -1753,7 +1759,7 @@ sap.ui.define([
 		 * @public
 		 */
 		getMissingPropertyPaths : function (vEntityOrCollection, mQueryOptions) {
-			return (mQueryOptions.$select || []).concat(Object.keys(mQueryOptions.$expand || {}))
+			return (mQueryOptions.$select ?? []).concat(Object.keys(mQueryOptions.$expand ?? {}))
 				.filter(function (sPath) {
 					return _Helper.isMissingProperty(vEntityOrCollection, sPath);
 				});
@@ -1855,7 +1861,7 @@ sap.ui.define([
 				});
 			}
 
-			return mQueryOptions || {};
+			return mQueryOptions ?? {};
 		},
 
 		/**
@@ -1942,8 +1948,8 @@ sap.ui.define([
 			function isUsed(sPath, mQueryOptionsForPath) {
 				let bPathMatchedExpand = false;
 				// if there is no $select the standard select is used (corresponding to "*")
-				const aSelect = mQueryOptionsForPath.$select || ["*"];
-				const mExpand = mQueryOptionsForPath.$expand || {};
+				const aSelect = mQueryOptionsForPath.$select ?? ["*"];
+				const mExpand = mQueryOptionsForPath.$expand ?? {};
 				return sPath === "*" || sPath in mExpand || aSelect.includes(sPath)
 					|| aSelect.some((sSelect) => isRelated(sPath, sSelect))
 					// check whether the path can be reached via expanded navigation properties
@@ -1968,7 +1974,7 @@ sap.ui.define([
 
 		/**
 		 * Tells whether <code>sPath</code> has <code>sBasePath</code> as path prefix. It returns
-		 * <code>true</code> iff {@link .getRelativePath} does not return <code>undefined</code>.
+		 * <code>true</code> iff {@link #.getRelativePath} does not return <code>undefined</code>.
 		 *
 		 * @param {string} sPath The path
 		 * @param {string} sBasePath The base path
@@ -2207,7 +2213,7 @@ sap.ui.define([
 			}
 
 			if (aPaths.includes("*")) {
-				aSelects = (mCacheQueryOptions && mCacheQueryOptions.$select || []).slice();
+				aSelects = mCacheQueryOptions?.$select?.slice() ?? [];
 				if (sMessagesPath && !aSelects.includes(sMessagesPath)) {
 					aSelects.push(sMessagesPath);
 				}
@@ -2250,7 +2256,7 @@ sap.ui.define([
 						// details of the navigation property may change, compute intersection
 						// recursively
 						mChildQueryOptions = _Helper.intersectQueryOptions(
-							mCacheQueryOptions.$expand[sNavigationPropertyPath] || {},
+							mCacheQueryOptions.$expand[sNavigationPropertyPath] ?? {},
 							aStrippedPaths, fnFetchMetadata, sMetaPath,
 							sPrefixedNavigationPropertyPath);
 						if (mChildQueryOptions) {
@@ -2832,15 +2838,15 @@ sap.ui.define([
 		 * @public
 		 */
 		restoreUpdatingProperties : function (oOld, oNew) {
-			var oTempNew = oNew || {};
-
-			Object.keys(oOld || {}).forEach(function (sProperty) {
+			for (const sProperty in oOld) {
 				if (sProperty.startsWith("@")) {
-					return; // skip annotations
+					continue; // skip annotations
 				}
 				if (Array.isArray(oOld[sProperty])) {
-					return; // skip arrays
+					continue; // skip arrays
 				}
+
+				const oTempNew = oNew ?? {};
 				if (typeof oOld[sProperty] === "object") {
 					oTempNew[sProperty]
 						= _Helper.restoreUpdatingProperties(oOld[sProperty], oTempNew[sProperty]);
@@ -2850,7 +2856,8 @@ sap.ui.define([
 					oTempNew[sProperty + "@$ui5.updating"] = oOld[sProperty + "@$ui5.updating"];
 					oNew = oTempNew;
 				}
-			});
+			}
+
 			return oNew;
 		},
 
@@ -3049,7 +3056,7 @@ sap.ui.define([
 						/*bForceUpdate*/false, /*bInArray*/true);
 				} else if (vSourceProperty && typeof vSourceProperty === "object") {
 					vTargetProperty = oTarget[sProperty]
-						= _Helper.updateAll(mChangeListeners, sPropertyPath, vTargetProperty || {},
+						= _Helper.updateAll(mChangeListeners, sPropertyPath, vTargetProperty ?? {},
 								vSourceProperty);
 					_Helper.fireChange(mChangeListeners, sPropertyPath, vTargetProperty);
 				} else if (vTargetProperty !== vSourceProperty) {
@@ -3176,23 +3183,24 @@ sap.ui.define([
 
 			// single-valued
 			const mQueryOptionsForEntity = _Helper.getQueryOptionsForPath(mQueryOptions, sPath);
-			Object.keys(mQueryOptionsForEntity.$expand || {}).forEach(function (sExpandPath) {
+			for (const sExpandPath in mQueryOptionsForEntity.$expand) {
 				const oNestedTargetEntity = _Helper.drillDown(oTargetEntity, sExpandPath);
 				// sent and single-valued
 				if (oNestedTargetEntity && !Array.isArray(oNestedTargetEntity)) {
 					bDeepCreate = true; // they are updated with the top-level entity
 				}
-			});
+			}
 
 			// collection-valued
-			Object.keys(mSelectForMetaPath || {}).filter(function (sMetaPath) {
-				return !sMetaPath.includes("/"); // only look at the direct descendants
-			}).forEach(function (sSegment) {
+			for (const sSegment in mSelectForMetaPath) {
+				if (sSegment.includes("/")) {
+					continue; // only look at the direct descendants
+				}
 				const aNestedCreatedEntities = oCreatedEntity[sSegment];
 				if (!aNestedCreatedEntities) { // create not called in this nested collection
 					// #addTransientEntity added this in preparation of a deep create
 					delete oTargetEntity[sSegment];
-					return;
+					continue;
 				}
 
 				// copy the collection into the target entity and set the additional properties
@@ -3229,7 +3237,7 @@ sap.ui.define([
 				});
 
 				bDeepCreate = true;
-			});
+			}
 
 			return bDeepCreate;
 		},
@@ -3388,7 +3396,7 @@ sap.ui.define([
 						}
 					} else if (vSourceProperty && typeof vSourceProperty === "object"
 							&& !sProperty.includes("@")) {
-						oTarget[sProperty] = update(sPropertyPath, vSelected, vTargetProperty || {},
+						oTarget[sProperty] = update(sPropertyPath, vSelected, vTargetProperty ?? {},
 							vSourceProperty);
 						_Helper.fireChange(mChangeListeners, sPropertyPath, vSourceProperty);
 					} else if (vTargetProperty !== vSourceProperty

@@ -180,7 +180,7 @@ sap.ui.define(["sap/ui/core/ControlBehavior", "./library", "sap/ui/Device", "sap
 
 	ListItemBaseRenderer.renderTabIndex = function(rm, oLI) {
 		const oList = oLI.getList();
-		if (oList?._skipGroupHeaderFocus() && oLI.isGroupHeader()) {
+		if (oList?.getSkipGroupHeaderFocus() && oLI.isGroupHeader()) {
 			return;
 		}
 		rm.attr("tabindex", "-1");

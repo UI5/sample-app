@@ -12,6 +12,7 @@ sap.ui.define([
 	"sap/base/i18n/date/CalendarType",
 	"sap/base/i18n/date/CalendarWeekNumbering",
 	"sap/base/i18n/date/TimezoneUtils",
+	"sap/base/strings/escapeRegExp",
 	"sap/base/strings/formatMessage",
 	"sap/base/util/deepEqual",
 	"sap/base/util/extend",
@@ -22,9 +23,132 @@ sap.ui.define([
 	"sap/ui/core/date/UI5Date",
 	"sap/ui/core/date/UniversalDate",
 	"sap/ui/core/format/FormatUtils"
-], function(Log, Formatting, Localization, CalendarType, CalendarWeekNumbering, TimezoneUtils, formatMessage,
-		deepEqual, extend, Locale, LocaleData, Supportability, CalendarUtils, UI5Date, UniversalDate, FormatUtils) {
+], function(Log, Formatting, Localization, CalendarType, CalendarWeekNumbering, TimezoneUtils, escapeRegExp,
+		formatMessage, deepEqual, extend, Locale, LocaleData, Supportability, CalendarUtils, UI5Date, UniversalDate,
+		FormatUtils) {
 	"use strict";
+
+	/**
+	 * @typedef {object} sap.ui.core.format.DateFormat.FormatOptions
+	 *
+	 * The base format options for date formats.
+	 *
+	 * @property {module:sap/base/i18n/date/CalendarType} [calendarType]
+	 *   The calendar type used to format and parse the date.
+	 *   By default, this value is taken from the configuration
+	 *   (see {@link module:sap/base/i18n/Formatting.setCalendarType Formatting.setCalendarType}),
+	 *   or - if not set - calculated based on the current locale, see
+	 *   {@link module:sap/base/i18n/Formatting.getCalendarType Formatting.getCalendarType}.
+	 * @property {module:sap/base/i18n/date/CalendarWeekNumbering} [calendarWeekNumbering]
+	 *   {@since 1.108.0} Specifies the calendar week numbering.
+	 *   If specified, this overwrites <code>firstDayOfWeek</code> and <code>minimalDaysInFirstWeek</code>.
+	 * @property {int} [firstDayOfWeek]
+	 *   {@since 1.105.0} Specifies the first day of the week starting with <code>0</code> (which is Sunday).
+	 *   If not defined, the value is taken from the locale,
+	 *   see {@link sap.ui.core.LocaleData.getFirstDayOfWeek LocaleData.getFirstDayOfWeek}.
+	 * @property {string} [format]
+	 *   {@since 1.34.0} Contains pattern symbols (for example, "yMMMd" or "Hms") that are converted into the
+	 *   pattern in the used locale which matches the wanted symbols best.
+	 *   The symbols must be in canonical order: Era (G), Year (y/Y), Quarter (q/Q), Month (M/L),
+	 *   Week (w), Day-Of-Week (E/e/c), Day (d), Hour (h/H/k/K/j/J), Minute (m), Second (s), Timezone (z/Z/v/V/O/X/x)
+	 *   See {@link https://unicode.org/reports/tr35/tr35-dates.html#availableFormats_appendItems
+	 *     Unicode Locale Data Markup Language (LDML): Elements availableFormats, appendItems}.
+	 * @property {int} [minimalDaysInFirstWeek]
+	 *   {@since 1.105.0} Minimal days at the beginning of the year that define the first calendar week.
+	 *   If not defined, the value is taken from the locale,
+	 *   see {@link sap.ui.core.LocaleData.getMinimalDaysInFirstWeek LocaleData.getMinimalDaysInFirstWeek}.
+	 * @property {boolean} [relative]
+	 *   If <code>true</code>, the date is formatted relatively to today's date if
+	 *   it is within the given <code>relativeRange</code>.<br>
+ 	 *   <b>Example:</b>
+	 *   <ul>
+	 *     <li>Today is the <b>2026-01-05</b></li>
+	 *     <li><code>relative</code> is set to <code>true</code></li>
+	 *     <li><code>relativeRange</code> is set to <code>[-2, 2]</code></li>
+	 *     <li>This means that only dates two days prior or after <b>2026-01-05</b>
+	 *       are formatted in the relative format</li>
+	 *     <li>For example, date <b>2026-01-07</b> would be formatted to <code>"in 2 days"</code> for the
+	 *       English locale</li>
+	 *     <li>Whereas, the <b>2026-01-08</b> would be formatted in the non-relative format as it is out of the
+	 *       <code>relativeRange</code></li>
+	 *   </ul>
+	 * @property {int[]} [relativeRange]
+	 *   The date range in which the relative formatting is applied. It depends on the
+	 *   <code>relativeScale</code>. For example, <code>relativeScale="day"</code> and
+	 *   <code>relativeRange=[-2, 2]</code> means only dates that are 2 <b>days</b> before or 2 <b>days</b> after
+	 *   today's date are formatted relatively.
+	 *   If no range given, the range is determined depending on the <code>relativeScale</code>.
+	 *   This is the list of defaults depending on the <code>relativeScale</code>:
+	 *   <ul>
+	 *     <li><code>relativeScale="second"</code>, <code>relativeRange=[-60, 60]</code></li>
+	 *     <li><code>relativeScale="minute"</code>, <code>relativeRange=[-60, 60]</code></li>
+	 *     <li><code>relativeScale="hour"</code>, <code>relativeRange=[-24, 24]</code></li>
+	 *     <li><code>relativeScale="day"</code>, <code>relativeRange=[-6, 6]</code></li>
+	 *     <li><code>relativeScale="week"</code>, <code>relativeRange=[-4, 4]</code></li>
+	 *     <li><code>relativeScale="month"</code>, <code>relativeRange=[-12, 12]</code></li>
+	 *     <li><code>relativeScale="year"</code>, <code>relativeRange=[-10, 10]</code></li>
+	 *   </ul>
+	 *   Otherwise, when <code>relativeScale</code> is set to <code>auto</code>, all dates are formatted relatively.
+	 * @property {"auto"|"year"|"month"|"week"|"day"|"hour"|"minute"|"second"} [relativeScale]
+	 *   If <code>auto</code> is set, a new relative time format is switched on for all Date/Time instances.
+	 *   The relative scale is chosen depending on the difference between the given date and now.
+	 * @property {"narrow"|"short"|"wide"} [relativeStyle]
+	 *   {@since 1.34.4} The style of the relative format.
+	 * @property {boolean} [strictParsing]
+	 *   If <code>true</code>, parsing validates that the value is a valid date. For example, the parsing
+	 *   of an overflowing value like <b>2026-01-32</b> returns <code>null</code> instead of <b>2026-02-01</b>.
+	 * @property {boolean} [UTC]
+	 *   If <code>true</code>, the date is formatted and parsed as UTC instead of the local timezone.
+	 *
+	 * @public
+	 */
+
+	/**
+	 * @typedef {sap.ui.core.format.DateFormat.FormatOptions} sap.ui.core.format.DateFormat.IntervalFormatOptions
+	 *
+	 * Extends the format options for a single date, time, or date and time to include
+	 * interval-related settings.
+	 *
+	 * @property {boolean} [interval]
+	 *   {@since 1.48.0} If <code>true</code>, the {@link sap.ui.core.format.DateFormat#format format} method
+	 *   expects an array with two dates as the first argument and formats them as an interval.
+	 *   For example, the interval "Jan 10, 2008 - Jan 12, 2008" is formatted as "Jan 10-12, 2008"
+	 *   if the <code>format</code> option is set to <code>"yMMMd"</code>.
+	 *   If no <code>format</code> is set, the two dates are formatted separately and concatenated with a
+	 *   locale-dependent pattern.
+	 * @property {string} [intervalDelimiter]
+	 *   {@since 1.113.0} A delimiter for intervals. A specific interval format is created
+	 *   with a given delimiter.<br>
+	 *   <b>Example:</b> If <code>oFormatOptions.intervalDelimiter</code> is set to "...",
+	 *   the formatted result would be "Jan 10, 2008...Feb 12, 2008".
+	 *   <b>Note:</b> If this format option is set, the locale-specific interval notation
+	 *   is overridden. For example, "Jan 10 – Feb 12, 2008" becomes "Jan 10, 2008...Feb 12, 2008".
+	 * @property {boolean} [singleIntervalValue]
+	 *   Only relevant if <code>interval</code> is set to <code>true</code>.
+	 *   This allows you to pass an array with only one date object to the
+	 *   {@link sap.ui.core.format.DateFormat#format format} method, which is then formatted as a single value.
+	 *   For example, the value <code>[UI5Date.getInstance("2026-01-20")]</code> is formatted to
+	 *   <code>"Jan 20, 2026"</code> in the English locale.
+	 *   If the <code>pattern</code> format option is set to an interval pattern, the formatted
+	 *   result displays the value as an interval, but the dates of this interval are the same.
+	 *
+	 * @public
+	 */
+
+	/**
+	 * @typedef {sap.ui.core.format.DateFormat.IntervalFormatOptions} sap.ui.core.format.DateFormat.DateFormatOptions
+	 *
+	 * The format options type for date formats.
+	 *
+	 * @property {string} [pattern]
+	 *   A date pattern in
+	 *   {@link https://unicode.org/reports/tr35/tr35-dates.html#table-date-field-symbol-table LDML format}.
+	 *   It is not verified whether the pattern represents only a date.
+	 * @property {"short"|"medium"|"long"|"full"} [style]
+	 *   The locale-dependent formatting style for the date, used if no <code>pattern</code> is provided.
+	 *
+	 * @public
+	 */
 
 	/**
 	 * Constructor for DateFormat - must not be used:
@@ -223,33 +347,14 @@ sap.ui.define([
 	/**
 	 * Get a date instance of the DateFormat, which can be used for formatting.
 	 *
-	 * @param {object} [oFormatOptions] Object which defines the format options
-	 * @param {module:sap/base/i18n/date/CalendarWeekNumbering} [oFormatOptions.calendarWeekNumbering] since 1.108.0 specifies the calendar week numbering.
-	 *   If specified, this overwrites <code>oFormatOptions.firstDayOfWeek</code> and <code>oFormatOptions.minimalDaysInFirstWeek</code>.
-	 * @param {int} [oFormatOptions.firstDayOfWeek] since 1.105.0 specifies the first day of the week starting with <code>0</code> (which is Sunday); if not defined, the value taken from the locale is used
-	 * @param {int} [oFormatOptions.minimalDaysInFirstWeek] since 1.105.0 minimal days at the beginning of the year which define the first calendar week; if not defined, the value taken from the locale is used
-	 * @param {string} [oFormatOptions.format] since 1.34.0 contains pattern symbols (e.g. "yMMMd" or "Hms") which will be converted into the pattern in the used locale, which matches the wanted symbols best.
-	 *  The symbols must be in canonical order, that is: Era (G), Year (y/Y), Quarter (q/Q), Month (M/L), Week (w), Day-Of-Week (E/e/c), Day (d), Hour (h/H/k/K/j/J), Minute (m), Second (s), Timezone (z/Z/v/V/O/X/x)
-	 *  See {@link https://unicode.org/reports/tr35/tr35-dates.html#availableFormats_appendItems
-	 *    Unicode Locale Data Markup Language (LDML): Elements availableFormats, appendItems}.
-	 * @param {string} [oFormatOptions.pattern] a data pattern in LDML format. It is not verified whether the pattern represents only a date.
-	 * @param {string} [oFormatOptions.style] can be either 'short, 'medium', 'long' or 'full'. If no pattern is given, a locale dependent default date pattern of that style is used from the LocaleData class.
-	 * @param {boolean} [oFormatOptions.strictParsing] if true, by parsing it is checked if the value is a valid date
-	 * @param {boolean} [oFormatOptions.relative] if true, the date is formatted relatively to todays date if it is within the given day range, e.g. "today", "1 day ago", "in 5 days"
-	 * @param {int[]} [oFormatOptions.relativeRange] the day range used for relative formatting. If <code>oFormatOptions.relativeScale</code> is set to default value 'day', the relativeRange is by default [-6, 6], which means only the last 6 days, today and the next 6 days are formatted relatively. Otherwise when <code>oFormatOptions.relativeScale</code> is set to 'auto', all dates are formatted relatively.
-	 * @param {string} [oFormatOptions.relativeScale="day"] if 'auto' is set, new relative time format is switched on for all Date/Time Instances. The relative scale is chosen depending on the difference between the given date and now.
-	 * @param {string} [oFormatOptions.relativeStyle="wide"] since 1.32.10, 1.34.4 the style of the relative format. The valid values are "wide", "short", "narrow"
-	 * @param {boolean} [oFormatOptions.interval=false] since 1.48.0 if true, the {@link sap.ui.core.format.DateFormat#format format} method expects an array with two dates as the first argument and formats them as interval. Further interval "Jan 10, 2008 - Jan 12, 2008" will be formatted as "Jan 10-12, 2008" if the 'format' option is set with necessary symbols.
-	 *   Otherwise the two given dates are formatted separately and concatenated with local dependent pattern.
-	 * @param {string} [oFormatOptions.intervalDelimiter]
-	 *   Since 1.113.0, a delimiter for intervals. With a given interval delimiter a specific interval format is
-	 *   created. <b>Example:</b> If <code>oFormatOptions.intervalDelimiter</code> is set to "...", an interval would be
-	 *   given as "Jan 10, 2008...Feb 12, 2008".
-	 *   <b>Note:</b> If this format option is set, the locale-specific interval notation is overruled, for example
-	 *   "Jan 10 – Feb 12, 2008" becomes "Jan 10, 2008...Feb 12, 2008".
-	 * @param {boolean} [oFormatOptions.singleIntervalValue=false] Only relevant if oFormatOptions.interval is set to 'true'. This allows to pass an array with only one date object to the {@link sap.ui.core.format.DateFormat#format format} method.
-	 * @param {boolean} [oFormatOptions.UTC] if true, the date is formatted and parsed as UTC instead of the local timezone
-	 * @param {module:sap/base/i18n/date/CalendarType} [oFormatOptions.calendarType] The calender type which is used to format and parse the date. This value is by default either set in configuration or calculated based on current locale.
+	 * @param {sap.ui.core.format.DateFormat.DateFormatOptions} [oFormatOptions={
+	 *     relativeScale: "day",
+	 *     relativeStyle: "wide",
+	 *     interval: false,
+	 *     singleIntervalValue: false,
+	 *     style: "medium"
+	 *   }]
+	 *   Object which defines the format options
 	 * @param {sap.ui.core.Locale} [oLocale] Locale to ask for locale specific texts/settings
 	 * @ui5-omissible-params oFormatOptions
 	 * @return {sap.ui.core.format.DateFormat} date instance of the DateFormat
@@ -1434,9 +1539,8 @@ sap.ui.define([
 					bValid = oParseHelper.checkValid(oPart.type, bPartInvalid, oFormat);
 				} else {
 					sPart = oFormat.oLocaleData.getCalendarWeek(oPart.digits === 3 ? "narrow" : "wide");
-					sPart = sPart.replace("{0}", "([0-9]+)");
-					var rWeekNumber = new RegExp(sPart),
-						oResult = rWeekNumber.exec(sValue);
+					const rWeekNumber = new RegExp(sPart.split("{0}").map(escapeRegExp).join("(\\d+)"));
+					const oResult = rWeekNumber.exec(sValue);
 					if (oResult) {
 						// e.g. for input "CW 01" create pattern "CW ([0-9]+)"
 						// and extract number from "01" part of the input
@@ -3117,7 +3221,8 @@ sap.ui.define([
 		aPatterns = this.oLocaleData.getRelativePatterns(this.aRelativeParseScales, this.oFormatOptions.relativeStyle);
 		for (var i = 0; i < aPatterns.length; i++) {
 			oEntry = aPatterns[i];
-			rPattern = new RegExp("^\\s*" + oEntry.pattern.replace(/\{0\}/, "(\\d+)") + "\\s*$", "i");
+			const sPattern = oEntry.pattern.split("{0}").map(escapeRegExp).join("(\\d+)");
+			rPattern = new RegExp("^\\s*" + sPattern + "\\s*$", "i");
 			oResult = rPattern.exec(sValue);
 			if (oResult) {
 				if (oEntry.value !== undefined) {

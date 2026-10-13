@@ -88,6 +88,7 @@ sap.ui.define([
 			metadataUrlParams : true,
 			odataVersion : true,
 			operationMode : true,
+			parseKeepsEmptyString : true,
 			serviceUrl : true,
 			sharedRequests : true,
 			supportReferences : true,
@@ -160,6 +161,11 @@ sap.ui.define([
 		 *   including <code>undefined</code> lead to an error if 'vFilters' or 'vSorters' are given
 		 *   or if {@link sap.ui.model.odata.v4.ODataListBinding#filter} or
 		 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} is called.
+		 * @param {boolean} [mParameters.parseKeepsEmptyString]
+		 *   {@since 1.152.0} Whether the format option <code>parseKeepsEmptyString</code> is set to
+		 *   <code>true</code> for all instances of {@link sap.ui.model.odata.type.String} that are
+		 *   created automatically during type detection; only the value <code>true</code> is
+		 *   allowed; see {@link #getParseKeepsEmptyString}.
 		 * @param {string} mParameters.serviceUrl
 		 *   Root URL of the service to request data from. The path part of the URL must end with a
 		 *   forward slash according to OData V4 specification ABNF, rule "serviceRoot". You may
@@ -240,7 +246,7 @@ sap.ui.define([
 		 * @extends sap.ui.model.Model
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 */
 		ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */{
@@ -337,7 +343,7 @@ sap.ui.define([
 					+ oGroupProperties + "'");
 			}
 		}
-		this.mGroupProperties = _Helper.clone(mParameters.groupProperties) || {};
+		this.mGroupProperties = _Helper.clone(mParameters.groupProperties) ?? {};
 		this.mGroupProperties.$auto = {submit : SubmitMode.Auto};
 		this.mGroupProperties.$direct = {submit : SubmitMode.Direct};
 		if (mParameters.autoExpandSelect !== undefined
@@ -349,6 +355,11 @@ sap.ui.define([
 			throw new Error("Value for sharedRequests must be true");
 		}
 		this.bSharedRequests = mParameters.sharedRequests === true;
+		if ("parseKeepsEmptyString" in mParameters
+				&& mParameters.parseKeepsEmptyString !== true) {
+			throw new Error("Value for parseKeepsEmptyString must be true");
+		}
+		this.bParseKeepsEmptyString = mParameters.parseKeepsEmptyString === true;
 		this.bIgnoreETag = false;
 		if ("ignoreAnnotationsFromMetadata" in mParameters
 			&& mParameters.ignoreAnnotationsFromMetadata !== true) {
@@ -2165,6 +2176,25 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns whether the <code>parseKeepsEmptyString</code> format option is set to
+	 * <code>true</code> for all instances of {@link sap.ui.model.odata.type.String} that are
+	 * created automatically during {@link sap.ui.model.odata.v4.ODataMetaModel#requestUI5Type
+	 * type detection} (as defined by the <code>parseKeepsEmptyString</code> model parameter, see
+	 * {@link #constructor}). Use this model setting if your OData service cannot handle
+	 * <code>null</code> values for string properties.
+	 *
+	 * @returns {boolean}
+	 *   Whether the <code>parseKeepsEmptyString</code> model parameter is set
+	 *
+	 * @public
+	 * @see #constructor
+	 * @since 1.152.0
+	 */
+	ODataModel.prototype.getParseKeepsEmptyString = function () {
+		return this.bParseKeepsEmptyString;
+	};
+
+	/**
 	 * Method not supported
 	 *
 	 * @throws {Error}
@@ -2623,7 +2653,7 @@ sap.ui.define([
 				aNewMessages.push(that.createUI5Message(oRawMessage, sResourcePath, sCachePath));
 			});
 		});
-		(aCachePaths || [""]).forEach(function (sCachePath) {
+		(aCachePaths ?? [""]).forEach(function (sCachePath) {
 			var sPath = _Helper.buildPath(sDataBindingPath, sCachePath);
 
 			Object.keys(that.mMessages).forEach(function (sMessageTarget) {
@@ -3043,9 +3073,10 @@ sap.ui.define([
 	 * type <code>Date</code>, which is the earliest point in time when the request should be
 	 * repeated. The handler has to return a promise. With this promise, you can control the
 	 * repetition of all pending requests including the failed HTTP request. If the promise is
-	 * resolved, the requests are repeated; if it is rejected, the requests are not repeated. If it
-	 * is rejected with the same <code>Error</code> reason as previously passed to the handler, then
-	 * this reason is reported to the message model.
+	 * resolved, the requests are repeated; if it is rejected, the requests are not repeated but
+	 * fail with same reason as the promise. If the promise is rejected with the same
+	 * <code>Error</code> reason as previously passed to the handler, this reason is reported to the
+	 * message model.
 	 *
 	 * @param {function(Error):Promise<void>} fnRetryAfter
 	 *   A "Retry-After" handler

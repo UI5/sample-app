@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.151.0",
+		version: "1.153.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -107,6 +107,8 @@ sap.ui.define([
 			"sap.m.ButtonAccessibleRole",
 			"sap.m.ButtonType",
 			"sap.m.CarouselArrowsPlacement",
+			"sap.m.DateHighZoomInputsField",
+			"sap.m.DateHighZoomInputsMode",
 			"sap.m.DateTimeInputType",
 			"sap.m.DeviationIndicator",
 			"sap.m.DialogRoleType",
@@ -139,6 +141,7 @@ sap.ui.define([
 			"sap.m.IllustratedMessageSize",
 			"sap.m.IllustratedMessageType",
 			"sap.m.ImageMode",
+			"sap.m.InputDescriptionAlign",
 			"sap.m.InputListItemContentSize",
 			"sap.m.InputTextFormatMode",
 			"sap.m.InputType",
@@ -265,6 +268,7 @@ sap.ui.define([
 			"sap.m.CustomListItem",
 			"sap.m.CustomTile",
 			"sap.m.CustomTreeItem",
+			"sap.m.DateHighZoomInputs",
 			"sap.m.DatePicker",
 			"sap.m.DateRangeSelection",
 			"sap.m.DateTimeField",
@@ -1247,6 +1251,30 @@ sap.ui.define([
 	 */
 	DataType.registerEnum("sap.m.DateTimeInputType", thisLib.DateTimeInputType);
 
+	/**
+	 * Date field identifier for the <code>change</code> event of {@link sap.m.DateHighZoomInputs}.
+	 *
+	 * @enum {string}
+	 * @private
+	 */
+	thisLib.DateHighZoomInputsField = {
+		/** @private */ Year  : "Year",
+		/** @private */ Month : "Month",
+		/** @private */ Day   : "Day"
+	};
+	DataType.registerEnum("sap.m.DateHighZoomInputsField", thisLib.DateHighZoomInputsField);
+
+	/**
+	 * Rendering mode for {@link sap.m.DateHighZoomInputs}.
+	 *
+	 * @enum {string}
+	 * @private
+	 */
+	thisLib.DateHighZoomInputsMode = {
+		/** @private */ Single : "Single",
+		/** @private */ Range  : "Range"
+	};
+	DataType.registerEnum("sap.m.DateHighZoomInputsMode", thisLib.DateHighZoomInputsMode);
 
 	/**
 	 * Enum for the type of {@link sap.m.Dialog} control.
@@ -1884,6 +1912,29 @@ sap.ui.define([
 		 * @public
 		 */
 		Link: "Link"
+	};
+
+	/**
+	 * Defines the alignment of the <code>description</code> within the description wrapper of the
+	 * {@link sap.m.Input} control.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.153
+	 */
+	thisLib.InputDescriptionAlign = {
+
+		/**
+		 * The description is aligned next to the input field.
+		 * @public
+		 */
+		Start: "Start",
+
+		/**
+		 * The description is aligned to the far end of the input wrapper container, away from the input field.
+		 * @public
+		 */
+		End: "End"
 	};
 
 	/**
@@ -7082,6 +7133,7 @@ sap.ui.define([
 	DataType.registerEnum("sap.m.InputTextFormatMode", thisLib.InputTextFormatMode);
 	DataType.registerEnum("sap.m.SelectDialogInitialFocus", thisLib.SelectDialogInitialFocus);
 	DataType.registerEnum("sap.m.InputType", thisLib.InputType);
+	DataType.registerEnum("sap.m.InputDescriptionAlign", thisLib.InputDescriptionAlign);
 	DataType.registerEnum("sap.m.LabelDesign", thisLib.LabelDesign);
 	DataType.registerEnum("sap.m.LightBoxLoadingStates", thisLib.LightBoxLoadingStates);
 	DataType.registerEnum("sap.m.LinkConversion", thisLib.LinkConversion);

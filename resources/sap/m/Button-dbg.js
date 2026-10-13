@@ -22,7 +22,8 @@ sap.ui.define([
 	"sap/m/BadgeEnabler",
 	"sap/ui/core/InvisibleText",
 	"sap/base/Log",
-	"sap/m/Image"
+	"sap/m/Image",
+	"sap/ui/core/tooltip/TooltipEnablement"
 ], function(
 	library,
 	Control,
@@ -40,7 +41,8 @@ sap.ui.define([
 	BadgeEnabler,
 	InvisibleText,
 	Log,
-	Image
+	Image,
+	TooltipEnablement
 ) {
 	"use strict";
 
@@ -102,7 +104,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -296,6 +298,28 @@ sap.ui.define([
 		this._badgeMaxValue = BADGE_MAX_VALUE;
 
 		AccessKeysEnablement.registerControl(this);
+
+		if (TooltipEnablement.isEnhancedTooltipEnabled()) {
+			this._oTooltipEnablement = new TooltipEnablement(this, {
+				textProvider: () => this._buildTooltipText(),
+				invisibleTextProvider: () => this._getTooltip() || ""
+			});
+
+			ShortcutHintsMixin.setPopupSuppressed(this, true);
+		}
+	};
+
+	// @todo - remove when enhanced tooltip is implemented for all Button-based controls
+	Button.prototype._disableTooltipEnablement = function() {
+		if (!TooltipEnablement.isEnhancedTooltipEnabled()) {
+			return;
+		}
+
+		if (this._oTooltipEnablement) {
+			this._oTooltipEnablement.destroy();
+			this._oTooltipEnablement = null;
+		}
+		ShortcutHintsMixin.setPopupSuppressed(this, false);
 	};
 
 	Button.prototype.setBadgeStyle = function(sValue) {
@@ -453,6 +477,11 @@ sap.ui.define([
 		this._bFocused = null;
 		this._iTouchStartTimestamp = 0;
 		this._bPreventPress = false;
+
+		if (this._oTooltipEnablement) {
+			this._oTooltipEnablement.destroy();
+			this._oTooltipEnablement = null;
+		}
 
 		this.$().off("mouseenter", this._onmouseenter);
 	};
@@ -816,9 +845,11 @@ sap.ui.define([
 	 */
 	Button.prototype._toggleLiveChangeAnnouncement = function(sValue) {
 		if (this._getText()) {
-			this.$("BDI-content").attr("aria-live", sValue);
-		} else if (this._getAppliedIcon()) {
-			this.$("tooltip").attr("aria-live", sValue);
+			const oBDIContent = this.getDomRef("BDI-content");
+			oBDIContent?.setAttribute("aria-live", sValue);
+		} else if (this._getAppliedIcon() && !this._oTooltipEnablement) {
+			const oTooltip = this.getDomRef("tooltip");
+			oTooltip?.setAttribute("aria-live", sValue);
 		}
 	};
 
@@ -1014,6 +1045,33 @@ sap.ui.define([
 	};
 
 	/**
+	 * Returns the control that owns the registered keyboard shortcut hint.
+	 *
+	 * Composite controls that embed a <code>Button</code> (for example
+	 * <code>sap.m.MenuButton</code>) can override this hook so the shortcut registered
+	 * on the outer control is shown in the inner button's tooltip.
+	 *
+	 * @returns {sap.ui.core.Control} The shortcut-hint host, defaults to the button itself
+	 * @private
+	 */
+	Button.prototype._getShortcutHintHost = function() {
+		return this;
+	};
+
+	/**
+	 * Tooltip text + " (Shortcut)" suffix from ShortcutHintsMixin, if any.
+	 *
+	 * @returns {string} Tooltip text optionally suffixed with the registered shortcut.
+	 * @private
+	 */
+	Button.prototype._buildTooltipText = function() {
+		if (!this.getEnabled()) {
+			return "";
+		}
+		return ShortcutHintsMixin.getTooltipWithShortcut(this._getShortcutHintHost(), this._getTooltip());
+	};
+
+	/**
 	 * Gets the icon, if none - gets the icon implied from the type.
 	 *
 	 * @private
@@ -1109,6 +1167,9 @@ sap.ui.define([
 
 	//gets the title attribute for the given dom node id
 	Button.prototype._getTitleAttribute = function(sDOMID) {
+		if (this._oTooltipEnablement) {
+			return null;
+		}
 		return this.getTooltip();
 	};
 

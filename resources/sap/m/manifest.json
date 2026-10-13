@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.151.0"
+      "version": "1.153.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -16,7 +16,7 @@
       {
         "name": "DOMPurify",
         "packagedWithMySelf": true,
-        "version": "3.4.1"
+        "version": "3.4.14"
       },
       {
         "name": "qunit-composite-2",
@@ -34,17 +34,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.151",
+      "minUI5Version": "1.153",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.151.0"
+          "minVersion": "1.153.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.151.0",
+          "minVersion": "1.153.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.151.0",
+          "minVersion": "1.153.0",
           "lazy": true
         }
       }
@@ -133,6 +133,7 @@
           "sap.m.CustomListItem",
           "sap.m.CustomTile",
           "sap.m.CustomTreeItem",
+          "sap.m.DateHighZoomInputs",
           "sap.m.DatePicker",
           "sap.m.DateRangeSelection",
           "sap.m.DateTimeField",
@@ -429,6 +430,8 @@
           "sap.m.ButtonAccessibleRole",
           "sap.m.ButtonType",
           "sap.m.CarouselArrowsPlacement",
+          "sap.m.DateHighZoomInputsField",
+          "sap.m.DateHighZoomInputsMode",
           "sap.m.DateTimeInputType",
           "sap.m.DeviationIndicator",
           "sap.m.DialogRoleType",
@@ -461,6 +464,7 @@
           "sap.m.IllustratedMessageSize",
           "sap.m.IllustratedMessageType",
           "sap.m.ImageMode",
+          "sap.m.InputDescriptionAlign",
           "sap.m.InputListItemContentSize",
           "sap.m.InputTextFormatMode",
           "sap.m.InputType",

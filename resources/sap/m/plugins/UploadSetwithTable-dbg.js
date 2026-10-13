@@ -77,7 +77,7 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @author SAP SE
 	 * @public
 	 * @since 1.124
@@ -523,9 +523,6 @@ sap.ui.define([
 		if (typeof aTypes === "string") {
 			aTypes = aTypes.split(",");
 		}
-		aTypes = (aTypes || []).map(function (s) {
-			return s ? s.toLowerCase() : "";
-		});
 		if (!deepEqual(this.getMediaTypes(), aTypes)) {
 			this.setProperty("mediaTypes", aTypes, true);
 			this.getDefaultFileUploader().setMimeType(aTypes);

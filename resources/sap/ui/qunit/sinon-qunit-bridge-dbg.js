@@ -103,7 +103,7 @@
 				return fnBeforeEach.apply(this, arguments);
 			},
 
-			afterEach : function (assert) {
+			afterEach : function () {
 				try {
 					return success.call(this, fnAfterEach.apply(this, arguments));
 				} catch (oError) {

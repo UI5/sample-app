@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Os bydd dewisiad sawl rhes wedi'i alluogi:</span></p>
+				<p>Os yw'r ffocws ar res, cell, neu reolydd mewn cell, mae'r dewisiad wedi'i doglo. Os nad oedd pob rhes wedi'i dewis, mae pob rhes nawr wedi'u dewis. Os oedd pob rhes eisoes wedi'u dewis, bydd y dewis o bob rhes yn cael ei dynnu.</p>
+				<p>Nid oes unrhyw effaith i'r llwybr byr os yw'r ffocws ar gell pennawd colofn neu ar faes mewnbynnu testun, gan fod y porwr yn rheoli'r broses o ddewis testun yn yr achos hwn.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Os yw dewis cell wedi'i alluogi:</span></p>
-				<p>Os yw'r ffocws y tu mewn i'r tabl, bydd y dewis ar gyfer unrhyw resi a chelloedd yn cael ei dynnu.</p>
+				<p><span class="emphasis">Os bydd dewisiad sawl rhes wedi'i alluogi:</span></p>
+				<p>Os yw'r ffocws ar res, cell, neu reolaeth mewn cell, caiff y dewis o'r holl resi ei ddileu.</p>
+				<p>Nid oes unrhyw effaith i'r llwybr byr os yw'r ffocws ar gell pennawd colofn neu ar faes mewnbynnu testun, gan fod y porwr yn rheoli'r broses o ddewis testun yn yr achos hwn.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Os yw dewis cell wedi'i alluogi:</span></p>
-				<p>Os yw'r ffocws y tu mewn i'r tabl a chelloedd yn cael eu dewis, bydd y dewis o gelloedd yn cael ei dynnu.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Yn copïo’r rhesi neu'r celloedd a ddewiswyd i'r clipfwrdd, os yw ar gael a bod y nodwedd wedi'i galluogi.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

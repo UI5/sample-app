@@ -15,7 +15,8 @@ sap.ui.define([
 	"sap/ui/core/Lib",
 	'sap/ui/core/library',
 	'./SplitButtonRenderer',
-	"sap/ui/events/KeyCodes"
+	"sap/ui/events/KeyCodes",
+	"sap/ui/core/tooltip/TooltipEnablement"
 ],
 function(
 	library,
@@ -27,7 +28,8 @@ function(
 	Library,
 	coreLibrary,
 	SplitButtonRenderer,
-	KeyCodes
+	KeyCodes,
+	TooltipEnablement
 ) {
 		"use strict";
 
@@ -48,7 +50,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @private
@@ -150,16 +152,21 @@ function(
 		EnabledPropagator.call(SplitButton.prototype);
 
 		SplitButton.prototype.onAfterRendering = function() {
-			var $textButtonRef = this._getTextButton().$(),
-				$arrowButtonRef = this._getArrowButton().$();
+			var oTextButtonRef = this._getTextButton().getDomRef(),
+				oArrowButtonRef = this._getArrowButton().getDomRef();
 
-			$textButtonRef.attr("tabindex", "-1");
-			$arrowButtonRef.attr("tabindex", "-1");
-			if (this.getTooltip()) {
-				$textButtonRef.removeAttr("title");
+			oTextButtonRef.setAttribute("tabindex", "-1");
+			oArrowButtonRef.setAttribute("tabindex", "-1");
+
+			if (TooltipEnablement.isEnhancedTooltipEnabled()) {
+				return;
 			}
-			$textButtonRef.removeAttr("aria-describedby");
-			$arrowButtonRef.removeAttr("aria-describedby");
+
+			if (this.getTooltip()) {
+				oTextButtonRef.removeAttribute("title");
+			}
+			oTextButtonRef.removeAttribute("aria-describedby");
+			oArrowButtonRef.removeAttribute("aria-describedby");
 		};
 
 		SplitButton.prototype._handleAction = function(oEvent) {

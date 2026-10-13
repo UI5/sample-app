@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define([],function(){"use strict";const e={_isHighZoom(){const e=window.visualViewport&&window.visualViewport.width||window.innerWidth;return e<=320},_updateIconVisibility(){const e=this._getValueHelpIcon();if(e){e.setProperty("visible",this.getEditable()&&!this._isHighZoom())}},_startZoomWatch(){if(this._fnZoomResizeHandler){window.removeEventListener("resize",this._fnZoomResizeHandler);window.visualViewport?.removeEventListener("resize",this._fnZoomResizeHandler)}this._fnZoomResizeHandler=()=>{if(!this.getDomRef()){return}this._updateIconVisibility();this._onZoomChange(this._isHighZoom())};if(window.visualViewport){window.visualViewport.addEventListener("resize",this._fnZoomResizeHandler)}window.addEventListener("resize",this._fnZoomResizeHandler)},_stopZoomWatch(){if(this._fnZoomResizeHandler){window.removeEventListener("resize",this._fnZoomResizeHandler);window.visualViewport?.removeEventListener("resize",this._fnZoomResizeHandler);this._fnZoomResizeHandler=null}},_onZoomChange(e){}};return e});
+//# sourceMappingURL=DateTimeFieldZoomMixin.js.map

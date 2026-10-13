@@ -133,7 +133,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -1148,7 +1148,6 @@ sap.ui.define([
 				modal: false,
 				horizontalScrolling: Device.system.phone ? false : true,
 				contentWidth: Device.system.phone ? "100%" : "auto",
-				offsetY: this._detireminePopoverVerticalOffset(),
 				ariaLabelledBy: InvisibleText.getStaticId("sap.m", "INPUT_AVALIABLE_VALUES")
 			});
 
@@ -1793,10 +1792,6 @@ sap.ui.define([
 
 		return oPriorityOrder;
 	})();
-
-	OverflowToolbar.prototype._detireminePopoverVerticalOffset = function () {
-		return this.$().parents().hasClass('sapUiSizeCompact') ? 2 : 3;
-	};
 
 	OverflowToolbar.prototype._recalculateOverflowButtonSize = function () {
 		var $OTBtn = this._getOverflowButtonClone().$(),

@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.ui.layout.form.FormElement
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -115,13 +115,15 @@ sap.ui.define([
 							sText = oLabel.getText();
 						}
 
-						var sLabel = mAriaProps["label"];
-						if (!sLabel) {
-							sLabel = sText;
-						} else {
-							sLabel = sLabel + " " + sText;
+						if (oElement.isA("sap.ui.core.ILabelable") && oElement.hasLabelableHTMLElement?.()) { // only for labelable controls
+							var sLabel = mAriaProps["label"];
+							if (!sLabel) {
+								sLabel = sText;
+							} else {
+								sLabel = sLabel + " " + sText;
+							}
+							mAriaProps["label"] = sLabel;
 						}
-						mAriaProps["label"] = sLabel;
 
 						// remove pointer to FormElements label
 						var sLabelledBy = mAriaProps["labelledby"];

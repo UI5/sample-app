@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Бірнеше жолды таңдау қосулы болса:</span></p>
+				<p>Фокус жолда, ұяшықта немесе ұяшықтың ішіндегі басқару элементінде болса, таңдау ауыстырылады. Барлық жолдар таңдалмаса, барлық жолдар енді таңдалады. Барлық жолдар әлдеқашан таңдалса, барлық жолдардың таңдауы алып тасталады.</p>
+				<p>Фокус баған тақырыбының ұяшығында немесе мәтінді енгізу өрісінде болса, таңбашаның ешқандай әсері болмайды, себебі браузер бұл жағдайда мәтін таңдауын өңдейді.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Ұяшық таңдауы қосулы болса:</span></p>
-				<p>Фокус кесте ішінде болса, кез келген жолдар мен ұяшықтардың таңдауы алып тасталады.</p>
+				<p><span class="emphasis">Бірнеше жолды таңдау қосулы болса:</span></p>
+				<p>Фокус жолда, ұяшықта немесе ұяшықтың ішіндегі басқару элементінде болса, барлық жолдардың таңдауы алып тасталады.</p>
+				<p>Фокус баған тақырыбының ұяшығында немесе мәтінді енгізу өрісінде болса, таңбашаның ешқандай әсері болмайды, себебі браузер бұл жағдайда мәтін таңдауын өңдейді.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Ұяшық таңдауы қосулы болса:</span></p>
-				<p>Фокус кесте ішінде болса және ұяшықтар таңдалса, ұяшықтардың таңдауы алып тасталады.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Қолжетімді болса және функция қосулы болса, таңдалған жолдарды немесе ұяшықтарды аралық сақтағышқа көшіреді.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

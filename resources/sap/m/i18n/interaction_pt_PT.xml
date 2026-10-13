@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Se a seleção de várias linhas estiver ativada:</span></p>
+				<p>Se o foco estiver numa linha, numa célula ou num controlo dentro de uma célula, a seleção é ativada. Se nem todas as linhas estavam selecionadas, passam a estar todas selecionadas. Se todas as linhas já estavam selecionadas, a seleção de todas as linhas é removida.</p>
+				<p>O atalho não tem efeito se o foco estiver numa célula do cabeçalho da coluna ou num campo de entrada de texto, uma vez que, neste caso, o browser processa a seleção de texto.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Se a seleção de células estiver ativada:</span></p>
-				<p>Se o foco estiver dentro da tabela, a seleção para qualquer linha e célula é removida.</p>
+				<p><span class="emphasis">Se a seleção de várias linhas estiver ativada:</span></p>
+				<p>Se o foco estiver numa linha, numa célula ou num controlo dentro de uma célula, a seleção de todas as linhas é removida.</p>
+				<p>O atalho não tem efeito se o foco estiver numa célula do cabeçalho da coluna ou num campo de entrada de texto, uma vez que, neste caso, o browser processa a seleção de texto.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Se a seleção de células estiver ativada:</span></p>
-				<p>Se o foco estiver dentro da tabela e as células estiverem selecionadas, a seleção das células é removida.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Copia as linhas ou células selecionadas para a área de transferência, se disponível, e a funcionalidade é ativada.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

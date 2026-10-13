@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Ha engedélyezett több sor kiválasztása:</span></p>
+				<p>Ha a fókusz egy soron, cellán vagy cellán belüli vezérlőn van, akkor a kijelölés engedélyezve lesz. Ha nincs kijelölve az összes sor, akkor az összes sor ki lesz választva. Ha már ki van jelölve az összes sor, akkor az összes sor kijelölése megszűnik.</p>
+				<p>A parancsikonnak nincs hatása, ha a fókusz egy oszlopfejléc celláján vagy egy szövegbeviteli mezőn van, mivel ebben az esetben a böngésző kezeli a szövegkijelölést.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Ha engedélyezett a cellakijelölés:</span></p>
-				<p>Ha a fókusz a táblán belül van, akkor megszünteti a sorok és cellák kijelölését.</p>
+				<p><span class="emphasis">Ha több sor kiválasztása engedélyezett:</span></p>
+				<p>Ha a fókusz egy soron, cellán vagy cellán belüli vezérlőn van, akkor eltávolítja az összes sor kijelölését.</p>
+				<p>A parancsikonnak nincs hatása, ha a fókusz egy oszlopfejléc celláján vagy egy szövegbeviteli mezőn van, mivel ebben az esetben a böngésző kezeli a szövegkijelölést.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Ha engedélyezett a cellakijelölés:</span></p>
-				<p>Ha a fókusz a táblán belül van, és cellák vannak kijelölve, akkor megszünteti a cellák kijelölését.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>A vágólapra másolja a kijelölt sorokat vagy cellákat (ha van, és engedélyezett ez a funkció).</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

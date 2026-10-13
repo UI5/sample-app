@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @private
 	 *
@@ -70,6 +70,7 @@ sap.ui.define([
 	 * @param {function} [mSettings.reset] Custom reset handling to opt out the default reset which will trigger a reset for all open tabs.
 	 * @param {function} [mSettings.open] Event handler once the Popup has been opened
 	 * @param {function} [mSettings.close] Event handler once the Popup has been closed
+	 * @param {function} [mSettings.validateBeforeClose] Callback invoked when the Popup is confirmed; resolving to <code>false</code> prevents the Popup from closing
 	 * @param {string} [mSettings.activePanel] Key of active panel that is opened initially
 	 * @param {boolean} [mSettings.refreshPropertyHelper] Determines if the property helper should be refreshed
 	 *
@@ -101,6 +102,7 @@ sap.ui.define([
 							mode: mSettings.mode,
 							warningText: mSettings.warningText || oResourceBundle.getText("p13n.RESET_WARNING_TEXT"),
 							title: sTitle,
+							validateBeforeClose: mSettings.validateBeforeClose,
 							close: function(oEvt) {
 
 								const sReason = oEvt.getParameter("reason");

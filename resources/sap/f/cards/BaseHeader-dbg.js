@@ -7,6 +7,7 @@ sap.ui.define([
 	"sap/ui/core/Control",
 	"sap/ui/core/IntervalTrigger",
 	"sap/ui/core/Lib",
+	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/format/DateFormat",
 	"sap/ui/core/date/UniversalDate",
 	"sap/ui/core/library",
@@ -19,6 +20,7 @@ sap.ui.define([
 	Control,
 	IntervalTrigger,
 	Library,
+	ResizeHandler,
 	DateFormat,
 	UniversalDate,
 	coreLibrary,
@@ -34,6 +36,8 @@ sap.ui.define([
 	 * @const int The refresh interval for dataTimestamp in ms.
 	 */
 	const DATA_TIMESTAMP_REFRESH_INTERVAL = 15000;
+
+	const XS_WIDTH_THRESHOLD = 180;
 
 	const oResourceBundle = Library.getResourceBundleFor("sap.f");
 
@@ -57,7 +61,7 @@ sap.ui.define([
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -77,13 +81,15 @@ sap.ui.define([
 				 *
 				 * Will be shown as a relative time like "5 minutes ago".
 				 *
-				 * @ui5-experimental-since 1.89
+				 * @since 1.89
 				 */
 				dataTimestamp: { type: "string", defaultValue: ""},
 
 				/**
 				 * Defines the status text visibility.
-				 * @ui5-experimental-since 1.116
+				 * @private
+				 * @ui5-restricted sap.ui.integration
+				 * @since 1.116
 				 */
 				statusVisible: { type: "boolean", defaultValue: true },
 
@@ -118,7 +124,7 @@ sap.ui.define([
 
 				/**
 				 * Defines the type of text wrapping to be used inside the header. This applies to title, subtitle and details texts of the header.
-				 * @ui5-experimental-since 1.122
+				 * @since 1.122
 				 */
 				wrappingType : {type: "sap.m.WrappingType", group : "Appearance", defaultValue : WrappingType.Normal},
 
@@ -131,16 +137,18 @@ sap.ui.define([
 				/**
 				 * Defines the href which the header should open. If set - the header will act and render as a link.
 				 *
-				 * @ui5-experimental-since 1.122
-				 * @ui5-restricted sap.ui.integration.widgets.Card
+				 * @private
+				 * @ui5-restricted sap.ui.integration
+				 * @since 1.122
 				 */
 				href: { type: "string" },
 
 				/**
 				 * Defines the target for the case when <code>href</code> is given.
 				 *
-				 * @ui5-experimental-since 1.122
-				 * @ui5-restricted sap.ui.integration.widgets.Card
+				 * @private
+				 * @ui5-restricted sap.ui.integration
+				 * @since 1.122
 				 */
 				target: { type: "string" }
 			},
@@ -148,7 +156,7 @@ sap.ui.define([
 
 				/**
 				 * Info sections to be displayed in the header.
-				 * @ui5-experimental-since 1.136
+				 * @since 1.136
 				 */
 				infoSection: {type: "sap.ui.core.Control", multiple: true, singularName: "infoSection"},
 
@@ -158,8 +166,8 @@ sap.ui.define([
 				_dataTimestamp: { type: "sap.m.Text", multiple: false, visibility: "hidden"},
 
 				/**
-				 * Defines the toolbar.
-				 * @ui5-experimental-since 1.86
+				 * Defines an additional content shown in the header's toolbar area, typically actions such as a close button or a menu.
+				 * @since 1.86
 				 */
 				toolbar: { type: "sap.ui.core.Control", multiple: false },
 
@@ -210,6 +218,11 @@ sap.ui.define([
 			this._oToolbarDelegate = null;
 		}
 
+		if (this._sXSWidthResizeHandlerId) {
+			ResizeHandler.deregister(this._sXSWidthResizeHandlerId);
+			this._sXSWidthResizeHandlerId = null;
+		}
+
 		this._oRb = null;
 	};
 
@@ -242,6 +255,56 @@ sap.ui.define([
 		this.getBannerLines()?.forEach((oText) => {
 			this._enhanceText(oText);
 		});
+
+		this._observeXSWidth();
+
+		// Apply the initial state to the DOM.
+		const oHeaderDomRef = this.getDomRef();
+		if (oHeaderDomRef) {
+			this._toggleXSHeaderClass(oHeaderDomRef.offsetWidth);
+		}
+	};
+
+	/**
+	 * Registers a {@link sap.ui.core.ResizeHandler} that toggles the
+	 * <code>sapFCardXSHeader</code> class on the header DOM when the header
+	 * becomes extra small (<= 180px, i.e. a 360px device at 200% zoom).
+	 *
+	 *
+	 * Note: CSS container queries would be the natural fit here, but they were
+	 * not available for use at the time of implementation, therefore
+	 * ResizeHandler is used instead. ResizeHandler already defers its callback,
+	 * so no manual <code>requestAnimationFrame</code> is needed.
+	 *
+	 * Tile-like cards are excluded in all their variants, as they are already
+	 * optimized for small sizes. The exclusion is done purely in CSS (the XS
+	 * rules are scoped to <code>:not(.sapUiIntCardTile)</code>), so the class is
+	 * always toggled here and tiles simply do not react to it. This avoids
+	 * relying on <code>isTile()</code> at render time, whose value could
+	 * otherwise become stale.
+	 *
+	 * @private
+	 */
+	BaseHeader.prototype._observeXSWidth = function () {
+		if (this._sXSWidthResizeHandlerId) {
+			return;
+		}
+
+		this._sXSWidthResizeHandlerId = ResizeHandler.register(this, (oEvent) => {
+			this._toggleXSHeaderClass(oEvent.size.width);
+		});
+	};
+
+	/**
+	 * Toggles the <code>sapFCardXSHeader</code> class on the header DOM based on
+	 * the given width. Tile-like cards are excluded in CSS (see the class
+	 * documentation of {@link sap.f.cards.BaseHeader#_observeXSWidth}).
+	 *
+	 * @param {float} fWidth The current header width in pixels.
+	 * @private
+	 */
+	BaseHeader.prototype._toggleXSHeaderClass = function (fWidth) {
+		this.getDomRef()?.classList.toggle("sapFCardXSHeader", fWidth <= XS_WIDTH_THRESHOLD);
 	};
 
 	BaseHeader.prototype.getFocusDomRef = function () {

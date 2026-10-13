@@ -3,7 +3,7 @@
 /* Evening Horizon theme                  */
 /* ====================================== */
 
-.sapUiDtContextMenu {
+.sapUI5Scope {
 	--_sap_ui_dt_ContextMenu_BorderRadius: var(--sapField_BorderCornerRadius);
 }
 
@@ -18,6 +18,30 @@
 
 				&.sapMMenuItemDisabled {
 					outline: none;
+				}
+			}
+
+			&.sapUiDtContextMenuControlTitle {
+
+				&:focus {
+
+					.sapMBtnInner {
+						outline: 0.125rem solid var(--sapContent_FocusColor);
+					}
+				}
+			}
+
+			.sapUiDtContextMenuViewChanges.sapMBtn {
+
+				&:hover {
+
+					.sapMBtnIcon {
+						color: var(--sapButton_Lite_Hover_TextColor)!important;
+					}
+				}
+
+				.sapMBtnInner {
+					border: none;
 				}
 			}
 		}

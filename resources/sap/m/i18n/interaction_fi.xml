@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Jos monen rivien valinta on käytössä:</span></p>
+				<p>Jos kohdistus on rivillä, solussa tai ohjausobjektissa solun sisällä, valinta vaihdetaan. Jos kaikkia rivejä ei valittu, kaikki rivit on nyt valittu. Jos kaikki rivit oli jo valittu, kaikkien rivien valinta poistetaan.</p>
+				<p>Pikakuvakkeella ei ole vaikutusta, jos kohdistus on sarakeotsikkosolussa tai tekstin syöttökentässä, koska selain käsittelee tässä tapauksessa tekstivalinnan.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Jos solun valinta on käytössä:</span></p>
-				<p>Jos kohdistus on taulukon sisällä, kaikkien rivien ja solujen valinta poistetaan.</p>
+				<p><span class="emphasis">Jos monen rivien valinta on käytössä:</span></p>
+				<p>Jos kohdistus on rivillä, solussa tai ohjausobjektissa solun sisällä, kaikkien rivien valinta poistetaan.</p>
+				<p>Pikakuvakkeella ei ole vaikutusta, jos kohdistus on sarakeotsikkosolussa tai tekstin syöttökentässä, koska selain käsittelee tässä tapauksessa tekstivalinnan.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Jos solun valinta on käytössä:</span></p>
-				<p>Jos kohdistus on taulukon sisällä ja soluja on valittu, solujen valinta poistetaan.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Kopioi valitut rivit tai solut leikepöydälle, jos toiminto on käytettävissä ja aktivoitu.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

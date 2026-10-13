@@ -186,6 +186,14 @@
 	display: block;
 }
 
+.sapMPlanCal.sapMPlanCalNoHead .sapUiCalWeeksRow .sapMPlanWeeksLabelRow {
+	display: none;
+}
+
+.sapMPlanCal.sapMPlanCalNoHead .sapUiCalWeeksRow .sapMPlanWeeksDataRow {
+	width: 100%;
+}
+
 .sapMSize0.sapMPlanCal.sapPCRelative > .sapMList .sapMListInfoTBar,
 .sapMSize1.sapMPlanCal.sapPCRelative > .sapMList .sapMListInfoTBar {
 	display: flex;
@@ -211,7 +219,8 @@
 	width: 100%;
 }
 
-.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapUiCalWeeksRow .sapMPlanWeeksLabelRow .sapUiCalRowWeekLabel{
+.sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar .sapUiCalWeeksRow .sapMPlanWeeksLabelRow .sapUiCalRowWeekLabel,
+.sapMSize1.sapMPlanCal:not(.sapPCRelative) > .sapMList .sapMListInfoTBar .sapUiCalWeeksRow .sapMPlanWeeksLabelRow .sapUiCalRowWeekLabel {
 	text-align: center;
 	padding-left: 0;
 }
@@ -230,6 +239,37 @@
 .sapMSize0.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapMPlanCalHead,
 .sapMSize1.sapMPlanCal > .sapMList .sapMListInfoTBar > .sapMPlanCalHead {
 	height: auto;
+}
+
+.sapMSize1.sapMPlanCal:not(.sapPCRelative) > .sapMList .sapMListInfoTBar {
+
+	> .sapMPlanCalHead {
+		display: none;
+	}
+
+	> .sapUiCalRow {
+		width: 100%;
+	}
+
+	.sapUiCalWeeksRow {
+		flex-wrap: wrap;
+
+		.sapMPlanWeeksLabelRow {
+			width: 100%;
+			justify-content: center;
+		}
+
+		&.sapMPlanWeeksRowDayView,
+		&.sapMPlanWeeksRowWeekView {
+			.sapMPlanWeeksLabelRow {
+				display: none;
+			}
+		}
+
+		.sapMPlanWeeksDataRow {
+			width: 100%;
+		}
+	}
 }
 
 .sapMPlanCal.sapMPlanCalNoHead.sapMPlanCalMultiSel > .sapMList .sapMListInfoTBar > .sapUiCalRow {
@@ -401,7 +441,8 @@
 	}
 }
 
-.sapMPlanCal .sapMTblCellFocusable.sapMPlanCalAppRow:focus {
+html.sap-desktop .sapMPlanCal .sapMTblCellFocusable.sapMPlanCalAppRow:focus,
+.sapMPlanCal .sapMTblCellFocusable.sapMPlanCalAppRow:focus-visible {
 	position: relative;
 	outline: none;
 
@@ -416,7 +457,8 @@
 	}
 }
 
-.sapMPlanCal .sapMLIBFocusable:focus {
+html.sap-desktop .sapMPlanCal .sapMLIBFocusable:focus,
+.sapMPlanCal .sapMLIBFocusable:focus-visible {
 	position: relative;
 	outline: none;
 

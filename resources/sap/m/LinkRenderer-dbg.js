@@ -11,9 +11,10 @@
 	 'sap/ui/core/AccessKeysEnablement',
 	 "sap/ui/core/InvisibleText",
 	 "sap/ui/util/defaultLinkTypes",
-	 './library'
+	 './library',
+	 "sap/ui/Device"
 	],
-	function(Library, Renderer, coreLibrary, AccessKeysEnablement, InvisibleText, defaultLinkTypes, mobileLibrary) {
+	function(Library, Renderer, coreLibrary, AccessKeysEnablement, InvisibleText, defaultLinkTypes, mobileLibrary, Device) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextDirection
@@ -57,11 +58,12 @@
 			sRel = defaultLinkTypes(oControl.getRel(), oControl.getTarget()),
 			sHref = oControl.getHref(),
 			sAccessibleRole = oControl.getAccessibleRole(),
+			bEnabled = oControl.getEnabled(),
+			bEnhancedTooltip = !!oControl._oTooltipEnablement && bEnabled,
 			oAccAttributes =  {
 				labelledby: bShouldHaveOwnLabelledBy ? {value: oControl.getId(), append: true } : undefined,
 				haspopup: (sHasPopupType === AriaHasPopup.None) ? null : sHasPopupType.toLowerCase()
 			},
-			bEnabled = oControl.getEnabled(),
 			sTypeSemanticInfo = "",
 			sText = oControl.getText(),
 			sAcccessKey = oControl.getProperty("accesskey");
@@ -99,7 +101,21 @@
 				oRm.attr("href", sHref);
 		}
 
-		oAccAttributes.describedby = sTypeSemanticInfo ? {value: sTypeSemanticInfo.trim(), append: true} : undefined;
+		var sTooltip = oControl.getTooltip_AsString();
+		var sDescr = sTypeSemanticInfo ? sTypeSemanticInfo.trim() : "";
+		var sTooltipSpanId = sDescr && sTooltip ? oControl.getId() + "-tooltip" : "";
+		if (sTooltipSpanId) {
+			sDescr += " " + sTooltipSpanId;
+		}
+		oAccAttributes.describedby = sDescr ? {value: sDescr, append: true} : undefined;
+
+		var sInvisibleId = bEnhancedTooltip && oControl._oTooltipEnablement.getInvisibleTooltipId();
+		if (sInvisibleId) {
+			oAccAttributes.describedby = {
+				value: oAccAttributes.describedby ? (oAccAttributes.describedby.value + " " + sInvisibleId).trim() : sInvisibleId,
+				append: true
+			};
+		}
 
 		if (!bEnabled) {
 			oRm.class("sapMLnkDsbl");
@@ -115,8 +131,8 @@
 			oRm.class("sapMLinkContainsEmptyIdicator");
 		}
 
-		if (oControl.getTooltip_AsString()) {
-			oRm.attr("title", oControl.getTooltip_AsString());
+		if (sTooltip && !bEnhancedTooltip) {
+			oRm.attr("title", sTooltip);
 		}
 
 		if (oControl.getTarget()) {
@@ -173,6 +189,18 @@
 		// Render end icon only if there is text
 		if (sText && oControl.getEndIcon()) {
 			oRm.renderControl(oControl._getEndIcon());
+		}
+
+		if (sTooltipSpanId) {
+			oRm.openStart("span", sTooltipSpanId);
+			oRm.class("sapUiInvisibleText");
+			oRm.openEnd();
+			oRm.text(sTooltip);
+			oRm.close("span");
+		}
+
+		if (bEnhancedTooltip) {
+			oControl._oTooltipEnablement.renderInvisibleTooltip(oRm);
 		}
 
 		oRm.close("a");

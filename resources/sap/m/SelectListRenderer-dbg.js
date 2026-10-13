@@ -3,8 +3,8 @@
  * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPool", "sap/ui/Device"],
-	function(Element, coreLibrary, IconPool, Device) {
+sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPool", "sap/ui/Device", "sap/ui/core/Lib"],
+	function(Element, coreLibrary, IconPool, Device, Library) {
 		"use strict";
 
 		// shortcut for sap.ui.core.TextDirection
@@ -86,23 +86,53 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 				oItemStates,
 				bForceSelectedVisualState;
 
+			var mGroupStates = SelectListRenderer._computeGroupStates(aItems);
+
 			for (var i = 0; i < aItems.length; i++) {
 				// should force selected state when there is no selected item for the
 				// visual focus to be set on the first item when popover is opened
 				bForceSelectedVisualState = i === 0 && !oSelectedItem;
 
+				var oItem = aItems[i];
 				oItemStates = {
-					selected: oSelectedItem === aItems[i],
+					selected: oSelectedItem === oItem,
 					setsize: iSize,
 					elementData: true
 				};
 
-				if (!(aItems[i] && aItems[i].isA("sap.ui.core.SeparatorItem")) && aItems[i].getEnabled()) {
-					oItemStates.posinset = iCurrentPosInSet++;
+				if (oItem.isA("sap.ui.core.SeparatorItem") && oItem.getText()) {
+					oItemStates.groupOwns = mGroupStates[oItem.getId()] ? mGroupStates[oItem.getId()].owns : [];
+				} else if (!(oItem.isA("sap.ui.core.SeparatorItem")) && oItem.getEnabled()) {
+					oItemStates.posinset = iCurrentPosInSet;
+					iCurrentPosInSet++;
 				}
 
-				this.renderItem(oRm, oList, aItems[i], oItemStates, bForceSelectedVisualState);
+				this.renderItem(oRm, oList, oItem, oItemStates, bForceSelectedVisualState);
 			}
+		};
+
+		/**
+		 * Pre-computes aria-owns lists for named group headers (SeparatorItems with text).
+		 * Returns a map from group header ID to {owns: [itemId, ...]}.
+		 *
+		 * @param {sap.ui.core.Item[]} aItems
+		 * @returns {Object} Map of group header IDs to {owns} arrays
+		 * @private
+		 */
+		SelectListRenderer._computeGroupStates = function(aItems) {
+			var mStates = {};
+			var oCurrentGroup = null;
+
+			aItems.forEach(function(oItem) {
+				if (oItem.isA("sap.ui.core.SeparatorItem") && oItem.getText()) {
+					oCurrentGroup = { owns: [] };
+					mStates[oItem.getId()] = oCurrentGroup;
+				} else if (!oItem.isA("sap.ui.core.SeparatorItem") && oCurrentGroup && oItem.getEnabled()) {
+					oCurrentGroup.owns.push(oItem.getId());
+				}
+			});
+
+			return mStates;
 		};
 
 		SelectListRenderer.renderDirAttr = function(oRm, sTextDir) {
@@ -133,6 +163,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 				sTooltip = oItem.getTooltip_AsString(),
 				sTextDir = oItem.getTextDirection(),
 				bShowSecondaryValues = oList.getShowSecondaryValues(),
+				bIsGroupHeader = oItem.isA("sap.ui.core.SeparatorItem") && oItem.getText(),
 				oColumnsProportions;
 
 			oRm.openStart("li", mStates.elementData ? oItem : null);
@@ -145,7 +176,9 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 				oRm.class("sapMSelectListItemWithIcon");
 			}
 
-			if (oItem.isA("sap.ui.core.SeparatorItem")) {
+			if (bIsGroupHeader) {
+				oRm.class(CSS_CLASS + "GroupItem");
+			} else if (oItem.isA("sap.ui.core.SeparatorItem")) {
 				oRm.class(CSS_CLASS + "SeparatorItem");
 
 				if (bShowSecondaryValues) {
@@ -191,7 +224,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 
 			oRm.openEnd();
 
-			if (bShowSecondaryValues) {
+			if (!bIsGroupHeader && bShowSecondaryValues) {
 				oColumnsProportions = oList._getColumnsPercentages();
 
 				oRm.openStart("span");
@@ -224,6 +257,8 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 				}
 
 				oRm.close("span");
+			} else if (bIsGroupHeader) {
+				oRm.text(oItem.getText());
 			} else {
 				this._renderIcon(oRm, oItem);
 
@@ -256,7 +291,16 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 		 * @param {object} mStates
 		 */
 		SelectListRenderer.writeItemAccessibilityState = function(oRm, oList, oItem, mStates) {
-			var sRole = (oItem.isA("sap.ui.core.SeparatorItem")) ? "separator" : "option";
+			var bIsGroupHeader = oItem.isA("sap.ui.core.SeparatorItem") && oItem.getText();
+			var sRole;
+
+			if (bIsGroupHeader) {
+				sRole = "group";
+			} else if (oItem.isA("sap.ui.core.SeparatorItem")) {
+				sRole = "separator";
+			} else {
+				sRole = "option";
+			}
 
 			var sDesc;
 
@@ -267,13 +311,23 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/library", "sap/ui/core/IconPo
 				}
 			}
 
-			oRm.accessibilityState(oItem, {
-				role: sRole,
-				selected: mStates.selected,
-				setsize: mStates.setsize,
-				posinset: mStates.posinset,
-				label: sDesc
-			});
+			if (bIsGroupHeader) {
+				var sGroupRoleDescription = Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_GROUP_HEADER");
+				oRm.accessibilityState(oItem, {
+					role: sRole,
+					label: oItem.getText(),
+					roledescription: sGroupRoleDescription,
+					owns: mStates.groupOwns && mStates.groupOwns.length ? mStates.groupOwns.join(" ") : undefined
+				});
+			} else {
+				oRm.accessibilityState(oItem, {
+					role: sRole,
+					selected: mStates.selected,
+					setsize: mStates.setsize,
+					posinset: mStates.posinset,
+					label: sDesc
+				});
+			}
 		};
 
 		SelectListRenderer._renderIcon = function(oRm, oItem) {

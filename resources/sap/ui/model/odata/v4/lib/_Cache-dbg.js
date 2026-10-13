@@ -341,7 +341,7 @@ sap.ui.define([
 		aElements = oParent[sName] ??= [];
 		aElements.$count = aElements.$created = aElements.length;
 		aElements.$byPredicate = {};
-		aPostBodyCollection = oPostBody[sName] || [];
+		aPostBodyCollection = oPostBody[sName] ?? [];
 		if (aElements.length) {
 			setPostBodyCollection();
 		} else {
@@ -393,7 +393,7 @@ sap.ui.define([
 				} // Note: no changes can happen inside *gaps*
 			});
 		}
-		(aElements.$deleted || []).forEach(function (oDeleted, i) {
+		aElements.$deleted?.forEach(function (oDeleted, i) {
 			if (iIndex < oDeleted.index || iDeletedIndex < i // before the deleted one
 					|| bCreate
 						&& (iIndex === 0 // create at start
@@ -990,7 +990,7 @@ sap.ui.define([
 				// The key properties must only be copied from the result for nested entities. The
 				// root entity is already loaded and has them already. We check that they are
 				// unchanged in this case.
-				(oEntityType.$Key || []).forEach(function (vKey) {
+				oEntityType.$Key?.forEach(function (vKey) {
 					if (typeof vKey === "object") {
 						vKey = vKey[Object.keys(vKey)[0]]; // the path for the alias
 					}
@@ -1020,7 +1020,7 @@ sap.ui.define([
 
 		sFullResourceMetaPath = _Helper.buildPath(this.sMetaPath, sResourceMetaPath);
 		mQueryOptions = this.mLateExpandSelect
-			|| { // ensure that $select precedes $expand in the resulting query
+			?? { // ensure that $select precedes $expand in the resulting query
 				$select : this.mQueryOptions.$select,
 				$expand : this.mQueryOptions.$expand
 			};
@@ -1873,6 +1873,7 @@ sap.ui.define([
 		if (oOldElement) {
 			_Helper.copySelected(oOldElement, oElement);
 			// PATCH serialization is using old instance; @see _Helper.resolveIfMatchHeader
+			// Note: also avoids "ETag changed" errors w/ #fetchLateProperty after #refreshSingle
 			_Helper.copyETags(oElement, oOldElement);
 		}
 		_Helper.restoreUpdatingProperties(oOldElement, oElement);
@@ -1883,18 +1884,21 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   An unlocked lock for the group ID
+	 * @param {object} [mQueryOptions=this.mQueryOptions]
+	 *   The query options to be used for the count request
 	 * @returns {Promise<number>}
 	 *   A promise that resolves with the count regardless whether a request was needed
 	 *
 	 * @public
 	 */
-	_Cache.prototype.requestCount = function (oGroupLock) {
-		var sExclusiveFilter, mQueryOptions, sReadUrl,
+	_Cache.prototype.requestCount = function (oGroupLock, mQueryOptions = this.mQueryOptions) {
+		var sExclusiveFilter, sReadUrl,
 			that = this;
 
-		if (this.mQueryOptions && this.mQueryOptions.$count) {
+		if (mQueryOptions && mQueryOptions.$count) {
 			// now we are definitely in a CollectionCache
-			mQueryOptions = Object.assign({}, this.mQueryOptions);
+			const bSortSystemQueryOptions = mQueryOptions !== this.mQueryOptions;
+			mQueryOptions = Object.assign({}, mQueryOptions);
 			delete mQueryOptions.$expand;
 			delete mQueryOptions.$orderby;
 			delete mQueryOptions.$select;
@@ -1906,7 +1910,8 @@ sap.ui.define([
 			}
 			mQueryOptions.$top = 0;
 			sReadUrl = this.sResourcePath
-				+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions);
+				+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, false,
+					bSortSystemQueryOptions);
 
 			return this.oRequestor.request("GET", sReadUrl, oGroupLock.getUnlockedCopy())
 				.catch(function (oError) {
@@ -3018,7 +3023,7 @@ sap.ui.define([
 				addKeyFilter(oElement);
 			}
 		}
-		(this.aElements.$deleted || []).forEach(function (oDeleted) {
+		this.aElements.$deleted?.forEach(function (oDeleted) {
 			addKeyFilter(that.aElements.$byPredicate[oDeleted.predicate]);
 		});
 
@@ -3643,7 +3648,7 @@ sap.ui.define([
 				var mStillAliveElements;
 
 				that.visitResponse(oResponse, mTypes, undefined, undefined, 0);
-				mStillAliveElements = oResponse.value.$byPredicate || {};
+				mStillAliveElements = oResponse.value.$byPredicate ?? {};
 
 				aPredicates.forEach(function (sPredicate) {
 					var oElement = that.aElements.$byPredicate[sPredicate],
@@ -3683,7 +3688,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Removes the element with the given predicate from $byPredicate of the cache's element list.
+	 * Removes the element with the given predicate from $byPredicate of the cache's element list,
+	 * unless it is part of that list.
 	 *
 	 * @param {string} sPredicate - The predicate
 	 * @throws {Error}
@@ -3693,7 +3699,12 @@ sap.ui.define([
 	 */
 	_CollectionCache.prototype.removeKeptElement = function (sPredicate) {
 		this.checkSharedRequest();
-		delete this.aElements.$byPredicate[sPredicate];
+		if (sPredicate in this.aElements.$byPredicate) {
+			if (this.aElements.includes(this.aElements.$byPredicate[sPredicate])) {
+				return; // not just a "kept element", but now inside the collection!
+			}
+			delete this.aElements.$byPredicate[sPredicate];
+		}
 	};
 
 	/**
@@ -3795,7 +3806,7 @@ sap.ui.define([
 	 *   <b>Note:</b> in this case no data is updated from the response
 	 * @returns {Promise<string[]>}
 	 *   A promise that resolves with an array of predicates (see above), or rejects with an
-	 *   instance of <code>Error</code> in case of failure, for exmaple if the cache is shared
+	 *   instance of <code>Error</code> in case of failure, for example if the cache is shared
 	 *
 	 * @public
 	 */

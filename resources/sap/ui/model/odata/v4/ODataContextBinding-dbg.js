@@ -74,7 +74,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
@@ -159,7 +159,7 @@ sap.ui.define([
 			}
 		}
 
-		mParameters = _Helper.clone(mParameters) || {};
+		mParameters = _Helper.clone(mParameters) ?? {};
 		// Note: needs this.oOperation
 		this.checkBindingParameters(mParameters, ["$$canonicalPath", "$$groupId",
 			"$$inheritExpandSelect", "$$ownRequest", "$$patchWithoutSideEffects",
@@ -209,7 +209,7 @@ sap.ui.define([
 	 * @returns {Promise<sap.ui.model.odata.v4.Context|{body: ReadableStream,headers: Headers}|undefined>}
 	 *   A promise that is resolved without data or with a return value context or with the
 	 *   response's body and headers when the operation call succeeded, or rejected with an
-	 *   <code>Error</code> instance <code>oError</code> in case of failure.
+	 *   <code>Error</code> instance in case of failure.
 	 *
 	 * @private
 	 * @see #invoke for details
@@ -690,7 +690,9 @@ sap.ui.define([
 		sPath = oRequestor.getPathAndAddQueryOptions(sPath, oOperationMetadata, mParameters,
 			this.mCacheQueryOptions, vEntity);
 		if (bStream) {
+			oGroupLock.unlock();
 			return oRequestor.fetch(bAction ? "POST" : "GET", sPath,
+				oRequestor.buildQueryString(sMetaPath, this.mCacheQueryOptions),
 				bAction ? mParameters : undefined);
 		}
 
@@ -1401,7 +1403,13 @@ sap.ui.define([
 	 *     <li> <code>body</code>: The response's <code>ReadableStream</code>
 	 *     <li> <code>headers</code>: The response's <code>Headers</code>
 	 *   </ul>
-	 *   The promise rejects if '$stream' is used with a wrong return type.
+	  *  The promise rejects with an <code>Error</code> instance if '$stream' is used with a wrong
+	  *  return type or the fetch request fails. In the latter case, the error contains the
+	  *  following properties:
+	 *   <ul>
+	 *     <li> <code>status</code>: {number} HTTP status code
+	 *     <li> <code>statusText</code>: {string} (optional) HTTP status text
+	 *   </ul>
 	 * @throws {Error} If
 	 *   <ul>
 	 *     <li> the binding's root binding is suspended,

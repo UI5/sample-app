@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/base/Log"],function(e){"use strict";const n={};const t=["onRequest","onResponse","onResponseError"];function o(e){const t=n[e];const o=[];for(const e in t){if(t[e]){o.push(t[e])}}return o}function r(n,t,o,r){const s=n.map(e=>({fn:e,clone:o.clone()}));o.clone().arrayBuffer().then(()=>{for(const n of s){try{n.fn(n.clone,r)}catch(n){e.error("FetchInterceptor onResponse failed: "+n,"FetchInterceptor")}}},n=>{e.error("FetchInterceptor could not read response body: "+n,"FetchInterceptor");c(t,n,r)})}function c(n,t,o){for(const r of n){try{r(t,o)}catch(n){e.error("FetchInterceptor onResponseError failed: "+n,"FetchInterceptor")}}}globalThis.fetch=function(t){return function(...s){let f=new globalThis.Request(...s);for(const t in n.onRequest){const o=n.onRequest[t];if(o){try{const e=o(f);if(e instanceof globalThis.Request){f=e}}catch(n){e.error("FetchInterceptor onRequest failed: "+n,"FetchInterceptor")}}}const i=t(f);const u=o("onResponse");const h=o("onResponseError");if(u.length||h.length){i.then(e=>r(u,h,e,f),e=>c(h,e,f)).catch(()=>{})}return i}}(globalThis.fetch);const s={register:function(e,o){t.forEach(t=>{n[t]??={};if(t in o){n[t][e]=o[t]}})},unregister:function(e,o){if(t.includes(o)&&n[o]?.[e]){delete n[o][e];return true}return false},isRegistered:function(e,o){if(t.includes(o)){return!!n[o]?.[e]}return false}};return s});
+//# sourceMappingURL=FetchInterceptor.js.map

@@ -86,7 +86,7 @@ sap.ui.define([
 	 * <code>sapUiResponsivePadding--header</code>.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -849,8 +849,8 @@ sap.ui.define([
 		} else if (this.getResponsive() && this.getTitleActive() && !this.getTitleHref() && bText) {
 			oEvent.preventDefault();
 			this.fireTitlePress({ domRef: window.document.getElementById(sTextId) });
-		} else if (oSource.classList.contains("sapUiIconTitle")) {
-			this.fireTitleSelectorPress({ domRef: oSource.parentElement });
+		} else if (oSource.closest(".sapUiIcon")) {
+			this.fireTitleSelectorPress({ domRef: oSource.closest(".sapUiIcon") });
 		} else if (sSourceId.indexOf(this.getId()) !== -1) {
 			// we didn't click on any of the active parts of the ObjectHeader
 			// event should not trigger any further actions

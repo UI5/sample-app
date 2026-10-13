@@ -30,7 +30,7 @@ sap.ui.define(["./library", "./ListBase", "./ListRenderer", "sap/ui/core/Lib", "
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -111,11 +111,26 @@ sap.ui.define(["./library", "./ListBase", "./ListRenderer", "sap/ui/core/Lib", "
 		this._sAriaRoleDescriptionKey = sTextKey;
 	};
 
-	List.prototype._skipGroupHeaderFocus = function() {
-		// Currently hidden behind a URL flag, as ComboBox and MultiComboBox are not compatible with the new behavior
-		// As they set the focus themselves (focus the first visible item), it leads to a lot of issues.
-		const oParams = new URLSearchParams(window.location.search);
-		return oParams.get("sap-ui-xx-list-skip-group-header-focus") && this.getAriaRole() === "listbox";
+	/**
+	 * Sets whether the group header focus should be skipped when the role <code>listbox</code> is used.
+	 *
+	 * @param {boolean} bSkip Whether the group header focus is skipped
+	 * @private
+	 * @ui5-restricted sap.m
+	 * @since 1.152
+	 */
+	List.prototype.setSkipGroupHeaderFocus = function(bSkip) {
+		this._bSkipGroupHeaderFocus = bSkip;
+	};
+
+	/**
+	 * Returns whether the group header focus is skipped. Only active for role <code>listbox</code>.
+	 *
+	 * @returns {boolean} Whether the group header focus is skipped
+	 * @private
+	 */
+	List.prototype.getSkipGroupHeaderFocus = function() {
+		return !!this._bSkipGroupHeaderFocus && this.getAriaRole() === "listbox";
 	};
 
 	List.prototype._hasNestedGrouping = function() {
@@ -123,7 +138,7 @@ sap.ui.define(["./library", "./ListBase", "./ListRenderer", "sap/ui/core/Lib", "
 	};
 
 	List.prototype._updateInvisibleGroupText = function() {
-		const bUpdateGroupDescription = this._hasNestedGrouping() || this._skipGroupHeaderFocus();
+		const bUpdateGroupDescription = this._hasNestedGrouping() || this.getSkipGroupHeaderFocus();
 
 		if (this.isGrouped() && bUpdateGroupDescription) {
 			const oInvisibleText = this._getInvisibleGroupText();

@@ -144,7 +144,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -1566,7 +1566,7 @@ sap.ui.define([
 	 * in the documentation.
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.CustomData

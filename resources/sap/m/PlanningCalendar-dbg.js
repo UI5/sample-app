@@ -56,6 +56,7 @@ sap.ui.define([
 	"sap/base/util/deepEqual",
 	"sap/base/Log",
 	"sap/m/List",
+	"sap/ui/core/delegate/ItemNavigation",
 	"sap/ui/thirdparty/jquery",
 	// jQuery Plugin "control"
 	"sap/ui/dom/jquery/control"
@@ -110,6 +111,7 @@ sap.ui.define([
 	deepEqual,
 	Log,
 	List,
+	ItemNavigation,
 	jQuery
 ) {
 	"use strict";
@@ -210,7 +212,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -904,6 +906,23 @@ sap.ui.define([
 					}
 				}.bind(this));
 				this._adjustColumnHeadersTopOffset();
+
+				// On non-desktop, renderers skip sapMLIBFocusable/sapMTableRowCustomFocus and tabindex.
+				// Add them here so rows are keyboard-focusable when using an external keyboard on mobile/tablet.
+				if (Device.system.desktop) {
+					return;
+				}
+
+				const oNavigationRoot = oTable.getNavigationRoot();
+				if (!oNavigationRoot) {
+					return;
+				}
+
+				const aTableRows = Array.from(oNavigationRoot.querySelectorAll(".sapMListTblRow, .sapMListTblSubRow"));
+				aTableRows.forEach(function (oRow) {
+					oRow.classList.add("sapMLIBFocusable", "sapMTableRowCustomFocus");
+					oRow.setAttribute("tabindex", "-1");
+				});
 			}
 		}, false, this);
 		oTable.getStickyFocusOffset = getStickyFocusOffset.bind(this);
@@ -918,6 +937,45 @@ sap.ui.define([
 				return !oDomRef.classList.contains("sapMTblItemNav");
 			});
 			oItemNavigation.setItemDomRefs(aItemDomRefs);
+			// On non-desktop, Table.setNavigationItems sets multi-column grid mode based on visible columns.
+			// Since we add only row elements (not cells) to the item refs on mobile, reset to single-column
+			// mode so arrow down moves one row at a time instead of skipping by column count.
+			if (!Device.system.desktop) {
+				oItemNavigation.setTableMode(true, true).setColumns(1);
+			}
+		};
+
+		// On non-desktop devices with external keyboards, ListBase skips ItemNavigation entirely.
+		// Override on the instance level to initialize it so row navigation works.
+		var fnOriginalStartItemNavigation = oTable._startItemNavigation.bind(oTable);
+		oTable._startItemNavigation = function(bIfNeeded) {
+			fnOriginalStartItemNavigation(bIfNeeded);
+
+			if (Device.system.desktop || !this.getDomRef() || this._oItemNavigation) {
+				return;
+			}
+
+			const oNavigationRoot = this.getNavigationRoot();
+			if (!oNavigationRoot) {
+				return;
+			}
+
+			const oItemNavigation = new ItemNavigation();
+			oItemNavigation.setCycling(false);
+			oItemNavigation.setTabIndex0(0);
+			oItemNavigation.iActiveTabIndex = -1;
+			oItemNavigation.setTableMode(true, true).setColumns(1);
+			oItemNavigation.setDisabledModifiers({
+				sapnext: ["alt", "meta", "ctrl"],
+				sapprevious: ["alt", "meta", "ctrl"]
+			});
+			this._oItemNavigation = oItemNavigation;
+			this.addDelegate(oItemNavigation);
+
+			oItemNavigation.setPageSize(this.getGrowingThreshold());
+			oItemNavigation.setRootDomRef(oNavigationRoot);
+			this.setNavigationItems(oItemNavigation, oNavigationRoot);
+			this._bItemNavigationInvalidated = false;
 		};
 
 		this.setAggregation("table", oTable, true);
@@ -1198,7 +1256,7 @@ sap.ui.define([
 			const oRowId = oRowListItem.getTimeline().getAssociation("row"),
 				oRow = Element.getElementById(oRowId),
 				sRowDesctiption = oRow.getRowHeaderDescription() || this._oRB.getText("PLANNING_CALENDAR_ROW_HEADER_DESCRIPTION");
-			oRowListItem.getDomRef().querySelector(".sapMPlanCalRowHead").setAttribute("aria-description", sRowDesctiption);
+			oRowListItem.getDomRef().querySelector(".sapMPlanCalRowHead")?.setAttribute("aria-description", sRowDesctiption);
 		}, this);
 	};
 
@@ -4295,6 +4353,11 @@ sap.ui.define([
 	 * @override
 	 */
 	PlanningCalendarRowTimeline.prototype._isNonWorkingInterval = function (iInterval, aNonWorkingItems, iStartOffset, iNonWorkingMax) {
+		// In hours view only show nonworking hours
+		if (this.getIntervalType() === CalendarIntervalType.Hour) {
+			return CalendarRow.prototype._isNonWorkingInterval.call(this, iInterval, aNonWorkingItems, iStartOffset, iNonWorkingMax);
+		}
+
 		const oRow = Element.getElementById(this.getAssociation("row")),
 			oDate = CalendarDate.fromUTCDate(this._getStartDate().getJSDate()),
 			oRowSpecialDates = oRow._getSpecialDates(),

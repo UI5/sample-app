@@ -121,7 +121,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @public
@@ -709,7 +709,7 @@ function(
 					this._fTempValue = this._getDefaultValue(sInputValue, this._getMax(), this._getMin());
 				} else {
 					const sGroupSeparator = this._getNumberFormatter().oFormatOptions.groupingSeparator;
-					sInputValue = sInputValue.replaceAll(sGroupSeparator, "");
+					sInputValue = Device.system.desktop ? sInputValue.replaceAll(sGroupSeparator, "") : sInputValue;
 					this._fTempValue = this._parseNumber(sInputValue);
 				}
 			} else {
@@ -913,8 +913,47 @@ function(
 			this._fTempValue = oValue;
 			this._bValueStatePreset = false;
 
+			// Only clear a stale error state once the control is rendered, so we don't
+			// validate half-initialized bound values during the templating phase (stepinp1.html).
+			if (this.getDomRef()) {
+				this._clearErrorIfValueValid();
+			}
+
 			return oResult;
 		};
+
+
+		/**
+		 * Clears an existing error <code>valueState</code> only if the current value
+		 * is valid. It never sets an error state, so it is safe to call from
+		 * <code>setValue</code> without interfering with the initial binding/templating
+		 * phase (where bound values may not be available yet).
+		 *
+		 * @private
+		 */
+		StepInput.prototype._clearErrorIfValueValid = function () {
+			// Only act if we currently show an error that was not explicitly preset via setValueState
+			if (this.getValueState() !== ValueState.Error || this._bValueStatePreset) {
+				return;
+			}
+
+			var value = this._parseNumber(this._getInput().getValue());
+
+			if (!this._isNumericLike(value)) {
+				return;
+			}
+
+			var bValid = !this._isMoreThanMax(value) &&
+				!this._isLessThanMin(value) &&
+				!(this._areFoldChangeRequirementsFulfilled() && (value % this.getStep() !== 0)) &&
+				this._isValueWithCorrectPrecision(this._getInput().getValue());
+
+			if (bValid) {
+				this.setProperty("valueState", ValueState.None, true);
+				this._getInput().setValueState(ValueState.None);
+			}
+		};
+
 
 		StepInput.prototype._getNumberFormatter = function(bReset) {
 			if (!this._formatter || bReset) {
@@ -997,8 +1036,10 @@ function(
 				sInputValue = this._getDefaultValue(sInputValue, this._getMax(), this._getMin()).toString();
 			}
 
-			const sGroupSeparator = this._getNumberFormatter().oFormatOptions.groupingSeparator;
-			sInputValue = sInputValue.replaceAll(sGroupSeparator, "");
+			if (Device.system.desktop) {
+				const sGroupSeparator = this._getNumberFormatter().oFormatOptions.groupingSeparator;
+				sInputValue = sInputValue.replaceAll(sGroupSeparator, "");
+			}
 
 			// calculates delta (difference) between input value and real control value
 			if (this._getFormattedValue(this._fTempValue) !== this._getFormattedValue(sInputValue)) {

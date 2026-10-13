@@ -106,9 +106,6 @@ function(
 		// where 200ms transition sometimes seems to last a little longer
 		var iAnimationDuration = bUseAnimations ? 300 : 10;
 
-		// HTML container scrollbar width
-		var SCROLLBAR_WIDTH = 17;
-
 		var DRAGRESIZE_STEP = Rem.toPx(1);
 
 		/**
@@ -177,7 +174,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.151.0
+		* @version 1.153.0
 		*
 		* @constructor
 		* @public
@@ -786,9 +783,6 @@ function(
 
 			oPopup.attachOpened(this._handleOpened, this);
 
-			// reset scroll fix check
-			this._iLastWidthAndHeightWithScroll = null;
-
 			// Open popup
 			oPopup.setContent(this);
 
@@ -1241,7 +1235,6 @@ function(
 			}
 
 			if (bResize) {
-
 				iMaxHeight = oAreaDimensions.bottom - mOffset.top - iDialogOuterHeight + iDialogHeight;
 
 				if (oEvent.keyCode === KeyCodes.ARROW_DOWN) {
@@ -1324,7 +1317,16 @@ function(
 				//set the size to the content
 				if (!this._oManuallySetSize) {
 					oStyles.width = this.getContentWidth() || undefined;
-					oStyles.height = this.getContentHeight() || undefined;
+
+					const sContentHeight = this.getContentHeight();
+					if (sContentHeight && sContentHeight !== 'auto') {
+						// The footer is part of the Dialog's normal flow (position: relative), so its
+						// height is subtracted from the available space. Add the footer height on top of
+						// the requested contentHeight, so that the content area actually gets contentHeight.
+						oStyles.height = "calc(" + sContentHeight + " + " + this._getFooterHeight() + "px)";
+					} else {
+						oStyles.height = undefined;
+					}
 				} else {
 					oStyles.width = this._oManuallySetSize.width;
 					oStyles.height = this._oManuallySetSize.height;
@@ -1333,10 +1335,6 @@ function(
 
 			if (oStyles.width == 'auto') {
 				oStyles.width = undefined;
-			}
-
-			if (oStyles.height == 'auto') {
-				oStyles.height = undefined;
 			}
 
 			if (bStretch && !bMessageType) {
@@ -1355,12 +1353,6 @@ function(
 
 			if (!this._oManuallySetSize && !this._bDisableRepositioning) {
 				$this.css(this._calcPosition());
-			}
-
-			//In Chrome when the dialog is stretched the footer is not rendered in the right position;
-			if (window.navigator.userAgent.toLowerCase().indexOf("chrome") !== -1 && bStretch) {
-				//forcing repaint
-				$this.find('> .sapMDialogFooter').css({bottom: '0.001px'});
 			}
 		};
 
@@ -1382,10 +1374,7 @@ function(
 				return;
 			}
 
-			var $dialog = this.$(),
-			$dialogContent = this.$('cont'),
-			sContentWidth = this.getContentWidth(),
-			iMaxDialogWidth = this._calcMaxSizes().maxWidth, // 90% of the max screen size
+			var $dialogContent = this.$('cont'),
 			oSubHeaderDomRef = this.getSubHeader()?.getDomRef(),
 			oHeaderDomRef = (this.getCustomHeader() || this._header)?.getDomRef();
 
@@ -1396,6 +1385,10 @@ function(
 			this.getDomRef().style.paddingTop = iHeaderHeight + iSubHeaderHeight + "px";
 		}
 
+			// Toggle the class that reserves scrollbar-gutter space only when a vertical
+			// scrollbar is actually present, so the gutter is not reserved when content fits.
+			this.$().toggleClass("sapMDialogVerticalScrollIncluded", this._hasVerticalScrollbar());
+
 			//if height is set by manually resizing return;
 			if (this._oManuallySetSize) {
 				$dialogContent.css({
@@ -1404,49 +1397,21 @@ function(
 				return;
 			}
 
-			// Browsers except chrome do not increase the width of the container to include scrollbar (when width is auto). So we need to compensate
-			if (Device.system.desktop && !Device.browser.chrome) {
-
-				var iCurrentWidthAndHeight = $dialogContent.width() + "x" + $dialogContent.height(),
-					bMinWidth = $dialog.css("min-width") !== $dialog.css("width");
-
-				// Apply the fix only if width or height did actually change.
-				// And when the width is not equal to the min-width.
-				if (iCurrentWidthAndHeight !== this._iLastWidthAndHeightWithScroll && bMinWidth) {
-					if (this._hasVerticalScrollbar() &&					// - there is a vertical scroll
-						(!sContentWidth || sContentWidth == 'auto') &&	// - when the developer hasn't set it explicitly
-						!this.getStretch() && 							// - when the dialog is not stretched
-						$dialogContent.width() < iMaxDialogWidth) {		// - if the dialog can't grow anymore
-
-						$dialog.addClass("sapMDialogVerticalScrollIncluded");
-						$dialogContent.css({"padding-right" : SCROLLBAR_WIDTH});
-						this._iLastWidthAndHeightWithScroll = iCurrentWidthAndHeight;
-					} else {
-						$dialog.removeClass("sapMDialogVerticalScrollIncluded");
-						$dialogContent.css({"padding-right" : ""});
-						this._iLastWidthAndHeightWithScroll = null;
-					}
-				} else if (!this._hasVerticalScrollbar() || !bMinWidth) {
-					$dialog.removeClass("sapMDialogVerticalScrollIncluded");
-					$dialogContent.css({"padding-right" : ""});
-					this._iLastWidthAndHeightWithScroll = null;
-				}
-			}
-
 			if (!this._oManuallySetSize && !this._bDisableRepositioning) {
 				this._positionDialog();
 			}
 		};
 
 		/**
-		 * Checks if the dialog has a vertical scrollbar.
+		 * Checks whether the scroll section currently has a vertical scrollbar.
+		 *
+		 * @returns {boolean} Whether a vertical scrollbar is present
 		 * @private
-		 * @return {boolean} True if there is a vertical scrollbar, false otherwise
 		 */
-		Dialog.prototype._hasVerticalScrollbar = function() {
-			var $dialogContent = this.$('cont');
+		Dialog.prototype._hasVerticalScrollbar = function () {
+			var oSectionDomRef = this.getDomRef("cont");
 
-			return $dialogContent[0].clientHeight < $dialogContent[0].scrollHeight;
+			return !!oSectionDomRef && oSectionDomRef.scrollHeight > oSectionDomRef.clientHeight;
 		};
 
 		/**
@@ -1509,8 +1474,7 @@ function(
 				$this = this.$(),
 				iHeaderHeight = $this.find(".sapMDialogTitleGroup").height() || 0,
 				iSubHeaderHeight = $this.find(".sapMDialogSubHeader").height() || 0,
-				iFooterHeight = $this.find("> .sapMDialogFooter").height() || 0,
-				iHeightAsPadding = iHeaderHeight + iSubHeaderHeight + iFooterHeight,
+				iHeightAsPadding = iHeaderHeight + iSubHeaderHeight,
 				iMaxHeight,
 				iMaxWidth;
 
@@ -1519,7 +1483,7 @@ function(
 				iMaxHeight = oAreaDimensions.height - iHeightAsPadding;
 			} else {
 				iMaxWidth = this._percentOfSize(oAreaDimensions.width, 100 - 2 * HORIZONTAL_MARGIN); // 90% of available width
-				iMaxHeight = this._percentOfSize(oAreaDimensions.height, 100 - 2 * VERTICAL_MARGIN) - iHeightAsPadding; // 94% of available height minus paddings for headers and footer
+				iMaxHeight = this._percentOfSize(oAreaDimensions.height, 100 - 2 * VERTICAL_MARGIN) - iHeightAsPadding; // 94% of available height minus paddings for headers
 			}
 
 			return {
@@ -1559,6 +1523,10 @@ function(
 			oAreaDimensions.bottom = oAreaDimensions.top + oAreaDimensions.height;
 
 			return oAreaDimensions;
+		};
+
+		Dialog.prototype._getFooterHeight = function () {
+			return this.$().find("> .sapMDialogFooter").height() || 0;
 		};
 
 		Dialog.prototype._percentOfSize = function (iSize, iPercent) {
@@ -2565,12 +2533,16 @@ function(
 						});
 					};
 				} else if (bResize) {
-					var styles = {};
-					var minWidth = parseInt(that._$dialog.css('min-width'));
-					var maxLeftOffset = initial.x + initial.width - minWidth;
+					const styles = {};
+					const minWidth = parseInt(that._$dialog.css('min-width'));
+					const maxLeftOffset = initial.x + initial.width - minWidth;
 
-					var handleOffsetX = $target.width() - e.offsetX;
-					var handleOffsetY = $target.height() - e.offsetY;
+					// The dialog cannot be resized smaller than its min-height plus the footer height,
+					// otherwise the resize handle would overlap the dialog content instead of staying at the bottom.
+					const minHeight = parseInt(that._$dialog.css('min-height')) + that._getFooterHeight();
+
+					const handleOffsetX = $target.width() - e.offsetX;
+					const handleOffsetY = $target.height() - e.offsetY;
 
 					mouseMoveHandler = function (event) {
 						fnMouseMoveHandlerDelayed(function () {
@@ -2588,7 +2560,7 @@ function(
 
 							that._oManuallySetSize = {
 								width: initial.width + event.clientX - initial.x,
-								height: initial.height + event.clientY - initial.y
+								height: Math.max(minHeight, initial.height + event.clientY - initial.y)
 							};
 
 							if (that._bRTL) {

@@ -7,6 +7,7 @@
 // Provides control sap.m.Table.
 sap.ui.define([
 	"sap/ui/core/ControlBehavior",
+	"sap/ui/core/Element",
 	"./library",
 	"./ListBase",
 	"./ListItemBase",
@@ -22,10 +23,11 @@ sap.ui.define([
 	"sap/m/table/Util",
 	"sap/ui/core/Lib",
 	"sap/base/Log",
+	"sap/ui/dom/getScrollbarSize",
     // jQuery custom selectors ":sapTabbable"
 	"sap/ui/dom/jquery/Selectors"
 ],
-	function(ControlBehavior, library, ListBase, ListItemBase, CheckBox, TableRenderer, PluginBase, BaseObject, ResizeHandler, PasteHelper, jQuery, ListBaseRenderer, Icon, Util, Library, Log) {
+	function(ControlBehavior, Element, library, ListBase, ListItemBase, CheckBox, TableRenderer, PluginBase, BaseObject, ResizeHandler, PasteHelper, jQuery, ListBaseRenderer, Icon, Util, Library, Log, getScrollbarSize) {
 	"use strict";
 
 
@@ -66,7 +68,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -368,7 +370,39 @@ sap.ui.define([
 	};
 
 	Table.prototype._onResize = function(mParams) {
-		this._applyContextualWidth(mParams.size.width);
+		var iWidth = mParams.size.width;
+
+		// contextualWidth="Auto": a pop-in flip toggles the scroll container's scrollbar, which changes the measured
+		// width by the scrollbar size and would flip the column back. Skip such a self-induced rebound before applying it.
+		if (this._sContextualWidth.toLowerCase() === "auto"
+			&& this._iLastAppliedContextualWidth !== undefined
+			&& this._isSelfInducedScrollbarRebound(this._iLastAppliedContextualWidth, iWidth)) {
+			return;
+		}
+
+		this._iLastAppliedContextualWidth = iWidth;
+		this._applyContextualWidth(iWidth);
+	};
+
+	// Detects whether iNew is the scrollbar-sized rebound of iApplied caused by our own last pop-in flip:
+	// within one scrollbar width AND crossing a visible column's pop-in breakpoint.
+	Table.prototype._isSelfInducedScrollbarRebound = function(iApplied, iNew) {
+		var iDelta = Math.abs(iNew - iApplied);
+		if (!iDelta) {
+			return false;
+		}
+
+		var iScrollbar = getScrollbarSize().width;
+		if (!iScrollbar || iDelta > iScrollbar + 1) {
+			return false;
+		}
+
+		const iMin = Math.min(iApplied, iNew);
+		const iMax = Math.max(iApplied, iNew);
+		return this.getColumns().some((oColumn) => {
+			const iBreakpoint = oColumn.getCalculatedMinScreenWidth();
+			return oColumn.getVisible() && iBreakpoint > iMin && iBreakpoint <= iMax;
+		});
 	};
 
 	Table.prototype._registerResizeHandler = function () {
@@ -389,6 +423,8 @@ sap.ui.define([
 		if (this._iResizeHandlerId) {
 			ResizeHandler.deregister(this._iResizeHandlerId);
 			this._iResizeHandlerId = null;
+			// reset anti-oscillation history
+			this._iLastAppliedContextualWidth = undefined;
 		}
 	};
 
@@ -684,6 +720,7 @@ sap.ui.define([
 	Table.prototype.onclick = function(oEvent) {
 		if (this.getMultiSelectMode() == "ClearAll" && this.getDomRef("tblHeadModeCol")?.contains(oEvent.target) && !this._clearAllIcon?.hasStyleClass("sapMTableDisableClearAll")) {
 			this.removeSelections(false, true, false);
+			this._fireHeaderSelectorPress();
 		}
 	};
 
@@ -885,6 +922,7 @@ sap.ui.define([
 				} else {
 					this.removeSelections(false, true);
 				}
+				this._fireHeaderSelectorPress();
 			}, this);
 			this._selectAllCheckBox.useEnabledPropagator(false);
 			this.updateSelectAllCheckbox();
@@ -1062,6 +1100,22 @@ sap.ui.define([
 		this.updateInvisibleText(sAnnouncement);
 	};
 
+	Table.prototype._setFooterCellAnnouncement = function(oTarget) {
+		const oColumn = Element.getElementById(oTarget.getAttribute("data-sap-ui-column"));
+		if (!oColumn) {
+			return;
+		}
+
+		const oFooter = oColumn.getFooter();
+		let sAnnouncement = ListItemBase.getAccessibilityText(oFooter, true);
+
+		if (jQuery(oTarget).find(":sapTabbable").length > 0) {
+			sAnnouncement = Library.getResourceBundleFor("sap.m").getText("TABLE_CELL_INCLUDES", [sAnnouncement]);
+		}
+
+		this.updateInvisibleText(sAnnouncement, oTarget);
+	};
+
 	Table.prototype._setNoColumnsMessageAnnouncement = function (oTarget) {
 		if (!this.shouldRenderItems()) {
 			var oNoData = this.getNoData();
@@ -1090,11 +1144,38 @@ sap.ui.define([
 				this._selectAllCheckBox.setSelected(!this._selectAllCheckBox.getSelected()).fireSelect();
 			} else if (this._clearAllIcon && sMultiSelectMode == "ClearAll" && !this._clearAllIcon.hasStyleClass("sapMTableDisableClearAll")) {
 				this.removeSelections(false, true, false);
+				this._fireHeaderSelectorPress();
 			}
 		} else if (oEvent.target.classList.contains("sapMTblCellFocusable")) {
 			// prevent from scrolling
 			oEvent.preventDefault();
 		}
+	};
+
+	/**
+	 * Widens the base implementation so that the Ctrl+A / Ctrl+Shift+A shortcut is also available when the
+	 * focus is on a content cell or on the selection cell, including the select all checkbox and the clear
+	 * all icon. Column header cells stay excluded, as they are reserved for future column selection.
+	 *
+	 * Text-editable elements (input, textarea) are also excluded so that the browser's native Ctrl+A
+	 * text-selection behavior is preserved when focus is inside a text field, regardless of whether
+	 * the field is editable, read-only, or disabled.
+	 *
+	 * @param {HTMLElement} oTarget The keydown event target
+	 * @param {boolean} bItemEvent Whether the event target is a focused row
+	 * @returns {boolean} Whether the shortcut is allowed for the given target
+	 * @private
+	 */
+	Table.prototype._isSelectAllTarget = function(oTarget, bItemEvent) {
+		if (/^(input|textarea)$/i.test(oTarget.tagName)) {
+			return false;
+		}
+
+		if (ListBase.prototype._isSelectAllTarget.apply(this, arguments)) {
+			return true;
+		}
+
+		return Boolean(oTarget.closest(".sapMTblCellFocusable:not(.sapMListTblHeaderCell)"));
 	};
 
 	// Handle shift-tab key
@@ -1153,6 +1234,8 @@ sap.ui.define([
 		} else if (oTarget.id == this.getId("tblFooter")) {
 			this._setFooterAnnouncement();
 			this._setFirstLastVisibleCells(oTarget);
+		} else if (oTarget.matches(".sapMListTblFooter>.sapMTblCellFocusable")) {
+			this._setFooterCellAnnouncement(oTarget);
 		} else if (!this._bIgnoreFocusIn && this.getShowOverlay()) {
 			this._bIgnoreFocusIn = true;
 			this.$("overlay").trigger("focus");

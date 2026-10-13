@@ -69,7 +69,7 @@ sap.ui.define([
 	 *
 	 * The TimesRow works with UI5Date or JavaScript Date objects.
 	 * @extends sap.ui.core.Control
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -236,6 +236,24 @@ sap.ui.define([
 
 		_initItemNavigation.call(this);
 
+		if (this._bFocusFromTouch) {
+			const iFocusedIndex = this._oItemNavigation.getFocusedIndex();
+			const oDomRef = this._oItemNavigation.getItemDomRefs()[iFocusedIndex];
+			if (oDomRef) {
+				oDomRef.classList.add("sapUiCalItemFocusFromTouch");
+			}
+		}
+
+	};
+
+	TimesRow.prototype.ontouchstart = function(oEvent) {
+		if (oEvent.target.closest(".sapUiCalItem")) {
+			this._bFocusFromTouch = true;
+		}
+	};
+
+	TimesRow.prototype.onkeydown = function(oEvent) {
+		this._bFocusFromTouch = false;
 	};
 
 	TimesRow.prototype.onsapfocusleave = function(oEvent){
@@ -1080,6 +1098,9 @@ sap.ui.define([
 		this._oUTCDate = oFocusedDate;
 
 		this.fireFocus({date: CalendarUtils._createLocalDate(oFocusedDate, true), notVisible: false});
+
+		var oDomRef = aDomRefs[iIndex];
+		oDomRef.classList.toggle("sapUiCalItemFocusFromTouch", !!this._bFocusFromTouch);
 
 		if (oEvent.type == "mousedown") {
 			// as no click event is fired in some cases, e.g. if DOM changed select the month on mousedown

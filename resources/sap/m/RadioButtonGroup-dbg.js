@@ -14,7 +14,9 @@ sap.ui.define([
 	'sap/ui/base/ManagedObjectObserver',
 	'./RadioButton',
 	'./RadioButtonGroupRenderer',
-	"sap/base/Log"
+	"sap/base/Log",
+	'sap/ui/core/LabelEnablement',
+	"sap/ui/core/message/MessageMixin"
 ],
 	function(
 		library,
@@ -25,7 +27,9 @@ sap.ui.define([
 		ManagedObjectObserver,
 		RadioButton,
 		RadioButtonGroupRenderer,
-		Log
+		Log,
+		LabelEnablement,
+		MessageMixin
 	) {
 			"use strict";
 
@@ -68,7 +72,7 @@ sap.ui.define([
 			 * @borrows sap.ui.core.ISemanticFormContent.getFormRenderAsControl as #getFormRenderAsControl
 			 *
 			 * @author SAP SE
-			 * @version 1.151.0
+			 * @version 1.153.0
 			 *
 			 * @constructor
 			 * @public
@@ -113,6 +117,13 @@ sap.ui.define([
 						valueState : {type : "sap.ui.core.ValueState", group : "Data", defaultValue : ValueState.None},
 
 						/**
+						 * Defines the text that appears in the value state message. Required in order to make the <code>MessageMixin</code> work.
+						 * @since 1.153
+						 * @private
+						 */
+						valueStateText: { type: "string", group: "Misc", defaultValue: null, visibility: "hidden" },
+
+						/**
 						 * Determines the index of the selected/checked RadioButton. Default is 0.
 						 * If no radio button is selected, the selectedIndex property will return -1.
 						 */
@@ -127,7 +138,16 @@ sap.ui.define([
 						 * This property specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 						 * @since 1.28.0
 						 */
-						textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
+						textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
+
+						/**
+						 * Indicates whether the selection of a radio button is required.
+						 *
+						 * A <code>selectedIndex</code> less than 0 means that no radio button is selected.
+						 *
+						 * @since 1.153
+						 */
+						required : {type : "boolean", group : "Misc", defaultValue : false}
 					},
 					defaultAggregation : "buttons",
 					aggregations : {
@@ -735,6 +755,26 @@ sap.ui.define([
 			RadioButtonGroup.prototype.getFormRenderAsControl = function () {
 				return false;
 			};
+
+			/**
+			 * Sets the private <code>valueStateText</code> property. Required, in order to make the <code>MessageMixin</code> work.
+			 *
+			 * @private
+			 * @param {string} sText The new value of the property.
+			 * @returns {this} Reference to the control instance for chaining.
+			 */
+			RadioButtonGroup.prototype.setValueStateText = function(sText) {
+				return this.setProperty("valueStateText", sText);
+			};
+
+			RadioButtonGroup.prototype._isRequired = function () {
+				return this.getRequired() || LabelEnablement.isRequired(this);
+			};
+
+			// Add MessageMixin so the value state (and the message's additional text) are
+			// propagated automatically from the message model, based on the selectedIndex
+			// property binding and the associated Label(s).
+			MessageMixin.call(RadioButtonGroup.prototype);
 
 			return RadioButtonGroup;
 

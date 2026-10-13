@@ -907,7 +907,9 @@ sap.ui.define([
 	 * @private
 	 */
 	Popup.prototype._duringOpen = function(bOpenAnimated) {
-		Popup._clearSelection();
+		if (this._bModal) {
+			Popup._clearSelection();
+		}
 		this._setupUserSelection();
 
 		if (this._bModal) {
@@ -1274,7 +1276,9 @@ sap.ui.define([
 			this._hideBlockLayer();
 		}
 
-		Popup._clearSelection();
+		if (this._bModal) {
+			Popup._clearSelection();
+		}
 		this._restoreUserSelection();
 
 		if ($Ref.length) {
@@ -2901,7 +2905,9 @@ sap.ui.define([
 
 		// TODO all stuff done in 'open' is destroyed if the content was rerendered
 		$Ref.toggleClass("sapUiShd", this._bShadow);
-		Popup._clearSelection();
+		if (this._bModal) {
+			Popup._clearSelection();
+		}
 		this._setupUserSelection();
 		$Ref.css("position", "absolute");
 

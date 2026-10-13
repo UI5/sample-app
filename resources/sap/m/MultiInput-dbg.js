@@ -112,7 +112,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.151.0
+	* @version 1.153.0
 	*
 	* @constructor
 	* @public
@@ -273,6 +273,7 @@ function(
 			}
 
 			this.destroyTokens();
+			this.setFirstTokenTruncated(false);
 			this.updateAggregation("tokens");
 		};
 

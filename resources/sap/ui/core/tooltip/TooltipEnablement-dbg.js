@@ -28,9 +28,11 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.core.Control} oHost The host control.
 		 * @param {object} [oConfig] Configuration for the helper.
-		 * @param {function():string} [oConfig.textProvider] Callback that builds the visible tooltip text. Defaults to <code>oHost.getTooltip_AsString()</code>.
+		 * @param {function():string} [oConfig.textProvider] Callback that builds the visible tooltip text. Defaults to <code>oHost.getTooltip_AsString()</code>. It is called after a user interaction (hover/focus on desktop, touch on touch devices) to decide whether a tooltip should appear, unless the invisible tooltip is being rendered.
 		 * @param {function():string} [oConfig.invisibleTextProvider] Callback that builds the text written into the invisible ARIA anchor. Falls back to <code>textProvider</code> when omitted.
-		 * @param {function():HTMLElement} [oConfig.domRefProvider] Callback that returns the DOM element the gesture listeners should attach to. Defaults to <code>oHost.getFocusDomRef()</code>. Override this when neither the host's focus DOM nor the outer DOM ref is the correct attachment point — for example a wrapper element that owns the hover/focus area.
+		 * @param {function():HTMLElement} [oConfig.domRefProvider] Callback that returns the DOM element for hover events (mouseenter/mouseleave) and tooltip positioning. Defaults to <code>oHost.getFocusDomRef()</code>.
+		 * @param {function():HTMLElement} [oConfig.focusDomRefProvider] Callback that returns the DOM element for focus events (focusin/focusout). Defaults to <code>domRefProvider</code>. Override this when focus events should attach to a different element than hover events.
+		 * @param {string} [oConfig.invisibleTooltipIdSuffix="-invisibleTooltip"] Suffix for the invisible ARIA anchor's id. Set a distinct value when one host owns several <code>TooltipEnablement</code>s so each anchor id stays unique.
 		 * @param {boolean} [oConfig.enableForTouchDevices=true] Whether long-press should open the tooltip on touch devices. Use this to disable it for links.
 		 *
 		 * @class
@@ -43,9 +45,7 @@ sap.ui.define([
 		 * host is destroyed.
 		 *
 		 * The inner <code>sap.ui.core.tooltip.Tooltip</code> is created on first
-		 * use. Its <code>sap.m.Popover</code> positioning surface is loaded
-		 * lazily, so a host in another library may use this helper without
-		 * statically depending on <code>sap.m</code>.
+		 * use and reused across subsequent open/close cycles.
 		 *
 		 * <h3>Usage</h3>
 		 * Use the tooltip for brief, supplementary information about a control.
@@ -96,17 +96,28 @@ sap.ui.define([
 		 *
 		 * Pass a <code>textProvider</code> callback to derive the text from
 		 * runtime state (for example a base tooltip combined with a keyboard
-		 * shortcut). Pass <code>invisibleTextProvider</code> when the
-		 * screen-reader text should differ from the visible one (for example to
-		 * leave out a shortcut that is already exposed via
-		 * <code>aria-keyshortcuts</code>).
+		 * shortcut).
 		 *
 		 * <pre>
 		 * MyControl.prototype.init = function() {
 		 *     if (TooltipEnablement.isEnhancedTooltipEnabled()) {
 		 *         this._oTooltipEnablement = new TooltipEnablement(this, {
-		 *             textProvider: () =&gt; this._buildVisibleTooltip(),
-		 *             invisibleTextProvider: () =&gt; this._buildInvisibleTooltip()
+		 *             textProvider: () =&gt; this._buildTooltipText()
+		 *         });
+		 *     }
+		 * };
+		 * </pre>
+		 *
+		 * Pass <code>invisibleTextProvider</code>, together with <code>textProvider</code>, when the
+		 * screen-reader text should differ from the visible one (for example to
+		 * leave out a shortcut that is already exposed via <code>aria-keyshortcuts</code>).
+		 *
+		 * <pre>
+		 * MyControl.prototype.init = function() {
+		 *     if (TooltipEnablement.isEnhancedTooltipEnabled()) {
+		 *         this._oTooltipEnablement = new TooltipEnablement(this, {
+		 *             textProvider: () =&gt; this._buildTooltipText(),
+		 *             invisibleTextProvider: () =&gt; this._buildInvisibleTooltipText()
 		 *         });
 		 *     }
 		 * };
@@ -153,12 +164,6 @@ sap.ui.define([
 		 *
 		 * <h3>Optional integration steps</h3>
 		 *
-		 * The following steps are only needed for hosts with specific requirements.
-		 *
-		 * <b>React to runtime state changes</b> by invalidating the host
-		 * whenever the text returned by your providers can change. The helper
-		 * re-resolves the text on the next render.
-		 *
 		 * <b>Open or close imperatively</b> with
 		 * <code>open()</code> / <code>close()</code> when your control has a
 		 * gesture beyond the built-in hover/focus/touch handling.
@@ -174,13 +179,21 @@ sap.ui.define([
 		 * ref nor its outer DOM ref is the right element to listen on — for
 		 * example when gestures must fire on a wrapper.
 		 *
+		 * <h3>Resolving the text</h3>
+		 * The <code>textProvider</code> is called after a user interaction
+		 * (hover or focus on desktop, touch on touch devices) to decide whether
+		 * a tooltip should appear. A control may therefore resolve its tooltip
+		 * text at such late state and still opt out of the tooltip by returning an empty
+		 * string.
+		 * The one exception is if {@link #renderInvisibleTooltip} is called and invisibleTextProvider is not provided.
+		 *
 		 * <h3>Links</h3>
 		 * The design guidelines for <code>sap.m.Link</code> and link-like
 		 * controls are to disable the tooltip on mobile, because the long-press
 		 * gesture must remain available to open the context menu.
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @extends sap.ui.base.EventProvider
 		 *
@@ -204,29 +217,21 @@ sap.ui.define([
 				this._fnTextProvider = oConfig.textProvider;
 				this._fnInvisibleTextProvider = oConfig.invisibleTextProvider;
 				this._fnDomRefProvider = oConfig.domRefProvider || (() => oHost.getFocusDomRef());
+				this._fnFocusDomRefProvider = oConfig.focusDomRefProvider || this._fnDomRefProvider;
+				this._sInvisibleTooltipIdSuffix = oConfig.invisibleTooltipIdSuffix || "-invisibleTooltip";
 
 				this._oTooltip = null;
 
 				this._oEventTrigger = new TooltipEventTrigger({
+					host: oHost,
+					domRefProvider: this._fnDomRefProvider,
+					focusDomRefProvider: this._fnFocusDomRefProvider,
 					onOpen: (bWithDelay) => this._open(bWithDelay),
 					onClose: (bWithDelay) => this._close(bWithDelay),
 					isPendingOrOpen: this._isPendingOrOpen.bind(this),
+					hasText: () => !!this._resolveText(),
 					enableForTouchDevices: oConfig.enableForTouchDevices
 				});
-
-				// Re-wire DOM listeners across host re-renders. The trigger itself is host-agnostic.
-				this._oDelegate = {
-					onBeforeRendering: this._onHostBeforeRendering,
-					onAfterRendering: this._onHostAfterRendering
-				};
-				oHost.addDelegate(this._oDelegate, this);
-
-				// If the host is already rendered, attach immediately —
-				// onAfterRendering won't fire until the next render.
-				const oDomRef = this._fnDomRefProvider();
-				if (oDomRef) {
-					this._oEventTrigger.attach(oDomRef);
-				}
 			}
 		});
 
@@ -258,7 +263,7 @@ sap.ui.define([
 		 */
 		TooltipEnablement.prototype.getInvisibleTooltipId = function() {
 			return this._resolveInvisibleText() !== ""
-				? this._oHost.getId() + "-invisibleTooltip"
+				? this._oHost.getId() + this._sInvisibleTooltipIdSuffix
 				: null;
 		};
 
@@ -349,12 +354,6 @@ sap.ui.define([
 		 * @public
 		 */
 		TooltipEnablement.prototype.destroy = function() {
-			if (this._oHost && this._oDelegate) {
-				this._oHost.removeDelegate(this._oDelegate);
-			}
-
-			this._oDelegate = null;
-
 			if (this._oEventTrigger) {
 				this._oEventTrigger.destroy();
 				this._oEventTrigger = null;
@@ -398,27 +397,7 @@ sap.ui.define([
 		};
 
 		/**
-		 * Detaches gesture listeners before the host re-renders.
-		 * @private
-		 */
-		TooltipEnablement.prototype._onHostBeforeRendering = function() {
-			this._oEventTrigger.detach();
-		};
-
-		/**
-		 * Re-attaches gesture listeners after the host has been re-rendered.
-		 * @private
-		 */
-		TooltipEnablement.prototype._onHostAfterRendering = function() {
-			const oDomRef = this._oHost && this._fnDomRefProvider();
-			if (oDomRef) {
-				this._oEventTrigger.attach(oDomRef);
-			}
-		};
-
-		/**
-		 * Resolves the visible tooltip text from <code>textProvider</code>,
-		 * falling back to the host's <code>getTooltip_AsString()</code>.
+		 * Resolves the visible tooltip text from <code>textProvider</code>.
 		 * @returns {string}
 		 * @private
 		 */
@@ -487,7 +466,9 @@ sap.ui.define([
 
 			this._syncInnerTooltip();
 
-			TooltipManager.openSingle(oTooltip, this._oHost, bWithDelay);
+			const oOpenBy = this._fnDomRefProvider() || this._oHost;
+
+			TooltipManager.openSingle(oTooltip, oOpenBy, bWithDelay);
 		};
 
 		/**

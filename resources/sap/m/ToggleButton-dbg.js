@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -74,6 +74,12 @@ sap.ui.define([
 	});
 
 	EnabledPropagator.call(ToggleButton.prototype);
+
+	// @todo - remove when enhanced tooltip is implemented
+	ToggleButton.prototype.init = function() {
+		Button.prototype.init.call(this);
+		this._disableTooltipEnablement();
+	};
 
 	/**
 	 * Function is called when ToggleButton is clicked.

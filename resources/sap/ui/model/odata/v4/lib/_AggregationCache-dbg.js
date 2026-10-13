@@ -59,6 +59,7 @@ sap.ui.define([
 		this.aElements = [];
 		this.aElements.$byPredicate = {};
 		this.aElements.$created = 0; // required for _Cache#drillDown (see _Cache.from$skip)
+		this.fnOnAfterReset = undefined;
 		this.iReadLength = undefined;
 		this.iResetCount = 0;
 		this.bKeptFirstLevel = !!oFirstLevel;
@@ -70,8 +71,11 @@ sap.ui.define([
 		this.doReset(oAggregation, bHasGrandTotal, oFirstLevel);
 		this.addKeptElement = this.oFirstLevel.addKeptElement; // @borrows ...
 		this.removeKeptElement = this.oFirstLevel.removeKeptElement; // @borrows ...
-		this.oTreeState = new _TreeState(oAggregation.$NodeProperty,
-			(oNode) => _Helper.getKeyFilter(oNode, this.sMetaPath, this.getTypes()));
+		this.oTreeState = new _TreeState(
+			(oNode) => _Helper.getKeyFilter(oNode, this.sMetaPath, this.getTypes()),
+			oAggregation.$NodeProperty
+				? (oNode) => _Helper.drillDown(oNode, oAggregation.$NodeProperty)
+				: () => {});
 		if (oFirstLevel) {
 			if (oFirstLevel.aElements.$deleted?.length
 					|| !_Helper.isEmptyObject(oFirstLevel.mPostRequests)) {
@@ -106,7 +110,8 @@ sap.ui.define([
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure
 	 * @throws {Error} If the cache is shared, the node is not in the collection (because a
-	 *   predicate was given), or the node at the given index is expanded.
+	 *   predicate was given) in case of a recursive hierarchy, or the node at the given index is
+	 *   expanded.
 	 *
 	 * @public
 	 */
@@ -115,8 +120,14 @@ sap.ui.define([
 			oETagEntity, fnCallback) {
 		let iIndex = parseInt(sIndexOrPredicate);
 		if (isNaN(iIndex)) { // it must be a predicate because the element is not in the collection
-			throw new Error(
-				`Unsupported kept-alive entity: ${this.sResourcePath}${sIndexOrPredicate}`);
+			if (this.oAggregation.hierarchyQualifier) {
+				throw new Error(
+					`Unsupported kept-alive entity: ${this.sResourcePath}${sIndexOrPredicate}`);
+			}
+			return SyncPromise.all([
+				_Cache.prototype._delete.apply(this, arguments),
+				this.readGrandTotal(oGroupLock)
+			]);
 		}
 
 		const oElement = this.aElements[iIndex];
@@ -136,14 +147,18 @@ sap.ui.define([
 			this.createCountPromise();
 		}
 
+		const fnDelete = oParentCache
+			? oParentCache._delete.bind(oParentCache)
+			: _Cache.prototype._delete.bind(this); // "super" call
+
 		return SyncPromise.all(oGroupLock ? [
-			oParentCache._delete(oGroupLock, sEditUrl, sPredicate, oETagEntity, /*fnCallback*/null),
+			fnDelete(oGroupLock, sEditUrl, sPredicate, oETagEntity, /*fnCallback*/null),
 			this.readCount(oGroupLock),
 			this.readGrandTotal(oGroupLock)
 		] : [
 			this.readCount(this.oRequestor.lockGroup("$auto", this))
 		]).then(() => {
-			this.oTreeState.delete(oElement);
+			this.oTreeState.delete(oElement, this.removeKeptElement.bind(this));
 			if (this.aElements.length === 0) {
 				return; // concurrent side-effects refresh takes care of cleanup
 			}
@@ -151,7 +166,7 @@ sap.ui.define([
 			// the element might have moved due to parallel insert/delete
 			iIndex = _Cache.getElementIndex(this.aElements, sPredicate, iIndex);
 			// remove in parent cache
-			const iIndexInParentCache = oParentCache.removeElement(
+			const iIndexInParentCache = oParentCache?.removeElement(
 				_Helper.getPrivateAnnotation(oElement, "rank", 0), sPredicate);
 			// remove the descendants in the parent cache (if any)
 			const iDescendants = _Helper.getPrivateAnnotation(oElement, "descendants", 0);
@@ -161,7 +176,7 @@ sap.ui.define([
 			const iOffset = iDescendants + 1;
 			if (oParentCache === this.oFirstLevel) {
 				this.adjustDescendantCount(oElement, iIndex, -iOffset);
-			} else if (!oParentCache.getValue("$count")) {
+			} else if (oParentCache && !oParentCache.getValue("$count")) {
 				// make parent a leaf (the direct predecessor)
 				this.makeLeaf(this.aElements[iIndex - 1]);
 			}
@@ -198,6 +213,7 @@ sap.ui.define([
 	_AggregationCache.prototype.addElements = function (vReadElements, iOffset, oCache, iStart) {
 		var aElements = this.aElements,
 			sNodeProperty = this.oAggregation.$NodeProperty,
+			iReadLength = Array.isArray(vReadElements) ? vReadElements.length : 1,
 			that = this;
 
 		function addElement(oElement, i) {
@@ -221,10 +237,13 @@ sap.ui.define([
 			oKeptElement = aElements.$byPredicate[sPredicate];
 			if (oKeptElement && oKeptElement !== oElement
 					&& !(oKeptElement instanceof SyncPromise)) {
-				if (aElements.includes(oKeptElement)) {
+				const iIndex = aElements.indexOf(oKeptElement);
+				if (iIndex >= 0) {
 					const sNewPredicate = oCache.fixDuplicatePredicate(oElement, sPredicate);
 					if (sNewPredicate) {
 						sPredicate = sNewPredicate;
+						oKeptElement = oElement; // leads to no-op for _Helper.updateNonExisting
+					} else if (iIndex < iStart || iIndex >= iStart + iReadLength) {
 						oKeptElement = oElement; // leads to no-op for _Helper.updateNonExisting
 					} else {
 						throw new Error("Duplicate key predicate: " + sPredicate);
@@ -362,27 +381,36 @@ sap.ui.define([
 	 * @param {Object<boolean>} mKeptElementPredicates
 	 *   The set of key predicates for all (effectively) kept-alive elements incl. exceptions of
 	 *   selection
+	 * @param {boolean} [bSilent]
+	 *   Whether no ("change") events should be fired and no changes to the tree state should be
+	 *   recorded
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
 	 *   An unlocked lock for the group to associate the clean-up request with; this indicates
 	 *   whether to collapse the node and all its descendants
-	 * @param {boolean} [bSilent]
-	 *   Whether no ("change") events should be fired
 	 * @param {boolean} [bNested]
 	 *   Whether the "collapse all" was performed at an ancestor
 	 * @returns {number}
 	 *   The number of descendant nodes that were affected
+	 * @throws {Error}
+	 *   If a silent (nested) "collapse all" is requested
 	 *
 	 * @public
 	 * @see #expand
 	 */
 	_AggregationCache.prototype.collapse = function (sGroupNodePath, mKeptElementPredicates,
-			oGroupLock, bSilent, bNested) {
+			bSilent, oGroupLock, bNested) {
 		const oGroupNode = this.getValue(sGroupNodePath);
 		const oCollapsed = _AggregationHelper.getCollapsedObject(oGroupNode);
 		_Helper.updateAll(bSilent ? {} : this.mChangeListeners, sGroupNodePath, oGroupNode,
 			oCollapsed);
 		const bAll = !!oGroupLock;
-		this.oTreeState.collapse(oGroupNode, bAll, bNested);
+		if (bSilent) {
+			if (bAll || bNested) {
+				throw new Error("Unsupported silent mode");
+			}
+		} else {
+			this.oTreeState.collapse(oGroupNode, bAll, bNested);
+		}
 
 		const aElements = this.aElements;
 		const iIndex = aElements.indexOf(oGroupNode);
@@ -404,7 +432,7 @@ sap.ui.define([
 			const sPredicate = _Helper.getPrivateAnnotation(oElement, "predicate");
 			if (bAll && oElement["@$ui5.node.isExpanded"]) {
 				iRemaining
-					-= this.collapse(sPredicate, mKeptElementPredicates, oGroupLock, bSilent, true);
+					-= this.collapse(sPredicate, mKeptElementPredicates, bSilent, oGroupLock, true);
 			}
 			if (!mKeptElementPredicates?.[sPredicate]) {
 				delete aElements.$byPredicate[sPredicate];
@@ -577,7 +605,13 @@ sap.ui.define([
 		const bExpandTreeState = bParentIsLeaf
 			&& oParentNode?.["@$ui5.node.level"] >= this.oAggregation.expandTo;
 		if (bExpandTreeState) {
-			this.oTreeState.expand(oParentNode);
+			this.oTreeState.notALeafAnymore(oParentNode, (sPredicate) => {
+				const oAncestor = this.aElements.$byPredicate[sPredicate];
+				const iAncestor = oAncestor ? this.aElements.indexOf(oAncestor) : -1;
+				return iAncestor >= 0
+					? this.isAncestorOf(iAncestor, iIndex - 1)
+					: undefined; // not sure
+			});
 		} // else: already expanded automatically
 
 		const addElement = (iIndex0, iRank) => {
@@ -834,6 +868,9 @@ sap.ui.define([
 	 * @param {Object<boolean>} mKeptElementPredicates
 	 *   The set of key predicates for all (effectively) kept-alive elements incl. exceptions of
 	 *   selection
+	 * @param {boolean} [bSilent]
+	 *   Whether no ("change") events should be fired and no changes to the tree state should be
+	 *   recorded
 	 * @param {function} [fnDataRequested]
 	 *   The function is called just before the back-end request is sent.
 	 *   If no back-end request is needed, the function is not called.
@@ -841,12 +878,14 @@ sap.ui.define([
 	 *   A promise that is resolved with the number of nodes at the next level, 0 if the node or
 	 *   one of its parent is collapsed again before the response arrived, or -1 if the cache needs
 	 *   to be refreshed (a unified cache)
+	 * @throws {Error}
+	 *   If we cannot silently expand after a previous collapse (via "spliced")
 	 *
 	 * @public
 	 * @see #collapse
 	 */
 	_AggregationCache.prototype.expand = function (oGroupLock, vGroupNodeOrPath, iLevels,
-			mKeptElementPredicates, fnDataRequested) {
+			mKeptElementPredicates, bSilent, fnDataRequested) {
 		var iCount,
 			oGroupNode = typeof vGroupNodeOrPath === "string"
 				? this.getValue(vGroupNodeOrPath)
@@ -856,12 +895,17 @@ sap.ui.define([
 
 		if (vGroupNodeOrPath !== oGroupNode) {
 			// Note: this also prevents a 2nd expand of the same node
-			_Helper.updateAll(this.mChangeListeners, vGroupNodeOrPath, oGroupNode,
+			_Helper.updateAll(bSilent ? {} : this.mChangeListeners, vGroupNodeOrPath, oGroupNode,
 				_AggregationHelper.getOrCreateExpandedObject(this.oAggregation, oGroupNode));
-			this.oTreeState.expand(oGroupNode, iLevels);
+			if (!bSilent) {
+				this.oTreeState.expand(oGroupNode, iLevels);
+			}
 		} // else: no update needed!
 
 		if (iLevels >= Number.MAX_SAFE_INTEGER) { // expand all below oGroupNode
+			if (bSilent) {
+				throw new Error("Unsupported silent mode");
+			}
 			return SyncPromise.resolve(this.validateAndDeleteExpandInfo(oGroupLock, oGroupNode))
 				.then(() => -1); // refresh needed
 		}
@@ -910,6 +954,9 @@ sap.ui.define([
 				}
 			});
 			return SyncPromise.resolve(iCount);
+		}
+		if (bSilent) {
+			throw new Error("Unsupported silent mode");
 		}
 		if (this.bUnifiedCache || oGroupNode["@$ui5.node.level"] < this.oAggregation.expandTo) {
 			return SyncPromise.resolve(-1); // refresh needed
@@ -1443,23 +1490,27 @@ sap.ui.define([
 			oNodeResult.value.forEach((oNode) => {
 				const sPredicate = getPredicate(oNode);
 				oPredicatesNowInPlace.delete(sPredicate); // still the same parent
-				if (this.aElements.$byPredicate[sPredicate]) {
+				const oKeptElement = this.aElements.$byPredicate[sPredicate];
+				if (oKeptElement && this.aElements.includes(oKeptElement)) {
 					return; // already read with the in-place request
 				}
 
 				const sParentPredicate = this.oTreeState.getOutOfPlace(sPredicate).parentPredicate;
-				const oParent = mPredicate2RankResult[sParentPredicate];
-				if (oParent) { // parent has a rank
-					const sDrillState = _Helper.drillDown(oParent, this.oAggregation.$DrillState);
-					if (sDrillState === "collapsed") {
+				const oParentRankResult = mPredicate2RankResult[sParentPredicate];
+				if (oParentRankResult) { // parent has a rank
+					if (_Helper.drillDown(oParentRankResult, this.oAggregation.$DrillState)
+							=== "collapsed") {
 						return; // parent is collapsed -> do not insert
 					}
 				} else if (sParentPredicate) { // parent has no rank
-					return; // do not insert
+					const oParent = this.aElements.$byPredicate[sParentPredicate];
+					if (!(oParent && this.aElements.includes(oParent))) { // parent not OOP
+						return; // do not insert
+					}
 				} // else: no parent (root) -> insert
 
 				if (sPredicate in mPredicate2RankResult) {
-					_Helper.merge(oNode, mPredicate2RankResult[sPredicate]);
+					_Helper.updateNonExisting(oNode, mPredicate2RankResult[sPredicate]);
 					// Note: overridden by _AggregationCache.calculateKeyPredicateRH
 					this.oFirstLevel.calculateKeyPredicate(oNode, this.getTypes(), this.sMetaPath);
 					const iRank = getRank(oNode);
@@ -1467,10 +1518,13 @@ sap.ui.define([
 					// insert at rank position to ensure correct placeholder is replaced
 					this.insertNode(oNode, iRank);
 				} else { // outside the collection
-					this.aElements.push(oNode);
-					this.aElements.$byPredicate[sPredicate] = oNode;
-					_Helper.setPrivateAnnotation(oNode, "predicate", sPredicate);
-					oNode["@$ui5.node.level"] = 1;
+					if (oKeptElement) { // effectively kept alive
+						oNode = oKeptElement;
+					} else {
+						this.aElements.$byPredicate[sPredicate] = oNode;
+						_Helper.setPrivateAnnotation(oNode, "predicate", sPredicate);
+					}
+					this.aElements.push(oNode); // prerequisite for #moveOutOfPlaceNodes
 				}
 			});
 		});
@@ -1480,8 +1534,8 @@ sap.ui.define([
 		this.oTreeState.getOutOfPlaceGroupedByParent().forEach((oOutOfPlace) => {
 			// move the out-of-place nodes in creation order
 			const oParentRankResult = mPredicate2RankResult[oOutOfPlace.parentPredicate];
-			this.moveOutOfPlaceNodes(oParentRankResult && getRank(oParentRankResult),
-				oOutOfPlace.nodePredicates);
+			this.moveOutOfPlaceNodes(oOutOfPlace.nodePredicates, oOutOfPlace.parentPredicate,
+				oParentRankResult && getRank(oParentRankResult));
 		});
 	};
 
@@ -1664,7 +1718,8 @@ sap.ui.define([
 	 *     requested), and in case of copy a promise which resolves with the index of the copied
 	 *     node. Else it is resolved with an array of:
 	 *     - the number of child nodes added (normally one, but maybe more in case the parent node
-	 *       was collapsed before),
+	 *       was collapsed before), or <code>undefined</code> if a concurrent side-effects refresh
+	 *       is detected,
 	 *     - the new index of the moved node,
 	 *     - the number of descendant nodes that were affected by collapsing the moved node
 	 *       (<code>undefined</code> in case the moved node was not expanded before),
@@ -1787,6 +1842,11 @@ sap.ui.define([
 			});
 		} else {
 			oPromise = oPromise.then(([oPatchResult,, iRank]) => {
+				if (this.aElements.length === 0) {
+					// concurrent side-effects refresh, manual update not needed
+					return [undefined, iRank];
+				}
+
 				const iCount = oChildNode["@$ui5.node.isExpanded"]
 					? this.collapse(sChildPredicate, {}) // no mKeptElementPredicates needed
 					: undefined;
@@ -1838,29 +1898,56 @@ sap.ui.define([
 	 * Moves the out-of-place nodes below the given parent in the given order. Moves to the start if
 	 * there is no parent.
 	 *
+	 * @param {string[]} aOutOfPlacePredicates
+	 *   The predicates of the out-of-place nodes
+	 * @param {string} [sParentPredicate]
+	 *   The parent's predicate; <code>undefined</code> for root nodes
 	 * @param {number} [iParentRank]
-	 *   The parent's rank or <code>undefined</code> if there is no parent
-	 * @param {string[]} aOutOfPlacePredicates - The predicates of the out-of-place nodes
+	 *   The parent's rank or <code>undefined</code> if there is no parent or if no rank is known
 	 *
 	 * @private
 	 */
-	_AggregationCache.prototype.moveOutOfPlaceNodes = function (iParentRank,
-			aOutOfPlacePredicates) {
-		const iParentIndex = iParentRank === undefined ? -1 : this.findIndex(iParentRank);
+	_AggregationCache.prototype.moveOutOfPlaceNodes = function (aOutOfPlacePredicates,
+			sParentPredicate, iParentRank) {
+		const oParent = this.aElements.$byPredicate[sParentPredicate]; // Note: might be outside!
+		// eslint-disable-next-line no-nested-ternary
+		const iParentIndex = iParentRank === undefined
+			? (oParent ? this.aElements.indexOf(oParent) : -1)
+			: this.findIndex(iParentRank);
 		aOutOfPlacePredicates.forEach((sNodePredicate) => {
 			const oNode = this.aElements.$byPredicate[sNodePredicate];
 			if (oNode) {
 				this.oTreeState.stillOutOfPlace(oNode, sNodePredicate);
+				const iNodeIndex = this.aElements.indexOf(oNode);
+				if (iNodeIndex < 0) { // (effectively) kept-alive outside the collection
+					return;
+				}
+
 				const bExpanded = oNode["@$ui5.node.isExpanded"];
 				if (bExpanded) {
-					this.collapse(sNodePredicate, {}); // no mKeptElementPredicates needed
+					// no mKeptElementPredicates needed
+					this.collapse(sNodePredicate, {}, /*bSilent*/true);
 				}
-				const iNodeIndex = this.aElements.indexOf(oNode);
 				this.aElements.splice(iNodeIndex, 1);
+
+				if (sParentPredicate && iParentIndex < 0) { // currently not part of the hierarchy
+					return; // do not insert
+				}
+				if (oParent && oParent["@$ui5.node.isExpanded"] === undefined) {
+					// not a leaf anymore
+					oParent["@$ui5.node.isExpanded"] = this.oTreeState.isExpanded(sParentPredicate)
+						// *inside* top pyramid (not at edge)?
+						?? oParent["@$ui5.node.level"] < this.oAggregation.expandTo;
+				}
+				if (oParent?.["@$ui5.node.isExpanded"] === false) { // parent is collapsed
+					return; // do not insert
+				}
+
 				this.aElements.splice(iParentIndex + 1, 0, oNode);
 				if (bExpanded) { // no mKeptElementPredicates needed
-					this.expand(_GroupLock.$cached, sNodePredicate, 1, {});
+					this.expand(_GroupLock.$cached, sNodePredicate, 1, {}, /*bSilent*/true);
 				}
+				oNode["@$ui5.node.level"] ??= oParent ? oParent["@$ui5.node.level"] + 1 : 1;
 			}
 		});
 	};
@@ -2377,6 +2464,34 @@ sap.ui.define([
 	};
 
 	/**
+	 * @override
+	 * @see sap.ui.model.odata.v4.lib._Cache#requestCount
+	 */
+	_AggregationCache.prototype.requestCount = function (oGroupLock) {
+		if (this.oAggregation.hierarchyQualifier || this.oAggregation.groupLevels.length) {
+			// recursive hierarchy has a specific implementation in #readCount, and data aggregation
+			// with groupLevels requires a different approach for requesting the count (oFirstLevel
+			// would not be responsible for single entities)
+			throw new Error("Unsupported with recursive hierarchy or groupLevels");
+		}
+
+		const mQueryOptions = {...this.oFirstLevel.mQueryOptions};
+		mQueryOptions.$count = true; // may have been removed in #readGap
+		// drop not needed system query options; $expand, $filter, $search, and $select must not be
+		// used with grand totals; all filters are contained in $$filterBeforeAggregate
+		delete mQueryOptions.$apply;
+		if (mQueryOptions.$$filterBeforeAggregate) {
+			mQueryOptions.$filter = mQueryOptions.$$filterBeforeAggregate;
+			delete mQueryOptions.$$filterBeforeAggregate;
+		}
+		if (this.oAggregation.search) {
+			mQueryOptions.$search = this.oAggregation.search;
+		}
+
+		return this.oFirstLevel.requestCount(oGroupLock, mQueryOptions);
+	};
+
+	/**
 	 * Sends a request for the elements identified by the given key predicates. Returns predicates
 	 * for elements matching the current filter.
 	 *
@@ -2515,6 +2630,9 @@ sap.ui.define([
 	 * @param {boolean} [bRefreshNeeded]
 	 *   Whether to request the rank with up-to-date ExpandLevels because a side-effects refresh is
 	 *   about to follow; cannot be used in combination with <code>bDropFilter</code>
+	 * @param {boolean} [bFixOnReset]
+	 *   Whether to fix the request's ExpandLevels on {@link #reset} by using
+	 *   <code>bRefreshNeeded</code>; this helps in case a side-effects refresh follows unexpectedly
 	 * @returns {Promise<object|undefined|void>}
 	 *   A promise which is resolved without a defined result in case <code>bInheritResult</code> is
 	 *   set to <code>true</code>, or with the result object (which may be <code>undefined</code>),
@@ -2523,7 +2641,7 @@ sap.ui.define([
 	 * @private
 	 */
 	_AggregationCache.prototype.requestProperties = async function (oElement, aSelect, oGroupLock,
-			bInheritResult, bDropFilter, bRefreshNeeded) {
+			bInheritResult, bDropFilter, bRefreshNeeded, bFixOnReset) {
 		function getApply(mQueryOptions) { // keep $apply and custom query options
 			mQueryOptions = {...mQueryOptions};
 			// Note: $filter is overwritten below, $orderby is part of $apply already
@@ -2551,10 +2669,23 @@ sap.ui.define([
 		mQueryOptions.$filter = _Helper.getKeyFilter(oElement, this.sMetaPath, this.getTypes());
 		const sResourcePathWithQuery = this.sResourcePath
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, true);
-		const oResult = await this.oRequestor.request("GET", sResourcePathWithQuery,
+		const oPromise = this.oRequestor.request("GET", sResourcePathWithQuery,
 			oGroupLock.getUnlockedCopy(), undefined, undefined, undefined, undefined,
 			this.sMetaPath, undefined, false, {$select : aSelect}, this);
-		const oRequestedProperties = oResult.value[0];
+
+		if (bFixOnReset && !bRefreshNeeded
+				&& this.oAggregation.$ExpandLevels !== this.oTreeState.getExpandLevels()) {
+			this.fnOnAfterReset = () => {
+				this.requestProperties(oElement, aSelect, oGroupLock, bInheritResult, bDropFilter,
+					/*bRefreshNeeded*/true);
+				this.oRequestor.replaceWithLast(oGroupLock, oPromise);
+			};
+			oPromise.finally(() => {
+				this.fnOnAfterReset = undefined; // not needed anymore, request is done
+			}).catch(() => { /* catch is only needed due to finally */ });
+		}
+
+		const oRequestedProperties = (await oPromise).value[0];
 
 		if (bInheritResult && oRequestedProperties) {
 			aSelect.forEach((sPath) => {
@@ -2585,7 +2716,7 @@ sap.ui.define([
 	_AggregationCache.prototype.requestRank = async function (oElement, oGroupLock,
 			bRefreshNeeded) {
 		const oResult = await this.requestProperties(oElement, [this.oAggregation.$LimitedRank],
-			oGroupLock, false, false, bRefreshNeeded);
+			oGroupLock, false, false, bRefreshNeeded, /*bFixOnReset*/true);
 
 		return oResult && parseInt(_Helper.drillDown(oResult, this.oAggregation.$LimitedRank));
 	};
@@ -2723,6 +2854,8 @@ sap.ui.define([
 			delete oKeptElement["@$ui5._"];
 			_Helper.setPrivateAnnotation(oKeptElement, "predicate", sPredicate);
 		}
+		this.fnOnAfterReset?.();
+		this.fnOnAfterReset = undefined; // do not call twice
 	};
 
 	/**

@@ -53,7 +53,7 @@ sap.ui.define([
 	 * @implements sap.ui.unified.IMenuItem
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -206,6 +206,30 @@ sap.ui.define([
 	};
 
 
+	MenuTextFieldItem.prototype.onsapprevious = function(oEvent){
+		if (oEvent.key !== "ArrowLeft") {
+			return;
+		}
+		if (this._checkCursorPosForNav(false)) {
+			this.getParent().onsapprevious(oEvent);
+		} else {
+			oEvent.stopPropagation();
+		}
+	};
+
+
+	MenuTextFieldItem.prototype.onsapnext = function(oEvent){
+		if (oEvent.key !== "ArrowRight") {
+			return;
+		}
+		if (this._checkCursorPosForNav(true)) {
+			this.getParent().onsapnext(oEvent);
+		} else {
+			oEvent.stopPropagation();
+		}
+	};
+
+
 	MenuTextFieldItem.prototype.onsaphome = function(oEvent){
 		if (this._checkCursorPosForNav(false)) {
 			this.getParent().onsaphome(oEvent);
@@ -252,7 +276,7 @@ sap.ui.define([
 	MenuTextFieldItem.prototype.onkeydown = function(oEvent){
 		//like sapenter but on keyup -> see Menu.prototype.onkeyup
 		if (!PseudoEvents.events.sapenter.fnCheck(oEvent) && oEvent.key !== "Enter") {
-			if (oEvent.key === "Home" || oEvent.key === "End") {
+			if (oEvent.key === "Home" || oEvent.key === "End" || oEvent.key === " ") {
 				oEvent.stopPropagation();
 			}
 

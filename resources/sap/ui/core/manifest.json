@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.151.0"
+      "version": "1.153.0"
     },
     "title": "The SAPUI5 Core Runtime.",
     "description": "The SAPUI5 Core Runtime.\n\n  Contains the UI5 jQuery plugins (jQuery.sap.*), the Core and all its components,\n  base classes for Controls, Components and the Model View Controller classes.",
@@ -259,7 +259,7 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.151",
+      "minUI5Version": "1.153",
       "libs": {}
     },
     "library": {
@@ -410,6 +410,7 @@
           "sap.ui.core.dnd.DropEffect",
           "sap.ui.core.dnd.DropLayout",
           "sap.ui.core.dnd.DropPosition",
+          "sap.ui.core.popover.PopoverPlacement",
           "sap.ui.core.mvc.ViewType",
           "sap.ui.core.routing.HistoryDirection"
         ],

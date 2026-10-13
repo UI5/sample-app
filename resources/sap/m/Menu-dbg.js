@@ -63,7 +63,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @public
@@ -716,9 +716,6 @@ sap.ui.define([
 					this._atPositions = ["begin top", "end top", "begin bottom", "begin top"];
 				};
 			}
-
-			// this override is needed to fix the issue with the popover position flip
-			oPopover._oControl._getDocHeight = () => window.innerHeight + window.scrollY;
 
 			return oPopover;
 		};

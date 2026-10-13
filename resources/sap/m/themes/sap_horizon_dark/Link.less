@@ -44,13 +44,14 @@ html.sap-desktop .sapMLnk:not(.sapMLnkDsbl) {
 
 		&:hover:not(:active):not(:focus) {
 			color: var(--sapLink_SubtleColor);
-			text-decoration: none;
+			text-decoration: var(--sapLink_Hover_TextDecoration);
 		}
 	}
 }
 
 .sapMLnk:not(.sapMLnkDsbl) {
 	text-shadow: var(--sapContent_TextShadow);
+
 	&:focus-visible {
 		border-radius: 0.125rem;
 		background-color: var(--sapContent_FocusColor);

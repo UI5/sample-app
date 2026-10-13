@@ -45,7 +45,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @private
@@ -436,7 +436,7 @@ function(
 		if (oStepNew) {
 			oStepNew
 				.setAttribute(
-					WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_CURRENT, true);
+					WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_CURRENT, "step");
 		}
 	};
 

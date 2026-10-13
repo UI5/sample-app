@@ -35,7 +35,9 @@ sap.ui.define([
 	'sap/ui/core/ValueStateSupport',
 	"sap/ui/core/InvisibleMessage",
 	"sap/ui/core/Lib",
-	"sap/ui/core/ResizeHandler"
+	"sap/ui/core/ResizeHandler",
+	"sap/ui/core/SeparatorItem",
+	"sap/ui/base/ManagedObject"
 ],
 function(
 	Element,
@@ -68,7 +70,9 @@ function(
 	ValueStateSupport,
 	InvisibleMessage,
 	Library,
-	ResizeHandler
+	ResizeHandler,
+	SeparatorItem,
+	ManagedObject
 ) {
 		"use strict";
 
@@ -144,7 +148,7 @@ function(
 		 * @borrows sap.ui.core.ILabelable.hasLabelableHTMLElement as #hasLabelableHTMLElement
 		 *
 		 * @author SAP SE
-		 * @version 1.151.0
+		 * @version 1.153.0
 		 *
 		 * @constructor
 		 * @public
@@ -863,6 +867,7 @@ function(
 		/**
 		 * Scrolls an item into the visual viewport.
 		 *
+		 * @param {sap.ui.core.Item} oItem The item that should be scrolled into view.
 		 * @private
 		 */
 		Select.prototype.scrollToItem = function(oItem) {
@@ -874,23 +879,30 @@ function(
 			}
 
 			var oPickerSelectListDomRef = oPickerDomRef.querySelector('.sapUiSimpleFixFlexFlexContent'),
-				oPickerValueStateContentDomRef = oPickerDomRef.querySelector('.sapMSltPickerValueState'),
-				iPickerValueStateContentHeight = oPickerValueStateContentDomRef ? oPickerValueStateContentDomRef.clientHeight : 0,
-				iPickerScrollTop = oPickerSelectListDomRef.scrollTop,
-				iItemOffsetTop = oItemDomRef.offsetTop - iPickerValueStateContentHeight,
-				iPickerHeight = oPickerSelectListDomRef.clientHeight,
-				iItemHeight = oItemDomRef.offsetHeight;
+				oPickerRect,
+				oItemRect,
+				iTopOverflow,
+				iBottomOverflow;
 
-			if (iPickerScrollTop > iItemOffsetTop) {
+			if (!oPickerSelectListDomRef) {
+				return;
+			}
+
+			oPickerRect = oPickerSelectListDomRef.getBoundingClientRect();
+			oItemRect = oItemDomRef.getBoundingClientRect();
+			iTopOverflow = oPickerRect.top - oItemRect.top;
+			iBottomOverflow = oItemRect.bottom - oPickerRect.bottom;
+
+			if (iTopOverflow > 0) {
 
 				// scroll up
-				oPickerSelectListDomRef.scrollTop = iItemOffsetTop;
+				oPickerSelectListDomRef.scrollTop = Math.max(oPickerSelectListDomRef.scrollTop - iTopOverflow, 0);
 
 			// bottom edge of item > bottom edge of viewport
-			} else if ((iItemOffsetTop + iItemHeight) > (iPickerScrollTop + iPickerHeight)) {
+			} else if (iBottomOverflow > 0) {
 
 				// scroll down, the item is partly below the viewport of the list
-				oPickerSelectListDomRef.scrollTop = Math.ceil(iItemOffsetTop + iItemHeight - iPickerHeight);
+				oPickerSelectListDomRef.scrollTop += iBottomOverflow;
 			}
 		};
 
@@ -931,6 +943,10 @@ function(
 
 			if (!this._isIconOnly()) {
 				oSelect.text(sSelectedItemText);
+			} else {
+				// For IconOnly Select, keep the hidden description span in sync so that
+				// aria-describedby announces the currently selected item to screen readers.
+				this.$("selectedText").text(sSelectedItemText);
 			}
 		};
 
@@ -994,7 +1010,10 @@ function(
 				return;
 			}
 
-			// the aria-activedescendant attribute is set when the item is rendered
+			// note: the "aria-activedescendant" attribute is only set while the picker is
+			// open. For an IconOnly Select the field exposes a combobox role in that state
+			// (see onAfterOpen), so referencing the active option is valid. While closed the
+			// attribute is removed and the field reverts to a plain button role.
 			if (oItemDomRef && this.isOpen()) {
 				oDomRef.setAttribute(sActivedescendant, vItem.getId());
 			} else {
@@ -1072,6 +1091,16 @@ function(
 			// note: the "aria-controls" attribute is set when the list is visible and in view
 			oDomRef.setAttribute("aria-controls", this.getList().getId());
 
+			// For an IconOnly Select the field exposes role="button" while closed. While the
+			// picker is open we switch it to a combobox role so that the "aria-activedescendant"
+			// attribute - which points to the active option inside the listbox popup - is valid
+			// (it is not allowed on role="button"). This restores the full screen reader
+			// announcement (available options, selected value, position and dialog context)
+			// without an accessibility violation; it is reverted to a button in onAfterClose.
+			if (this._isIconOnly()) {
+				oDomRef.setAttribute("role", "combobox");
+			}
+
 			if (oItem) {
 
 				// note: the "aria-activedescendant" attribute is set
@@ -1088,6 +1117,16 @@ function(
 					this.scrollToItem(oFirstItem);
 					this._oInitialHighlightedItem = oFirstItem;
 				}
+			}
+
+			var aGroupHeaders = this.getItems().filter(function(oGroupItem) {
+				return oGroupItem.isA("sap.ui.core.SeparatorItem") && oGroupItem.getText();
+			});
+			if (aGroupHeaders.length > 0 && this._oInvisibleMessage) {
+				var iSelectableCount = this.getSelectableItems().length;
+				var sMsg = Library.getResourceBundleFor("sap.m").getText(
+					"SELECT_RESULTS_IN_GROUPS", [iSelectableCount, aGroupHeaders.length]);
+				this._oInvisibleMessage.announce(sMsg, InvisibleMessageMode.Polite);
 			}
 		};
 
@@ -1133,6 +1172,13 @@ function(
 			if (oDomRef) {
 				oDomRef.setAttribute("aria-expanded", "false");
 				oDomRef.removeAttribute("aria-activedescendant");
+
+				// Revert the IconOnly field back to a plain button role now that the picker
+				// is closed (see onAfterOpen). Keeping a combobox role / aria-activedescendant
+				// on a closed icon button would be an accessibility violation.
+				if (this._isIconOnly()) {
+					oDomRef.setAttribute("role", "button");
+				}
 			}
 
 			// Remove the active state
@@ -1366,6 +1412,15 @@ function(
 				initialFocus: this,
 				ariaLabelledBy: this._getPickerHiddenLabelId()
 			});
+
+			// The picker is a listbox popup, not a modal dialog: focus deliberately stays on
+			// the select field and the active item is exposed via "aria-activedescendant".
+			// sap.m.Popover renders aria-modal="true" by default; on macOS Chrome, VoiceOver
+			// honors that by trapping its reading cursor inside the popover, so the field's
+			// active-descendant announcement (which comes from outside the popover) is never
+			// read and arrowing through the items stays silent. Safari is not affected.
+			// Declaring the picker non-modal restores the announcement. Precedent: sap.m.MessagePopover.
+			oPicker._setAriaModal(false);
 
 			// detect when the scrollbar or an item is pressed
 			oPicker.addEventDelegate({
@@ -2961,6 +3016,33 @@ function(
 			}
 
 			return this;
+		};
+
+		/**
+		 * Creates a <code>sap.ui.core.SeparatorItem</code> group header and adds it to the
+		 * <code>items</code> aggregation, allowing the dropdown to display items organized in
+		 * named groups (consistent with <code>sap.m.ComboBox</code> / <code>sap.m.MultiComboBox</code>).
+		 *
+		 * This method is also called by the framework when a data binding with a
+		 * <code>group: true</code> sorter is used.
+		 *
+		 * @param {object} oGroup The group data object; <code>oGroup.text</code> or <code>oGroup.key</code>
+		 *   is used as the header label.
+		 * @param {sap.ui.core.SeparatorItem} [oHeader] An optional pre-created <code>SeparatorItem</code>;
+		 *   if omitted, a new one is created from <code>oGroup</code>.
+		 * @param {boolean} [bSuppressInvalidate] If <code>true</code>, the control is not invalidated.
+		 * @returns {sap.ui.core.SeparatorItem} The group header item that was added.
+		 * @since 1.153
+		 * @public
+		 */
+		Select.prototype.addItemGroup = function(oGroup, oHeader, bSuppressInvalidate) {
+			oHeader = oHeader || new SeparatorItem({
+				text: ManagedObject.escapeSettingsValue(oGroup.text) || ManagedObject.escapeSettingsValue(oGroup.key)
+			});
+
+			this.addAggregation("items", oHeader, bSuppressInvalidate);
+
+			return oHeader;
 		};
 
 		/**

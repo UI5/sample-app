@@ -71,7 +71,7 @@ sap.ui.define([
 	 * @alias sap.m.p13n.Engine
 	 * @extends sap.m.p13n.modules.AdaptationProvider
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 * @public
 	 * @since 1.104
 	 */
@@ -427,10 +427,12 @@ sap.ui.define([
 	};
 
 	/**
+	 * A flat map whose keys are the controller keys registered with the <code>Engine</code>
+	 * (see {@link sap.m.p13n.EngineRegistrationConfig}) and whose values are arrays of
+	 * state items understood by the corresponding controller.
 	 *
 	 * @public
-	 * @typedef {object} sap.m.p13n.State
-	 * @property {Object<string,Object[]>} controller A map of arbitrary keys that contain a controller instance as value. The key must be unique and needs to be provided for later access when using <code>Engine</code> functionality specific for one controller type.
+	 * @typedef {Object<string,Object[]>} sap.m.p13n.State
 	 */
 
 	/**
@@ -1402,18 +1404,10 @@ sap.ui.define([
 		const oController = this.getController(vControl, sKey);
 		const oControl = Engine.getControlInstance(vControl);
 
-
-		const mControllers = this._getRegistryEntry(vControl).controller;
-		const oTheoreticalState = {};
-
-		Object.keys(mControllers).forEach((sControllerKey) => {
-			oTheoreticalState[sControllerKey] = mControllers[sControllerKey].getCurrentState();
-		});
+		const oTheoreticalState = this._getTheoreticalState(vControl);
 
 		//Only execute validation for controllers that support 'model2State'
 		if (oController && oController.model2State instanceof Function) {
-			oTheoreticalState[sKey] = oController.model2State();
-
 			let mInfoState = {
 				validation: MessageType.None
 			};
@@ -1438,6 +1432,45 @@ sap.ui.define([
 
 		}
 
+	};
+
+	/**
+	 * Retrieves the theoretical (not yet applied) state of all registered subcontrollers.
+	 * In contrast to {@link sap.m.p13n.Engine#retrieveState}, which returns the applied state,
+	 * this method reflects the live personalization currently held in the open personalization dialog.
+	 *
+	 * @private
+	 * @ui5-restricted sap.ui.mdc
+	 * @since 1.152
+	 *
+	 * @param {sap.ui.core.Control} vControl The registered control instance
+	 * @returns {object} The theoretical state of the control's personalization matching the format processed by {@link sap.ui.mdc.p13n.StateUtil StateUtil}.
+	 */
+	Engine.prototype.retrieveTheoreticalState = function(vControl) {
+		const oControl = Engine.getControlInstance(vControl);
+		return this.externalizeKeys(oControl, this._getTheoreticalState(vControl));
+	};
+
+	/**
+	 * Builds the theoretical (not yet applied) internal state of all registered subcontrollers.
+	 * <code>model2State</code> is only used when the controller supports it and its panel is
+	 * instantiated and not destroyed; otherwise <code>getCurrentState</code> is used as a fallback.
+	 *
+	 * @private
+	 * @param {sap.ui.core.Control} vControl The registered control instance
+	 * @returns {object} The theoretical internal state keyed by controller key
+	 */
+	Engine.prototype._getTheoreticalState = function(vControl) {
+		const mControllers = this._getRegistryEntry(vControl).controller;
+		const mTheoreticalState = {};
+
+		Object.keys(mControllers).forEach((sControllerKey) => {
+			const oController = mControllers[sControllerKey];
+			const bUseModel2State = oController.model2State instanceof Function && !!oController._oPanel && !oController._oPanel.isDestroyed();
+			mTheoreticalState[sControllerKey] = bUseModel2State ? oController.model2State() : oController.getCurrentState();
+		});
+
+		return mTheoreticalState;
 	};
 
 	/**

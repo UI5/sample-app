@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Jei įjungtas kelių eilučių pasirinkimas:</span></p>
+				<p>Jei suaktyvinta eilutė, langelis arba langelyje esantis valdiklis, pasirinkimas perjungiamas. Jei pasirinktos ne visos eilutės, dabar pasirinktos visos eilutės. Jei visos eilutės jau pasirinktos, visų eilučių pasirinkimas pašalinamas.</p>
+				<p>Spartusis klavišas neturi jokios įtakos, jei suaktyvintas stulpelio antraštės langelis arba teksto įvesties laukas, nes šiuo atveju naršyklė apdoroja teksto pasirinkimą.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Jei įgalintas langelių pasirinkimas:</span></p>
-				<p>Jei suaktyvinta lentelėje, pašalinamas visų eilučių ir langelių pasirinkimas.</p>
+				<p><span class="emphasis">Jei įjungtas kelių eilučių pasirinkimas:</span></p>
+				<p>Jei suaktyvinta eilutė, langelis arba langelyje esantis valdiklis, pašalinamas visų eilučių pasirinkimas.</p>
+				<p>Spartusis klavišas neturi jokios įtakos, jei suaktyvintas stulpelio antraštės langelis arba teksto įvesties laukas, nes šiuo atveju naršyklė apdoroja teksto pasirinkimą.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Jei įgalintas langelių pasirinkimas:</span></p>
-				<p>Jei suaktyvinta lentelėje ir pasirinkti langeliai, pašalinamas visų langelių pasirinkimas.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Esant galimybei ir įjungus funkciją pasirinktos eilutės ir langeliai nukopijuojami į mainų sritį.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

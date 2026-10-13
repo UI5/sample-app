@@ -68,7 +68,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -408,6 +408,9 @@ function(
 	};
 
 	ListItemBase.prototype.getGroupAnnouncement = function() {
+		if (this.isGroupHeader()) {
+			return "";
+		}
 		const oList = this.getList();
 		return oList?.getAriaRole() === "listbox" ? this.$().prevAll(".sapMGHLI:first").text() : "";
 	};
@@ -1370,7 +1373,8 @@ function(
 			icon: IconPool.getIconURI("overflow"),
 			press: [this._onOverflowButtonPress, this],
 			type: ButtonType.Transparent,
-			ariaHasPopup: coreLibrary.aria.HasPopup.Menu
+			ariaHasPopup: coreLibrary.aria.HasPopup.Menu,
+			tooltip: Library.getResourceBundleFor("sap.m").getText("LIST_ITEM_ACTION_MORE")
 		});
 
 		this._oOverflowButton.useEnabledPropagator(false);

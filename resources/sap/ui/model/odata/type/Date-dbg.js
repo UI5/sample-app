@@ -76,11 +76,17 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @alias sap.ui.model.odata.type.Date
-	 * @param {object} [oFormatOptions]
-	 *   Format options as defined in {@link sap.ui.core.format.DateFormat.getDateInstance}
+	 * @param {sap.ui.core.format.DateFormat.DateFormatOptions} [oFormatOptions={
+	 *     relativeScale: "day",
+	 *     relativeStyle: "wide",
+	 *     interval: false,
+	 *     singleIntervalValue: false,
+	 *     style: "medium"
+	 *   }]
+	 *   The format options
 	 * @param {object} [oConstraints]
 	 *   constraints; {@link #validateValue validateValue} throws an error if any constraint is
 	 *   violated

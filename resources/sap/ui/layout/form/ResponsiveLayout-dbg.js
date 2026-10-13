@@ -52,7 +52,7 @@ sap.ui.define([
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -169,7 +169,7 @@ sap.ui.define([
 				var bExpandable = oContainer.getExpandable();
 				var sTooltip = oContainer.getTooltip_AsString();
 				var oToolbar = oContainer.getToolbar();
-				var oTitle = oContainer.getTitle();
+				var oTitle = oContainer.getAggregation("_renderingTitle") || oContainer.getTitle();
 
 				oRm.openStart("div", oPanel);
 				oRm.class("sapUiRLContainer");

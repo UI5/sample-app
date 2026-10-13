@@ -95,14 +95,21 @@
 				</ul>
 			</description>
 		</interaction>
+		<interaction> <kbd>Ctrl + A</kbd> <description>
+				<p><span class="emphasis">Si la selecció de múltiples files està activada:</span></p>
+				<p>Si el focus és en una fila, una cel·la o un control dins d'una cel·la, la selecció es desplaça. Si no s'han seleccionat totes les files, ara totes les files estan seleccionades. Si ja s'han seleccionat totes les files, s'eliminarà la selecció de totes les files.</p>
+				<p>La drecera no té cap efecte si el focus és en una cel·la de capçalera de columna o en un camp d'entrada de text, ja que el navegador gestiona la selecció de text en aquest cas.</p>
+			</description>
+		</interaction>
 		<interaction> <kbd>Ctrl + Shift + A</kbd> <description>
-				<p><span class="emphasis">Si la selecció de cel·les està activada:</span></p>
-				<p>Si el focus és dins de la taula, es treu la selecció de totes les files i cel·les.</p>
+				<p><span class="emphasis">Si la selecció de múltiples files està activada:</span></p>
+				<p>Si el focus és en una fila, una cel·la o un control dins d'una cel·la, la selecció de totes les files es treu.</p>
+				<p>La drecera no té cap efecte si el focus és en una cel·la de capçalera de columna o en un camp d'entrada de text, ja que el navegador gestiona la selecció de text en aquest cas.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Escape</kbd> <description>
 				<p><span class="emphasis">Si la selecció de cel·les està activada:</span></p>
-				<p>Si el focus és dins de la taula i hi ha cel·les seleccionades, la selecció de les cel·les es treu.</p>
+				<p>If the focus is inside the table, and cells are selected, the selection of the cells is removed.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>F2</kbd> <description>
@@ -119,7 +126,7 @@
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + C</kbd> <description>
-				<p>Copia les files o cel·les seleccionades al porta-retalls, si està disponible i en cas que la funció estigui activada.</p>
+				<p>Copies the selected rows or cells to the clipboard (if available), and the feature is enabled.</p>
 			</description>
 		</interaction>
 		<interaction> <kbd>Ctrl + V</kbd> <description>

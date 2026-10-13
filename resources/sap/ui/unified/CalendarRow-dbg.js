@@ -84,7 +84,7 @@ sap.ui.define([
 	 * @class
 	 * A calendar row with a header and appointments. The Appointments will be placed in the defined interval.
 	 * @extends sap.ui.core.Control
-	 * @version 1.151.0
+	 * @version 1.153.0
 	 *
 	 * @constructor
 	 * @public
@@ -529,6 +529,7 @@ sap.ui.define([
 		if (jQuery(oEvent.target).hasClass("sapUiCalendarApp")) {
 			// focus on appointment
 			_focusAppointment.call(this, oEvent.target.id);
+			oEvent.target.classList.toggle("sapUiCalItemFocusFromTouch", !!this._bFocusFromTouch);
 		} else {
 			// check if inside appointment
 			var aVisibleAppointments = this._getVisibleAppointments();
@@ -563,6 +564,16 @@ sap.ui.define([
 
 		return this;
 
+	};
+
+	CalendarRow.prototype.ontouchstart = function(oEvent) {
+		if (oEvent.target.closest(".sapUiCalendarApp")) {
+			this._bFocusFromTouch = true;
+		}
+	};
+
+	CalendarRow.prototype.onkeydown = function(oEvent) {
+		this._bFocusFromTouch = false;
 	};
 
 	CalendarRow.prototype.onsapleft = function(oEvent) {

@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/f/library","sap/f/gen/ui5/webcomponents_fiori/dist/HeroBanner"],function(e,t){"use strict";var a=t.extend("sap.f.HeroBanner",{metadata:{tag:t.getMetadata().getTag(),library:"sap.f",defaultAggregation:"startContent",properties:{backgroundImage:{type:"string",mapping:"style"},actionsPlacement:{type:"sap.f.HeroBannerActionsPlacement",mapping:"property",defaultValue:"TopEnd"},columnsRatio:{type:"sap.f.HeroBannerColumnsRatio",mapping:"property",defaultValue:"FirstWider"},headerBlockPlacement:{type:"sap.f.HeroBannerHeaderBlockPlacement",mapping:"property",defaultValue:"Top"},headerText:{type:"string",mapping:"property"},overlineText:{type:"string",mapping:"property"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{actions:{type:"sap.ui.core.Control",multiple:true,slot:"actions"},startContent:{type:"sap.ui.core.Control",multiple:true},endContent:{type:"sap.ui.core.Control",multiple:true,slot:"endContent"}}}});return a});
+//# sourceMappingURL=HeroBanner.js.map

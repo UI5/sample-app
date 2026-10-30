@@ -17,16 +17,24 @@ jobs:
 
     - uses: actions/checkout@v7
 
-    - name: Use Node.js LTS 22
+    - name: Use Node.js 24.11.1
       uses: actions/setup-node@v7
       with:
-        node-version: 24.22.1
+        # ui5-test-runner v6 requires Node.js >= 24.11.1. Newer 24.x releases must
+        # not be used: a failed module resolution stays cached there, so the
+        # packages the runner installs on demand (puppeteer) cannot be loaded.
+        node-version: 24.11.1
 
     - name: Install dependencies
       run: npm ci --engine-strict # --engine-strict is used to fail-fast if deps require node versions unsupported by the repo
 
     - name: Perform checks and tests
       run: npm test
+      env:
+        # GitHub's Ubuntu runners disable unprivileged user namespaces, so Chrome
+        # cannot start its sandbox. ui5-test-runner v5 passed --no-sandbox by
+        # default, v6 requires it to be provided explicitly.
+        UI5TR_CHROME_ARGS: --no-sandbox
 
     - name: Perform preload build
       run: npm run build

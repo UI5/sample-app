@@ -18,9 +18,9 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@ui5/cli": "^4.0.71",
+		"@ui5/cli": "^5.0.0-alpha.14",
 		"@ui5/linter": "^1.23.7",
-		"@ui5/middleware-code-coverage": "^2.0.4",
+		"@ui5/middleware-code-coverage": "^3.0.0-alpha.1",
 		"eslint": "^10.14.0",
 		"globals": "^17.14.0",
 		"local-web-server": "^5.4.2",

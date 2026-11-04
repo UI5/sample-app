@@ -27,6 +27,11 @@ jobs:
 
     - name: Perform checks and tests
       run: npm test
+      env:
+        # Chrome cannot start its sandbox on GitHub's Ubuntu runners (unprivileged user
+        # namespaces are disabled). ui5-test-runner v5 passed --no-sandbox implicitly, v6 does not.
+        # See "Implicit Chrome flags from the version 5 default driver" in the v6 breaking changes.
+        UI5TR_CHROME_ARGS: --no-sandbox
 
     - name: Perform preload build
       run: npm run build

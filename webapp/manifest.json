@@ -17,6 +17,11 @@
 		}
 	},
 	"sap.ui5": {
+		"commands": {
+			"Clear": {
+				"shortcut": "Ctrl+X"
+			}
+		},
 		"dependencies": {
 			"minUI5Version": "1.136.0",
 			"libs": {

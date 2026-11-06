@@ -1,3 +1,9 @@
 {
-	"exclude": ["test/**"]
+  "reporter": ["text"],
+  "exclude": [
+    "**/test/**/*.js",
+	"**/coverage/**"
+  ],
+  "exclude-after-remap": false,
+  "all": true
 }

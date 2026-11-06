@@ -10,7 +10,11 @@
 	"scripts": {
 		"start": "ui5 serve --port 8080",
 		"lint": "eslint webapp && ui5lint",
+<<<<<<< HEAD
 		"test-runner": "npx puppeteer browsers install chrome && ui5-test-runner --url http://localhost:8080/test/testsuite.qunit.html --start \"npm start\" --start-wait-url http://localhost:8080/test/testsuite.qunit.html --start-timeout 30000 --coverage -ccb 100% -ccf 100% -ccl 100% -ccs 100%",
+=======
+		"test-runner": "npx puppeteer browsers install chrome && ui5-test-runner --start \"npm start\" --start-wait-url http://localhost:8080/ --coverage -ccb 100% -ccf 100% -ccl 100% -ccs 100%",
+>>>>>>> f250eb5ea (ci: Adapt test-runner scripts)
 		"test": "npm run lint && npm run test-runner",
 		"build": "ui5 build -a --clean-dest",
 		"build-self-contained": "ui5 build self-contained -a --clean-dest",
@@ -25,6 +29,6 @@
 		"globals": "^17.14.0",
 		"local-web-server": "^5.4.2",
 		"rimraf": "^6.1.3",
-		"ui5-test-runner": "^6.0.5"
+		"ui5-test-runner": "^6.0.7"
 	}
 }

@@ -228,7 +228,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -2174,11 +2174,11 @@ sap.ui.define([
 	 */
 
 	// ============================================================
-	// High-zoom (≤320px) Year/Month/Day selects
+	// High-zoom (≤300px) Year/Month/Day selects
 	// ============================================================
 
 	/**
-	 * Called by DateTimeFieldZoomMixin when the viewport width crosses the 320px boundary.
+	 * Called by DateTimeFieldZoomMixin when the viewport width crosses the 300px boundary.
 	 * @param {boolean} bHighZoom
 	 * @private
 	 */

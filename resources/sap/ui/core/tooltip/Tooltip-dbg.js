@@ -62,7 +62,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.153.0
+		* @version 1.154.0
 		*
 		* @private
 		* @alias sap.ui.core.tooltip.Tooltip

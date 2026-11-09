@@ -1,0 +1,7 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2026 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/f/gen/ui5/webcomponents_fiori/dist/UserSettingsView","sap/f/gen/ui5/webcomponents_fiori","sap/f/thirdparty/UserSettingsAccountView"],function(e){"use strict";const t=e.extend("sap.f.gen.ui5.webcomponents_fiori.dist.UserSettingsAccountView",{metadata:{tag:"ui5-user-settings-account-view-ad055745",namespace:"sap.f.gen.ui5.webcomponents_fiori",library:"sap.f",designtime:"sap/f/gen/ui5/webcomponents_fiori/designtime/UserSettingsAccountView.designtime",interfaces:[],defaultAggregation:"content",properties:{secondary:{type:"boolean",mapping:"property",defaultValue:false},selected:{type:"boolean",mapping:"property",defaultValue:false},showEditButton:{type:"boolean",mapping:"property",defaultValue:false},showManageAccount:{type:"boolean",mapping:"property",defaultValue:false},text:{type:"string",mapping:"property"},width:{type:"sap.ui.core.CSSSize",mapping:"style"},height:{type:"sap.ui.core.CSSSize",mapping:"style"}},aggregations:{account:{type:"sap.f.gen.ui5.webcomponents_fiori.dist.UserMenuAccount",multiple:true,slot:"account"},content:{type:"sap.ui.core.Control",multiple:true}},associations:{},events:{editAccountsClick:{parameters:{}},manageAccountClick:{parameters:{}}},getters:[],methods:[]}});return t});
+//# sourceMappingURL=UserSettingsAccountView.js.map

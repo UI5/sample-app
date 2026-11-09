@@ -27,13 +27,13 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @since 0.8
 	 * @public
 	 */
 	 var thisLib = Library.init({
 		 name: "sap.ui.core",
-		 version: "1.153.0",
+		 version: "1.154.0",
 		 designtime: "sap/ui/core/designtime/library.designtime",
 		 apiVersion: 2,
 		 ...{
@@ -1650,7 +1650,7 @@ sap.ui.define([
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -1947,15 +1947,17 @@ sap.ui.define([
 	 * @name sap.ui.core.IAccessKeySupport
 	 * @interface
 	 * @public
+	 * @deprecated As of version 1.154. The concept has been abandoned.
 	 * @ui5-experimental-since 1.104
 	 */
 
 	/**
-	 * Returns a refence to DOM element to be focused during Access key navigation.
+	 * Returns a reference to DOM element to be focused during Access key navigation.
 	 * If not implemented getFocusDomRef() method is used.
 	 *
 	 * @public
 	 * @function
+	 * @deprecated As of version 1.154. The concept has been abandoned.
 	 * @ui5-experimental-since 1.104
 	 * @name sap.ui.core.IAccessKeySupport.getAccessKeysFocusTarget?
 	 */
@@ -1965,6 +1967,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 * @function
+	 * @deprecated As of version 1.154. The concept has been abandoned.
 	 * @ui5-experimental-since 1.104
 	 * @name sap.ui.core.IAccessKeySupport.onAccKeysHighlightStart?
 	 */
@@ -1974,6 +1977,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 * @function
+	 * @deprecated As of version 1.154. The concept has been abandoned.
 	 * @ui5-experimental-since 1.104
 	 * @name sap.ui.core.IAccessKeySupport.onAccKeysHighlightEnd?
 	 */

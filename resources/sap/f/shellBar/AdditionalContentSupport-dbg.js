@@ -22,7 +22,7 @@ sap.ui.define([
 
 		/**
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @private
 		 * @since 1.64

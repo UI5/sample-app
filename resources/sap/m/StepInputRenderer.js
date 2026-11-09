@@ -3,5 +3,5 @@
  * (c) Copyright 2026 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([],function(){"use strict";var t={apiVersion:2};t.render=function(t,e){var n=e._getInput(),a=e.getWidth(),s=e.getEnabled(),p=e.getEditable(),r=e.getValueState();t.openStart("div",e);t.style("width",a);t.class("sapMStepInput");t.class("sapMStepInput-CTX");!s&&t.class("sapMStepInputReadOnly");!p&&t.class("sapMStepInputNotEditable");if(r==="Error"||r==="Warning"){t.class("sapMStepInput"+r)}t.openEnd();t.renderControl(n);t.close("div")};return t},true);
+sap.ui.define([],function(){"use strict";var e={apiVersion:2};e.render=function(e,n){var r=n._getNumericInput();e.openStart("div",n);e.class("sapMStepInput");e.openEnd();e.renderControl(r);e.close("div")};return e},true);
 //# sourceMappingURL=StepInputRenderer.js.map

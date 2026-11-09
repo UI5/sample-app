@@ -18,6 +18,8 @@ sap.ui.define([
 	'sap/ui/core/ResizeHandler',
 	'sap/ui/core/ListItem',
 	'sap/ui/core/IconPool',
+	'sap/ui/core/ShortcutHintsMixin',
+	'sap/ui/core/tooltip/TooltipEnablement',
 	'./SegmentedButtonRenderer'
 ],
 function(
@@ -33,6 +35,8 @@ function(
 	ResizeHandler,
 	ListItem,
 	IconPool,
+	ShortcutHintsMixin,
+	TooltipEnablement,
 	SegmentedButtonRenderer
 ) {
 	"use strict";
@@ -60,7 +64,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -251,6 +255,10 @@ function(
 			this._fireChangeEvent();
 			return oRemovedButton;
 		};
+
+		if (TooltipEnablement.isEnhancedTooltipEnabled()) {
+			ShortcutHintsMixin.setPopupSuppressed(this, true);
+		}
 	};
 
 	SegmentedButton.prototype.onBeforeRendering = function () {
@@ -647,6 +655,17 @@ function(
 				Button.prototype.setVisible.apply(this, arguments);
 				oParent.invalidate();
 			};
+
+			if (oButton._oTooltipEnablement) {
+				const fnOriginalGetTooltip = Button.prototype._getTooltip;
+				oButton._getTooltip = function() {
+					return fnOriginalGetTooltip.call(this) || oParent.getTooltip_AsString() || "";
+				};
+
+				oButton._getShortcutHintHost = function() {
+					return fnOriginalGetTooltip.call(oButton) ? oButton : oParent;
+				};
+			}
 		}
 
 	})();

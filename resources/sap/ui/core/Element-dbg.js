@@ -144,7 +144,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @public
 	 * @alias sap.ui.core.Element
 	 */
@@ -1321,8 +1321,9 @@ sap.ui.define([
 			return oElement.classList.contains("sapUiBLy") || oElement.classList.contains("sapUiBlockLayer");
 		});
 
-		if (iBlockLayerIndex !== -1 && iFocusDomRefIndex > iBlockLayerIndex) {
+		if (iBlockLayerIndex !== -1 && iFocusDomRefIndex >= iBlockLayerIndex) {
 			// when block layer is visible and it's displayed over the Element's DOM
+			// or when the focus DOM ref is the block layer itself, the Element is not focusable
 			return false;
 		}
 
@@ -1566,7 +1567,7 @@ sap.ui.define([
 	 * in the documentation.
 	 *
 	 * @extends sap.ui.core.Element
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.CustomData

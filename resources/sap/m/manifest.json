@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.153.0"
+      "version": "1.154.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -16,7 +16,7 @@
       {
         "name": "DOMPurify",
         "packagedWithMySelf": true,
-        "version": "3.4.14"
+        "version": "3.4.17"
       },
       {
         "name": "qunit-composite-2",
@@ -34,17 +34,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.153",
+      "minUI5Version": "1.154",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.153.0"
+          "minVersion": "1.154.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.153.0",
+          "minVersion": "1.154.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.153.0",
+          "minVersion": "1.154.0",
           "lazy": true
         }
       }
@@ -190,6 +190,7 @@
           "sap.m.NavContainer",
           "sap.m.NewsContent",
           "sap.m.NumericContent",
+          "sap.m.NumericInput",
           "sap.m.NotificationList",
           "sap.m.NotificationListBase",
           "sap.m.NotificationListItem",
@@ -481,9 +482,12 @@
           "sap.m.LoadState",
           "sap.m.MenuButtonMode",
           "sap.m.MultiSelectMode",
+          "sap.m.NumericInputStepModeType",
+          "sap.m.NumericInputValidationMode",
           "sap.m.ObjectHeaderPictureShape",
           "sap.m.ObjectMarkerType",
           "sap.m.ObjectMarkerVisibility",
+          "sap.m.ObjectNumberDisplayMode",
           "sap.m.OverflowToolbarPriority",
           "sap.m.P13nPopupMode",
           "sap.m.P13nPanelType",

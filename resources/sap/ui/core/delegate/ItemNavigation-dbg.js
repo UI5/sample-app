@@ -16,12 +16,13 @@ sap.ui.define([
 	'sap/ui/base/EventProvider',
 	"sap/base/assert",
 	"sap/base/Log",
+	"sap/ui/Device",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/core/Element",
 	"sap/ui/dom/jquery/Selectors" // jQuery custom selectors ":sapFocusable"
 ],
-	function(Localization, EventProvider, assert, Log, KeyCodes, jQuery, Element) {
+	function(Localization, EventProvider, assert, Log, Device, KeyCodes, jQuery, Element) {
 	"use strict";
 	/* eslint-disable no-lonely-if */
 
@@ -82,7 +83,7 @@ sap.ui.define([
 	 * @param {Element[]} aItemDomRefs Array of DOM references representing the items for the navigation
 	 * @param {boolean} [bNotInTabChain=false] Whether the selected element should be in the tab chain or not
 	 *
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @alias sap.ui.core.delegate.ItemNavigation
 	 * @public
 	 */
@@ -594,7 +595,8 @@ sap.ui.define([
 
 		Log.info("Set Focus on ID: " + this.aItemDomRefs[this.iFocusedIndex].id, "focusItem", "ItemNavigation");
 		this.aItemDomRefs[this.iFocusedIndex].focus({
-			preventScroll: bPreventScroll
+			preventScroll: bPreventScroll,
+			focusVisible: Device.system.desktop || oEvent?.originalEvent instanceof KeyboardEvent
 		});
 
 		this.fireEvent(ItemNavigation.Events.AfterFocus, {

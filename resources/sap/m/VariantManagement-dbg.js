@@ -1999,6 +1999,12 @@ sap.ui.define([
 
 	VariantManagement.prototype.destroyManageDialog = function() {
 		if (this.oManagementDialog) {
+			if (this._sStyleClass) {
+				this.setSupportPublic(this._bShowPublic, true);
+				this._sStyleClass = undefined;
+				this._oRolesComponentContainer = null;
+				this.setSupportContexts(false);
+			}
 			this.oManagementDialog.destroy();
 			this.oManagementDialog = undefined;
 		}
@@ -2296,6 +2302,7 @@ sap.ui.define([
 						this.oManagementDialog.removeStyleClass(this._sStyleClass);
 						this._sStyleClass = undefined;
 						this._oRolesComponentContainer = null;
+						this.setSupportContexts(false);
 					}
 				}.bind(this),
 				content: [
@@ -2402,9 +2409,13 @@ sap.ui.define([
 			return undefined;
 		}
 
-		const fnPropertyIsInTemplate = (sProperty) => oItemsTemplate && (oItemsTemplate.getBindingInfo(sProperty) !== undefined || !oItemsTemplate.isPropertyInitial?.(sProperty));
+		const fnPropertyIsInTemplate = (sProperty) => oItemsTemplate && oItemsTemplate.getBindingInfo(sProperty) !== undefined;
 
 		const fnTemplateExtractBinding = (sProperty) => oItemsTemplate?.getBindingInfo(sProperty) ?? ({value: oItemsTemplate?.getProperty(sProperty)});
+
+		// Index of this item in the $mVariants MOM (/items/N/…). Computed once here so fnCreateBinding
+		// can use it without re-scanning the array on each call.
+		const nMomIndex = this.getItems().indexOf(oItem);
 
 		const fnCreateBinding = (sProperty) => {
 			// use OneWay Binding to not update text and flags via Model but using the explicit event handlers. (fl-VariantModel is alwqays OneWay per default)
@@ -2422,7 +2433,9 @@ sap.ui.define([
 				});
 				return oBindingCopy;
 			} else {
-				return {parts: [{path: sProperty, model: this._sModelName, mode: BindingMode.OneWay}]};
+				// Property is not bound in the template — read from the MOM using an absolute path so
+				// no binding context on the row is required (avoids interfering with external-model bindings).
+				return {parts: [{path: `/items/${nMomIndex}/${sProperty}`, model: "$mVariants", mode: BindingMode.OneWay}]};
 			}
 		};
 
@@ -2511,20 +2524,16 @@ sap.ui.define([
 
 		const oFavoriteBinding = fnCreateBinding("favorite");
 		const oFavoriteIcon = new Icon(sIdPrefix + "-fav-" + nPos, {
-			src: {
-				path: oFavoriteBinding.parts?.[0]?.path ?? "favorite",
-				model: oFavoriteBinding.parts?.[0]?.model ?? "$mVariants",
+			src: Object.assign({}, oFavoriteBinding, {
 				formatter: function(bFlagged) {
 					return bFlagged || bFlagged == null ? "sap-icon://favorite" : "sap-icon://unfavorite";
 				}
-			},
-			tooltip: {
-				path: oFavoriteBinding.parts?.[0]?.path ?? "favorite",
-				model: oFavoriteBinding.parts?.[0]?.model ?? "$mVariants",
+			}),
+			tooltip: Object.assign({}, oFavoriteBinding, {
 				formatter: function(bFlagged) {
 					return this._oRb.getText(bFlagged || bFlagged == null ? "VARIANT_MANAGEMENT_FAV_DEL_TOOLTIP" : "VARIANT_MANAGEMENT_FAV_ADD_TOOLTIP");
 				}.bind(this)
-			},
+			}),
 			press: fSelectFav,
 			decorative: false
 		});
@@ -2555,13 +2564,11 @@ sap.ui.define([
 
 		const oSharingBinding = fnCreateBinding("sharing");
 		const oSharingText = new Text(sIdPrefix + "-type-" + nPos, {
-			text: {
-				path: oSharingBinding.parts?.[0]?.path ?? "sharing",
-				model: oSharingBinding.parts?.[0]?.model ?? sModelName,
+			text: Object.assign({}, oSharingBinding, {
 				formatter: function(sValue) {
 					return this._oRb.getText(sValue === "Private" ? "VARIANT_MANAGEMENT_PRIVATE" : "VARIANT_MANAGEMENT_PUBLIC");
 				}.bind(this)
-			},
+			}),
 			textAlign: "Center"
 		});
 
@@ -2622,10 +2629,12 @@ sap.ui.define([
 
 		//Lazy loading of variants
 		if (!this.oManagementDialog.isOpen()){
-			this._executeDynamicVariantsLoadedCallback(this.oManagementTable, function() {
+			this._executeDynamicVariantsLoadedCallback(this.oManagementTable, () => {
+				this.oManagementTable.unbindAggregation("items", true); // will be bound again at the end. Suppending will not help as update might be forced from model
+			}, () => {
 				//Rebind table to display refreshed data after lazy loading variants
 				this._rebindVMTable(true);
-			}.bind(this));
+			});
 		}
 
 		this.oManagementDialog.open();
@@ -2667,15 +2676,19 @@ sap.ui.define([
 	 * The control will be set to busy until the returned <code>Promise</code> is settled.
 	 *
 	 * @param {sap.ui.core.Control} oControl - The control to set busy during loading
+	 * @param {function} [fnOnLoad] - Optional callback to execute when the Promise is returned
 	 * @param {function} [fnAfterLoad] - Optional callback to execute after the promise is settled
 	 * @private
 	 */
-	VariantManagement.prototype._executeDynamicVariantsLoadedCallback = function(oControl, fnAfterLoad) {
+	VariantManagement.prototype._executeDynamicVariantsLoadedCallback = function(oControl, fnOnLoad, fnAfterLoad) {
 		const fnCallback = this.getDynamicVariantsLoadedCallback();
 		if (typeof fnCallback === "function") {
 			const oResult = fnCallback();
 			if (oResult instanceof Promise && !oControl.isDestroyed()) {
 				oControl.setBusy(true);
+				if (fnOnLoad) {
+					fnOnLoad();
+				}
 				oResult.finally(function() {
 					oControl.setBusy(false);
 					// Variants loaded during the callback (e.g. shared PUBLIC variants) are added to the items

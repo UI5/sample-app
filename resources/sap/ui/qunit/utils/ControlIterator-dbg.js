@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -65,6 +65,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/ui/VersionInfo", "sap/ui/core/Lib"],
 		"sap.chart.Chart",
 		"sap.m.FacetFilterItem",
 		"sap.m.internal.NumericInput",
+		"sap.m.NumericInputBase",
 		"sap.m.IconTabBarSelectList",
 		"sap.m.LightBox",
 		"sap.m.Menu",

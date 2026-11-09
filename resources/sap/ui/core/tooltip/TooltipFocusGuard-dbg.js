@@ -78,7 +78,7 @@ sap.ui.define([
 		 * One guard per trigger; shared document listeners live only while a guard does.
 		 *
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @extends sap.ui.base.Object
 		 *

@@ -28,7 +28,7 @@ sap.ui.define([
 	 * </ul>
 	 *
 	 * @extends sap.ui.unified.RecurrenceRule
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @private

@@ -60,7 +60,7 @@ sap.ui.define([
 		 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 		 * @public
 		 * @since 1.37.0
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getGroupId as #getGroupId
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 		 * @borrows sap.ui.model.odata.v4.ODataBinding#getUpdateGroupId as #getUpdateGroupId
@@ -128,9 +128,7 @@ sap.ui.define([
 		// number of active (client-side) created contexts in aContexts
 		this.iActiveContexts = 0;
 		this.aApplicationFilters = aFilters;
-		this.sChangeReason = oModel.bAutoExpandSelect && !_Helper.isDataAggregation(mParameters)
-			? "AddVirtualContext"
-			: undefined;
+		this.sChangeReason = oModel.bAutoExpandSelect ? "AddVirtualContext" : undefined;
 		// optional change reason to be used for the next refresh event after RemoveVirtualContext
 		// Note: must only be used in combination with this.sChangeReason set to "AddVirtualContext"
 		this.sChangeReasonAfterRemoveVirtualContext = undefined;
@@ -290,7 +288,8 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.applyParameters = function (mParameters, sChangeReason,
 			aChangedParameters) {
-		var sApply,
+		var vApplyWithSelect,
+			sApply,
 			oOldAggregation = this.mParameters && this.mParameters.$$aggregation,
 			sOldApply = this.mQueryOptions && this.mQueryOptions.$apply;
 
@@ -306,7 +305,8 @@ sap.ui.define([
 					this.oModel.bAutoExpandSelect, this.oModel.oInterface.fetchMetadata,
 					this.getResolvedPath());
 			}
-			sApply = _AggregationHelper.buildApply(mParameters.$$aggregation).$apply;
+			({$apply : sApply, $$applyWithSelect : vApplyWithSelect}
+				= _AggregationHelper.buildApply(mParameters.$$aggregation));
 		}
 
 		// Note: called from c'tor before mParameters are stored for the 1st time
@@ -319,6 +319,7 @@ sap.ui.define([
 		this.mParameters = mParameters; // store mParameters at binding after validation
 		if (sApply) {
 			this.mQueryOptions.$apply = sApply;
+			this.mQueryOptions.$$applyWithSelect = vApplyWithSelect;
 		}
 
 		if (sChangeReason === "") { // called from #setAggregation
@@ -776,7 +777,8 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.collapse = function (oContext, bAll, bSilent, iCount) {
 		this.checkSuspended();
-		if (this.aContexts[oContext.iIndex] !== oContext) {
+		const iModelIndex = this.getModelIndex(oContext);
+		if (this.aContexts[iModelIndex] !== oContext) {
 			throw new Error("Not currently part of the hierarchy: " + oContext);
 		}
 
@@ -790,7 +792,6 @@ sap.ui.define([
 
 		if (iCount > 0) {
 			const aContexts = this.aContexts;
-			const iModelIndex = this.getModelIndex(oContext);
 			aContexts.splice(iModelIndex + 1, iCount).forEach((oContext0) => {
 				oContext0.iIndex = undefined; // "outside the collection"
 				// Note: created (even persisted) is also kept inside "context" annotation
@@ -798,13 +799,16 @@ sap.ui.define([
 			});
 			for (let i = iModelIndex + 1; i < aContexts.length; i += 1) {
 				if (aContexts[i]) {
-					aContexts[i].iIndex = i;
+					aContexts[i].iIndex = i - this.iCreatedContexts;
 				}
 			}
 			this.iMaxLength -= iCount;
 			if (!bSilent) {
 				this._fireChange({reason : ChangeReason.Change});
 			}
+		} else if (!bSilent && _Helper.isDataAggregation(this.mParameters)) {
+			// Note: w/ D.A., collapse empty group needs to inform UI
+			this._fireChange({reason : ChangeReason.Change});
 		} // else: collapse before expand has finished
 	};
 
@@ -913,9 +917,10 @@ sap.ui.define([
 	 *     {@link #getKeepAliveContext}.
 	 * </ul>
 	 *
-	 * When using data aggregation without <code>groupLevels</code> and without
-	 * <code>"grandTotal like 1.84"</code> (see {@link #setAggregation}), single entities can be
-	 * created (since 1.151.0, see {@link sap.ui.model.odata.v4.Context#isAggregated}).
+	 * When using data aggregation without <code>"grandTotal like 1.84"</code> (see
+	 * {@link #setAggregation}), single entities can be created (since 1.151.0, see
+	 * {@link sap.ui.model.odata.v4.Context#isAggregated}). Single entities can also be created with
+	 * visual grouping (@experimental as of version 1.154.0).
 	 *
 	 * @param {Object<any>} [oInitialData={}]
 	 *   The initial data for the created entity
@@ -949,8 +954,9 @@ sap.ui.define([
 	 *   <ul>
 	 *     <li> the binding's root binding is suspended,
 	 *     <li> a relative binding is unresolved,
-	 *     <li> data aggregation is used with <code>groupLevels</code> or with
-	 *       <code>"grandTotal like 1.84"</code> or without a grand total,
+	 *     <li> data aggregation is used with <code>groupLevels</code> and the first entity is
+	 *       created at the end, or with <code>"grandTotal like 1.84"</code>, or without a grand
+	 *       total and without <code>groupLevels</code>,
 	 *     <li> aggregated data instead of a single entity instance is about to be created,
 	 *     <li> "@$ui5.node.parent" is given without a recursive hierarchy,
 	 *     <li> entities are created first at the end and then at the start,
@@ -993,6 +999,7 @@ sap.ui.define([
 			sResolvedPath = this.getResolvedPath(),
 			sTransientPredicate = "($uid=" + _Helper.uid() + ")",
 			sTransientPath = sResolvedPath + sTransientPredicate,
+			bGrandTotalAdded,
 			that = this;
 
 		if (!sResolvedPath) {
@@ -1002,15 +1009,19 @@ sap.ui.define([
 		if (oAggregation?.["grandTotal like 1.84"]) {
 			throw new Error('"grandTotal like 1.84" not supported: ' + this);
 		}
-		if (oAggregation?.groupLevels?.length) {
-			throw new Error("Unsupported for data aggregation with groupLevels: " + this);
-		}
 		if (oAggregation?.$leafLevelAggregated) {
 			throw new Error("Unsupported on aggregated data: " + this);
 		}
 		if (_Helper.isDataAggregation(this.mParameters)) {
+			if (oAggregation.groupLevels.length && this.bFirstCreateAtEnd === undefined && bAtEnd) {
+				throw new Error("Must not create at end when using groupLevels: " + this);
+			}
 			if (!_AggregationHelper.hasGrandTotal(oAggregation.aggregate)) {
-				throw new Error("No use for data aggregation: " + this);
+				if (!oAggregation.groupLevels.length) {
+					throw new Error("No use for data aggregation: " + this);
+				}
+			} else if (!this.getLength()) {
+				bGrandTotalAdded = true;
 			}
 			if (oInitialData && "@$ui5.node.parent" in oInitialData) {
 				throw new Error('"@$ui5.node.parent" not supported: ' + this);
@@ -1112,6 +1123,9 @@ sap.ui.define([
 				that.oModel.checkMessages();
 			}
 			that.fireEvent("createCompleted", {context : oContext, success : true});
+			if (bGrandTotalAdded) {
+				that._fireChange({reason : ChangeReason.Add});
+			}
 			if (bCreateInPlace) {
 				const iRank = _Helper.getPrivateAnnotation(oCreatedEntity, "rank");
 				oContext.iIndex = iRank;
@@ -1349,6 +1363,7 @@ sap.ui.define([
 
 		this.iDeletedContexts += 1;
 		const bSelected = oContext.isSelected();
+		that.setOutdated("delete");
 
 		return oContext.doDelete(oGroupLock, sEditUrl, sPath, oETagEntity, this,
 			function (iIndex, iOffset) {
@@ -1660,7 +1675,8 @@ sap.ui.define([
 			if (this.iCreatedContexts || this.iDeletedContexts || bHasEffectivelyKeptAlive
 					// the cache in a recursive hierarchy must be reused (to keep the tree state)
 					// but immediately after #setAggregation it might still be a _CollectionCache
-					|| this.mParameters.$$aggregation?.hierarchyQualifier
+					|| (this.mParameters.$$aggregation?.hierarchyQualifier
+						|| this.mParameters.$$aggregation?.expandTo)
 					&& oOldCache instanceof _AggregationCache) {
 				if (bResetViaSideEffects && this.mParameters.$$aggregation?.hierarchyQualifier) {
 					sGroupId = this.getGroupId(); // reset via a side-effects refresh
@@ -1851,7 +1867,7 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.expand = function (oContext, iLevels, bSilent) {
 		this.checkSuspended();
-		if (this.aContexts[oContext.iIndex] !== oContext) {
+		if (this.aContexts[this.getModelIndex(oContext)] !== oContext) {
 			throw new Error("Not currently part of the hierarchy: " + oContext);
 		}
 		if (iLevels > 1 && !this.mParameters.$$aggregation?.hierarchyQualifier) {
@@ -1872,10 +1888,11 @@ sap.ui.define([
 			}
 			if (iCount) {
 				this.insertGap(this.getModelIndex(oContext), iCount);
-				if (!bSilent) {
-					this._fireChange({reason : ChangeReason.Change});
-				}
 			} // else: collapse before expand has finished, oContext already destroyed
+			if (!bSilent && (iCount || _Helper.isDataAggregation(this.mParameters))) {
+				// Note: w/ D.A., expand empty group needs to inform UI
+				this._fireChange({reason : ChangeReason.Change});
+			}
 			if (bDataRequested) {
 				this.fireDataReceived({});
 			}
@@ -3565,16 +3582,35 @@ sap.ui.define([
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#getQueryOptionsFromParameters
 	 */
 	ODataListBinding.prototype.getQueryOptionsFromParameters = function () {
-		let mQueryOptions = this.mQueryOptions;
+		let mQueryOptions;
+		const addToSelect = (aPaths) => {
+			if (!mQueryOptions) { // copy on write
+				mQueryOptions = {...this.mQueryOptions}; // shallow clone (as deep as needed)
+				// avoid that this.mQueryOptions.$select is modified
+				mQueryOptions.$select &&= mQueryOptions.$select.slice();
+			}
+			_Helper.addToSelect(mQueryOptions, aPaths);
+		};
+
 		const aGroupPaths = this.getGroupPaths();
 		if (aGroupPaths.length) {
-			mQueryOptions = {...mQueryOptions};
-			// avoid that this.mQueryOptions.$select is modified
-			mQueryOptions.$select &&= mQueryOptions.$select.slice();
-			_Helper.addToSelect(mQueryOptions, aGroupPaths);
+			addToSelect(aGroupPaths);
 		}
 
-		return mQueryOptions;
+		if (_Helper.isDataAggregation(this.mParameters)) {
+			if (this.oModel.bAutoExpandSelect) {
+				for (const sGroup in this.mParameters.$$aggregation.group) {
+					const oGroup = this.mParameters.$$aggregation.group[sGroup];
+					if (oGroup.additionally?.length) {
+						addToSelect(oGroup.additionally);
+					}
+				}
+			} else if (this.mQueryOptions.$expand || this.mQueryOptions.$select) {
+				throw new Error("Missing parameter autoExpandSelect");
+			}
+		}
+
+		return mQueryOptions ?? this.mQueryOptions;
 	};
 
 	/**
@@ -4420,8 +4456,6 @@ sap.ui.define([
 	 *       {@link #getHeaderContext}),
 	 *     <li> the context is not effectively kept alive and currently not part of the recursive
 	 *       hierarchy,
-	 *     <li> data aggregation with <code>groupLevels</code> (see {@link #setAggregation}) is
-	 *       used,
 	 *     <li> <code>bAllowRemoval</code> is either combined with <code>bWithMessages</code> or
 	 *       with "$$aggregation".
 	 *   </ul>
@@ -4448,9 +4482,6 @@ sap.ui.define([
 		if (oAggregation?.hierarchyQualifier && !oContext.isEffectivelyKeptAlive()
 				&& this.aContexts[oContext.iIndex] !== oContext) {
 			throw new Error("Not currently part of the hierarchy: " + oContext);
-		}
-		if (oAggregation?.groupLevels?.length) {
-			throw new Error("Unsupported for data aggregation with groupLevels: " + this);
 		}
 
 		return this.withCache(function (oCache, sPath, oBinding) {
@@ -4884,9 +4915,6 @@ sap.ui.define([
 					: SyncPromise.resolve();
 			}
 
-			if (this.mParameters.$$aggregation.groupLevels.length) {
-				throw new Error("Unsupported for data aggregation with groupLevels: " + this);
-			}
 			if (oContext.isAggregated()) {
 				throw new Error("Unsupported on aggregated data: " + oContext);
 			}
@@ -5166,10 +5194,11 @@ sap.ui.define([
 	 *       aggregatable property are needed
 	 *     <li> <code>with</code>: An optional string that provides the name of the method (for
 	 *       example "sum") used for aggregation of this aggregatable property; see
-	 *       "3.1.2 Keyword with".
+	 *       "3.1.2 Keyword with"; cannot be combined with <code>expandTo</code>
 	 *     <li> <code>name</code>: An optional string that provides the original aggregatable
 	 *       property name in case a different alias is chosen as the name of the dynamic property
-	 *       used for aggregation of this aggregatable property; see "3.1.1 Keyword as"
+	 *       used for aggregation of this aggregatable property; see "3.1.1 Keyword as"; cannot be
+	 *       combined with <code>expandTo</code>
 	 *      <li> <code>unit</code>: An optional string that provides the name of the custom
 	 *       aggregate for a currency or unit of measure corresponding to this aggregatable property
 	 *       (since 1.86.0). The custom aggregate must return the single value of that unit in case
@@ -5190,7 +5219,10 @@ sap.ui.define([
 	 *   <code>expandTo >= Number.MAX_SAFE_INTEGER</code> can be used to expand all levels
 	 *   (<code>1E16</code> is recommended inside XML views for simplicity). Since 1.139.0,
 	 *   {@link #getAggregation} returns <code>expandTo : Number.MAX_SAFE_INTEGER</code> instead of
-	 *   values greater than this. These differences do not count as changes.
+	 *   values greater than this. These differences do not count as changes. This parameter is also
+	 *   supported for visual grouping (@experimental as of version 1.154.0) and requires the
+	 *   <a href="https://sap.github.io/odata-vocabularies/vocabularies/Analytics.html#MultiLevelExpand">"com.sap.vocabularies.Analytics.v1.MultiLevelExpand"</a>
+	 *   "$apply" transformation.
 	 * @param {boolean} [oAggregation.grandTotalAtBottomOnly]
 	 *   Tells whether the grand totals for aggregatable properties are displayed at the bottom only
 	 *   (since 1.86.0); <code>true</code> for bottom only, <code>false</code> for top and bottom,
@@ -5252,7 +5284,7 @@ sap.ui.define([
 	 *   needed. Beware that methods like "average" or "countdistinct" are not compatible with this
 	 *   approach, and it cannot be combined with group levels. Since 1.129.0, this property is not
 	 *   needed anymore and filtering by aggregated properties is supported even while grand totals
-	 *   or subtotals are needed.
+	 *   or subtotals are needed. Must not be combined with <code>expandTo</code>.
 	 * @throws {Error} If
 	 *   <ul>
 	 *     <li> the given data aggregation object is unsupported,
@@ -5261,7 +5293,10 @@ sap.ui.define([
 	 *       context when switching the use case of data aggregation (recursive hierarchy, pure data
 	 *       aggregation, or none at all),
 	 *     <li> there are pending changes (unless the aggregation is unchanged), including created
-	 *       contexts (since 1.147.0) unless only <code>search</code> is changed,
+	 *       contexts (since 1.147.0), unless only <code>search</code> (since 1.147.0) or
+	 *       <code>groupLevels</code> (since 1.154.0) are changed,
+	 *     <li> <code>groupLevels</code> is changed while there are inactive contexts at the end of
+	 *       the list,
 	 *     <li> a recursive hierarchy is requested, but the model does not use the
 	 *       <code>autoExpandSelect</code> parameter,
 	 *     <li> the binding is part of a {@link #create deep create} because it is relative to a
@@ -5317,9 +5352,16 @@ sap.ui.define([
 			throw new Error("Cannot combine Filter.NONE with $$aggregation");
 		}
 		if (this.iCreatedContexts
-				&& !this.isUnchangedParameter("$$aggregation", oAggregation, ["search"])
+				&& !this.isUnchangedParameter("$$aggregation", oAggregation,
+					["groupLevels", "search"])
 			|| this.hasPendingChanges()) {
 			throw new Error("Cannot set $$aggregation due to pending changes");
+		}
+		if (oAggregation?.groupLevels?.length && this.bFirstCreateAtEnd
+				&& this.aContexts.slice(0, this.iCreatedContexts)
+					.some((oContext) => oContext.isInactive())) {
+			throw new Error("Must not set groupLevels when having inactive contexts at the end: "
+				+ this);
 		}
 		const bOldUseCase = useCase(this.mParameters.$$aggregation);
 		const bNewUseCase = useCase(oAggregation);
@@ -5418,6 +5460,9 @@ sap.ui.define([
 	 *   Whether to force setting the outdated flags. Either use <code>sForce</code> or
 	 *   <code>aPaths</code>. Supported values are:
 	 *   - "both": force setting the outdated flags at the grand total and the header context
+	 *   - "delete": delete in data aggregation with visual grouping, sets the outdated flag at the
+	 *     header context (which also affects subtotals) only in case of visual grouping; MUST not
+	 *     be combined with <code>aPaths</code> or <code>bNoRequest</code>
 	 *   - "header": force setting the outdated flag at the header context
 	 *   - "" or undefined, the outdated flags are set only if needed
 	 * @param {string[]} [aPaths]
@@ -5438,13 +5483,16 @@ sap.ui.define([
 	ODataListBinding.prototype.setOutdated = function (sForce, aPaths, bNoRequest) {
 		if (_Helper.isDataAggregation(this.mParameters)) {
 			const oAggregation = this.mParameters.$$aggregation;
-			const bGrandTotalOutdated = sForce === "both"
-				|| this.mParameters.$search
-				|| oAggregation.search
-				|| Object.keys(this.mParameters).some((sKey) => sKey[0] !== "$")
-				|| this.isFilteredBy(aPaths);
-			const bHeaderContextOutdated = sForce === "header" || bGrandTotalOutdated
-				|| this.isSortedBy(aPaths);
+			const bGrandTotalOutdated = sForce === "delete"
+				? false
+				: sForce === "both"
+					|| this.mParameters.$search || oAggregation.search
+					|| Object.keys(this.mParameters).some((sKey) => sKey[0] !== "$")
+					|| this.isFilteredBy(aPaths);
+			const bHeaderContextOutdated = oAggregation.groupLevels.length > 0
+				|| (sForce === "delete"
+					? false
+					: bGrandTotalOutdated || sForce === "header" || this.isSortedBy(aPaths));
 			if (bNoRequest
 					&& (bHeaderContextOutdated
 					|| _AggregationHelper.isUsedForGrandTotal(aPaths, oAggregation.aggregate))) {
@@ -5455,6 +5503,7 @@ sap.ui.define([
 			}
 			if (bHeaderContextOutdated) {
 				this.oHeaderContext.setOutdated(true);
+				this.oCache.setSubtotalsOutdated?.();
 			}
 		}
 	};

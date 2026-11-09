@@ -50,7 +50,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @constructor
 		 * @private
@@ -151,24 +151,6 @@ function(
 
 		EnabledPropagator.call(SplitButton.prototype);
 
-		SplitButton.prototype.onAfterRendering = function() {
-			var oTextButtonRef = this._getTextButton().getDomRef(),
-				oArrowButtonRef = this._getArrowButton().getDomRef();
-
-			oTextButtonRef.setAttribute("tabindex", "-1");
-			oArrowButtonRef.setAttribute("tabindex", "-1");
-
-			if (TooltipEnablement.isEnhancedTooltipEnabled()) {
-				return;
-			}
-
-			if (this.getTooltip()) {
-				oTextButtonRef.removeAttribute("title");
-			}
-			oTextButtonRef.removeAttribute("aria-describedby");
-			oArrowButtonRef.removeAttribute("aria-describedby");
-		};
-
 		SplitButton.prototype._handleAction = function(oEvent) {
 			const oOriginalEvent = oEvent.getParameter("originalEvent");
 			const sPressedButtonCode = oOriginalEvent?.keyCode;
@@ -222,6 +204,20 @@ function(
 					press: this._handleAction.bind(this)
 				}).addStyleClass('sapMSBText');
 
+				oCtrl.addEventDelegate({
+					onAfterRendering: function() {
+						var oDomRef = oCtrl.getDomRef();
+						if (!oDomRef) { return; }
+						oDomRef.setAttribute("tabindex", "-1");
+						if (!TooltipEnablement.isEnhancedTooltipEnabled()) {
+							if (this.getTooltip()) {
+								oDomRef.removeAttribute("title");
+							}
+							oDomRef.removeAttribute("aria-describedby");
+						}
+					}.bind(this)
+				});
+
 				this.setAggregation("_textButton", oCtrl);
 			}
 
@@ -239,6 +235,18 @@ function(
 					tooltip: Library.getResourceBundleFor("sap.m").getText("SPLIT_BUTTON_ARROW_TOOLTIP"),
 					ariaHasPopup: coreLibrary.aria.HasPopup.Menu
 				}).addStyleClass("sapMSBArrow");
+
+				oCtrl.addEventDelegate({
+					onAfterRendering: function() {
+						var oDomRef = oCtrl.getDomRef();
+						if (!oDomRef) { return; }
+						oDomRef.setAttribute("tabindex", "-1");
+						if (!TooltipEnablement.isEnhancedTooltipEnabled()) {
+							oDomRef.removeAttribute("aria-describedby");
+						}
+					}
+				});
+
 				this.setAggregation("_arrowButton", oCtrl);
 			}
 

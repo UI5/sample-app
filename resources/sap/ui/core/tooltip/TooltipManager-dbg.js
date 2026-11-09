@@ -30,7 +30,7 @@ sap.ui.define([],
 		 * {@link sap.ui.core.tooltip.TooltipEventTrigger}.
 		 *
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @namespace
 		 * @since 1.151

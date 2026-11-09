@@ -3,9 +3,6 @@
 /* Evening Horizon theme                          */
 /* ============================================== */
 
-@_sap_m_WizardProgressNavigator_StepUnderlineHeight: 0.188rem;
-@_sap_m_WizardProgressNavigator_BoxShadow: 0.0625rem;
-
 .sapMWizardProgressNav {
 	position: absolute;
 	z-index: 1;
@@ -31,7 +28,7 @@
 }
 
 .sapMWizardProgressNavStep[data-sap-ui-wpn-step-current='true'] .sapMWizardProgressNavStepCircle::after {
-	height: @_sap_m_WizardProgressNavigator_StepUnderlineHeight;
+	height: var(--_sap_m_WizardProgressNavigator_StepUnderlineHeight);
 	background: var(--sapSelectedColor);
 	content: '';
 	display: block;
@@ -113,6 +110,7 @@
 	}
 }
 
-.sapMWizardProgressNavStep:focus .sapMWizardProgressNavStepContainer {
+html.sap-desktop .sapMWizardProgressNavStep:focus .sapMWizardProgressNavStepContainer,
+.sapMWizardProgressNavStep:focus-visible .sapMWizardProgressNavStepContainer {
 	border-radius: 8px;
 }

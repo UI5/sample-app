@@ -175,8 +175,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.153.0
-	 * @version 1.153.0
+	 * @version 1.154.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -1493,7 +1493,7 @@ sap.ui.define([
 	 */
 
 	// ============================================================
-	// High-zoom (≤320px) overrides for range mode
+	// High-zoom (≤300px) overrides for range mode
 	// ============================================================
 
 	/**

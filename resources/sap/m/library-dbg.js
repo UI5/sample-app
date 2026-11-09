@@ -77,14 +77,14 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @since 1.4
 	 * @public
 	 */
 	var thisLib = Library.init({
 		apiVersion: 2,
 		name : "sap.m",
-		version: "1.153.0",
+		version: "1.154.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		...{
@@ -158,9 +158,12 @@ sap.ui.define([
 			"sap.m.LoadState",
 			"sap.m.MenuButtonMode",
 			"sap.m.MultiSelectMode",
+			"sap.m.NumericInputStepModeType",
+			"sap.m.NumericInputValidationMode",
 			"sap.m.ObjectHeaderPictureShape",
 			"sap.m.ObjectMarkerType",
 			"sap.m.ObjectMarkerVisibility",
+			"sap.m.ObjectNumberDisplayMode",
 			"sap.m.OverflowToolbarPriority",
 			"sap.m.P13nPopupMode",
 			"sap.m.P13nPanelType",
@@ -326,6 +329,7 @@ sap.ui.define([
 			"sap.m.NavContainer",
 			"sap.m.NewsContent",
 			"sap.m.NumericContent",
+			"sap.m.NumericInput",
 			"sap.m.NotificationList",
 			"sap.m.NotificationListBase",
 			"sap.m.NotificationListItem",
@@ -2820,7 +2824,7 @@ sap.ui.define([
 	 *
 	 * @enum {string}
 	 * @public
-	 * @ui5-experimental-since 1.121
+	 * @since 1.121
 	 */
 	thisLib.IconTabFilterInteractionMode = {
 
@@ -4102,7 +4106,15 @@ sap.ui.define([
 		 * A section of a page, that is important enough to be included in a page summary or table of contents.
 		 * @public
 		 */
-		Region: "Region"
+		Region: "Region",
+
+		/**
+		 * No ARIA role is set on the Panel container. Use this when the Panel is purely
+		 * presentational and should not be exposed as a landmark region.
+		 * @public
+		 * @since 1.154
+		 */
+		None: "None"
 	};
 
 	/**
@@ -5397,6 +5409,39 @@ sap.ui.define([
 
 
 	/**
+	 * Display modes of the {@link sap.m.ObjectNumber} control.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.154
+	 */
+	thisLib.ObjectNumberDisplayMode = {
+
+		/**
+		 * The control displays a number and unit in the standard way.
+		 * @public
+		 */
+		Default : "Default",
+
+		/**
+		 * The control acts as a currency value — numbers are formatted via <code>NumberFormat.getCurrencyInstance</code>,
+		 * the unit is resolved to a currency symbol, and column alignment is managed via CSS.
+		 * @public
+		 */
+		Currency : "Currency",
+
+		/**
+		 * The control acts as a measurement value — numbers are formatted via <code>NumberFormat.getUnitInstance</code>,
+		 * decimals are aligned to <code>maxPrecision</code>, the raw unit string is shown as-is, and column alignment
+		 * is managed via CSS. Decimal alignment across rows assumes homogeneous units within a column.
+		 * @public
+		 */
+		Unit : "Unit"
+
+	};
+
+
+	/**
 	 * Directions for swipe event.
 	 *
 	 * @enum {string}
@@ -6075,6 +6120,54 @@ sap.ui.define([
 		 * @since 1.109
 		 */
 		SelectAll: "SelectAll"
+	};
+
+	/**
+	 * Available step modes for {@link sap.m.NumericInput}.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-experimental-since 1.154
+	 */
+	thisLib.NumericInputStepModeType = {
+
+		/**
+		 * Choosing increase/decrease button will add/subtract the <code>step</code> value
+		 * to/from the current value.
+		 * @public
+		 */
+		AdditionAndSubtraction: "AdditionAndSubtraction",
+
+		/**
+		 * Pressing increase/decrease button will increase/decrease the current
+		 * <code>value</code> to the closest number that is divisible by the <code>step</code>.
+		 * @public
+		 */
+		Multiple: "Multiple"
+
+	};
+
+	/**
+	 * Available validation modes for {@link sap.m.NumericInput}.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-experimental-since 1.154
+	 */
+	thisLib.NumericInputValidationMode = {
+
+		/**
+		 * Validation happens on <code>FocusOut</code>.
+		 * @public
+		 */
+		FocusOut: "FocusOut",
+
+		/**
+		 * Validation happens on <code>LiveChange</code>.
+		 * @public
+		 */
+		LiveChange: "LiveChange"
+
 	};
 
 	thisLib.plugins = thisLib.plugins || {};
@@ -7147,9 +7240,12 @@ sap.ui.define([
 	DataType.registerEnum("sap.m.LoadState", thisLib.LoadState);
 	DataType.registerEnum("sap.m.MenuButtonMode", thisLib.MenuButtonMode);
 	DataType.registerEnum("sap.m.MultiSelectMode", thisLib.MultiSelectMode);
+	DataType.registerEnum("sap.m.NumericInputStepModeType", thisLib.NumericInputStepModeType);
+	DataType.registerEnum("sap.m.NumericInputValidationMode", thisLib.NumericInputValidationMode);
 	DataType.registerEnum("sap.m.ObjectHeaderPictureShape", thisLib.ObjectHeaderPictureShape);
 	DataType.registerEnum("sap.m.ObjectMarkerType", thisLib.ObjectMarkerType);
 	DataType.registerEnum("sap.m.ObjectMarkerVisibility", thisLib.ObjectMarkerVisibility);
+	DataType.registerEnum("sap.m.ObjectNumberDisplayMode", thisLib.ObjectNumberDisplayMode);
 	DataType.registerEnum("sap.m.OverflowToolbarPriority", thisLib.OverflowToolbarPriority);
 	DataType.registerEnum("sap.m.P13nPopupMode", thisLib.P13nPopupMode);
 	DataType.registerEnum("sap.m.P13nPanelType", thisLib.P13nPanelType);

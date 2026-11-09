@@ -94,7 +94,7 @@ sap.ui.define([
 	 * @implements sap.m.IconTab
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -163,7 +163,7 @@ sap.ui.define([
 
 			/**
 			 * Specifies the interaction mode.
-			 * @ui5-experimental-since 1.121
+			 * @since 1.121
 			 */
 			interactionMode : {type : "sap.m.IconTabFilterInteractionMode", group : "Behavior", defaultValue : IconTabFilterInteractionMode.Auto}
 		},
@@ -646,7 +646,6 @@ sap.ui.define([
 		if (this.getItems().length && bIsSelectable) {
 
 			oRM.openStart("span").class("sapMITBFilterExpandBtnSeparator")
-				.accessibilityState({ role: "separator" })
 				.openEnd()
 			.close("span");
 
@@ -956,6 +955,13 @@ sap.ui.define([
 				placement: PlacementType.VerticalPreferredBottom,
 				ariaLabelledBy: this._isOverflow() ? InvisibleText.getStaticId("sap.m", this._getOverflowPopoverAccessibleNameLabel()) : InvisibleText.getStaticId("sap.m", this._getSubItemsPopoverAccessibleNameLabel())
 			}).addStyleClass("sapMITBFilterPopover");
+
+			// The popover content (subsection select list) must never be a target for
+			// Key User Adaptation / flex changes. Prevent RTA from adapting it, same as
+			// sap.m.VariantManagement and sap.m.p13n.Popup do for their popups.
+			this._oPopover.isPopupAdaptationAllowed = function () {
+				return false;
+			};
 
 			this._oPopover.attachAfterClose(function () {
 				this._getSelectList().destroyItems();

@@ -78,7 +78,7 @@ function(
 	 * @implements sap.ui.core.Label, sap.ui.core.IShrinkable, sap.ui.core.IAccessKeySupport, sap.ui.core.ILabelable
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -210,7 +210,7 @@ function(
 
 		return {
 			description: sDescription,
-			required: this.isRequired()
+			required: this._isInColumnHeaderContext ? false : this.isRequired()
 		};
 	};
 

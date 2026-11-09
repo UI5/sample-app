@@ -68,7 +68,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -224,17 +224,16 @@ function(
 		}
 
 		if (!bLessDetails) {
-			if (oAccInfo.type) {
-				if (oAccInfo.required === true) {
-					sText += oBundle.getText("ELEMENT_REQUIRED") + " ";
-				}
-				if (oAccInfo.enabled === false) {
-					sText += oBundle.getText("CONTROL_DISABLED") + " ";
-				}
-				if (oAccInfo.editable === false) {
-					sText += oBundle.getText("CONTROL_READONLY") + " ";
-				}
-			} else {
+			if (oAccInfo.required === true) {
+				sText += oBundle.getText("ELEMENT_REQUIRED") + " ";
+			}
+			if (oAccInfo.enabled === false) {
+				sText += oBundle.getText("CONTROL_DISABLED") + " ";
+			}
+			if (oAccInfo.editable === false) {
+				sText += oBundle.getText("CONTROL_READONLY") + " ";
+			}
+			if (!oAccInfo.type) {
 				const sTooltip = oControl.getTooltip_AsString();
 				if (sTooltip && !sText.includes(sTooltip)) {
 					sText += sTooltip + " ";

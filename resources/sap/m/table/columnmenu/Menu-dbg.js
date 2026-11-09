@@ -33,9 +33,11 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/dom/containsOrEquals",
 	"sap/ui/events/ControlEvents",
+	"sap/ui/events/KeyCodes",
 	"sap/base/strings/capitalize",
 	"sap/m/p13n/AbstractContainerItem",
 	"sap/m/p13n/Container",
+	"sap/m/table/Util",
 	"sap/m/table/columnmenu/MenuBase",
 	"sap/m/table/columnmenu/MenuRenderer"
 ], function (
@@ -68,9 +70,11 @@ sap.ui.define([
 	jQuery,
 	containsOrEquals,
 	ControlEvents,
+	KeyCodes,
 	capitalize,
 	AbstractContainerItem,
 	Container,
+	TableUtil,
 	MenuBase,
 	MenuRenderer
 ) {
@@ -99,7 +103,7 @@ sap.ui.define([
 	 * @extends sap.m.table.columnmenu.MenuBase
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @public
 	 * @since 1.110
@@ -369,7 +373,6 @@ sap.ui.define([
 			horizontalScrolling: false,
 			verticalScrolling: true,
 			afterClose: [this._onPopoverAfterClose, this],
-			ariaLabelledBy: this.getId() + "-title",
 			customHeader: new OverflowToolbar({
 				content: [
 					new Title({id: this.getId() + "-title", text: this._getResourceText("table.COLUMNMENU_TITLE"), level: coreLibrary.TitleLevel.H1}),
@@ -391,10 +394,20 @@ sap.ui.define([
 		this._oPopover.addStyleClass("sapMTCMenuPopup");
 
 		this._oPopover.addEventDelegate({
-			"onsapfocusleave": this.handleFocusLeave
+			"onsapfocusleave": this.handleFocusLeave,
+			"onkeydown": this._onKeyDown
 		}, this);
 
 		this._oPopover._oControl.oPopup.setAutoClose(false);
+	};
+
+	Menu.prototype._onKeyDown = function(oEvent) {
+		const bCtrl = oEvent.ctrlKey || oEvent.metaKey;
+		const bIsCtrlA = bCtrl && !oEvent.shiftKey && !oEvent.altKey && oEvent.keyCode === KeyCodes.A;
+		const bIsCtrlShiftA = bCtrl && oEvent.shiftKey && !oEvent.altKey && oEvent.keyCode === KeyCodes.A;
+		if (bIsCtrlShiftA || (bIsCtrlA && !TableUtil.isTextInputElement(oEvent.target))) {
+			oEvent.preventDefault();
+		}
 	};
 
 	Menu.prototype.handleFocusLeave = function(oEvent){

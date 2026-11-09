@@ -80,7 +80,7 @@ sap.ui.define([
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -225,7 +225,7 @@ sap.ui.define([
 			 */
 			_currentPicker : {type : "string", group : "Appearance", visibility: "hidden"},
 
-			/** Whether the high-zoom (≤320px) picker is active. @private */
+			/** Whether the high-zoom (≤300px) picker is active. @private */
 			_highZoomActive : {type : "boolean", defaultValue : false, visibility: "hidden"},
 
 			/**
@@ -395,6 +395,8 @@ sap.ui.define([
 		YEAR_RANGE_PICKER: "yearRangePicker"  // represents the "yearRangePicker" aggregation
 	};
 
+	const HIGH_ZOOM_VIEWPORT_THRESHOLD = 300;
+
 	Calendar.prototype.init = function(){
 
 		this._iBreakPointTablet = Device.media._predefinedRangeSets[Device.media.RANGESETS.SAP_STANDARD_EXTENDED].points[0];
@@ -440,7 +442,7 @@ sap.ui.define([
 		this._bSkipCancelButtonRendering = false;
 		this._bActionTriggeredFromSecondHeader = false;
 
-		// High-zoom (≤320px) support — only for standalone Calendar (not embedded in DatePicker)
+		// High-zoom (≤300px) support — only for standalone Calendar (not embedded in DatePicker)
 		this._oHZPicker = null;
 		this._bHZListenersRegistered = false;
 		this._fnHZResizeHandler = this._onHZResize.bind(this);
@@ -3207,20 +3209,20 @@ sap.ui.define([
 	}
 
 	// ============================================================
-	// High-zoom (≤320px) support for standalone Calendar
-	// At ≤320px a DatePicker (or DateRangeSelection for intervalSelection)
+	// High-zoom (≤300px) support for standalone Calendar
+	// At ≤300px a DatePicker (or DateRangeSelection for intervalSelection)
 	// is shown instead of the calendar grid. DatePicker automatically
 	// activates its own DateHighZoomInputs layout at that viewport width.
 	// ============================================================
 
 	/**
-	 * Returns true when the viewport is ≤ 320 px.
+	 * Returns true when the viewport is ≤ 300 px.
 	 * @returns {boolean}
 	 * @private
 	 */
 	Calendar.prototype._isHighZoom = function() {
 		const iWidth = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
-		return iWidth <= 320;
+		return iWidth <= HIGH_ZOOM_VIEWPORT_THRESHOLD;
 	};
 
 	/**

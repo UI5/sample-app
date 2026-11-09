@@ -5,9 +5,9 @@
  */
 sap.ui.define(
   [
-    "sap/ui/core/webc/WebComponent",
+    "sap/f/gen/ui5/webcomponents/dist/ListItemGroupBase",
     "sap/f/gen/ui5/webcomponents",
-    "sap/f/thirdparty/SearchItemGroup"
+    "sap/f/thirdparty/UserSettingsAppearanceViewGroup"
   ],
   function (WebComponentBaseClass) {
     "use strict";
@@ -22,7 +22,7 @@ sap.ui.define(
      * ### ES6 Module Import
      * `import "@ui5/webcomponents/dist/ListItemGroup.js";`
      *
-     * @extends sap.ui.core.webc.WebComponent
+     * @extends module:sap/f/gen/ui5/webcomponents/dist/ListItemGroupBase
      * @constructor
      * @private
      * @ui5-restricted sap.ushell,sap.esh.search.ui
@@ -33,7 +33,7 @@ sap.ui.define(
       "sap.f.gen.ui5.webcomponents.dist.ListItemGroup",
       {
         metadata: {
-          tag: "ui5-li-group-0b2c601f",
+          tag: "ui5-li-group-ad055745",
 
           namespace: "sap.f.gen.ui5.webcomponents",
 
@@ -51,7 +51,7 @@ sap.ui.define(
              */
             headerAccessibleName: { type: "string", mapping: "property" },
             /**
-             * Defines the header text of the <code>ui5-li-group</code>.
+             * Defines the header text of the group.
              */
             headerText: { type: "string", mapping: "property" },
             /**
@@ -89,7 +89,7 @@ sap.ui.define(
 
           aggregations: {
             /**
-             * Defines the items of the <code>ui5-li-group</code>.
+             * Defines the items of the group.
              * @type module:sap/f/gen/ui5/webcomponents/dist/ListItemBase
              */
             items: {

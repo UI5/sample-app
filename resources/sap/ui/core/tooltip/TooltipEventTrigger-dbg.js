@@ -52,7 +52,7 @@ sap.ui.define([
 		 * one per focus target — each showing its own tooltip.
 		 *
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @extends sap.ui.base.Object
 		 *

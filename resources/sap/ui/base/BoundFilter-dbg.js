@@ -31,9 +31,9 @@ sap.ui.define([
 	 * data bindings and is added to the control hierarchy in the "dependents" aggregation of the
 	 * control which has created the aggregation binding.
 	 *
-	 * @extends sap.ui.core.ManagedObject
+	 * @extends sap.ui.base.ManagedObject
 	 *
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @private
 	 * @ui5-restricted sap.ui.model

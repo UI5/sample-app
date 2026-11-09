@@ -224,7 +224,7 @@ sap.ui.define([
 				oCommand,
 				oOldParent = this.getParent(),
 				oParentData,
-				sShortcut,
+				vShortcut,
 				bIsRegistered;
 
 			function getParentData() {
@@ -249,10 +249,10 @@ sap.ui.define([
 				if (this.getVisible()) {
 					if (oParent && oParent !== oOldParent) {
 						//register Shortcut
-						sShortcut = oCommand.shortcut;
-						bIsRegistered = Shortcut.isRegistered(this.getParent(), sShortcut);
+						vShortcut = oCommand.shortcut;
+						bIsRegistered = Shortcut.isRegistered(this.getParent(), vShortcut);
 						if (!bIsRegistered) {
-							Shortcut.register(oParent, sShortcut, this.trigger.bind(this));
+							Shortcut.register(oParent, vShortcut, this.trigger.bind(this));
 						}
 
 						if (oParent.getModel("$cmd")) {
@@ -284,10 +284,10 @@ sap.ui.define([
 					}
 					if (oOldParent && oOldParent != oParent) {
 						//unregister shortcut
-						sShortcut = oCommand.shortcut;
-						bIsRegistered = Shortcut.isRegistered(oOldParent, sShortcut);
+						vShortcut = oCommand.shortcut;
+						bIsRegistered = Shortcut.isRegistered(oOldParent, vShortcut);
 						if (bIsRegistered) {
-							Shortcut.unregister(oOldParent, oCommand.shortcut);
+							Shortcut.unregister(oOldParent, vShortcut);
 						}
 						this._cleanupContext(oOldParent);
 					}
@@ -344,13 +344,13 @@ sap.ui.define([
 
 			if (oParent) {
 				var oCommand = this._getCommandInfo(),
-					sShortcut = oCommand.shortcut,
-					bIsRegistered = Shortcut.isRegistered(oParent, sShortcut);
+					vShortcut = oCommand.shortcut,
+					bIsRegistered = Shortcut.isRegistered(oParent, vShortcut);
 
 				if (bValue && !bIsRegistered) {
-					Shortcut.register(oParent, sShortcut, this.trigger.bind(this));
+					Shortcut.register(oParent, vShortcut, this.trigger.bind(this));
 				} else if (!bValue && bIsRegistered) {
-					Shortcut.unregister(oParent, sShortcut);
+					Shortcut.unregister(oParent, vShortcut);
 				}
 			}
 			//update $cmd Model

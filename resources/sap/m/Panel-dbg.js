@@ -69,7 +69,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @constructor
 	 * @public
@@ -131,7 +131,8 @@ sap.ui.define([
 
 				/**
 				 * This property is used to set the accessible aria role of the Panel.
-				 * Depending on the usage you can change the role from the default <code>Form</code> to <code>Region</code> or <code>Complementary</code>.
+				 * Depending on the usage you can change the role from the default <code>Form</code> to <code>Region</code>, <code>Complementary</code>, or <code>None</code>
+				 * (no role is rendered, when the Panel is purely presentational).
 				 * @since 1.46
 				 */
 				accessibleRole: {type: "sap.m.PanelAccessibleRole", group: "Accessibility", defaultValue: PanelAccessibleRole.Form},
@@ -261,7 +262,12 @@ sap.ui.define([
 		}
 
 		if (ControlBehavior.isAccessibilityEnabled()) {
-			this.$().attr("role", this.getAccessibleRole().toLowerCase());
+			var sRole = this.getAccessibleRole();
+			if (sRole === PanelAccessibleRole.None) {
+				this.$().removeAttr("role");
+			} else {
+				this.$().attr("role", sRole.toLowerCase());
+			}
 		}
 	};
 	Panel.prototype.onAfterRendering = function () {

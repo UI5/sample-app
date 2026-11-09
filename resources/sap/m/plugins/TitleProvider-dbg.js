@@ -38,7 +38,7 @@ sap.ui.define(["./PluginBase",  "sap/ui/core/Element", "sap/ui/base/ManagedObjec
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 * @private
 	 * @since 1.146
 	 * @alias sap.m.plugins.TitleProvider
@@ -165,6 +165,13 @@ sap.ui.define(["./PluginBase",  "sap/ui/core/Element", "sap/ui/base/ManagedObjec
 
 		const sBindingName = this.getConfig("bindingName");
 		const oBinding = oControl.getBinding(sBindingName);
+
+		// A suspended binding must not be queried for its count (e.g. ODataListBinding#getCount
+		// throws when the root binding is suspended). Keep the current title until it resumes.
+		if (oBinding?.getRootBinding?.()?.isSuspended()) {
+			return;
+		}
+
 		const iTotalCount = oBinding ? oBinding.getCount() ?? -1 : undefined;
 		oTitle.setTotalCount(iTotalCount);
 

@@ -15,27 +15,30 @@ sap.ui.define([
 
 
 	// shortcut for sap.ui.core.ValueState
-	var ValueState = coreLibrary.ValueState;
+	const ValueState = coreLibrary.ValueState;
 
 	// shortcut for sap.ui.core.TextDirection
-	var TextDirection = coreLibrary.TextDirection;
+	const TextDirection = coreLibrary.TextDirection;
 
 	// shortcut for sap.m.ReactiveAreaMode
-	var ReactiveAreaMode = library.ReactiveAreaMode;
+	const ReactiveAreaMode = library.ReactiveAreaMode;
+
+	// shortcut for sap.m.ObjectNumberDisplayMode
+	const ObjectNumberDisplayMode = library.ObjectNumberDisplayMode;
 
 	/**
 	 * String to prefix CSS class for number status.
 	 */
-	var _sCSSPrefixObjNumberStatus = 'sapMObjectNumberStatus';
+	const _sCSSPrefixObjNumberStatus = 'sapMObjectNumberStatus';
 
 	// shortcut for sap.m.EmptyIndicatorMode
-	var EmptyIndicatorMode = library.EmptyIndicatorMode;
+	const EmptyIndicatorMode = library.EmptyIndicatorMode;
 
 	/**
 	 * ObjectNumber renderer.
 	 * @namespace
 	 */
-	var ObjectNumberRenderer = {
+	const ObjectNumberRenderer = {
 		apiVersion: 2
 	};
 
@@ -50,10 +53,17 @@ sap.ui.define([
 			sTextDir = oON.getTextDirection(),
 			sTextAlign = oON.getTextAlign(),
 			sAriaLabelIds = oON._generateSelfLabellingIds(),
+			sDisplayMode = oON.getDisplayMode(),
 			oAccAttributes = {};
 
 		oRm.openStart("div", oON);
 		oRm.class("sapMObjectNumber");
+
+		if (sDisplayMode === ObjectNumberDisplayMode.Currency) {
+			oRm.class("sapMObjectNumberCurrency");
+		} else if (sDisplayMode === ObjectNumberDisplayMode.Unit) {
+			oRm.class("sapMObjectNumberUnitMode");
+		}
 
 		if (oON._isActive()) {
 			oRm.class("sapMObjectNumberActive");
@@ -84,7 +94,7 @@ sap.ui.define([
 
 		sTextAlign = Renderer.getTextAlign(sTextAlign, sTextDir);
 
-		if (sTextAlign) {
+		if (sDisplayMode === ObjectNumberDisplayMode.Default && sTextAlign) {
 			oRm.style("text-align", sTextAlign);
 		}
 
@@ -132,22 +142,18 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectNumberRenderer.renderText = function(oRm, oON) {
-		var sUnit = oON.getUnit();
-
-		/**
-		 * @deprecated as of version 1.16.1
-		 */
-		if (!sUnit) {
-			sUnit = oON.getNumberUnit();
-		}
+		const bFormattedMode = oON.getDisplayMode() !== ObjectNumberDisplayMode.Default,
+			sNumber = oON._getFormattedNumber();
 
 		oRm.openStart("span", oON.getId() + "-number");
 		oRm.class("sapMObjectNumberText");
-		oRm.openEnd();
-		oRm.text(oON.getNumber());
-		if (sUnit !== "") {
-			oRm.text(" ");
+		if (bFormattedMode) {
+			oRm.attr("dir", "ltr");
 		}
+		oRm.openEnd();
+
+		oRm.text(sNumber);
+		oRm.text(oON._getSpaceSeparator());
 		oRm.close("span");
 	};
 
@@ -157,16 +163,10 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectNumberRenderer.renderUnit = function(oRm, oON) {
-		var sUnit = oON.getUnit();
+		const sUnit = oON._getUnit(),
+			sDisplayMode = oON.getDisplayMode();
 
-		/**
-		 * @deprecated as of version 1.16.1
-		 */
-		if (!sUnit) {
-			sUnit = oON.getNumberUnit();
-		}
-
-		if (sUnit !== "") {
+		if (sUnit !== "" || sDisplayMode === ObjectNumberDisplayMode.Currency) {
 			oRm.openStart("span", oON.getId() + "-unit");
 			oRm.class("sapMObjectNumberUnit");
 			oRm.openEnd();

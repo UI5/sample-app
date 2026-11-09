@@ -193,7 +193,7 @@ sap.ui.define([
 		 * gesture must remain available to open the context menu.
 		 *
 		 * @author SAP SE
-		 * @version 1.153.0
+		 * @version 1.154.0
 		 *
 		 * @extends sap.ui.base.EventProvider
 		 *

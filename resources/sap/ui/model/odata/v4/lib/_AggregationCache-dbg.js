@@ -63,9 +63,11 @@ sap.ui.define([
 		this.iReadLength = undefined;
 		this.iResetCount = 0;
 		this.bKeptFirstLevel = !!oFirstLevel;
+		const bUseMultiLevelExpand = !!oAggregation.expandTo && !oAggregation.hierarchyQualifier;
 		// Whether this cache is a unified cache, using oFirstLevel with ExpandLevels instead of
 		// separate group level caches
-		this.bUnifiedCache = this.bKeptFirstLevel || !!oAggregation.createInPlace
+		this.bUnifiedCache = bUseMultiLevelExpand || this.bKeptFirstLevel
+			|| !!oAggregation.createInPlace
 			|| oAggregation.expandTo >= Number.MAX_SAFE_INTEGER;
 
 		this.doReset(oAggregation, bHasGrandTotal, oFirstLevel);
@@ -73,8 +75,12 @@ sap.ui.define([
 		this.removeKeptElement = this.oFirstLevel.removeKeptElement; // @borrows ...
 		this.oTreeState = new _TreeState(
 			(oNode) => _Helper.getKeyFilter(oNode, this.sMetaPath, this.getTypes()),
+			// eslint-disable-next-line no-nested-ternary
 			oAggregation.$NodeProperty
-				? (oNode) => _Helper.drillDown(oNode, oAggregation.$NodeProperty)
+			? (oNode) => _Helper.drillDown(oNode, oAggregation.$NodeProperty)
+			: bUseMultiLevelExpand
+				? (oNode) => oAggregation.groupLevels.slice(0, oNode["@$ui5.node.level"])
+					.map((sGroup) => oNode[sGroup])
 				: () => {});
 		if (oFirstLevel) {
 			if (oFirstLevel.aElements.$deleted?.length
@@ -147,6 +153,7 @@ sap.ui.define([
 			this.createCountPromise();
 		}
 
+		const iResetCount = this.iResetCount;
 		const fnDelete = oParentCache
 			? oParentCache._delete.bind(oParentCache)
 			: _Cache.prototype._delete.bind(this); // "super" call
@@ -159,7 +166,7 @@ sap.ui.define([
 			this.readCount(this.oRequestor.lockGroup("$auto", this))
 		]).then(() => {
 			this.oTreeState.delete(oElement, this.removeKeptElement.bind(this));
-			if (this.aElements.length === 0) {
+			if (iResetCount !== this.iResetCount) {
 				return; // concurrent side-effects refresh takes care of cleanup
 			}
 
@@ -176,7 +183,8 @@ sap.ui.define([
 			const iOffset = iDescendants + 1;
 			if (oParentCache === this.oFirstLevel) {
 				this.adjustDescendantCount(oElement, iIndex, -iOffset);
-			} else if (oParentCache && !oParentCache.getValue("$count")) {
+			} else if (oParentCache && !oParentCache.getValue("$count")
+					&& this.oAggregation.hierarchyQualifier) {
 				// make parent a leaf (the direct predecessor)
 				this.makeLeaf(this.aElements[iIndex - 1]);
 			}
@@ -742,21 +750,32 @@ sap.ui.define([
 			oCache) {
 		var oAggregation = this.oAggregation,
 			iLevel = oGroupNode ? oGroupNode["@$ui5.node.level"] + 1 : 1,
-			aAllProperties, aGroupBy, bLeaf, sParentFilter, mQueryOptions, bTotal;
+			aAllProperties, aGroupBy, bLeaf, sParentFilter, mQueryOptions, oSubtotalUnits, bTotal;
 
 		if (oAggregation.hierarchyQualifier) {
 			mQueryOptions = Object.assign({}, this.mQueryOptions);
 		} else {
-			aAllProperties = _AggregationHelper.getAllProperties(oAggregation);
 			bLeaf = iLevel > oAggregation.groupLevels.length;
-			aGroupBy = bLeaf
+			aAllProperties
+				= _AggregationHelper.getAllProperties(oAggregation, this.mQueryOptions,
+					bLeaf || !!oAggregation.expandTo);
+			aGroupBy = bLeaf || oAggregation.expandTo
 				? oAggregation.groupLevels.concat(Object.keys(oAggregation.group).sort())
 				: oAggregation.groupLevels.slice(0, iLevel);
-			mQueryOptions
-				= _AggregationHelper.filterOrderby(this.mQueryOptions, oAggregation, iLevel);
-			bTotal = !bLeaf && Object.keys(oAggregation.aggregate).some(function (sAlias) {
-				return oAggregation.aggregate[sAlias].subtotals;
-			});
+			mQueryOptions = _AggregationHelper.filterOrderby(this.mQueryOptions, oAggregation,
+				oAggregation.expandTo ? 0 : iLevel);
+			bTotal = (oAggregation.expandTo || !bLeaf)
+				&& Object.keys(oAggregation.aggregate).some(function (sAlias) {
+					return oAggregation.aggregate[sAlias].subtotals;
+				});
+			if (oAggregation.expandTo) {
+				oSubtotalUnits = new Set();
+				Object.values(oAggregation.aggregate).forEach(function (oAggregate) {
+					if (oAggregate.subtotals && oAggregate.unit) {
+						oSubtotalUnits.add(oAggregate.unit);
+					}
+				});
+			}
 		}
 		if (oGroupNode) {
 			sParentFilter = _Helper.getPrivateAnnotation(oGroupNode, "filter")
@@ -767,6 +786,7 @@ sap.ui.define([
 				+ (mQueryOptions.$$filterBeforeAggregate
 					? " and (" + mQueryOptions.$$filterBeforeAggregate + ")"
 					: "");
+			delete mQueryOptions.$$leaves; // only needed for the first level cache
 		}
 		if (!bHasConcatHelper) {
 			// Note: UI5__count currently handled only by _ConcatHelper!
@@ -779,10 +799,14 @@ sap.ui.define([
 		} else {
 			oCache = _Cache.create(this.oRequestor, this.sResourcePath, mQueryOptions, true);
 		}
+		// eslint-disable-next-line no-nested-ternary
 		oCache.calculateKeyPredicate = oAggregation.hierarchyQualifier
 			? _AggregationCache.calculateKeyPredicateRH.bind(null, oGroupNode, oAggregation)
-			: _AggregationCache.calculateKeyPredicate.bind(null, oGroupNode, aGroupBy,
-				aAllProperties, bLeaf, bTotal);
+			: oAggregation.expandTo
+				? _AggregationCache.calculateKeyPredicateLevels.bind(null, oAggregation, aGroupBy,
+					aAllProperties, bTotal, oSubtotalUnits)
+				: _AggregationCache.calculateKeyPredicate.bind(null, oGroupNode, aGroupBy,
+					aAllProperties, bLeaf, bTotal, this);
 		if (sParentFilter) {
 			oCache.$parentFilter = sParentFilter;
 		}
@@ -814,6 +838,7 @@ sap.ui.define([
 	 */
 	_AggregationCache.prototype.doReset = function (oAggregation, bHasGrandTotal, oFirstLevel) {
 		this.oAggregation = oAggregation;
+		this.bSubtotalsOutdated = undefined;
 		// early call of _AggregationHelper.buildApply to determine $NodeProperty etc.
 		this.sToString = this.getDownloadUrl("");
 
@@ -839,7 +864,8 @@ sap.ui.define([
 		this.oGrandTotalPromise = bHasGrandTotal
 			? new SyncPromise((resolve) => {
 				aAdditionalRowHandlers.push((oGrandTotal) => {
-					_AggregationHelper.handleGrandTotal(oAggregation, oGrandTotal);
+					_AggregationHelper
+						.handleGrandTotal(oAggregation, oGrandTotal, this.mQueryOptions);
 					resolve(oGrandTotal);
 				});
 			})
@@ -876,8 +902,8 @@ sap.ui.define([
 	 *   If no back-end request is needed, the function is not called.
 	 * @returns {sap.ui.base.SyncPromise<number>}
 	 *   A promise that is resolved with the number of nodes at the next level, 0 if the node or
-	 *   one of its parent is collapsed again before the response arrived, or -1 if the cache needs
-	 *   to be refreshed (a unified cache)
+	 *   one of its ancestors is collapsed again before the response arrived, or -1 if the cache
+	 *   needs to be refreshed (a unified cache)
 	 * @throws {Error}
 	 *   If we cannot silently expand after a previous collapse (via "spliced")
 	 *
@@ -940,6 +966,7 @@ sap.ui.define([
 						that.turnIntoPlaceholder(oElement, sPredicate);
 					} else {
 						that.aElements.$byPredicate[sPredicate] = oElement;
+						that.updateSubtotalsOutdatedAnnotation(oElement);
 						const sTransientPredicate
 							= _Helper.getPrivateAnnotation(oElement, "transientPredicate");
 						if (sTransientPredicate) {
@@ -987,7 +1014,7 @@ sap.ui.define([
 				_Helper.deletePrivateAnnotation(oGroupNode, "spliced");
 				return 0;
 			}
-			if (!iIndex) { // some parent already collapsed again
+			if (!iIndex) { // some ancestor already collapsed again
 				_Helper.setPrivateAnnotation(oGroupNode, "expanding", true);
 				return 0;
 			}
@@ -1021,11 +1048,14 @@ sap.ui.define([
 			}
 			if (bSubtotalsAtBottom) {
 				oSubtotals = Object.assign({}, oSubtotals);
-				_AggregationHelper.setAnnotations(oSubtotals, undefined, true, iLevel,
-					_AggregationHelper.getAllProperties(that.oAggregation));
+				const aAllProperties = _AggregationHelper
+					.getAllProperties(that.oAggregation, that.mQueryOptions, false);
+				_AggregationHelper
+					.setAnnotations(oSubtotals, undefined, true, iLevel, aAllProperties);
 				_Helper.setPrivateAnnotation(oSubtotals, "predicate",
 					_Helper.getPrivateAnnotation(oGroupNode, "predicate").slice(0, -1)
 						+ ",$isTotal=true)");
+				that.updateSubtotalsOutdatedAnnotation(oSubtotals);
 				that.addElements(oSubtotals, iIndex + iCount - 1);
 			}
 
@@ -1152,13 +1182,11 @@ sap.ui.define([
 
 		if (sPath === "$count") {
 			if (this.oCountPromise) {
-				if (this.oAggregation.hierarchyQualifier) {
-					// "$count" cannot be used as change listener path because e.g. #_delete calls
-					// indirectly _Helper.addCount with this.mChangeListeners to update the count of
-					// the root nodes. This count must not be propagated to the listeners. So use a
-					// name similar to "$count" which never conflicts with any other valid path.
-					this.registerChangeListener("./$count", oListener);
-				}
+				// "$count" cannot be used as change listener path because e.g. #_delete calls
+				// indirectly _Helper.addCount with this.mChangeListeners to update the count of
+				// the root nodes. This count must not be propagated to the listeners. So use a
+				// name similar to "$count" which never conflicts with any other valid path.
+				this.registerChangeListener("./$count", oListener);
 				if (oGroupLock === _GroupLock.$cached && this.oCountPromise.$old) {
 					// return the old count promise if the $count is now being requested
 					// synchronously and a new count has already been requested (e.g. when creating
@@ -1274,6 +1302,7 @@ sap.ui.define([
 		} else {
 			mQueryOptions = _AggregationHelper.filterOrderby(mQueryOptions, this.oAggregation);
 		}
+		delete mQueryOptions.$$leaves;
 
 		return _AggregationHelper.buildApply(this.oAggregation, mQueryOptions, 0, true);
 	};
@@ -2096,8 +2125,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reads the count of data (in case of a recursive hierarchy), taking the current filter and
-	 * search into account.
+	 * Reads the count of data (in case of a recursive hierarchy or data aggregation with single
+	 * entities on leaf level), taking the current filter and search into account.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
 	 *   An original lock for the group ID to be used for the GET request, to be cloned via
@@ -2113,28 +2142,40 @@ sap.ui.define([
 	_AggregationCache.prototype.readCount = function (oGroupLock) {
 		var mQueryOptions,
 			fnResolve = this.oCountPromise && this.oCountPromise.$resolve,
-			sResourcePathWithQuery;
+			sResourcePathWithQuery,
+			bSortSystemQueryOptions = !this.oAggregation.hierarchyQualifier;
 
 		if (fnResolve) {
+			if (this.oAggregation.$leafLevelAggregated) {
+				throw new Error("Unsupported on aggregated data");
+			}
 			delete this.oCountPromise.$resolve;
 
 			mQueryOptions = Object.assign({}, this.mQueryOptions);
-			// drop collection related system query options (except $filter, $search)
+			// drop not needed system query options
 			delete mQueryOptions.$apply;
 			delete mQueryOptions.$count;
 			delete mQueryOptions.$expand;
-			// keep mQueryOptions.$filter;
+			if (mQueryOptions.$$filterBeforeAggregate) { // Note: no $filter present in this case
+				mQueryOptions.$filter = mQueryOptions.$$filterBeforeAggregate;
+				delete mQueryOptions.$$filterBeforeAggregate;
+			} // else: keep mQueryOptions.$filter;
 			delete mQueryOptions.$orderby;
+			// Note: _AggregationCache cannot be combined with $search
 			if (this.oAggregation.search) {
-				// Note: A recursive hierarchy cannot be combined with "$search"
 				mQueryOptions.$search = this.oAggregation.search;
 			}
 			delete mQueryOptions.$select;
 			sResourcePathWithQuery = this.sResourcePath + "/$count"
-				+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions);
+				+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, false,
+					bSortSystemQueryOptions);
 
-			return this.oRequestor.request("GET", sResourcePathWithQuery,
-					oGroupLock.getUnlockedCopy())
+			const sGroupId = oGroupLock.getGroupId();
+			const oGroupLock4Request = sGroupId.startsWith("$inactive.")
+				? this.oRequestor.lockGroup(sGroupId.slice(10), oGroupLock.getOwner())
+				: oGroupLock.getUnlockedCopy();
+
+			return this.oRequestor.request("GET", sResourcePathWithQuery, oGroupLock4Request)
 				.then((iCount) => { // Note: iCount is already of type number here
 					fnResolve(iCount);
 					_Helper.fireChange(this.mChangeListeners, "./$count", iCount);
@@ -2377,35 +2418,39 @@ sap.ui.define([
 		if (this.oAggregation.$leafLevelAggregated) {
 			throw new Error("Leaves must not be aggregated");
 		}
-		const oGrandTotal = this.aElements.$byPredicate["()"];
+		let oGrandTotal = this.aElements.$byPredicate["()"];
 		if (!oGrandTotal) {
 			this.setGrandTotalOutdated(true);
-			return;
-		}
-
-		if (oGrandTotal["@$ui5.context.isOutdated"]) {
+			if (this.oGrandTotalPromise.isPending()) {
+				return;
+			}
+		} else if (oGrandTotal["@$ui5.context.isOutdated"]) {
 			return; // don't read grand total, a full refresh is needed
 		}
 
-		let mQueryOptions = {...this.mQueryOptions};
-		// drop not needed system query options; $expand, $filter, $search, and $select must not be
-		// used with grand totals; all filters are contained in $$filterBeforeAggregate
-		delete mQueryOptions.$apply;
-		delete mQueryOptions.$count;
-		delete mQueryOptions.$orderby;
-
-		mQueryOptions = _AggregationHelper.buildApply(this.oAggregation, mQueryOptions, -1);
+		const mQueryOptions
+			= _AggregationHelper.buildApply(this.oAggregation, this.mQueryOptions, -1);
 		const sResourcePathWithQuery = this.sResourcePath
 			+ this.oRequestor.buildQueryString(this.sMetaPath, mQueryOptions, false, false, true);
 		const sGroupId = oGroupLock.getGroupId();
 		const oGroupLock4Request = sGroupId.startsWith("$inactive.")
 			? this.oRequestor.lockGroup(sGroupId.slice(10), oGroupLock.getOwner())
 			: oGroupLock.getUnlockedCopy();
+		const iResetCount = this.iResetCount;
 
 		return this.oRequestor.request("GET", sResourcePathWithQuery, oGroupLock4Request, undefined,
 				undefined, undefined, undefined, undefined, undefined, undefined,
 				{/*mMergeableQueryOptions*/})
 			.then((oResult) => {
+				if (iResetCount !== this.iResetCount) {
+					return; // concurrent side-effects refresh takes care of grand total handling
+				}
+				oGrandTotal = this.aElements.$byPredicate["()"];
+				if (!oGrandTotal) {
+					oGrandTotal = this.oGrandTotalPromise.getResult();
+					this.aElements.length += 1;
+					this.addElements(oGrandTotal, this.aElements.length - 1);
+				}
 				_Helper.updateExisting(this.mChangeListeners, "()", oGrandTotal, oResult.value[0]);
 				const oGrandTotalCopy = _Helper.getPrivateAnnotation(oGrandTotal, "copy");
 				if (oGrandTotalCopy) {
@@ -2469,16 +2514,15 @@ sap.ui.define([
 	 */
 	_AggregationCache.prototype.requestCount = function (oGroupLock) {
 		if (this.oAggregation.hierarchyQualifier || this.oAggregation.groupLevels.length) {
-			// recursive hierarchy has a specific implementation in #readCount, and data aggregation
-			// with groupLevels requires a different approach for requesting the count (oFirstLevel
-			// would not be responsible for single entities)
+			// for recursive hierarchy and data aggregation with groupLevels: use #readCount
 			throw new Error("Unsupported with recursive hierarchy or groupLevels");
 		}
 
 		const mQueryOptions = {...this.oFirstLevel.mQueryOptions};
 		mQueryOptions.$count = true; // may have been removed in #readGap
-		// drop not needed system query options; $expand, $filter, $search, and $select must not be
-		// used with grand totals; all filters are contained in $$filterBeforeAggregate
+		// drop not needed system query options; $filter and $search must not be used with grand
+		// totals; all filters are contained in $$filterBeforeAggregate; $expand/$select are ignored
+		// by #requestCount below anyway
 		delete mQueryOptions.$apply;
 		if (mQueryOptions.$$filterBeforeAggregate) {
 			mQueryOptions.$filter = mQueryOptions.$$filterBeforeAggregate;
@@ -2812,18 +2856,21 @@ sap.ui.define([
 			iCreated = this.aElements.$created = this.oFirstLevel.getCreated();
 		}
 		fnSuper.call(this, {...mKeptElementPredicates}, sGroupId, mQueryOptions);
+		const bUseMultiLevelExpand = !!oAggregation.expandTo && !oAggregation.hierarchyQualifier;
 		if (sGroupId) { // sGroupId means we are in a side-effects refresh
 			this.oBackup.oCountPromise = this.oCountPromise;
 			this.oBackup.oFirstLevel = this.oFirstLevel;
 			this.oBackup.oGrandTotalPromise = this.oGrandTotalPromise;
 			this.oBackup.mKeptElements = {};
+			this.oBackup.bSubtotalsOutdated = this.bSubtotalsOutdated;
 			this.oBackup.bUnifiedCache = this.bUnifiedCache;
-			this.bUnifiedCache = this.bKeptFirstLevel || !!oAggregation.hierarchyQualifier;
+			this.bUnifiedCache = bUseMultiLevelExpand || this.bKeptFirstLevel
+				|| !!oAggregation.hierarchyQualifier;
 		} else {
 			this.oTreeState.reset();
 		}
 		oAggregation = Object.assign({}, oAggregation);
-		oAggregation.$ExpandLevels = this.oTreeState.getExpandLevels();
+		oAggregation.$ExpandLevels = this.oTreeState.getExpandLevels(bUseMultiLevelExpand);
 
 		let oFirstLevel;
 		if (this.bKeptFirstLevel || iCreated) {
@@ -2880,6 +2927,7 @@ sap.ui.define([
 				this.oFirstLevel.restore(bReally);
 			}
 			this.oGrandTotalPromise = this.oBackup.oGrandTotalPromise;
+			this.bSubtotalsOutdated = this.oBackup.bSubtotalsOutdated;
 			this.bUnifiedCache = this.oBackup.bUnifiedCache;
 			for (const sPredicate in this.oBackup.mKeptElements) {
 				const oKeptElement = this.aElements.$byPredicate[sPredicate];
@@ -2900,7 +2948,7 @@ sap.ui.define([
 	 *
 	 * @param {boolean} bOutdated - Whether the grand total row is outdated
 	 *
-	 * @private
+	 * @public
 	 */
 	_AggregationCache.prototype.setGrandTotalOutdated = function (bOutdated) {
 		const oGrandTotal = this.aElements.$byPredicate["()"];
@@ -2925,6 +2973,22 @@ sap.ui.define([
 	 */
 	_AggregationCache.prototype.setInactive = function (sPath, bInactive) {
 		this.oFirstLevel.setInactive(sPath, bInactive, this.mChangeListeners);
+	};
+
+	/**
+	 * Sets the outdated state of all available subtotals. All subtotals that are added afterwards,
+	 * e.g. by scrolling or expanding a group node, are considered outdated until {@link #doReset}
+	 * is called.
+	 *
+	 * @public
+	 */
+	_AggregationCache.prototype.setSubtotalsOutdated = function () {
+		this.bSubtotalsOutdated = true;
+		// #expand and #calculateKeyPredicate take care to set the outdated state of subtotals
+		// coming later into the view
+		this.aElements.forEach((oElement) => {
+			this.updateSubtotalsOutdatedAnnotation(oElement);
+		});
 	};
 
 	/**
@@ -3048,6 +3112,23 @@ sap.ui.define([
 	};
 
 	/**
+	 * Updates the "@$ui5.context.isOutdated" annotation if the given element is a subtotal and all
+	 * subtotals have to be marked as outdated. All change listeners are informed.
+	 *
+	 * @param {object} oElement - The element to be updated
+	 *
+	 * @private
+	 */
+	_AggregationCache.prototype.updateSubtotalsOutdatedAnnotation = function (oElement) {
+		if (this.bSubtotalsOutdated && oElement["@$ui5.node.isTotal"]
+				&& oElement["@$ui5.node.level"]) {
+			_Helper.updateAll(this.mChangeListeners,
+				_Helper.getPrivateAnnotation(oElement, "predicate"), oElement,
+				{"@$ui5.context.isOutdated" : true});
+		}
+	};
+
+	/**
 	 * Validates for all nodes which contribute to the ExpandLevels parameter whether they are a
 	 * descendant of the given node. If a node is a descendant, its expand info is deleted.
 	 *
@@ -3118,12 +3199,16 @@ sap.ui.define([
 	 *   Whether this element is a leaf
 	 * @param {boolean} bTotal
 	 *   Whether this element is a (sub)total
+	 * @param {sap.ui.model.odata.v4.lib._AggregationCache} oAggregationCache
+	 *   The aggregation cache instance, used to get the meta path for the aggregation cache's
+	 *   collection of elements and the current outdated state of the subtotals
 	 * @param {object} oElement
 	 *   The element for which to calculate the key predicate
 	 * @param {object} mTypeForMetaPath
 	 *   A map from meta paths to entity types (as delivered by {@link #fetchTypes})
 	 * @param {string} sMetaPath
-	 *   The meta path for the given element
+	 *   The meta path for the given element; it differs from the aggregation cache's meta path in
+	 *   case of nested objects
 	 * @returns {string|undefined}
 	 *   The key predicate or <code>undefined</code>, if key predicate cannot be determined
 	 *
@@ -3131,11 +3216,15 @@ sap.ui.define([
 	 */
 	// @override sap.ui.model.odata.v4.lib._Cache#calculateKeyPredicate
 	_AggregationCache.calculateKeyPredicate = function (oGroupNode, aGroupBy, aAllProperties, bLeaf,
-			bTotal, oElement, mTypeForMetaPath, sMetaPath) {
-		var sPredicate;
-
-		if (!(sMetaPath in mTypeForMetaPath)) {
-			return undefined; // nested object
+			bTotal, oAggregationCache, oElement, mTypeForMetaPath, sMetaPath) {
+		if (oAggregationCache.sMetaPath !== sMetaPath) { // nested object
+			const sPredicate = sMetaPath in mTypeForMetaPath
+				? _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath)
+				: undefined; // complex type
+			if (sPredicate) {
+				_Helper.setPrivateAnnotation(oElement, "predicate", sPredicate);
+			}
+			return sPredicate;
 		}
 
 		if (oGroupNode) {
@@ -3150,9 +3239,12 @@ sap.ui.define([
 					oElement[vProperty] = oGroupNode[vProperty];
 				}
 			});
+		} else if (oElement["@$ui5.context.isTransient"] === false) { // creation with groupLevels
+			bLeaf = true;
+			bTotal = false;
 		}
 		// prefer real key predicate for leaf
-		sPredicate = bLeaf && _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath)
+		const sPredicate = bLeaf && _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath)
 			|| _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath, aGroupBy, true);
 		_Helper.setPrivateAnnotation(oElement, "predicate", sPredicate);
 		if (!bLeaf) {
@@ -3163,6 +3255,102 @@ sap.ui.define([
 		_AggregationHelper.setAnnotations(oElement, bLeaf ? undefined : false, bTotal,
 			oGroupNode ? oGroupNode["@$ui5.node.level"] + 1 : 1,
 			oGroupNode ? null : aAllProperties);
+		oAggregationCache.updateSubtotalsOutdatedAnnotation(oElement);
+
+		return sPredicate;
+	};
+
+	/**
+	 * Calculates the virtual key predicate for the given element and sets the node attributes using
+	 * "@com.sap.vocabularies.Analytics.v1.LevelInformation".
+	 *
+	 * @param {object} oAggregation
+	 *   An object holding the information needed for data aggregation; must already be normalized
+	 *   by {@link _AggregationHelper.buildApply}
+	 * @param {string[]} aGroupBy
+	 *   The ordered list of all leaf-level group-by properties; used for the key predicate
+	 * @param {string[]} aAllProperties
+	 *   A list of all properties that might be missing in the result and thus have to be nulled, in
+	 *   order to avoid drill-down errors
+	 * @param {boolean} bTotal
+	 *   Whether a non-leaf element is a (sub)total
+	 * @param {Set<string>} oSubtotalUnits
+	 *   A set of all subtotal units
+	 * @param {object} oElement
+	 *   The element for which to calculate the key predicate
+	 * @param {object} mTypeForMetaPath
+	 *   A map from meta paths to entity types (as delivered by {@link #fetchTypes})
+	 * @param {string} sMetaPath
+	 *   The meta path for the given element
+	 * @returns {string|undefined}
+	 *   The key predicate or <code>undefined</code>, if key predicate cannot be determined
+	 *
+	 * @public
+	 */
+	// @override sap.ui.model.odata.v4.lib._Cache#calculateKeyPredicate
+	_AggregationCache.calculateKeyPredicateLevels = function (oAggregation, aGroupBy,
+			aAllProperties, bTotal, oSubtotalUnits, oElement, mTypeForMetaPath, sMetaPath) {
+		if (!(sMetaPath in mTypeForMetaPath)) {
+			return undefined; // nested object
+		}
+
+		const oLevelInformation = oElement["@com.sap.vocabularies.Analytics.v1.LevelInformation"];
+		delete oElement["@com.sap.vocabularies.Analytics.v1.LevelInformation"];
+		if ((oLevelInformation.LimitedDescendantCount ?? "0") !== "0" // Edm.Int64
+				// don't take over the LimitedDescendantCount as subtotals are handled as leaves
+				&& oLevelInformation.DrillState !== "subtotal") {
+			_Helper.setPrivateAnnotation(oElement, "descendants",
+				parseInt(oLevelInformation.LimitedDescendantCount));
+		}
+		const iLevel = parseInt(oLevelInformation.DistanceFromRoot) + 1; // Edm.Int64
+		let bIsExpanded;
+		let bLeaf = false;
+		let bSubtotal = false;
+		switch (oLevelInformation.DrillState) {
+			case "collapsed":
+				bIsExpanded = false;
+				break;
+
+			case "expanded":
+				bIsExpanded = true;
+				_AggregationHelper.getOrCreateExpandedObject(oAggregation, oElement);
+				if (oAggregation.subtotalsAtBottomOnly) {
+					_AggregationHelper.extractSubtotals(oAggregation,
+						{"@$ui5.node.level" : iLevel}, {/*oCollapsed*/}, oElement);
+				}
+				break;
+
+			case "subtotal":
+				bIsExpanded = undefined;
+				bSubtotal = true;
+				bTotal = true;
+				break;
+
+			default: // "leaf"
+				bIsExpanded = undefined;
+				bLeaf = true;
+				bTotal = false;
+		}
+		aGroupBy = bLeaf ? aGroupBy : oAggregation.groupLevels.slice(0, iLevel);
+		// prefer real key predicate for leaf; calculate it before any data is dropped
+		let sPredicate = bLeaf && _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath)
+			|| _Helper.getKeyPredicate(oElement, sMetaPath, mTypeForMetaPath, aGroupBy, true);
+		if (bSubtotal) {
+			sPredicate = sPredicate.slice(0, -1) + ",$isTotal=true)";
+			// keepSubtotalsOnly would also remove private annotations, so call it before setting
+			// the private annotation for the predicate
+			_AggregationHelper.keepSubtotalsOnly(oAggregation, oElement, oSubtotalUnits);
+		}
+		_Helper.setPrivateAnnotation(oElement, "predicate", sPredicate);
+		if (bIsExpanded !== undefined) {
+			// values for aggregates that are not marked as subtotals shall be shown on leaf level
+			// only; for subtotals the values have been removed above, for collapsed and expanded
+			// group nodes the values are dropped here
+			_AggregationHelper.dropAggregatesWithoutSubtotals(oAggregation, oElement,
+				oSubtotalUnits);
+		}
+		// set the node values
+		_AggregationHelper.setAnnotations(oElement, bIsExpanded, bTotal, iLevel, aAllProperties);
 
 		return sPredicate;
 	};
@@ -3285,13 +3473,11 @@ sap.ui.define([
 	 * @throws {Error}
 	 *   If the system query option "$filter" is combined with group levels or with grand totals
 	 *   (unless "grandTotal like 1.84"), or if grand totals or group levels or recursive hierarchy
-	 *   are combined with min/max or with grouping via sorter, or if the system query options
-	 *   "$expand" or "$select" are combined with pure data aggregation (no recursive hierarchy), or
-	 *   if the system query option "$search" is combined with grand totals or group levels or a
-	 *   recursive hierarchy, or if shared requests are combined with min/max or with grand totals
-	 *   or group levels or recursive hierarchy, or if a first level cache is given but no
-	 *   aggregation cache needs to be created, or if a first level cache is given and it has
-	 *   pending DELETEs or POSTs
+	 *   are combined with min/max or with grouping via sorter, or if the system query option
+	 *   "$search" is combined with grand totals or group levels or a recursive hierarchy, or if
+	 *   shared requests are combined with min/max or with grand totals or group levels or recursive
+	 *   hierarchy, or if a first level cache is given but no aggregation cache needs to be created,
+	 *   or if a first level cache is given and it has pending DELETEs or POSTs
 	 *
 	 * @public
 	 */
@@ -3299,15 +3485,6 @@ sap.ui.define([
 			mQueryOptions, oAggregation, bSortExpandSelect, bSharedRequest, bIsGrouped,
 			oFirstLevel) {
 		var bHasGrandTotal, bHasGroupLevels;
-
-		function checkExpandSelect() {
-			if ("$expand" in mQueryOptions) {
-				throw new Error("Unsupported system query option: $expand");
-			}
-			if ("$select" in mQueryOptions) {
-				throw new Error("Unsupported system query option: $select");
-			}
-		}
 
 		if (oAggregation) {
 			bHasGrandTotal = _AggregationHelper.hasGrandTotal(oAggregation.aggregate);
@@ -3329,7 +3506,6 @@ sap.ui.define([
 				if (oFirstLevel) {
 					throw new Error("Unsupported oFirstLevel together with min/max");
 				}
-				checkExpandSelect();
 
 				return _MinMaxHelper.createCache(oRequestor, sResourcePath, oAggregation,
 					mQueryOptions);
@@ -3344,9 +3520,6 @@ sap.ui.define([
 			if (bHasGrandTotal || bHasGroupLevels || oAggregation.hierarchyQualifier) {
 				if (mQueryOptions.$search) {
 					throw new Error("Unsupported system query option: $search");
-				}
-				if (!oAggregation.hierarchyQualifier) {
-					checkExpandSelect();
 				}
 				if (bIsGrouped) {
 					throw new Error("Unsupported grouping via sorter");
@@ -3365,14 +3538,6 @@ sap.ui.define([
 		}
 		if ("$$filterOnAggregate" in mQueryOptions) {
 			throw new Error("Unsupported $$filterOnAggregate");
-		}
-		if (mQueryOptions.$$filterBeforeAggregate) {
-			mQueryOptions = {
-				...mQueryOptions,
-				$apply : "filter(" + mQueryOptions.$$filterBeforeAggregate + ")/"
-					+ mQueryOptions.$apply
-			};
-			delete mQueryOptions.$$filterBeforeAggregate;
 		}
 
 		return _Cache.create(oRequestor, sResourcePath, mQueryOptions, bSortExpandSelect,

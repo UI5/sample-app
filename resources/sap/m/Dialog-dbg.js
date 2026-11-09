@@ -174,7 +174,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.153.0
+		* @version 1.154.0
 		*
 		* @constructor
 		* @public
@@ -1241,9 +1241,11 @@ function(
 					iMaxHeight -= DRAGRESIZE_STEP;
 				}
 
+				const iMinHeight = parseInt($this.css("min-height")) + this._getFooterHeight();
+
 				mStyles = {
 					width: Math.min(iDialogWidth, oAreaDimensions.right - mOffset.left),
-					height: Math.min(iDialogHeight, iMaxHeight)
+					height: Math.max(iMinHeight, Math.min(iDialogHeight, iMaxHeight))
 				};
 			} else {
 				mStyles = {

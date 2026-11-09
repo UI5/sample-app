@@ -89,6 +89,11 @@ sap.ui.define(
 
 			innerRenderer();
 
+			// render the invisible ARIA anchor for the enhanced tooltip
+			if (oControl._oTooltipEnablement) {
+				oControl._oTooltipEnablement.renderInvisibleTooltip(oRm);
+			}
+
 			oRm.close("div");
 		};
 
@@ -116,20 +121,31 @@ sap.ui.define(
 		RatingIndicatorRenderer.writeTooltip = function(oRm, oControl) {
 			var sTooltip = oControl.getTooltip_AsString();
 
-			if (sTooltip) {
+			// only render the native title when the enhanced tooltip is not used
+			if (sTooltip && !oControl._oTooltipEnablement) {
 				oRm.attr("title", sTooltip);
 			}
 		};
 
 		RatingIndicatorRenderer.writeAccessibility = function(oRm, oControl) {
-			oRm.accessibilityState(oControl, {
+			var mAccProps = {
 				role: "slider",
 				orientation: "horizontal",
 				valuemin: 0,
 				disabled: !oControl.getEnabled() || oControl.getDisplayOnly(),
 				roledescription: oResourceBundle.getText("RATING_INDICATOR_ARIA_ROLEDESCRIPTION"),
 				required: null
-			});
+			};
+
+			// reference the invisible tooltip anchor so screen readers announce the tooltip text
+			if (oControl._oTooltipEnablement) {
+				var sTooltipAnchor = oControl._oTooltipEnablement.getInvisibleTooltipId();
+				if (sTooltipAnchor) {
+					mAccProps.describedby = { value: sTooltipAnchor, append: true };
+				}
+			}
+
+			oRm.accessibilityState(oControl, mAccProps);
 		};
 
 		RatingIndicatorRenderer.renderSelectedItems = function(oRm, oControl) {
@@ -204,6 +220,10 @@ sap.ui.define(
 			}
 
 			const aClasses = [this.getIconClass(iconType)];
+
+			if (!IconPool.isIconURI(sIconURI)) {
+				aClasses.push("sapMImg");
+			}
 
 			if (iValue >= Math.ceil(oControl.getValue())) {
 				aClasses.push("sapMRIunratedIcon");

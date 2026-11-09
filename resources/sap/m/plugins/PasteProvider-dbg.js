@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui/core/util/PasteHelper", "sap/ui/Device"], function(PluginBase, Element, Library, PasteHelper, Device) {
+sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui/core/util/PasteHelper", "sap/ui/Device", "sap/ui/events/KeyCodes"], function(PluginBase, Element, Library, PasteHelper, Device, KeyCodes) {
 	"use strict";
 
 	/*global ClipboardEvent, DataTransfer */
@@ -28,7 +28,7 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.153.0
+	 * @version 1.154.0
 	 *
 	 * @public
 	 * @since 1.91
@@ -188,12 +188,17 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Element", "sap/ui/core/Lib", "sap/ui
 
 			oPopover.addEventDelegate({
 				onpaste: function(oEvent) {
-					oEvent.preventDefault(); // do not let conteneditable to be changed
+					oEvent.preventDefault(); // do not let contenteditable to be changed
 					firePaste(oEvent.originalEvent);
 					oPopover.close();
 				},
 				onkeypress: function(oEvent) {
-					oEvent.preventDefault(); // do not let conteneditable to be changed
+					oEvent.preventDefault(); // do not let contenteditable to be changed
+				},
+				onkeydown: function(oEvent) {
+					if (oEvent.keyCode === KeyCodes.BACKSPACE || oEvent.keyCode === KeyCodes.DELETE) {
+						oEvent.preventDefault(); // do not let contenteditable to be deleted
+					}
 				}
 			});
 

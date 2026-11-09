@@ -1,4 +1,4 @@
-specVersion: '4.0'
+specVersion: '5.0'
 metadata:
   name: "@ui5/sample-app"
 type: application

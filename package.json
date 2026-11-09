@@ -9,8 +9,8 @@
 	},
 	"scripts": {
 		"start": "ui5 serve --port 8080",
-		"lint": "eslint webapp && ui5lint",
-		"test-runner": "npx puppeteer browsers install chrome && ui5-test-runner --url http://localhost:8080/test/testsuite.qunit.html --start \"npm start\" --start-wait-url http://localhost:8080/test/testsuite.qunit.html --start-timeout 30000 --coverage -ccb 100% -ccf 100% -ccl 100% -ccs 100%",
+		"lint": "eslint webapp && ui5lint --ui5-config ui5-lint.yaml",
+		"test-runner": "npx puppeteer browsers install chrome && ui5-test-runner --start \"npm start\" --start-wait-url http://localhost:8080/ --start-timeout 120000 --coverage -ccb 100% -ccf 100% -ccl 100% -ccs 100%",
 		"test": "npm run lint && npm run test-runner",
 		"build": "ui5 build -a --clean-dest",
 		"build-self-contained": "ui5 build self-contained -a --clean-dest",
@@ -18,13 +18,13 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@ui5/cli": "^4.0.73",
+		"@ui5/cli": "^5.0.0-alpha.14",
 		"@ui5/linter": "^1.23.7",
-		"@ui5/middleware-code-coverage": "^2.0.4",
+		"@ui5/middleware-code-coverage": "^3.0.0-alpha.1",
 		"eslint": "^10.14.0",
 		"globals": "^17.14.0",
 		"local-web-server": "^5.4.2",
-		"rimraf": "^6.1.4",
-		"ui5-test-runner": "^6.0.5"
+		"rimraf": "^6.1.3",
+		"ui5-test-runner": "^6.0.7"
 	}
 }

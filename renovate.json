@@ -2,7 +2,8 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"config:recommended",
-		"github>ui5/renovate-config"
+		"github>ui5/renovate-config",
+		"helpers:pinGitHubActionDigestsToSemver"
 	],
 	"rangeStrategy": "bump",
 	"lockFileMaintenance": {
